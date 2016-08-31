@@ -22,13 +22,17 @@ do
 		echo "Version 1.0.0"
 		break
 		;;
-		-t|--target)
+		-i|--input|-input)
 		INPUT="$2"
+		shift
+		;;
+		-o|--output|-output)
+		OUTPUT="$2"
 		shift
 		;;
 		*)
 		#not a valid argument
-		echo  "$2 is not a valid argument."
+		echo  "$1 $2 is not a valid argument."
 		break
 		;;
 	esac
@@ -51,4 +55,6 @@ elif [[ "$COMMAND" == "default" ]]; then
 	echo "Running all exetubales on target input."
 	"make" all
 	"./mutator" "$INPUT" -- > "$OUTPUT"
+else 
+	echo "$COMMAND is not a valid command."
 fi
