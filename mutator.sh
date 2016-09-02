@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#the UI for mutator. it's supposed to mimic the normal 'nix argument passing.
+#the arguments' positions are not important. you also get log ans short options.
+
 #default args
 INPUT="./covtest/testFuncs1.c"
 OUTPUT="./mutant.c"
@@ -17,6 +20,7 @@ do
 		-h|--help)
 		COMMAND="$2"
 		echo "Currently there is no help for this."
+		break
 		;;
 		-v|--version)
 		echo "Version 1.0.0"
@@ -32,7 +36,7 @@ do
 		;;
 		*)
 		#not a valid argument
-		echo  "$1 $2 is not a valid argument."
+		echo  "$1 $2 is not a valid argument..."
 		break
 		;;
 	esac
@@ -49,12 +53,12 @@ elif [[ "$COMMAND" == build-all ]]; then
 	"make" all
 elif [[ "$COMMAND" == run ]];then
 	echo "Running executables on target file..."
-	"$OUTPUT" "$INPUT" --
+	"./mutator" "$INPUT" -- > "$OUTPUT"
 elif [[ "$COMMAND" == "default" ]]; then
-	echo "Building all target executables."		
-	echo "Running all exetubales on target input."
+	echo "Building all target executables..."
 	"make" all
+	echo "Running all exetubales on target input..."
 	"./mutator" "$INPUT" -- > "$OUTPUT"
 else 
-	echo "$COMMAND is not a valid command."
+	echo "$COMMAND is not a valid command..."
 fi

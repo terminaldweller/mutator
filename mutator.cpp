@@ -4,6 +4,7 @@
 /*included modules*/
 /*standard library*/
 #include <string>
+#include <iostream>
 /*LLVM-libs*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -17,12 +18,9 @@
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
-/*adding the -- deafult option is not a good choice since we need extra flags to compile code or else the parsers not gonna parse all of the target file.*/
-#if 0
-#include "llvm/support/CommandLine.h"
-#endif
 /**********************************************************************************************************************/
 /*used namespaces*/
+using namespace llvm;
 using namespace clang;
 using namespace clang::ast_matchers;
 using namespace clang::driver;
@@ -32,37 +30,51 @@ using namespace clang::tooling;
 
 
 static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
-
 /**********************************************************************************************************************/
-/*matcher callback for 'if' and 'else if'.*/
+/*matcher callback for something.*/
 class FunctionHandler : public MatchFinder::MatchCallback {
 public:
   FunctionHandler (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    /*dev*/
+    if (MR.Nodes.getNodeAs<clang::BinaryOperator>("binopeq") != nullptr)
+    {
+      /*underdev*/
+      /*get the matched node.*/
+      const BinaryOperator *BinOp = MR.Nodes.getNodeAs<clang::BinaryOperator>("binopeq");
+
+      /*get the sourceloation.*/
+      SourceLocation BinOpSL = BinOp->getLocStart();
+
+      /*does the sourcelocation include a macro expansion?*/
+      if ( BinOpSL.isMacroID() )
+      {
+        /*get the expansion range which is startloc and endloc*/
+        std::pair <SourceLocation, SourceLocation> expansionRange = Rewrite.getSourceMgr().getImmediateExpansionRange(BinOpSL);
+
+        /*get the startloc.*/
+        BinOpSL = expansionRange.first;
+      }
+
+      /*replace it.*/
+      Rewrite.ReplaceText(BinOpSL, 2U , "XXX");
+    }
   }
 
 private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-
 /**********************************************************************************************************************/
-// Implementation of the ASTConsumer interface for reading an AST produced
-// by the Clang parser. It registers a couple of matchers and runs them on
-// the AST.
 class MyASTConsumer : public ASTConsumer {
-//friend class CalleeHandler;
 
 public:
   MyASTConsumer(Rewriter &R) : HandlerForFunction(R) {
-    Matcher.addMatcher (functionDecl(), &HandlerForFunction);
+    Matcher.addMatcher(binaryOperator(hasOperatorName("==")).bind("binopeq"), &HandlerForFunction);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
-    // Run the matchers when we have the whole TU parsed.
     Matcher.matchAST(Context);
   }
 
@@ -71,7 +83,6 @@ private:
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
-// For each source file provided to the tool, a new FrontendAction is created.
 class MyFrontendAction : public ASTFrontendAction {
 public:
   MyFrontendAction() {}
