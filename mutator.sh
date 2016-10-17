@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #the UI for mutator. it's supposed to mimic the normal 'nix argument passing.
-#the arguments' positions are not important. you also get log ans short options.
+#the arguments' positions are not important. you also get log and short options.
 
 #default args
 INPUT="./covtest/testFuncs1.c"
 OUTPUT="./mutant.c"
-COMMAND="all"
+COMMAND="jack"
 
 while [[ $# -gt 0 ]]
 do
@@ -17,9 +17,22 @@ do
 		COMMAND="$2"
 		shift
 		;;
-		-h|--help)
-		COMMAND="$2"
-		echo "Currently there is no help for this."
+		-h|--help|-help)
+		#COMMAND="$2"
+		echo "-h, --help prints out the help.obviously..."
+		echo "-c, --command you can specify the command you want to pass to mutator."
+		echo "		clean runs make clean."
+		echo "		build-all runs make all."
+		echo "		run runs the mutator executable on the target."
+		echo "		default runs build-all and then run."
+		echo "-v, --version prints out the version."
+		echo "-i, --input, -input lets you choose the input file that is going to be passed to the mutator executable(s)."
+		echo "-o, --output, -output lets you choose where to put the mutant."
+		break
+		;;
+		-NDEBUG)
+		echo "you are still deciding between passing the arg to make as a make arg or just writing into the makefile with the script."
+		echo "btw youre running in NDEBUG dumbdumb! asserts are not gonna work like this."
 		break
 		;;
 		-v|--version)
@@ -43,15 +56,15 @@ do
 	shift
 done
 
-if [[ "$COMMAND" == clean ]]; then
+if [[ "$COMMAND" == "clean" ]]; then
 	echo "Running make clean..."
 	echo "Killing all mutants..."
 	"make" clean
 	rm "$OUTPUT"
-elif [[ "$COMMAND" == build-all ]]; then
+elif [[ "$COMMAND" == "build-all" ]]; then
 	echo "Building all executables..."
 	"make" all
-elif [[ "$COMMAND" == run ]];then
+elif [[ "$COMMAND" == "run" ]];then
 	echo "Running executables on target file..."
 	"./mutator" "$INPUT" -- > "$OUTPUT"
 elif [[ "$COMMAND" == "default" ]]; then
@@ -59,6 +72,8 @@ elif [[ "$COMMAND" == "default" ]]; then
 	"make" all
 	echo "Running all exetubales on target input..."
 	"./mutator" "$INPUT" -- > "$OUTPUT"
+elif [[ "$COMMAND" == "jack" ]]; then
+	echo
 else 
 	echo "$COMMAND is not a valid command..."
 fi

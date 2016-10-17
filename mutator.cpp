@@ -5,6 +5,7 @@
 /*standard library*/
 #include <string>
 #include <iostream>
+#include <cassert>
 /*LLVM-libs*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -59,6 +60,10 @@ public:
 
       /*replace it.*/
       Rewrite.ReplaceText(BinOpSL, 2U , "XXX");
+    }
+    else
+    {
+      std::cout << "the macther -binopeq- returned nullptr!" << std::endl;
     }
   }
 
