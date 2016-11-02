@@ -6,6 +6,7 @@
 #default args
 INPUT="./covtest/testFuncs1.c"
 OUTPUT="./mutant.c"
+OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
 
 while [[ $# -gt 0 ]]
@@ -25,6 +26,8 @@ do
 		echo "		build-all runs make all."
 		echo "		run runs the mutator executable on the target."
 		echo "		default runs build-all and then run."
+		echo "		format calls clang-format to format the mutant. later to be used for the test command."
+		echo "		test runs the tests on the executables and checks the results."
 		echo "-v, --version prints out the version."
 		echo "-i, --input, -input lets you choose the input file that is going to be passed to the mutator executable(s)."
 		echo "-o, --output, -output lets you choose where to put the mutant."
@@ -61,6 +64,11 @@ if [[ "$COMMAND" == "clean" ]]; then
 	echo "Killing all mutants..."
 	"make" clean
 	rm "$OUTPUT"
+elif [[ "$COMMAND" == "format" ]]; then
+	echo 'using clang-format to format the mutant...'
+	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$OUTPUT > $OUTPUT_FORMAT
+elif [[ "$COMMAND" == "test" ]]; then
+	echo "you haven't implemented it yet..."
 elif [[ "$COMMAND" == "build-all" ]]; then
 	echo "Building all executables..."
 	"make" all
