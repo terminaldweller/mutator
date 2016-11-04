@@ -278,6 +278,49 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class IfElseFixer : public MatchFinder::MatchCallback
+{
+public:
+  IfElseFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    /*underdev*/
+    if (MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse") != nullptr)
+    {
+      const IfStmt *ElseIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
+      //const IfStmt *LastIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
+
+      SourceLocation IFESL = ElseIf->getLocStart();
+      IFESL = Devi::SourceLocationHasMacro(IFESL, Rewrite, "start");
+      SourceLocation IFESLE = ElseIf->getLocEnd();
+      IFESLE = Devi::SourceLocationHasMacro(IFESLE, Rewrite, "end");
+      SourceRange SR;
+      SR.setBegin(IFESL);
+      SR.setEnd(IFESLE);
+
+      clang::Rewriter::RewriteOptions opts;
+
+      int RangeSize = Rewrite.getRangeSize(SR, opts);
+
+      //std::cout << IFESLE.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+#if 0
+      //Rewrite.InsertText(ElseIf->getThen()->getLocStart(), "{\n", "true", "true");
+      Rewrite.InsertTextAfterToken(IFESL.getLocWithOffset(RangeSize + 1U), "else\n{/*intentionally left blank*/\n}\n");
+#endif
+    }
+    else
+    {
+      std::cout << "matcher -mrifelse- returned nullptr." << std::endl;
+    }
+  }
+
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
 class IfFixer : public MatchFinder::MatchCallback
 {
 public:
@@ -295,10 +338,18 @@ public:
       SourceLocation FFSLE = MRIf->getThen()->getLocEnd();
       FFSLE = Devi::SourceLocationHasMacro(FFSLE, Rewrite, "end");
 
+      SourceRange SR;
+      SR.setBegin(FFSL);
+      SR.setEnd(FFSLE);
+      Rewriter::RewriteOptions opts;
+      int RangeSize = Rewrite.getRangeSize(SR, opts);
+
       /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
       /*line-terminating semicolons are not included in the matches.*/
+#if 1
       Rewrite.InsertText(FFSL, "{\n", "true", "true");
-      Rewrite.InsertTextAfterToken(FFSLE.getLocWithOffset(2U), "\n}");
+      Rewrite.InsertTextAfterToken(FFSL.getLocWithOffset(RangeSize), "\n}");
+#endif
     }
     else
     {
@@ -310,39 +361,11 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class IfElseFixer : public MatchFinder::MatchCallback
-{
-public:
-  IfElseFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
-
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    /*underdev*/
-    if (MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse") != nullptr)
-    {
-      const IfStmt *ElseIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
-
-      std::cout << "yolo" << std::endl;
-
-      //Rewrite.InsertText(ElseIf->getThen()->getLocStart(), "{\n", "true", "true");
-      Rewrite.InsertTextAfterToken(ElseIf->getLocEnd().getLocWithOffset(2U), "\nelse\n{\n}");
-    }
-    else
-    {
-      std::cout << "matcher -mrifelse- returned nullptr." << std::endl;
-    }
-  }
-
-
-private:
-  Rewriter &Rewrite;
-};
-/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
-  MyASTConsumer(Rewriter &R) : HandlerForFunction(R), HandlerForIfTrap(R), HandlerForStmtTrap(R), HandlerForStmtRet(R), HandlerForFixer(R), HandlerForWhile(R), HandlerForIfFixer(R), HandlerForIfElse(R) {
+  MyASTConsumer(Rewriter &R) : HandlerForFunction(R), HandlerForIfTrap(R), HandlerForStmtTrap(R), HandlerForStmtRet(R), HandlerForFixer(R), HandlerForWhile(R), HandlerForIfElse(R), HandlerForIfFixer(R) {
     Matcher.addMatcher(binaryOperator(hasOperatorName("==")).bind("binopeq"), &HandlerForFunction);
 
     Matcher.addMatcher(ifStmt(hasCondition(anything())).bind("iftrap"), &HandlerForIfTrap);
@@ -355,9 +378,9 @@ public:
 
     Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mrwhile"), &HandlerForWhile);
 
-    Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mrif"), &HandlerForIfFixer);
+    Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mrifelse"), &HandlerForIfElse);
 
-    Matcher.addMatcher(ifStmt(allOf(hasElse(anything()), hasDescendant(ifStmt()), unless(hasAncestor(ifStmt())))).bind("mrifelse"), &HandlerForIfElse);
+    Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mrif"), &HandlerForIfFixer);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -371,8 +394,8 @@ private:
   StmtRet HandlerForStmtRet;
   ForFixer HandlerForFixer;
   WhileFixer HandlerForWhile;
-  IfFixer HandlerForIfFixer;
   IfElseFixer HandlerForIfElse;
+  IfFixer HandlerForIfFixer;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
