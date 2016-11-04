@@ -291,9 +291,9 @@ public:
       const IfStmt *ElseIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
       //const IfStmt *LastIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
 
-      SourceLocation IFESL = ElseIf->getLocStart();
+      SourceLocation IFESL = ElseIf->getElse()->getLocStart();
       IFESL = Devi::SourceLocationHasMacro(IFESL, Rewrite, "start");
-      SourceLocation IFESLE = ElseIf->getLocEnd();
+      SourceLocation IFESLE = ElseIf->getElse()->getLocEnd();
       IFESLE = Devi::SourceLocationHasMacro(IFESLE, Rewrite, "end");
       SourceRange SR;
       SR.setBegin(IFESL);
@@ -305,9 +305,9 @@ public:
 
       //std::cout << IFESLE.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-#if 0
-      //Rewrite.InsertText(ElseIf->getThen()->getLocStart(), "{\n", "true", "true");
-      Rewrite.InsertTextAfterToken(IFESL.getLocWithOffset(RangeSize + 1U), "else\n{/*intentionally left blank*/\n}\n");
+#if 1
+      Rewrite.InsertText(IFESL, "{\n", "true", "true");
+      Rewrite.InsertTextAfterToken(IFESL.getLocWithOffset(RangeSize), "\n}");
 #endif
     }
     else
@@ -378,7 +378,7 @@ public:
 
     Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mrwhile"), &HandlerForWhile);
 
-    Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mrifelse"), &HandlerForIfElse);
+    Matcher.addMatcher(ifStmt(allOf(hasElse(unless(ifStmt())), hasElse(unless(compoundStmt())))).bind("mrifelse"), &HandlerForIfElse);
 
     Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mrif"), &HandlerForIfFixer);
   }
