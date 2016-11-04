@@ -22,22 +22,26 @@ CXX_FLAGS+=$(EXTRA_CXX_FALGS)
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 TARGET=mutator
+TARGET2=mutator-lvl2
 
 ######################################RULES####################################
 .DEFAULT: all
 
 .PHONY:all clean help
 
-all: $(TARGET)
+all: $(TARGET) $(TARGET2)
 
-.cpp.o: mutator.cpp mutator_aux.cpp mutator_aux.h
+.cpp.o: mutator.cpp mutator-lvl2.cpp mutator_aux.cpp mutator_aux.h
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 $(TARGET): $(TARGET).o mutator_aux.o
 	$(CXX) $? $(LD_FLAGS) -o $@
 
+$(TARGET2): $(TARGET2).o mutator_aux.o
+	$(CXX) $? $(LD_FLAGS) -o $@	
+
 clean:
-	rm -f *.o *~ $(TARGET)
+	rm -f *.o *~ $(TARGET) $(TARGET2)
 
 help:
 	@echo 'there is help.'
