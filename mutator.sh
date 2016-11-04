@@ -78,8 +78,13 @@ elif [[ "$COMMAND" == "run" ]];then
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
+	echo "Ruunning the input through clang-format..."
+	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$INPUT -- > $OUTPUT_FORMAT
+	"cp" $OUTPUT_FORMAT ./medium.c
 	echo "Running all exetubales on target input..."
-	"./mutator" "$INPUT" -- > "$OUTPUT"
+	"./mutator" "$OUTPUT_FORMAT" -- > "$OUTPUT"
+	echo 'Using clang-format to format the mutant...'
+	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$OUTPUT -- > $OUTPUT_FORMAT
 elif [[ "$COMMAND" == "jack" ]]; then
 	echo
 else 
