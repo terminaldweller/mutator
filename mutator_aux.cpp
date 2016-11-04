@@ -37,5 +37,7 @@ SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std
   {
     return (SL);
   }
+
+  return (SL);
 }
 }
