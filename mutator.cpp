@@ -2,11 +2,13 @@
 /*first line intentionally left blank.*/
 /**********************************************************************************************************************/
 /*included modules*/
-/*standard library*/
+/*project headers*/
+#include "mutator_aux.h"
+/*standard headers*/
 #include <string>
 #include <iostream>
 #include <cassert>
-/*LLVM-libs*/
+/*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -48,15 +50,8 @@ public:
       /*get the sourceloation.*/
       SourceLocation BinOpSL = BinOp->getLocStart();
 
+      BinOpSL = Devi::SourceLocationHasMacro(BinOpSL, Rewrite, "start");
       /*does the sourcelocation include a macro expansion?*/
-      if ( BinOpSL.isMacroID() )
-      {
-        /*get the expansion range which is startloc and endloc*/
-        std::pair <SourceLocation, SourceLocation> expansionRange = Rewrite.getSourceMgr().getImmediateExpansionRange(BinOpSL);
-
-        /*get the startloc.*/
-        BinOpSL = expansionRange.first;
-      }
 
       /*replace it.*/
 #if 0
@@ -90,13 +85,17 @@ public:
 
       /*getting the sourcerange of the condition of the trapped ifstmt.*/
       SourceLocation TrapIfCondSL = IfCond->getLocStart();
+      TrapIfCondSL = Devi::SourceLocationHasMacro(TrapIfCondSL, Rewrite, "start");
       SourceLocation TrapIfCondSLEnd = IfCond->getLocEnd();
+      TrapIfCondSLEnd = Devi::SourceLocationHasMacro(TrapIfCondSLEnd, Rewrite, "end");
       SourceRange TrapIfCondSR;
       TrapIfCondSR.setBegin(TrapIfCondSL);
       TrapIfCondSR.setEnd(TrapIfCondSLEnd);
 
       /*replacing the condition with the utility trap function.*/
+#if 0
       Rewrite.ReplaceText(TrapIfCondSR, "C_Trap_P()");
+#endif
     }
     else
     {
@@ -122,7 +121,9 @@ public:
       const Stmt *StmtTrapMR = MR.Nodes.getNodeAs<clang::Stmt>("stmttrap");
 
       SourceLocation STSL = StmtTrapMR->getLocStart();
+      STSL = Devi::SourceLocationHasMacro(STSL, Rewrite, "start");
       SourceLocation STSLE = StmtTrapMR->getLocEnd();
+      STSLE = Devi::SourceLocationHasMacro(STSLE, Rewrite, "end");
 
       /*just getting the SOC of the matched statement out of its sourcelocation.*/
       /*this only works since we are guaranteed the same and known matching pattern by MatchFinder.*/
@@ -147,7 +148,9 @@ public:
         SR.setBegin(StmtTrapMR->getLocStart());
         SR.setEnd(StmtTrapMR->getLocEnd());
 
-        //Rewrite.InsertText(StmtTrapMR->getLocStart(), "XXX", "true", "true");
+#if 0
+        Rewrite.InsertText(StmtTrapMR->getLocStart(), "XXX", "true", "true");
+#endif
       }
       else
       {
@@ -167,16 +170,194 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class StmtRet : public MatchFinder::MatchCallback
+{
+public:
+  StmtRet (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run (const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ReturnStmt>("stmtret") != nullptr)
+    {
+      /*getting the returnstmt.*/
+      const ReturnStmt *RetStmtMR = MR.Nodes.getNodeAs<clang::ReturnStmt>("stmtret");
+
+      /*getting the sourcerange of the matched returnstmt.*/
+      SourceLocation RSMR = RetStmtMR->getLocStart();
+      RSMR = Devi::SourceLocationHasMacro(RSMR, Rewrite, "start");
+      SourceLocation RSMRE = RetStmtMR->getLocEnd();
+      RSMRE = Devi::SourceLocationHasMacro(RSMRE, Rewrite, "end");
+      SourceRange RSMRSR;
+      RSMRSR.setBegin(RSMR);
+      RSMRSR.setEnd(RSMRE);
+
+#if 0
+      Rewrite.ReplaceText(RSMRSR, "C_Trap_P()");
+#endif
+    }
+    else
+    {
+      std::cout << "matcher -stmtret- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+
+};
+/**********************************************************************************************************************/
+class ForFixer : public MatchFinder::MatchCallback
+{
+public:
+  ForFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  /*adds curly braces for forstmts that don't have it.*/
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mrfor") != nullptr)
+    {
+      const ForStmt *MRFor = MR.Nodes.getNodeAs<clang::ForStmt>("mrfor");
+
+      SourceLocation MRForSL = MRFor->getBody()->getLocStart();
+      MRForSL = Devi::SourceLocationHasMacro(MRForSL, Rewrite, "start");
+      SourceLocation MRForSLE = MRFor->getBody()->getLocEnd();
+      MRForSLE = Devi::SourceLocationHasMacro(MRForSLE, Rewrite, "end");
+
+      Rewrite.InsertText(MRForSL, "{\n", "true", "false");
+      /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
+      /*line-terminating semicolons are not included in the matches.*/
+      Rewrite.InsertTextAfterToken(MRForSLE.getLocWithOffset(2U), "\n}");
+    }
+    else
+    {
+      std::cout << "matcher -mrfor- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class WhileFixer : public MatchFinder::MatchCallback
+{
+public:
+  WhileFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  /*adds curly braces for whilestmts that don't have it.*/
+  virtual void run (const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mrwhile") != nullptr)
+    {
+      const WhileStmt *MRWhile = MR.Nodes.getNodeAs<clang::WhileStmt>("mrwhile");
+
+#if 0
+      std::cout << MRWhile->getBody()->getLocStart().printToString(*MR.SourceManager) << std::endl;
+      std::cout << MRWhile->getBody()->getLocEnd().printToString(*MR.SourceManager) << std::endl;
+#endif
+
+      SourceLocation WFSL = MRWhile->getBody()->getLocStart();
+      WFSL = Devi::SourceLocationHasMacro(WFSL, Rewrite, "start");
+      SourceLocation WFSLE = MRWhile->getBody()->getLocEnd();
+      WFSLE = Devi::SourceLocationHasMacro(WFSLE, Rewrite, "end");
+
+      /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
+      /*line-terminating semicolons are not included in the matches.*/
+      Rewrite.InsertText(WFSL, "{\n", "true", "true");
+      Rewrite.InsertTextAfterToken(WFSLE.getLocWithOffset(2U), "\n}");
+    }
+    else
+    {
+#if 1
+      std::cout << "matcher -mrwhile- returned nullptr." << std::endl;
+#endif
+    }
+  }
+
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class IfFixer : public MatchFinder::MatchCallback
+{
+public:
+  IfFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  /*adds curly braces to ifstmts that dont have it.*/
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::IfStmt>("mrif") != nullptr)
+    {
+      const IfStmt *MRIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrif");
+
+      SourceLocation FFSL = MRIf->getThen()->getLocStart();
+      FFSL = Devi::SourceLocationHasMacro(FFSL, Rewrite, "start");
+      SourceLocation FFSLE = MRIf->getThen()->getLocEnd();
+      FFSLE = Devi::SourceLocationHasMacro(FFSLE, Rewrite, "end");
+
+      /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
+      /*line-terminating semicolons are not included in the matches.*/
+      Rewrite.InsertText(FFSL, "{\n", "true", "true");
+      Rewrite.InsertTextAfterToken(FFSLE.getLocWithOffset(2U), "\n}");
+    }
+    else
+    {
+      std::cout << "matcher -- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class IfElseFixer : public MatchFinder::MatchCallback
+{
+public:
+  IfElseFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    /*underdev*/
+    if (MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse") != nullptr)
+    {
+      const IfStmt *ElseIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
+
+      std::cout << "yolo" << std::endl;
+
+      //Rewrite.InsertText(ElseIf->getThen()->getLocStart(), "{\n", "true", "true");
+      Rewrite.InsertTextAfterToken(ElseIf->getLocEnd().getLocWithOffset(2U), "\nelse\n{\n}");
+    }
+    else
+    {
+      std::cout << "matcher -mrifelse- returned nullptr." << std::endl;
+    }
+  }
+
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
-  MyASTConsumer(Rewriter &R) : HandlerForFunction(R), HandlerForIfTrap(R), HandlerForStmtTrap(R) {
+  MyASTConsumer(Rewriter &R) : HandlerForFunction(R), HandlerForIfTrap(R), HandlerForStmtTrap(R), HandlerForStmtRet(R), HandlerForFixer(R), HandlerForWhile(R), HandlerForIfFixer(R), HandlerForIfElse(R) {
     Matcher.addMatcher(binaryOperator(hasOperatorName("==")).bind("binopeq"), &HandlerForFunction);
 
     Matcher.addMatcher(ifStmt(hasCondition(anything())).bind("iftrap"), &HandlerForIfTrap);
 
     Matcher.addMatcher(stmt().bind("stmttrap") , &HandlerForStmtTrap);
+
+    Matcher.addMatcher(returnStmt().bind("stmtret"), &HandlerForStmtRet);
+
+    Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mrfor"), &HandlerForFixer);
+
+    Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mrwhile"), &HandlerForWhile);
+
+    Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mrif"), &HandlerForIfFixer);
+
+    Matcher.addMatcher(ifStmt(allOf(hasElse(anything()), hasDescendant(ifStmt()), unless(hasAncestor(ifStmt())))).bind("mrifelse"), &HandlerForIfElse);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -187,6 +368,11 @@ private:
   FunctionHandler HandlerForFunction;
   StmtTrapIf HandlerForIfTrap;
   StmtTrap HandlerForStmtTrap;
+  StmtRet HandlerForStmtRet;
+  ForFixer HandlerForFixer;
+  WhileFixer HandlerForWhile;
+  IfFixer HandlerForIfFixer;
+  IfElseFixer HandlerForIfElse;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
@@ -206,7 +392,7 @@ private:
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
-/*MAIN*/
+/*Main*/
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, MatcherSampleCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
