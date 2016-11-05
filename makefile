@@ -21,6 +21,7 @@ LD_FLAGS+=$(shell /home/bloodstalker/llvm/llvm/build/bin/llvm-config --ldflags -
 CXX_FLAGS+=$(EXTRA_CXX_FALGS)
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
+TARGET0=mutator-lvl0
 TARGET=mutator
 TARGET2=mutator-lvl2
 
@@ -29,9 +30,9 @@ TARGET2=mutator-lvl2
 
 .PHONY:all clean help
 
-all: $(TARGET) $(TARGET2)
+all: $(TARGET) $(TARGET2) $(TARGET0)
 
-.cpp.o: mutator.cpp mutator-lvl2.cpp mutator_aux.cpp mutator_aux.h
+.cpp.o: mutator.cpp mutator-lvl2.cpp mutator-lvl0.cpp mutator_aux.cpp mutator_aux.h
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 $(TARGET): $(TARGET).o mutator_aux.o
@@ -40,8 +41,11 @@ $(TARGET): $(TARGET).o mutator_aux.o
 $(TARGET2): $(TARGET2).o mutator_aux.o
 	$(CXX) $? $(LD_FLAGS) -o $@	
 
+$(TARGET0): $(TARGET0).o mutator_aux.o
+	$(CXX) $? $(LD_FLAGS) -o $@
+
 clean:
-	rm -f *.o *~ $(TARGET) $(TARGET2)
+	rm -f *.o *~ $(TARGET0) $(TARGET) $(TARGET2) 
 
 help:
 	@echo 'there is help.'
