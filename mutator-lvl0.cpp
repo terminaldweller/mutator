@@ -165,11 +165,65 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCSwitchBrkless : public MatchFinder::MatchCallback
+{
+public:
+  MCSwitchBrkless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchbrk") != nullptr)
+    {
+      const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchbrk");
+
+      SourceLocation SL = SS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt:\n" << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+    else
+    {
+      std::cout << "matcher -mcswitchbrk- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCSwitchDftLess : public MatchFinder::MatchCallback
+{
+public:
+  MCSwitchDftLess (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchdft") != nullptr)
+    {
+      const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchdft");
+
+      SourceLocation SL = SS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "\"SwitchStmt\" does not have a defaultStmt:\n" << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+    else
+    {
+      std::cout << "matcher -mcswitchdft- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
-  MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), HandlerForIfElse(R) {
+  MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R) {
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
 
@@ -184,6 +238,10 @@ public:
 
     /*if-elseif statements that are missing the else block.*/
     Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mcifelse"), &HandlerForIfElse);
+
+    Matcher.addMatcher(switchStmt(hasDescendant(compoundStmt(hasDescendant(switchCase(unless(hasDescendant(breakStmt()))))))).bind("mcswitchbrk"), &HandlerForSwitchBrkLess);
+
+    Matcher.addMatcher(switchStmt(unless(hasDescendant(defaultStmt()))).bind("mcswitchdft"), &HandlerForSwitchDftLEss);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -196,6 +254,8 @@ private:
   MCElseCmpless HandlerElseCmpless;
   MCIfCmpless HandlerIfCmpless;
   IfElseMissingFixer HandlerForIfElse;
+  MCSwitchBrkless HandlerForSwitchBrkLess;
+  MCSwitchDftLess HandlerForSwitchDftLEss;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
@@ -203,7 +263,9 @@ class MyFrontendAction : public ASTFrontendAction {
 public:
   MyFrontendAction() {}
   void EndSourceFileAction() override {
+#if 0
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+#endif
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
