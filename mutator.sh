@@ -28,6 +28,7 @@ do
 		echo "		default runs build-all and then run."
 		echo "		format calls clang-format to format the mutant. later to be used for the test command."
 		echo "		test runs the tests on the executables and checks the results."
+		echo "		misrac checks for misrac rules"
 		echo "-v, --version prints out the version."
 		echo "-i, --input, -input lets you choose the input file that is going to be passed to the mutator executable(s)."
 		echo "-o, --output, -output lets you choose where to put the mutant."
@@ -76,6 +77,9 @@ elif [[ "$COMMAND" == "run" ]];then
 	echo "Running executables on target file..."
 	"./mutator" "$INPUT" -- > mutant-lvl1.c
 	"./mutator-lvl2" mutant-lvl1.c -- > $OUTPUT
+elif [[ "$COMMAND" == "misrac" ]]; then
+	echo "checking input file(s) against Misra-C 2004..."
+	"./mutator-lvl0" "$INPUT" -- > misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
