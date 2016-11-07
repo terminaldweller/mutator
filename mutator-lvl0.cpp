@@ -46,7 +46,7 @@ public:
       SourceLocation SL = FS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "\"For\" statement has no braces {}:\n" << std::endl;
+      std::cout << "14.8 : " << "\"For\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
     }
     else
@@ -72,7 +72,7 @@ public:
       SourceLocation SL = WS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "\"While\" statement has no braces {}:\n" << std::endl;
+      std::cout << "14.8 : " << "\"While\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
     }
     else
@@ -98,7 +98,7 @@ public:
       SourceLocation SL = IS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "\"Else\" statement has no braces {}:\n" << std::endl;
+      std::cout << "14.9 : " << "\"Else\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
     }
     else
@@ -124,7 +124,7 @@ public:
       SourceLocation SL = IS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "\"If\" statement has no braces {}:\n" << std::endl;
+      std::cout << "14.9 : " << "\"If\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
     }
     else
@@ -151,7 +151,7 @@ public:
       SourceLocation IFESL = ElseIf->getLocStart();
       IFESL = Devi::SourceLocationHasMacro(IFESL, Rewrite, "start");
 
-      std::cout << "\"If-Else If\" statement has no ending Else:\n" << std::endl;
+      std::cout << "14.10 : " << "\"If-Else If\" statement has no ending Else: " << std::endl;
       std::cout << IFESL.printToString(*MR.SourceManager) << "\n" << std::endl;
     }
     else
@@ -179,7 +179,7 @@ public:
       SourceLocation SL = SS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt:\n" << std::endl;
+      std::cout << "15.2 : " << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
     }
     else
@@ -206,7 +206,7 @@ public:
       SourceLocation SL = SS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "\"SwitchStmt\" does not have a defaultStmt:\n" << std::endl;
+      std::cout << "15.3 : " << "\"SwitchStmt\" does not have a defaultStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
     }
     else
@@ -219,11 +219,85 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*misra-c 2004:15.1*/
+class MCSwitch151 : public MatchFinder::MatchCallback
+{
+public:
+  MCSwitch151 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::CompoundStmt>("mccmp151") != nullptr && MR.Nodes.getNodeAs<clang::CaseStmt>("mccase151") != nullptr)
+    {
+      const CompoundStmt *CS = MR.Nodes.getNodeAs<clang::CompoundStmt>("mccmp151");
+      const CaseStmt *SS = MR.Nodes.getNodeAs<clang::CaseStmt>("mccase151");
+
+      SourceLocation SL = SS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext *const ASTC = MR.Context;
+
+      ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*CS);
+
+      /*assumptions:nothing has more than one parent in C.*/
+      ast_type_traits::DynTypedNode ParentNode = NodeList[0];
+
+      ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
+
+      std::string StringKind = ParentNodeKind.asStringRef().str();
+
+      if (StringKind != "SwitchStmt")
+      {
+        std::cout << "15.1 : " << "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << "matcher -mccmp151- or -mccase151- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCSwitch155 : public MatchFinder::MatchCallback
+{
+public:
+  MCSwitch155 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitch155") != nullptr)
+    {
+      const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitch155");
+
+      SourceLocation SL = SS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "15.5 : " << "\"SwitchStmt\" does not have a CaseStmt: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+    else
+    {
+      std::cout << "matcher -mcswitch155- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
-  MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R) {
+  MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
+    HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R) {
+
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
 
@@ -242,6 +316,10 @@ public:
     Matcher.addMatcher(switchStmt(hasDescendant(compoundStmt(hasDescendant(switchCase(unless(hasDescendant(breakStmt()))))))).bind("mcswitchbrk"), &HandlerForSwitchBrkLess);
 
     Matcher.addMatcher(switchStmt(unless(hasDescendant(defaultStmt()))).bind("mcswitchdft"), &HandlerForSwitchDftLEss);
+
+    Matcher.addMatcher(switchStmt(forEachDescendant(caseStmt(hasAncestor(compoundStmt().bind("mccmp151"))).bind("mccase151"))), &HandlerForMCSwitch151);
+
+    Matcher.addMatcher(switchStmt(unless(hasDescendant(caseStmt()))).bind("mcswitch155"), &HandlerForMCSwitch155);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -256,6 +334,8 @@ private:
   IfElseMissingFixer HandlerForIfElse;
   MCSwitchBrkless HandlerForSwitchBrkLess;
   MCSwitchDftLess HandlerForSwitchDftLEss;
+  MCSwitch151 HandlerForMCSwitch151;
+  MCSwitch155 HandlerForMCSwitch155;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
