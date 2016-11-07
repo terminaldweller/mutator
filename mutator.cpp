@@ -353,7 +353,93 @@ public:
     }
     else
     {
-      std::cout << "matcher -- returned nullptr." << std::endl;
+      std::cout << "matcher -mrif- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class SwitchFixer : public MatchFinder::MatchCallback
+{
+public:
+  SwitchFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::CaseStmt>("bubba-hotep") != nullptr)
+    {
+      const CaseStmt *CS = MR.Nodes.getNodeAs<clang::CaseStmt>("bubba-hotep");
+
+      const Stmt *SB = CS->getSubStmt();
+
+      SourceLocation SBSL = SB->getLocStart();
+      SBSL = Devi::SourceLocationHasMacro(SBSL, Rewrite, "start");
+      SourceLocation SBSLE = SB->getLocEnd();
+      SBSLE = Devi::SourceLocationHasMacro(SBSLE, Rewrite, "end");
+
+      SourceLocation SL = CS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SourceLocation SLE = CS->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+
+      SourceRange SR;
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
+      Rewriter::RewriteOptions opts;
+      int RangeSize = Rewrite.getRangeSize(SR, opts);
+
+#if 0
+      Rewrite.InsertText(SBSL, "{\n", "true", "true");
+      Rewrite.InsertTextAfterToken(SL.getLocWithOffset(RangeSize), "\n}");
+#endif
+    }
+    else
+    {
+      std::cout << "matcher -bubba-hotep- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class SwitchDfFixer : public MatchFinder::MatchCallback
+{
+public:
+  SwitchDfFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::DefaultStmt>("mumma-hotep") != nullptr)
+    {
+      const DefaultStmt *DS = MR.Nodes.getNodeAs<clang::DefaultStmt>("mumma-hotep");
+
+      const Stmt *SB = DS->getSubStmt();
+
+      SourceLocation CSL = SB->getLocStart();
+      CSL = Devi::SourceLocationHasMacro(CSL, Rewrite, "start");
+
+      SourceLocation SL = DS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SourceLocation SLE = DS->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+
+      SourceRange SR;
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
+      Rewriter::RewriteOptions opts;
+      int RangeSize = Rewrite.getRangeSize(SR, opts);
+
+#if 0
+      Rewrite.InsertText(CSL, "{\n", "true", "true");
+      Rewrite.InsertTextAfterToken(SL.getLocWithOffset(RangeSize), "\n}");
+#endif
+    }
+    else
+    {
+      std::cout << "matcher -mumma-hotep- returned nullptr." << std::endl;
     }
   }
 
@@ -365,7 +451,9 @@ private:
 class MyASTConsumer : public ASTConsumer {
 
 public:
-  MyASTConsumer(Rewriter &R) : HandlerForFunction(R), HandlerForIfTrap(R), HandlerForStmtTrap(R), HandlerForStmtRet(R), HandlerForFixer(R), HandlerForWhile(R), HandlerForIfElse(R), HandlerForIfFixer(R) {
+  MyASTConsumer(Rewriter &R) : HandlerForFunction(R), HandlerForIfTrap(R), HandlerForStmtTrap(R), HandlerForStmtRet(R), HandlerForFixer(R), \
+    HandlerForWhile(R), HandlerForIfElse(R), HandlerForIfFixer(R), HandlerForSwitchFixer(R), HandlerForSwitchDf(R)
+  {
     Matcher.addMatcher(binaryOperator(hasOperatorName("==")).bind("binopeq"), &HandlerForFunction);
 
     Matcher.addMatcher(ifStmt(hasCondition(anything())).bind("iftrap"), &HandlerForIfTrap);
@@ -381,6 +469,10 @@ public:
     Matcher.addMatcher(ifStmt(allOf(hasElse(unless(ifStmt())), hasElse(unless(compoundStmt())))).bind("mrifelse"), &HandlerForIfElse);
 
     Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mrif"), &HandlerForIfFixer);
+
+    Matcher.addMatcher(switchStmt(forEachDescendant(caseStmt(unless(hasDescendant(compoundStmt()))).bind("bubba-hotep"))), &HandlerForSwitchFixer);
+
+    Matcher.addMatcher(switchStmt(hasDescendant(defaultStmt(unless(hasDescendant(compoundStmt()))).bind("mumma-hotep"))), &HandlerForSwitchDf);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -396,6 +488,8 @@ private:
   WhileFixer HandlerForWhile;
   IfElseFixer HandlerForIfElse;
   IfFixer HandlerForIfFixer;
+  SwitchFixer HandlerForSwitchFixer;
+  SwitchDfFixer HandlerForSwitchDf;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
