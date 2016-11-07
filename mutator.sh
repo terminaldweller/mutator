@@ -79,22 +79,23 @@ elif [[ "$COMMAND" == "run" ]];then
 	"./mutator-lvl2" mutant-lvl1.c -- > $OUTPUT
 elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "checking input file(s) against Misra-C 2004..."
-	"./mutator-lvl0" "$INPUT" -- > misra-log
+	"./mutator-lvl0" "$INPUT" -- > ./covtest/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
 	echo "Ruunning the input through clang-format..."
-	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$INPUT -- > $OUTPUT_FORMAT
-	"cp" $OUTPUT_FORMAT ./medium.c
+	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$INPUT -- > ./covtest/$OUTPUT_FORMAT
+	"cp" ./covtest/$OUTPUT_FORMAT ./covtest/medium.c
 	echo "Running all exetubales on target input..."
 	echo "Level 1..."
-	"./mutator" "$OUTPUT_FORMAT" -- > mutant-lvl1.c
+	"./mutator" ./covtest/medium.c -- > ./covtest/mutant-lvl1.c
 	echo "Level 2..."
-	"./mutator-lvl2" mutant-lvl1.c -- > $OUTPUT
+	"./mutator-lvl2" ./covtest/mutant-lvl1.c -- > ./covtest/$OUTPUT
 	echo 'Using clang-format to format the mutant...'
-	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$OUTPUT -- > $OUTPUT_FORMAT
+	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	./covtest/$OUTPUT -- > ./covtest/$OUTPUT_FORMAT
 elif [[ "$COMMAND" == "jack" ]]; then
 	echo
 else 
 	echo "$COMMAND is not a valid command..."
+	echo "Use --help for a list of valid commands..."
 fi
