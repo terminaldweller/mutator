@@ -290,13 +290,221 @@ private:
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
+class MCFunction161 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction161 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction161") != nullptr)
+    {
+      const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction161");
+
+      if (FD->isVariadic())
+      {
+        SourceLocation SL = FD->getLocStart();
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        std::cout << "16.1 : " << "\"FunctionDecl\" is variadic: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << "matcher -mcfunction161- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCFunction162 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction162 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::CallExpr>("mc162callexpr") != nullptr && MR.Nodes.getNodeAs<clang::FunctionDecl>("mc162funcdec") != nullptr)
+    {
+      const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mc162funcdec");
+      const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("mc162callexpr");
+
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::string FuncNameStr = FD->getNameInfo().getAsString();
+
+      if (CE->getDirectCallee())
+      {
+        const FunctionDecl *FDCalled = CE->getDirectCallee();
+        std::string CalledFuncNameStr = FDCalled->getNameInfo().getAsString();
+
+        if (FuncNameStr == CalledFuncNameStr)
+        {
+          std::cout << "16.2 : " << "\"FunctionDecl\" is recursive: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        }
+        else
+        {
+          /*intentionally left blank.*/
+        }
+      }
+      else
+      {
+        /*intentionally left blank.*/
+      }
+    }
+    else
+    {
+      std::cout << "matcher -mc162funcdec- and/or -mc162callexpr- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCFunction164 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction164 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunc164") != nullptr)
+    {
+      const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunc164");
+      const FunctionDecl *FDcl = FD->getDefinition();
+
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      SourceLocation SLDcl = FDcl->getLocStart();
+      SLDcl = Devi::SourceLocationHasMacro(SLDcl, Rewrite, "start");
+
+      ArrayRef<ParmVarDecl*> FDParmList = FD->parameters();
+
+      ArrayRef<ParmVarDecl*> FDclParmList = FDcl->parameters();
+
+      if ( FD->getNumParams() != FDcl->getNumParams())
+      {
+        std::cout << "numparam of functiondefinition and functionDecl dont match! : " << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+      else
+      {
+        if (FD->getNumParams() != 0)
+        {
+          for (unsigned x = 0; x < FD->getNumParams(); ++x)
+          {
+            if (FDParmList[x]->getNameAsString() != FDclParmList[x]->getNameAsString())
+            {
+              std::cout << "16.4 : " << "FunctionDecl parameter names are not the same as function definition parameter names: " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "  &  " << SLDcl.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+              break;
+            }
+            else
+            {
+              /*intentionally left blank.*/
+            }
+          }
+        }
+      }
+
+    }
+    else
+    {
+      std::cout << "matcher -mcfunc164- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCFunction166 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction166 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::CallExpr>("mcfunc166") != nullptr)
+    {
+      const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("mcfunc166");
+
+      SourceLocation SL = CE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const FunctionDecl *FD = CE->getDirectCallee();
+
+      if (CE->getNumArgs() != FD->getNumParams())
+      {
+        std::cout << "16.6 : " << "CallExpr number of arguments does not equal the number of parameters in the declaration: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << "matcher -mcfunc166- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/*the clang parser does not allow for such constructs.*/
+class MCFunction168 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction168 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ReturnStmt>("mcfunc168") != nullptr)
+    {
+      const ReturnStmt *RT = MR.Nodes.getNodeAs<clang::ReturnStmt>("mcfunc168");
+
+      const Expr *RE = RT->getRetValue();
+
+      SourceLocation SL = RT->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      SourceLocation SLE = RT->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+
+      SourceRange SR;
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
+
+      std::string RetType = Rewrite.getRewrittenText(SR);
+
+#if 0
+      std::cout << RetType << "\n" << std::endl;
+#endif
+    }
+    else
+    {
+      std::cout << "matcher -mcfunc168- returned nullptr." << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
   MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
-    HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R) {
+    HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
+    HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -320,6 +528,16 @@ public:
     Matcher.addMatcher(switchStmt(forEachDescendant(caseStmt(hasAncestor(compoundStmt().bind("mccmp151"))).bind("mccase151"))), &HandlerForMCSwitch151);
 
     Matcher.addMatcher(switchStmt(unless(hasDescendant(caseStmt()))).bind("mcswitch155"), &HandlerForMCSwitch155);
+
+    Matcher.addMatcher(functionDecl().bind("mcfunction161"), &HandlerForMCFunction161);
+
+    Matcher.addMatcher(functionDecl(forEachDescendant(callExpr().bind("mc162callexpr"))).bind("mc162funcdec"), &HandlerForFunction162);
+
+    Matcher.addMatcher(functionDecl().bind("mcfunc164"), &HandlerForFunction164);
+
+    Matcher.addMatcher(callExpr().bind("mcfunc166"), &HandlerForFunction166);
+
+    Matcher.addMatcher(functionDecl(forEachDescendant(returnStmt().bind("mcfunc168"))), &HandlerForFunction168);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -336,6 +554,11 @@ private:
   MCSwitchDftLess HandlerForSwitchDftLEss;
   MCSwitch151 HandlerForMCSwitch151;
   MCSwitch155 HandlerForMCSwitch155;
+  MCFunction161 HandlerForMCFunction161;
+  MCFunction162 HandlerForFunction162;
+  MCFunction164 HandlerForFunction164;
+  MCFunction166 HandlerForFunction166;
+  MCFunction168 HandlerForFunction168;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
