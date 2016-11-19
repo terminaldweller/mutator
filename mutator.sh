@@ -4,7 +4,7 @@
 #the arguments' positions are not important. you also get log and short options.
 
 #default args
-INPUT="./covtest/testFuncs1.c"
+INPUT="./test/testFuncs1.c"
 OUTPUT="./mutant.c"
 OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
@@ -79,20 +79,20 @@ elif [[ "$COMMAND" == "run" ]];then
 	"./mutator-lvl2" mutant-lvl1.c -- > $OUTPUT
 elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "checking input file(s) against Misra-C 2004..."
-	"./mutator-lvl0" "$INPUT" -- > ./covtest/misra-log
+	"./mutator-lvl0" "$INPUT" -- > ./test/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
 	echo "Ruunning the input through clang-format..."
-	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$INPUT -- > ./covtest/$OUTPUT_FORMAT
-	"cp" ./covtest/$OUTPUT_FORMAT ./covtest/medium.c
+	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$INPUT -- > ./test/$OUTPUT_FORMAT
+	"cp" ./test/$OUTPUT_FORMAT ./test/medium.c
 	echo "Running all exetubales on target input..."
 	echo "Level 1..."
-	"./mutator" ./covtest/medium.c -- > ./covtest/mutant-lvl1.c
+	"./mutator" ./test/medium.c -- > ./test/mutant-lvl1.c
 	echo "Level 2..."
-	"./mutator-lvl2" ./covtest/mutant-lvl1.c -- > ./covtest/$OUTPUT
+	"./mutator-lvl2" ./test/mutant-lvl1.c -- > ./test/$OUTPUT
 	echo 'Using clang-format to format the mutant...'
-	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	./covtest/$OUTPUT -- > ./covtest/$OUTPUT_FORMAT
+	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	./test/$OUTPUT -- > ./test/$OUTPUT_FORMAT
 elif [[ "$COMMAND" == "jack" ]]; then
 	echo
 else 
