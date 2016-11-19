@@ -32,17 +32,17 @@ TARGET2=mutator-lvl2
 
 all: $(TARGET) $(TARGET2) $(TARGET0)
 
-.cpp.o: mutator.cpp mutator-lvl2.cpp mutator-lvl0.cpp mutator_aux.cpp mutator_aux.h
+.cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 $(TARGET): $(TARGET).o mutator_aux.o
-	$(CXX) $? $(LD_FLAGS) -o $@
+	$(CXX) $^ $(LD_FLAGS) -o $@
 
 $(TARGET2): $(TARGET2).o mutator_aux.o
-	$(CXX) $? $(LD_FLAGS) -o $@	
+	$(CXX) $^ $(LD_FLAGS) -o $@	
 
 $(TARGET0): $(TARGET0).o mutator_aux.o
-	$(CXX) $? $(LD_FLAGS) -o $@
+	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
 	rm -f *.o *~ $(TARGET0) $(TARGET) $(TARGET2) 
