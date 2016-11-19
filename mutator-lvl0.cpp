@@ -497,6 +497,30 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCFunction169 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction169 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169");
+
+    SourceLocation SL = ICE->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    CastKind CK = ICE->getCastKind();
+
+    if (CK == CK_FunctionToPointerDecay)
+    {
+      std::cout << "16.9 : " << "FunctionToPointerDecay: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -504,7 +528,7 @@ class MyASTConsumer : public ASTConsumer {
 public:
   MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
-    HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R) {
+    HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), HandlerForFunction169(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -538,6 +562,8 @@ public:
     Matcher.addMatcher(callExpr().bind("mcfunc166"), &HandlerForFunction166);
 
     Matcher.addMatcher(functionDecl(forEachDescendant(returnStmt().bind("mcfunc168"))), &HandlerForFunction168);
+
+    Matcher.addMatcher(implicitCastExpr(unless(hasAncestor(callExpr()))).bind("mcfunc169"), &HandlerForFunction169);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -559,6 +585,7 @@ private:
   MCFunction164 HandlerForFunction164;
   MCFunction166 HandlerForFunction166;
   MCFunction168 HandlerForFunction168;
+  MCFunction169 HandlerForFunction169;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
