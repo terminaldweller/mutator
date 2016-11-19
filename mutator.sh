@@ -64,7 +64,11 @@ if [[ "$COMMAND" == "clean" ]]; then
 	echo "Running make clean..."
 	echo "Killing all mutants..."
 	"make" clean
-	rm "$OUTPUT"
+	rm ./test/"$OUTPUT"
+	rm ./test/misra-log
+	rm ./test/medium.c
+	rm ./test/mutant_format.c
+	rm ./test/mutant-lvl1.c
 elif [[ "$COMMAND" == "format" ]]; then
 	echo 'using clang-format to format the mutant...'
 	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$OUTPUT > $OUTPUT_FORMAT
