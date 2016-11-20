@@ -522,13 +522,103 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*@DEVI-what is correct: match a pointer then run matcher for implicitcastexpressions of type arraytopointerdecay
+that have unary(--,++) and binary(-,+) operators as parents*/
+class MCPA171 : public MatchFinder::MatchCallback
+{
+public:
+  MCPA171 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171");
+
+    QualType QT = VD->getType();
+
+#if 0
+    std::cout << QT.getAsString() << "\n" << std::endl;
+#endif
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCSU184 : public MatchFinder::MatchCallback
+{
+public:
+  MCSU184 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184");
+
+    SourceLocation SL = RD->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    std::cout << "18.4 : " << "Union declared: " << std::endl;
+    std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCTypes6465 : public MatchFinder::MatchCallback
+{
+public:
+  MCTypes6465 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465");
+
+    SourceLocation SL = FD->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    QualType QT = FD->getType();
+    const clang::Type* TP = QT.getTypePtr();
+
+    if ( !(TP->hasUnsignedIntegerRepresentation() || TP->hasSignedIntegerRepresentation()))
+    {
+      /*this part is ueless since the clang parser wont let such a bitfield through.*/
+      std::cout << "6.4 : " << "BitField has a type other than int or unsigned int: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+
+    ASTContext *const ASTC = MR.Context;
+    unsigned int BitWidth = FD->getBitWidthValue(*ASTC);
+
+    if (TP->hasSignedIntegerRepresentation())
+    {
+      if (BitWidth < 2U)
+      {
+        std::cout << "6.5 : " << "BitField of type signed integer has a length of less than 2 in bits : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+
+    //std::string QTString = QT.getAsString();
+
+
+
+    //std::cout << QT.getAsString() << "\n" << std::endl;
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
   MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
-    HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), HandlerForFunction169(R) {
+    HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
+    HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -564,6 +654,12 @@ public:
     Matcher.addMatcher(functionDecl(forEachDescendant(returnStmt().bind("mcfunc168"))), &HandlerForFunction168);
 
     Matcher.addMatcher(implicitCastExpr(unless(hasAncestor(callExpr()))).bind("mcfunc169"), &HandlerForFunction169);
+
+    Matcher.addMatcher(varDecl().bind("mcpa171"), &HandlerForPA171);
+
+    Matcher.addMatcher(recordDecl(isUnion()).bind("mcsu184"), &HandlerForSU184);
+
+    Matcher.addMatcher(fieldDecl(isBitField()).bind("mctype6465"), &HandlerForType6465);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -586,6 +682,9 @@ private:
   MCFunction166 HandlerForFunction166;
   MCFunction168 HandlerForFunction168;
   MCFunction169 HandlerForFunction169;
+  MCPA171 HandlerForPA171;
+  MCSU184 HandlerForSU184;
+  MCTypes6465 HandlerForType6465;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
