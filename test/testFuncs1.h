@@ -5,7 +5,12 @@
 #define FALSE 0
 #define TRUE 1
 
-
+/***********************************************Global******************************************************/
+extern union uni {
+	int a;
+	double b;
+	char str[20];
+} uni1;
 /***********************************************************************************************************/
 /*choose the compiler*/
 
@@ -107,6 +112,11 @@ void babeFunk (int entry);
 test3();
 double test4 (int aa, int bb, double cc);
 void test5(void);
+void test6(void);
+void test7(void);
+void test8(void);
+void test9(void);
+void test10(void);
 
 /***********************************************************************************************************/
 /*ive been intentionally left blank. dont touch me.*/
