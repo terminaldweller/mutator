@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <vector>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -597,18 +598,92 @@ public:
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
       }
     }
-
-    //std::string QTString = QT.getAsString();
-
-
-
-    //std::cout << QT.getAsString() << "\n" << std::endl;
   }
 
 private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCDCDF81 : public MatchFinder::MatchCallback
+{
+public:
+  MCDCDF81 (Rewriter &Rewrite) : Rewrite(Rewrite)
+  {
+    FuncInfoProto.push_back(FuncInfo());
+
+    VecC = 0U;
+  };
+
+  /*underdev*/
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    alreadymatched = false;
+
+    const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81");
+    DeclarationNameInfo DNI = FD->getNameInfo();
+    std::string MatchedName = DNI.getAsString();
+
+    SourceLocation SL = FD->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    for (unsigned x = 0; x < VecC; ++x)
+    {
+      if (FuncInfoProto[x].FuncNameString == MatchedName)
+      {
+        alreadymatched = true;
+
+        if (!FD->isThisDeclarationADefinition())
+        {
+          FuncInfoProto[x].HasDecThatisNotDef = true;
+        }
+      }
+    }
+
+    if (alreadymatched == false)
+    {
+      FuncInfoProto.push_back(FuncInfo());
+      FuncInfoProto[VecC].FuncNameString = MatchedName;
+
+      if (!FD->isThisDeclarationADefinition())
+      {
+        FuncInfoProto[VecC].HasDecThatisNotDef = true;
+      }
+      else
+      {
+        FuncInfoProto[VecC].StrcSL = SL.printToString(*MR.SourceManager);
+      }
+
+      VecC++;
+    }
+  }
+
+  virtual void onEndOfTranslationUnit()
+  {
+    for (unsigned x = 0; x < VecC; ++x)
+    {
+      if (FuncInfoProto[x].HasDecThatisNotDef == false)
+      {
+        std::cout << "8.1 : " << "Function does not have a FunctionDecl that is not a definition : " << std::endl;
+        std::cout << FuncInfoProto[x].StrcSL << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  struct FuncInfo {
+    std::string FuncNameString;
+    std::string StrcSL;
+    bool HasDecThatisNotDef = false;
+  };
+
+  std::vector<FuncInfo> FuncInfoProto;
+
+  unsigned int VecC;
+
+  bool alreadymatched;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -618,7 +693,7 @@ public:
   MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
-    HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R) {
+    HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -660,6 +735,8 @@ public:
     Matcher.addMatcher(recordDecl(isUnion()).bind("mcsu184"), &HandlerForSU184);
 
     Matcher.addMatcher(fieldDecl(isBitField()).bind("mctype6465"), &HandlerForType6465);
+
+    Matcher.addMatcher(functionDecl().bind("mcdcdf81"), &HandlerForDCDF81);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -685,6 +762,7 @@ private:
   MCPA171 HandlerForPA171;
   MCSU184 HandlerForSU184;
   MCTypes6465 HandlerForType6465;
+  MCDCDF81 HandlerForDCDF81;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
