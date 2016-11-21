@@ -13,7 +13,6 @@ extern union uni {
 } uni1;
 /***********************************************************************************************************/
 /*choose the compiler*/
-
 #define COMPILER 	GCC
 
 #define HCS12	1U
@@ -42,7 +41,6 @@ extern union uni {
 
 
 /***********************************************************************************************************/
-
 #if (HCS12 == COMPILER)
 #define blreplacement unsigned char
 #endif
@@ -56,13 +54,8 @@ extern union uni {
 #define blreplacement unsigned char
 #endif
 
-
-
-
-
 /***********************************************************************************************************/
 /*all the test function prototypes are here.*/
-
 void testFuncStatementsinmple (void);
 void testFuncStatementComplexIf (void);
 void testFuncStatementNotCoverage (void);
@@ -115,7 +108,6 @@ void test5(void);
 void test6(void);
 void test7(void);
 void test8(void);
-void test9(void);
 void test10(void);
 
 /***********************************************************************************************************/
