@@ -11,7 +11,7 @@ Well there is the **makefile**.<br/>
 The **test** folder holds the **TDD** tests.<br/>
 
 ###Building mutator
-To build the project, you need to have the LLVM libraries 4.0 to avoid any unforseen results. The project ccan not be built with LLVM 3.8 or lower, but I havent tested LLVM 3.9. Just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
+To build the project, you need to have the LLVM libraries 4.0 to avoid any unforseen results. The project can not be built with LLVM 3.8 or lower, but I havent tested LLVM 3.9. Just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
 The makefile uses **clang++ 4.0** as the compiler to build the project. On paper, any latest version of g++ should do the trick but this remains untested.<br/>
 **mutator-lvl0** will run the Misra-C:2004 checks.<br/>
 **mutator** will run the level-1 Misra-C:2004 implementers.<br/>
@@ -20,6 +20,8 @@ Currently, the mutation-only features(mutation for the sake of mutation, technic
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear).<br/>
 
 ### Notes
-I'm using **TDD** as the Dev method. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.<br/>
+I'm using **TDD** as the Dev method. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.Those tests will be added later.<br/>
 The project has been tested to biuld on Fedora23(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
 The project might, at a later point in time, start using **Cmake** for the build process. Currently there are no plans,though.<br/>
+Misra 2008 and 2012 support will be added in the future.<br/>
+Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if youre going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
