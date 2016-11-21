@@ -20,6 +20,7 @@ Currently, the mutation-only features(mutation for the sake of mutation, technic
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear).<br/>
 
 ### Notes
+#### **The project will be updated everytime there is a major LLVM release and will sue those libraries instead of the older ones.**
 I'm using **TDD** as the Dev method. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.Those tests will be added later.<br/>
 The project has been tested to biuld on Fedora23(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
 The project might, at a later point in time, start using **Cmake** for the build process. Currently there are no plans,though.<br/>
