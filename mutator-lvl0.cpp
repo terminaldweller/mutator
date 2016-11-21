@@ -626,6 +626,7 @@ public:
     SourceLocation SL = FD->getLocStart();
     SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+    /*going through the already matched functions,making sure we are not adding duplicates.*/
     for (unsigned x = 0; x < VecC; ++x)
     {
       if (FuncInfoProto[x].FuncNameString == MatchedName)
@@ -646,10 +647,12 @@ public:
 
       if (!FD->isThisDeclarationADefinition())
       {
+        /*this function has a declaration that is not a definition.*/
         FuncInfoProto[VecC].HasDecThatisNotDef = true;
       }
       else
       {
+        /*save the sourcelocation only if the functiondecl is a definition.*/
         FuncInfoProto[VecC].StrcSL = SL.printToString(*MR.SourceManager);
       }
 
@@ -659,6 +662,7 @@ public:
 
   virtual void onEndOfTranslationUnit()
   {
+
     for (unsigned x = 0; x < VecC; ++x)
     {
       if (FuncInfoProto[x].HasDecThatisNotDef == false)
@@ -667,6 +671,7 @@ public:
         std::cout << FuncInfoProto[x].StrcSL << "\n" << std::endl;
       }
     }
+
   }
 
 private:
