@@ -15,7 +15,6 @@ typedef unsigned char BYTE;
 
 /******************************************************Globals*********************************************************/
 
-
 /**********************************************************************************************************************/
 void test (void);
 void test2 (void);
@@ -780,6 +779,43 @@ void test11 (void)
 double test12(double a)
 {
 	return a * 2;
+}
+
+int test13(void)
+{
+	static int a;
+	int b;
+
+	return (a * b);
+}
+
+void test14 (void)
+{
+	int arr[3][2] = {{2, 3}, {4, 5}, {6, 7}};
+
+	int arr2[4][4] = {0};
+
+	int arr3[2][3];
+
+	/*illegal forms.*/
+#if 0
+	arr3 = {0};
+
+	arr3 = {{1, 2, 3}, {4, 5, 6}};
+#endif
+}
+
+void test15(void)
+{
+	enum colour {red = 3, blue, yellow, green = 5};
+
+	enum anotherset {black, grey, white};
+
+	enum yetanotherset {pink = 7, purple, magenta, maroon};
+
+	enum loco {verrueckt, crazy = 3, divune};
+
+	enum primeevil {diablo = 2, mephisto = 3, baal = 4};
 }
 
 /**********************************************************************************************************************/

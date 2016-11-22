@@ -11,6 +11,8 @@ extern union uni {
 	double b;
 	char str[20];
 } uni1;
+
+extern cucu;
 /***********************************************************************************************************/
 /*choose the compiler*/
 #define COMPILER 	GCC
@@ -109,6 +111,8 @@ void test6(void);
 void test7(void);
 void test8(void);
 void test10(void);
+int test13(void);
+void test15(void);
 
 /***********************************************************************************************************/
 /*ive been intentionally left blank. dont touch me.*/
