@@ -51,3 +51,4 @@ help:
 	@echo 'there is help.'
 	@echo 'all is the default.'
 	@echo 'clean.'
+	@echo 'press tab for more targets if you have zsh!'
