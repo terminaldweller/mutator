@@ -690,6 +690,185 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*Notes:clang does not let 8.2 and 8.3 through.*/
+/*clang gives the implicitly-typed vardecl and functiondecl a default type in the AST so we cant use that.
+we should just get the rewritten text and do string searches inside. thats the only way i can think of.*/
+class MCDCDF82 : public MatchFinder::MatchCallback
+{
+public:
+  MCDCDF82 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf82");
+
+    std::string QualifiedName = VD->getQualifiedNameAsString();
+
+    QualType QT = VD->getType();
+
+#if 0
+    std::cout << QualifiedName << "\n" << std::endl;
+#endif
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/*this class also matches aggregate types. a simple aggregate check should fix that, if need be.*/
+class MCInit91 : public MatchFinder::MatchCallback
+{
+public:
+  MCInit91 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91");
+
+    SourceLocation SL = VD->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    /*we only check for local static since global static is meaningless.*/
+    if (!VD->isStaticLocal() && VD->isLocalVarDecl())
+    {
+      if (!VD->hasInit())
+      {
+        std::cout << "9.1 : " << "staic local variable does not have initialization : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCInit92 : public MatchFinder::MatchCallback
+{
+public:
+  MCInit92 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const InitListExpr* ILE = MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92");
+    const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit92daddy");
+
+    SourceLocation SL = VD->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    unsigned int NumInits = ILE->getNumInits();
+
+#if 0
+    std::cout << NumInits << "\n" << std::endl;
+#endif
+  }
+
+  virtual void onEndOfTranslationUnit()
+  {
+
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCInit93 : public MatchFinder::MatchCallback
+{
+public:
+  MCInit93 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93") != nullptr && MR.Nodes.getNodeAs<clang::EnumDecl>("mcinit93daddy") != nullptr)
+    {
+      const EnumConstantDecl * ECD = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93");
+      const EnumDecl* ED = MR.Nodes.getNodeAs<clang::EnumDecl>("mcinit93daddy");
+      /*do note that this pointer might very well be nullptr. we are actually counting on that.
+      it tells us we could not match an integer initialization for this enumconstantdecl.*/
+      const IntegerLiteral* IL = MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcinit93kiddy");
+
+      SourceLocation SL = ED->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      newSourceLocation = SL;
+
+      if (oldSourceLocation != newSourceLocation)
+      {
+        someoneHasInit = false;
+        everyoneHasInit = true;
+        isFirstElement = true;
+        if (IL == nullptr)
+        {
+          doesFirstElementHaveInit = false;
+          everyoneHasInit = false;
+        }
+        else
+        {
+          doesFirstElementHaveInit = true;
+        }
+      }
+      else
+      {
+        isFirstElement = false;
+      }
+
+      if (oldSourceLocation == newSourceLocation)
+      {
+        if (IL == nullptr)
+        {
+          everyoneHasInit = false;
+        }
+        else
+        {
+          someoneHasInit = true;
+        }
+
+        if (doesFirstElementHaveInit)
+        {
+          if (!everyoneHasInit && someoneHasInit)
+          {
+            /*in breach of misrac*/
+            std::cout << "9.3 : " << "first enumeration has integerliteral initialization but not all enumerations do : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          }
+          else
+          {
+            /*doesnt mean anything*/
+          }
+        }
+        else
+        {
+          if (IL != nullptr)
+          {
+            /*in breach of misrac*/
+            std::cout << "9.3 : " << "first enumeration does not have integerliteral initialization but at least one enumeration does : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          }
+          else
+          {
+            /*doesnt mean anything*/
+          }
+        }
+      }
+
+      oldSourceLocation = newSourceLocation;
+    }
+  }
+
+private:
+  /*doing this instead of saving everything and then running onendoftranslationunit is faster and less memory-expensive.
+  needless to say, for this to work, we are counting on clang's matching pattern.*/
+  SourceLocation oldSourceLocation;
+  SourceLocation newSourceLocation;
+
+  bool isFirstElement;
+  bool doesFirstElementHaveInit;
+  bool someoneHasInit = false;
+  bool everyoneHasInit = true;
+
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -698,7 +877,8 @@ public:
   MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
-    HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R) {
+    HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
+    HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -742,6 +922,14 @@ public:
     Matcher.addMatcher(fieldDecl(isBitField()).bind("mctype6465"), &HandlerForType6465);
 
     Matcher.addMatcher(functionDecl().bind("mcdcdf81"), &HandlerForDCDF81);
+
+    Matcher.addMatcher(varDecl().bind("mcdcdf82"), &HandlerForDCDF82);
+
+    Matcher.addMatcher(varDecl().bind("mcinit91"), &HandlerForInit91);
+
+    Matcher.addMatcher(initListExpr(hasAncestor(varDecl().bind("mcinit92daddy"))).bind("mcinit92"), &HandlerForInit92);
+
+    Matcher.addMatcher(enumConstantDecl(anyOf(allOf(hasDescendant(integerLiteral().bind("mcinit93kiddy")), hasAncestor(enumDecl().bind("mcinit93daddy"))), hasAncestor(enumDecl().bind("mcinit93daddy")))).bind("mcinit93"), &HandlerForInit93);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -768,6 +956,10 @@ private:
   MCSU184 HandlerForSU184;
   MCTypes6465 HandlerForType6465;
   MCDCDF81 HandlerForDCDF81;
+  MCDCDF82 HandlerForDCDF82;
+  MCInit91 HandlerForInit91;
+  MCInit92 HandlerForInit92;
+  MCInit93 HandlerForInit93;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
