@@ -380,41 +380,44 @@ public:
       const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunc164");
       const FunctionDecl *FDcl = FD->getDefinition();
 
-      SourceLocation SL = FD->getLocStart();
-      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-      SourceLocation SLDcl = FDcl->getLocStart();
-      SLDcl = Devi::SourceLocationHasMacro(SLDcl, Rewrite, "start");
-
-      ArrayRef<ParmVarDecl*> FDParmList = FD->parameters();
-
-      ArrayRef<ParmVarDecl*> FDclParmList = FDcl->parameters();
-
-      if ( FD->getNumParams() != FDcl->getNumParams())
+      /*to guard against function that have a declaration that is not a definition only.*/
+      if (FDcl != nullptr)
       {
-        std::cout << "numparam of functiondefinition and functionDecl dont match! : " << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
-      }
-      else
-      {
-        if (FD->getNumParams() != 0)
+        SourceLocation SL = FD->getLocStart();
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        SourceLocation SLDcl = FDcl->getLocStart();
+        SLDcl = Devi::SourceLocationHasMacro(SLDcl, Rewrite, "start");
+
+        ArrayRef<ParmVarDecl*> FDParmList = FD->parameters();
+
+        ArrayRef<ParmVarDecl*> FDclParmList = FDcl->parameters();
+
+        if ( FD->getNumParams() != FDcl->getNumParams())
         {
-          for (unsigned x = 0; x < FD->getNumParams(); ++x)
+          std::cout << "numparam of functiondefinition and functionDecl dont match! : " << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        }
+        else
+        {
+          if (FD->getNumParams() != 0)
           {
-            if (FDParmList[x]->getNameAsString() != FDclParmList[x]->getNameAsString())
+            for (unsigned x = 0; x < FD->getNumParams(); ++x)
             {
-              std::cout << "16.4 : " << "FunctionDecl parameter names are not the same as function definition parameter names: " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "  &  " << SLDcl.printToString(*MR.SourceManager) << "\n" << std::endl;
+              if (FDParmList[x]->getNameAsString() != FDclParmList[x]->getNameAsString())
+              {
+                std::cout << "16.4 : " << "FunctionDecl parameter names are not the same as function definition parameter names: " << std::endl;
+                std::cout << SL.printToString(*MR.SourceManager) << "  &  " << SLDcl.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-              break;
-            }
-            else
-            {
-              /*intentionally left blank.*/
+                break;
+              }
+              else
+              {
+                /*intentionally left blank.*/
+              }
             }
           }
         }
       }
-
     }
     else
     {
@@ -505,17 +508,20 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169");
-
-    SourceLocation SL = ICE->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-    CastKind CK = ICE->getCastKind();
-
-    if (CK == CK_FunctionToPointerDecay)
+    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169") != nullptr)
     {
-      std::cout << "16.9 : " << "FunctionToPointerDecay: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169");
+
+      SourceLocation SL = ICE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      CastKind CK = ICE->getCastKind();
+
+      if (CK == CK_FunctionToPointerDecay)
+      {
+        std::cout << "16.9 : " << "FunctionToPointerDecay: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
     }
   }
 
@@ -532,13 +538,16 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171");
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171") != nullptr)
+    {
+      const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171");
 
-    QualType QT = VD->getType();
+      QualType QT = VD->getType();
 
 #if 0
-    std::cout << QT.getAsString() << "\n" << std::endl;
+      std::cout << QT.getAsString() << "\n" << std::endl;
 #endif
+    }
   }
 
 private:
@@ -552,13 +561,16 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184");
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184") != nullptr)
+    {
+      const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184");
 
-    SourceLocation SL = RD->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SourceLocation SL = RD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-    std::cout << "18.4 : " << "Union declared: " << std::endl;
-    std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "18.4 : " << "Union declared: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
   }
 
 private:
@@ -572,30 +584,33 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465");
-
-    SourceLocation SL = FD->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-    QualType QT = FD->getType();
-    const clang::Type* TP = QT.getTypePtr();
-
-    if ( !(TP->hasUnsignedIntegerRepresentation() || TP->hasSignedIntegerRepresentation()))
+    if (MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465") != nullptr)
     {
-      /*this part is ueless since the clang parser wont let such a bitfield through.*/
-      std::cout << "6.4 : " << "BitField has a type other than int or unsigned int: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
-    }
+      const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465");
 
-    ASTContext *const ASTC = MR.Context;
-    unsigned int BitWidth = FD->getBitWidthValue(*ASTC);
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-    if (TP->hasSignedIntegerRepresentation())
-    {
-      if (BitWidth < 2U)
+      QualType QT = FD->getType();
+      const clang::Type* TP = QT.getTypePtr();
+
+      if ( !(TP->hasUnsignedIntegerRepresentation() || TP->hasSignedIntegerRepresentation()))
       {
-        std::cout << "6.5 : " << "BitField of type signed integer has a length of less than 2 in bits : " << std::endl;
+        /*this part is ueless since the clang parser wont let such a bitfield through.*/
+        std::cout << "6.4 : " << "BitField has a type other than int or unsigned int: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+
+      ASTContext *const ASTC = MR.Context;
+      unsigned int BitWidth = FD->getBitWidthValue(*ASTC);
+
+      if (TP->hasSignedIntegerRepresentation())
+      {
+        if (BitWidth < 2U)
+        {
+          std::cout << "6.5 : " << "BitField of type signed integer has a length of less than 2 in bits : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        }
       }
     }
   }
@@ -617,46 +632,49 @@ public:
   /*underdev*/
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    alreadymatched = false;
-
-    const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81");
-    DeclarationNameInfo DNI = FD->getNameInfo();
-    std::string MatchedName = DNI.getAsString();
-
-    SourceLocation SL = FD->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-    /*going through the already matched functions,making sure we are not adding duplicates.*/
-    for (unsigned x = 0; x < VecC; ++x)
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81") != nullptr)
     {
-      if (FuncInfoProto[x].FuncNameString == MatchedName)
+      alreadymatched = false;
+
+      const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81");
+      DeclarationNameInfo DNI = FD->getNameInfo();
+      std::string MatchedName = DNI.getAsString();
+
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      /*going through the already matched functions,making sure we are not adding duplicates.*/
+      for (unsigned x = 0; x < VecC; ++x)
       {
-        alreadymatched = true;
+        if (FuncInfoProto[x].FuncNameString == MatchedName)
+        {
+          alreadymatched = true;
+
+          if (!FD->isThisDeclarationADefinition())
+          {
+            FuncInfoProto[x].HasDecThatisNotDef = true;
+          }
+        }
+      }
+
+      if (alreadymatched == false)
+      {
+        FuncInfoProto.push_back(FuncInfo());
+        FuncInfoProto[VecC].FuncNameString = MatchedName;
 
         if (!FD->isThisDeclarationADefinition())
         {
-          FuncInfoProto[x].HasDecThatisNotDef = true;
+          /*this function has a declaration that is not a definition.*/
+          FuncInfoProto[VecC].HasDecThatisNotDef = true;
         }
-      }
-    }
+        else
+        {
+          /*save the sourcelocation only if the functiondecl is a definition.*/
+          FuncInfoProto[VecC].StrcSL = SL.printToString(*MR.SourceManager);
+        }
 
-    if (alreadymatched == false)
-    {
-      FuncInfoProto.push_back(FuncInfo());
-      FuncInfoProto[VecC].FuncNameString = MatchedName;
-
-      if (!FD->isThisDeclarationADefinition())
-      {
-        /*this function has a declaration that is not a definition.*/
-        FuncInfoProto[VecC].HasDecThatisNotDef = true;
+        VecC++;
       }
-      else
-      {
-        /*save the sourcelocation only if the functiondecl is a definition.*/
-        FuncInfoProto[VecC].StrcSL = SL.printToString(*MR.SourceManager);
-      }
-
-      VecC++;
     }
   }
 
@@ -700,15 +718,18 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf82");
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf82") != nullptr)
+    {
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf82");
 
-    std::string QualifiedName = VD->getQualifiedNameAsString();
+      std::string QualifiedName = VD->getQualifiedNameAsString();
 
-    QualType QT = VD->getType();
+      QualType QT = VD->getType();
 
 #if 0
-    std::cout << QualifiedName << "\n" << std::endl;
+      std::cout << QualifiedName << "\n" << std::endl;
 #endif
+    }
   }
 
 private:
@@ -723,18 +744,21 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91");
-
-    SourceLocation SL = VD->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-    /*we only check for local static since global static is meaningless.*/
-    if (!VD->isStaticLocal() && VD->isLocalVarDecl())
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91") != nullptr)
     {
-      if (!VD->hasInit())
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91");
+
+      SourceLocation SL = VD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      /*we only check for local static since global static is meaningless.*/
+      if (!VD->isStaticLocal() && VD->isLocalVarDecl())
       {
-        std::cout << "9.1 : " << "staic local variable does not have initialization : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (!VD->hasInit())
+        {
+          std::cout << "9.1 : " << "staic local variable does not have initialization : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        }
       }
     }
 
@@ -751,22 +775,20 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const InitListExpr* ILE = MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92");
-    const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit92daddy");
+    if (MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92") != nullptr)
+    {
+      const InitListExpr* ILE = MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92");
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit92daddy");
 
-    SourceLocation SL = VD->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SourceLocation SL = VD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-    unsigned int NumInits = ILE->getNumInits();
+      unsigned int NumInits = ILE->getNumInits();
 
 #if 0
-    std::cout << NumInits << "\n" << std::endl;
+      std::cout << NumInits << "\n" << std::endl;
 #endif
-  }
-
-  virtual void onEndOfTranslationUnit()
-  {
-
+    }
   }
 
 private:
@@ -841,7 +863,7 @@ public:
           if (IL != nullptr)
           {
             /*in breach of misrac*/
-            std::cout << "9.3 : " << "first enumeration does not have integerliteral initialization but at least one enumeration does : " << std::endl;
+            std::cout << "9.3 : " << "first enumeration does not have integerliteral initialization but at least one other enumeration does : " << std::endl;
             std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
           }
           else
@@ -868,6 +890,37 @@ private:
 
   Rewriter &Rewrite;
 };
+
+/**********************************************************************************************************************/
+class MCExpr123 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr123 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr123kiddy") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr123kiddy");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext *const ASTC = MR.Context;
+
+      if (EXP->HasSideEffects(*ASTC, true))
+      {
+        std::cout << "12.3 : " << "sizeof working on an expr with a side-effect : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -878,7 +931,7 @@ public:
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
-    HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R) {
+    HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -930,6 +983,8 @@ public:
     Matcher.addMatcher(initListExpr(hasAncestor(varDecl().bind("mcinit92daddy"))).bind("mcinit92"), &HandlerForInit92);
 
     Matcher.addMatcher(enumConstantDecl(anyOf(allOf(hasDescendant(integerLiteral().bind("mcinit93kiddy")), hasAncestor(enumDecl().bind("mcinit93daddy"))), hasAncestor(enumDecl().bind("mcinit93daddy")))).bind("mcinit93"), &HandlerForInit93);
+
+    Matcher.addMatcher(unaryExprOrTypeTraitExpr(hasDescendant(expr().bind("mcexpr123kiddy"))).bind("mcexpr123"), &HandlerForExpr123);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -960,6 +1015,7 @@ private:
   MCInit91 HandlerForInit91;
   MCInit92 HandlerForInit92;
   MCInit93 HandlerForInit93;
+  MCExpr123 HandlerForExpr123;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
