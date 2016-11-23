@@ -818,5 +818,23 @@ void test15(void)
 	enum primeevil {diablo = 2, mephisto = 3, baal = 4};
 }
 
+short int test16(int a, int b)
+{
+	short int sum;
+	short unsigned int sumus;
+	sum = a + b;
+	sumus = a + b;
+
+	return sum;
+}
+
+void test17(void)
+{
+	int a = 100;
+	int b = 1000;
+	long int longa;
+	a = sizeof (b = 2000U);
+}
+
 /**********************************************************************************************************************/
 /*the last line's been intentionally left blank.*/
