@@ -12,6 +12,7 @@
 #define LOCO 2U
 
 typedef unsigned int ut_int;
+typedef signed int t_int;
 typedef unsigned char BYTE;
 
 /******************************************************Globals*********************************************************/
@@ -891,6 +892,24 @@ void test19(void)
 	if (!flag || flag2)
 	{}
 
+}
+
+void test20(void)
+{
+	signed int a;
+	unsigned int b;
+	signed char c;
+	unsigned char d;
+	t_int e;
+	ut_int f;
+
+	b = b >> 2;
+	a = a << 3U;
+	b = b ^ 2U;
+	c = c & 6U;
+	d = d | 2U;
+	e = e >> 2U;
+	f = f << 4U;
 }
 
 /**********************************************************************************************************************/
