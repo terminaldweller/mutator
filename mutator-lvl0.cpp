@@ -984,13 +984,6 @@ public:
         hasParantheses = false;
       }
 
-#if 0
-      for (auto && ChildIter : EXP->children())
-      {
-        const Stmt* DRE = ChildIter;
-      }
-#endif
-
       if (hasParantheses || SL.isMacroID())
       {
         /*intentionally left blank.*/
@@ -1009,6 +1002,64 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCExpr126 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr126 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr126rl") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr126rl");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (!EXP->isKnownToHaveBooleanValue())
+      {
+        std::cout << "12.6 : " << "RHS and/or LHS operands are not effectively-boolean values : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCExpr127 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr127 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr127rl") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr127rl");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QT = EXP->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      if (TP->hasSignedIntegerRepresentation() && TP->isIntegerType())
+      {
+        std::cout << "12.7 : " << "Bitwise operator has signed RHS and/or LHS operands: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -1018,7 +1069,8 @@ public:
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
-    HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R) {
+    HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
+    HandlerForExpr126(R), HandlerForExpr127(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1080,6 +1132,12 @@ public:
                                             eachOf(hasRHS(allOf(expr().bind("lrhs"), unless(anyOf(implicitCastExpr() , declRefExpr(), callExpr(), floatLiteral(), integerLiteral(), stringLiteral()))))\
                                                 , hasLHS(allOf(expr().bind("lrhs"), unless(anyOf(implicitCastExpr(), declRefExpr(), callExpr(), floatLiteral(), integerLiteral(), stringLiteral())))))))\
                        , &HandlerForExpr125);
+    Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("||"), hasOperatorName("&&")), \
+                                            eachOf(hasLHS(expr().bind("mcexpr126rl")), hasRHS(expr().bind("mcexpr126rl"))))), &HandlerForExpr126);
+
+    Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("<<"), hasOperatorName(">>"), hasOperatorName("~"), hasOperatorName("<<="), \
+                                            hasOperatorName(">>="), hasOperatorName("&"), hasOperatorName("&="), hasOperatorName("^"), hasOperatorName("^=")\
+                                            , hasOperatorName("|"), hasOperatorName("|=")), eachOf(hasLHS(expr().bind("mcexpr127rl")), hasRHS(expr().bind("mcexpr127rl"))))), &HandlerForExpr127);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1113,6 +1171,8 @@ private:
   MCExpr123 HandlerForExpr123;
   MCExpr124 HandlerForExpr124;
   MCExpr125 HandlerForExpr125;
+  MCExpr126 HandlerForExpr126;
+  MCExpr127 HandlerForExpr127;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
