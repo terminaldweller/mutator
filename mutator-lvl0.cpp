@@ -920,7 +920,94 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCExpr124 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr124 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr124") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr124");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext *const ASTC = MR.Context;
+
+      if (EXP->HasSideEffects(*ASTC, true))
+      {
+        std::cout << "12.4 : " << "Righ-hand expr has side-effect : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
+/*DEVI-if all operands are boolean, this class will still tag em as inconsistent(with misrac).*/
+class MCExpr125 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr125 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("lrhs") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("lrhs");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext *const ASTC = MR.Context;
+
+      QualType QT = EXP->getType();
+
+      SourceLocation SLE = EXP->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+
+      SourceRange SR;
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
+
+      std::string StrText = Rewrite.getRewrittenText(SR);
+      if (StrText[0] == '(' && StrText[StrText.length() - 1U] == ')')
+      {
+        hasParantheses = true;
+      }
+      else
+      {
+        hasParantheses = false;
+      }
+
+#if 0
+      for (auto && ChildIter : EXP->children())
+      {
+        const Stmt* DRE = ChildIter;
+      }
+#endif
+
+      if (hasParantheses || SL.isMacroID())
+      {
+        /*intentionally left blank.*/
+      }
+      else
+      {
+        std::cout << "12.5 : " << "RHS and/or LHS operands are not primary expressions : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  bool hasParantheses = false;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -931,7 +1018,7 @@ public:
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
-    HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R) {
+    HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -982,9 +1069,17 @@ public:
 
     Matcher.addMatcher(initListExpr(hasAncestor(varDecl().bind("mcinit92daddy"))).bind("mcinit92"), &HandlerForInit92);
 
-    Matcher.addMatcher(enumConstantDecl(anyOf(allOf(hasDescendant(integerLiteral().bind("mcinit93kiddy")), hasAncestor(enumDecl().bind("mcinit93daddy"))), hasAncestor(enumDecl().bind("mcinit93daddy")))).bind("mcinit93"), &HandlerForInit93);
+    Matcher.addMatcher(enumConstantDecl(anyOf(allOf(hasDescendant(integerLiteral().bind("mcinit93kiddy")), \
+                                        hasAncestor(enumDecl().bind("mcinit93daddy"))), hasAncestor(enumDecl().bind("mcinit93daddy")))).bind("mcinit93"), &HandlerForInit93);
 
     Matcher.addMatcher(unaryExprOrTypeTraitExpr(hasDescendant(expr().bind("mcexpr123kiddy"))).bind("mcexpr123"), &HandlerForExpr123);
+
+    Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("||"), hasOperatorName("&&")), hasRHS(expr().bind("mcexpr124")))), &HandlerForExpr124);
+
+    Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("||"), hasOperatorName("&&")), \
+                                            eachOf(hasRHS(allOf(expr().bind("lrhs"), unless(anyOf(implicitCastExpr() , declRefExpr(), callExpr(), floatLiteral(), integerLiteral(), stringLiteral()))))\
+                                                , hasLHS(allOf(expr().bind("lrhs"), unless(anyOf(implicitCastExpr(), declRefExpr(), callExpr(), floatLiteral(), integerLiteral(), stringLiteral())))))))\
+                       , &HandlerForExpr125);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1016,6 +1111,8 @@ private:
   MCInit92 HandlerForInit92;
   MCInit93 HandlerForInit93;
   MCExpr123 HandlerForExpr123;
+  MCExpr124 HandlerForExpr124;
+  MCExpr125 HandlerForExpr125;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
