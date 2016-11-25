@@ -121,6 +121,7 @@ void test22(void);
 void test23(void);
 void test24(void);
 void test25(void);
+void test26(void);
 
 /***********************************************************************************************************/
 /*ive been intentionally left blank. dont touch me.*/

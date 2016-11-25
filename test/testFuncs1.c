@@ -966,5 +966,24 @@ void test25(void)
 	}
 }
 
+void test26 (void)
+{
+	double a;
+	double b;
+	double c;
+	unsigned char d;
+
+	if (a == b)
+	{}
+
+	if (a < b)
+	{}
+
+	if (c >= a)
+	{}
+
+	d = (a <= c);
+}
+
 /**********************************************************************************************************************/
 /*the last line's been intentionally left blank.*/
