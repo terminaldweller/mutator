@@ -1073,13 +1073,96 @@ public:
       SourceLocation SL = RHS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      QualType RQT = RHS->getType();
+      QualType LQT = LHS->getType();
 
+      const clang::Type* RTP = RQT.getTypePtr();
+      const clang::Type* LTP = LQT.getTypePtr();
+
+      /*i need to know the size of underlying types on the target so i cant do much about that.*/
     }
   }
 
 private:
   Rewriter &Rewrite;
 };
+/**********************************************************************************************************************/
+class MCExpr129 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr129 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr129") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr129");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QT = EXP->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      if (TP->isIntegerType() && TP->hasUnsignedIntegerRepresentation())
+      {
+        std::cout << "12.9 : " << "UnaryOperator - has an expr with an unsigned underlying type: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCExpr1210 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr1210 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr1210") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr1210");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "12.10 : " << "Comma used: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCExpr1213 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr1213 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1213") != nullptr)
+    {
+      const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1213");
+
+      SourceLocation SL = UO->getOperatorLoc();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "12.13 : " << "Unary ++ or -- have been used in an expr with other operators: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -1092,7 +1175,7 @@ public:
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
-    HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R) {
+    HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1162,6 +1245,11 @@ public:
                                             , hasOperatorName("|"), hasOperatorName("|=")), eachOf(hasLHS(expr().bind("mcexpr127rl")), hasRHS(expr().bind("mcexpr127rl"))))), &HandlerForExpr127);
     Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName(">>"), hasOperatorName(">>="), hasOperatorName("<<="), hasOperatorName("<<")), \
                                             hasLHS(expr().bind("mcexpr128lhs")) , hasRHS(expr().bind("mcexpr128rhs")))), &HandlerForExpr128);
+    Matcher.addMatcher(unaryOperator(allOf(hasOperatorName("-"), hasUnaryOperand(expr().bind("mcexpr129")))), &HandlerForExpr129);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName(","), hasLHS(expr().bind("mcexpr1210")))), &HandlerForExpr1210);
+
+    Matcher.addMatcher(unaryOperator(allOf(eachOf(hasOperatorName("++"), hasOperatorName("--")), anyOf(hasAncestor(binaryOperator()), hasDescendant(binaryOperator())))).bind("mcexpr1213"), &HandlerForExpr1213);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1198,6 +1286,9 @@ private:
   MCExpr126 HandlerForExpr126;
   MCExpr127 HandlerForExpr127;
   MCExpr128 HandlerForExpr128;
+  MCExpr129 HandlerForExpr129;
+  MCExpr1210 HandlerForExpr1210;
+  MCExpr1213 HandlerForExpr1213;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
