@@ -985,5 +985,37 @@ void test26 (void)
 	d = (a <= c);
 }
 
+void test27(void)
+{
+	double a;
+
+	for (a = 0.0; a < 10.0; ++a)
+	{}
+}
+
+void test28(void)
+{
+	int i;
+	int j;
+	int k;
+
+	for (i = 0; i < 10; ++i)
+	{
+		i = i + 3;
+	}
+
+	for (j = 0; j < 20; ++j)
+	{
+		j++;
+	}
+
+	for (k = 0; k < 10; ++k)
+	{
+		k = i + j;
+		--j;
+		i = j - k;
+	}
+}
+
 /**********************************************************************************************************************/
 /*the last line's been intentionally left blank.*/
