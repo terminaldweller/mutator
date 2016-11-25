@@ -69,6 +69,7 @@ if [[ "$COMMAND" == "clean" ]]; then
 	rm ./test/medium.c
 	rm ./test/mutant_format.c
 	rm ./test/mutant-lvl1.c
+	rm ./extra-tools/dump
 elif [[ "$COMMAND" == "format" ]]; then
 	echo 'using clang-format to format the mutant...'
 	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$OUTPUT > $OUTPUT_FORMAT
