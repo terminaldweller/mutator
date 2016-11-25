@@ -1080,6 +1080,7 @@ public:
       const clang::Type* LTP = LQT.getTypePtr();
 
       /*i need to know the size of underlying types on the target so i cant do much about that.*/
+      /*llvm::DataLayout lets you do that but then you need llvm::Module.*/
     }
   }
 
@@ -1163,7 +1164,57 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCCSE131 : public MatchFinder::MatchCallback
+{
+public:
+  MCCSE131 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("cse131rlhs") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("cse131rlhs");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (EXP->isKnownToHaveBooleanValue())
+      {
+        std::cout << "13.1 : " << "assignment operator used in an expr that is known to return boolean: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
+class MCCSE132 : public MatchFinder::MatchCallback
+{
+public:
+  MCCSE132 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mccse132") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse132");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (!EXP->isKnownToHaveBooleanValue())
+      {
+        std::cout << "13.2 : " << "Implicit test of an expr against zero which is not known to return a boolean result: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -1175,7 +1226,8 @@ public:
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
-    HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R) {
+    HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
+    HandlerForCSE131(R), HandlerForCSE132(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1250,6 +1302,11 @@ public:
     Matcher.addMatcher(binaryOperator(allOf(hasOperatorName(","), hasLHS(expr().bind("mcexpr1210")))), &HandlerForExpr1210);
 
     Matcher.addMatcher(unaryOperator(allOf(eachOf(hasOperatorName("++"), hasOperatorName("--")), anyOf(hasAncestor(binaryOperator()), hasDescendant(binaryOperator())))).bind("mcexpr1213"), &HandlerForExpr1213);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("="), eachOf(hasLHS(expr().bind("cse131rlhs")), hasRHS(expr().bind("cse131rlhs"))))), &HandlerForCSE131);
+
+    Matcher.addMatcher(ifStmt(hasCondition(expr(unless(hasDescendant(binaryOperator(anyOf(hasOperatorName("<")\
+                                           , hasOperatorName(">"), hasOperatorName("=="), hasOperatorName("<="), hasOperatorName(">=")))))).bind("mccse132"))), &HandlerForCSE132);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1289,6 +1346,8 @@ private:
   MCExpr129 HandlerForExpr129;
   MCExpr1210 HandlerForExpr1210;
   MCExpr1213 HandlerForExpr1213;
+  MCCSE131 HandlerForCSE131;
+  MCCSE132 HandlerForCSE132;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
