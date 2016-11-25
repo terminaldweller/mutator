@@ -1327,39 +1327,43 @@ public:
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mccse136kiddo");
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse136daddy");
 
+      const Stmt* FSS = FS->getInit();
+      const Expr* FSInc = FS->getInc();
+
       SourceLocation SLD = FS->getLocStart();
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
       SourceLocation SL = DRE->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      NewSL = SLD;
-
-      DeclarationNameInfo DNI = DRE->getNameInfo();
-
-      std::string NameString = DNI.getAsString();
-
-      if (OldSL != NewSL)
+      if (FSS != nullptr && FSInc != nullptr)
       {
-        ControlVarName = NameString;
-      }
+        SourceLocation SLFSS = FSS->getLocStart();
+        SLFSS = Devi::SourceLocationHasMacro(SLFSS, Rewrite, "start");
+        SourceLocation SLFSInc = FSInc->getLocStart();
+        SLFSInc = Devi::SourceLocationHasMacro(SLFSInc, Rewrite, "start");
 
-      if (OldSL == NewSL)
-      {
-        if (ControlVarName == NameString)
+        DeclarationNameInfo DNI = DRE->getNameInfo();
+
+        std::string NameString = DNI.getAsString();
+
+        if (SLFSS == SL || SLFSInc == SL || SLFSInc.getLocWithOffset(2) == SL)
         {
-          std::cout << "13.6 : " << "ForStmt controlling variable modified in the body of the loop: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          ControlVarName = NameString;
         }
-      }
+        else
+        {
+          if (ControlVarName == NameString)
+          {
+            std::cout << "13.6 : " << "ForStmt controlling variable modified in the body of the loop: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          }
+        }
 
-      OldSL = NewSL;
+      }
     }
   }
 
 private:
-  SourceLocation NewSL;
-  SourceLocation OldSL;
-
   std::string ControlVarName;
 
   Rewriter &Rewrite;
@@ -1460,7 +1464,7 @@ public:
                                             eachOf(hasLHS(expr().bind("mccse1332rl")), hasRHS(expr().bind("mccse1332rl"))))).bind("mccse1332daddy"), &HandlerForCSE1332);
     Matcher.addMatcher(forStmt().bind("mccse134"), &HandlerForCSE134);
 
-    Matcher.addMatcher(forStmt(forEachDescendant(eachOf(unaryOperator(allOf(anyOf(hasOperatorName("++"), hasOperatorName("--")), hasUnaryOperand(declRefExpr().bind("mccse136kiddo")))), binaryOperator(allOf(hasOperatorName("="), hasLHS(declRefExpr().bind("mccse136kiddo"))))))).bind("mccse136daddy"), &HandlerForCSE136);
+    Matcher.addMatcher(forStmt(forEachDescendant(stmt(eachOf(unaryOperator(allOf(anyOf(hasOperatorName("++"), hasOperatorName("--")), hasUnaryOperand(declRefExpr().bind("mccse136kiddo")))), binaryOperator(allOf(hasOperatorName("="), hasLHS(declRefExpr().bind("mccse136kiddo")))))))).bind("mccse136daddy"), &HandlerForCSE136);
     //Matcher.addMatcher(forStmt(forEachDescendant(eachOf(unaryOperator(hasOperatorName("--")), binaryOperator(hasOperatorName("="))))).bind("mccse136daddy"), &HandlerForCSE136);
   }
 
