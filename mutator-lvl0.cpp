@@ -1058,6 +1058,28 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCExpr128 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr128 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs") != nullptr && MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs") != nullptr)
+    {
+      const Expr* RHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs");
+      const Expr* LHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs");
+
+      SourceLocation SL = RHS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -1070,7 +1092,7 @@ public:
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
-    HandlerForExpr126(R), HandlerForExpr127(R) {
+    HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1138,6 +1160,8 @@ public:
     Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("<<"), hasOperatorName(">>"), hasOperatorName("~"), hasOperatorName("<<="), \
                                             hasOperatorName(">>="), hasOperatorName("&"), hasOperatorName("&="), hasOperatorName("^"), hasOperatorName("^=")\
                                             , hasOperatorName("|"), hasOperatorName("|=")), eachOf(hasLHS(expr().bind("mcexpr127rl")), hasRHS(expr().bind("mcexpr127rl"))))), &HandlerForExpr127);
+    Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName(">>"), hasOperatorName(">>="), hasOperatorName("<<="), hasOperatorName("<<")), \
+                                            hasLHS(expr().bind("mcexpr128lhs")) , hasRHS(expr().bind("mcexpr128rhs")))), &HandlerForExpr128);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1173,6 +1197,7 @@ private:
   MCExpr125 HandlerForExpr125;
   MCExpr126 HandlerForExpr126;
   MCExpr127 HandlerForExpr127;
+  MCExpr128 HandlerForExpr128;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
