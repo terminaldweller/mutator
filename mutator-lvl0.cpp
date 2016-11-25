@@ -1259,7 +1259,111 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCCSE134 : public MatchFinder::MatchCallback
+{
+public:
+  MCCSE134 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccse134") != nullptr)
+    {
+      AlreadyHaveAHit = false;
+
+      const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse134");
+
+      SourceLocation SL = FS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const Expr* FSCond = FS->getCond();
+      const Expr* FSInc = FS->getInc();
+
+      if (FSCond != nullptr)
+      {
+        QualType QTCond = FSCond->getType();
+
+        const clang::Type* TPCond = QTCond.getTypePtr();
+
+        if (TPCond->hasFloatingRepresentation())
+        {
+          std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          AlreadyHaveAHit = true;
+        }
+      }
+
+      if (FSInc != nullptr && !AlreadyHaveAHit)
+      {
+        QualType QTInc = FSInc->getType();
+
+        const clang::Type* TPInc = QTInc.getTypePtr();
+
+        if (TPInc->hasFloatingRepresentation())
+        {
+          std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          AlreadyHaveAHit = true;
+        }
+      }
+    }
+  }
+
+private:
+  bool AlreadyHaveAHit = false;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
+/*if a for controlling var is modified in the body using a pointer, then this class wont find it.*/
+class MCCSE136 : public MatchFinder::MatchCallback
+{
+public:
+  MCCSE136 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mccse136kiddo") != nullptr)
+    {
+      const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mccse136kiddo");
+      const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse136daddy");
+
+      SourceLocation SLD = FS->getLocStart();
+      SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
+      SourceLocation SL = DRE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      NewSL = SLD;
+
+      DeclarationNameInfo DNI = DRE->getNameInfo();
+
+      std::string NameString = DNI.getAsString();
+
+      if (OldSL != NewSL)
+      {
+        ControlVarName = NameString;
+      }
+
+      if (OldSL == NewSL)
+      {
+        if (ControlVarName == NameString)
+        {
+          std::cout << "13.6 : " << "ForStmt controlling variable modified in the body of the loop: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        }
+      }
+
+      OldSL = NewSL;
+    }
+  }
+
+private:
+  SourceLocation NewSL;
+  SourceLocation OldSL;
+
+  std::string ControlVarName;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -1272,7 +1376,7 @@ public:
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
-    HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R) {
+    HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1354,6 +1458,10 @@ public:
                                            , hasOperatorName(">"), hasOperatorName("=="), hasOperatorName("<="), hasOperatorName(">=")))))).bind("mccse132"))), &HandlerForCSE132);
     Matcher.addMatcher(binaryOperator(allOf(anyOf(hasOperatorName("<"), hasOperatorName(">"), hasOperatorName("<="), hasOperatorName(">="), hasOperatorName("==")), \
                                             eachOf(hasLHS(expr().bind("mccse1332rl")), hasRHS(expr().bind("mccse1332rl"))))).bind("mccse1332daddy"), &HandlerForCSE1332);
+    Matcher.addMatcher(forStmt().bind("mccse134"), &HandlerForCSE134);
+
+    Matcher.addMatcher(forStmt(forEachDescendant(eachOf(unaryOperator(allOf(anyOf(hasOperatorName("++"), hasOperatorName("--")), hasUnaryOperand(declRefExpr().bind("mccse136kiddo")))), binaryOperator(allOf(hasOperatorName("="), hasLHS(declRefExpr().bind("mccse136kiddo"))))))).bind("mccse136daddy"), &HandlerForCSE136);
+    //Matcher.addMatcher(forStmt(forEachDescendant(eachOf(unaryOperator(hasOperatorName("--")), binaryOperator(hasOperatorName("="))))).bind("mccse136daddy"), &HandlerForCSE136);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1396,6 +1504,8 @@ private:
   MCCSE131 HandlerForCSE131;
   MCCSE132 HandlerForCSE132;
   MCCSE1332 HandlerForCSE1332;
+  MCCSE134 HandlerForCSE134;
+  MCCSE136 HandlerForCSE136;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
