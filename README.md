@@ -17,7 +17,7 @@ The makefile uses **clang++ 4.0** as the compiler to build the project. On paper
 **mutator** will run the level-1 Misra-C:2004 implementers.<br/>
 **mutator-lvl2** will run the level-2 Misra-C:2004 implementers.<br/>
 Currently, the mutation-only features(mutation for the sake of mutation, technically implementing Misra-C is also a form of mutation) are turned off in **mutator** and **mutator-lvl2**.<br/>
-If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear).<br/>
+If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile.<br/>
 
 ### Notes
 #### **The project will be updated everytime there is a major LLVM release and will use those libraries instead of the old ones.**
