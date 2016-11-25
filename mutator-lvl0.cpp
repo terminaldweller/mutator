@@ -1216,6 +1216,51 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCCSE1332 : public MatchFinder::MatchCallback
+{
+public:
+  MCCSE1332 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mccse1332rl") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse1332rl");
+      const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mccse1332daddy");
+
+      SourceLocation SLD = BO->getLocStart();
+      SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
+      NewSL = SLD;
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QT = EXP->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      if (OldSL != NewSL)
+      {
+        if (TP->hasFloatingRepresentation())
+        {
+          std::cout << "13.3 : " << "Float type expression checked for equality/inequality: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        }
+      }
+
+      OldSL = NewSL;
+    }
+  }
+
+private:
+  SourceLocation NewSL;
+  SourceLocation OldSL;
+
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -1227,7 +1272,7 @@ public:
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
-    HandlerForCSE131(R), HandlerForCSE132(R) {
+    HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1307,6 +1352,8 @@ public:
 
     Matcher.addMatcher(ifStmt(hasCondition(expr(unless(hasDescendant(binaryOperator(anyOf(hasOperatorName("<")\
                                            , hasOperatorName(">"), hasOperatorName("=="), hasOperatorName("<="), hasOperatorName(">=")))))).bind("mccse132"))), &HandlerForCSE132);
+    Matcher.addMatcher(binaryOperator(allOf(anyOf(hasOperatorName("<"), hasOperatorName(">"), hasOperatorName("<="), hasOperatorName(">="), hasOperatorName("==")), \
+                                            eachOf(hasLHS(expr().bind("mccse1332rl")), hasRHS(expr().bind("mccse1332rl"))))).bind("mccse1332daddy"), &HandlerForCSE1332);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1348,6 +1395,7 @@ private:
   MCExpr1213 HandlerForExpr1213;
   MCCSE131 HandlerForCSE131;
   MCCSE132 HandlerForCSE132;
+  MCCSE1332 HandlerForCSE1332;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
