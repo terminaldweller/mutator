@@ -954,5 +954,17 @@ void test24(void)
 	--a;
 }
 
+void test25(void)
+{
+	int a;
+	int b;
+	int c;
+
+	if (a - b)
+	{
+		/*i dont care.*/
+	}
+}
+
 /**********************************************************************************************************************/
 /*the last line's been intentionally left blank.*/
