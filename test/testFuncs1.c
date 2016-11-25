@@ -999,7 +999,7 @@ void test28(void)
 	int j;
 	int k;
 
-	for (i = 0; i < 10; ++i)
+	for (i = 0; i < 10; i++)
 	{
 		i = i + 3;
 	}
