@@ -1121,5 +1121,18 @@ int test31(void)
 		return 1;
 }
 
+void test32(void)
+{
+	int a;
+
+	switch (a == 1)
+	{
+	case 1:
+		a++;
+	case 0:
+		a--;
+	}
+}
+
 /**********************************************************************************************************************/
 /*the last line's been intentionally left blank.*/
