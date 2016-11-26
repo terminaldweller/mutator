@@ -75,5 +75,6 @@ main()
 	test27();
 	test28();
 	test29(a);
+	test31();
 }
 /*intentionally left blank.*/

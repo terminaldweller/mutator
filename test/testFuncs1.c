@@ -1039,5 +1039,87 @@ loco:
 	return a;
 }
 
+void test30(void)
+{
+	int a;
+	int b;
+	int c;
+
+	for (a = 0; a < 10; ++a)
+	{
+		a++;
+
+		if (a == 5)
+			break;
+		if (a == 6)
+			break;
+	}
+
+	for (a = 0; a < 10; a++)
+	{
+		a++;
+		if (a == 6)
+			break;
+	}
+
+	while (a < 10)
+	{
+		if (b == 1)
+			break;
+		if (c == 1)
+			break;
+	}
+
+	do {
+		if (a == 5)
+			break;
+		if (b == 6)
+			break;
+		if (c == 10)
+			break;
+	} while (a < 10);
+
+	for (a = 0; a < 100; a++)
+	{
+		for (b = 0; b < 100; b++)
+		{
+			c++;
+			if (a == 1)
+				break;
+		}
+		for (c = 0; c < 100; c++)
+		{
+			b++;
+			if (a == 10)
+				break;
+		}
+	}
+
+	for (a = 0; a < 100; a++)
+	{
+		if (a == 1)
+			break;
+
+		while (a < 10)
+		{
+			b++;
+			if (c == 10)
+				break;
+		}
+	}
+}
+
+int test31(void)
+{
+	int a;
+
+	if (a == 1)
+		return 2;
+	else if (a == 2)
+		return 3;
+	else
+		return 1;
+}
+
 /**********************************************************************************************************************/
 /*the last line's been intentionally left blank.*/

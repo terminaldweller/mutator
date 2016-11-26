@@ -125,6 +125,7 @@ void test26(void);
 void test27(void);
 void test28(void);
 int test29(int a);
+int test31(void);
 
 /***********************************************************************************************************/
 /*ive been intentionally left blank. dont touch me.*/
