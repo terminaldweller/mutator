@@ -1314,7 +1314,10 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*JANKY*/
 /*if a for controlling var is modified in the body using a pointer, then this class wont find it.*/
+/*the class will only work properly only if there is one controlling loop variable.
+the behavior is undefined for more than one variable.*/
 class MCCSE136 : public MatchFinder::MatchCallback
 {
 public:
@@ -1346,6 +1349,7 @@ public:
 
         std::string NameString = DNI.getAsString();
 
+        /*the third condition is put in place to accomodate the prefix unary increment or decrement operator.*/
         if (SLFSS == SL || SLFSInc == SL || SLFSInc.getLocWithOffset(2) == SL)
         {
           ControlVarName = NameString;
@@ -1369,6 +1373,54 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCCF144 : public MatchFinder::MatchCallback
+{
+public:
+  MCCF144 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::GotoStmt>("mccf144") != nullptr)
+    {
+      const GotoStmt* GS = MR.Nodes.getNodeAs<clang::GotoStmt>("mccf144");
+
+      SourceLocation SL = GS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "14.4 : " << "GotoStmt used: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCCF145 : public MatchFinder::MatchCallback
+{
+public:
+  MCCF145 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ContinueStmt>("mccf145") != nullptr)
+    {
+      const ContinueStmt* CS = MR.Nodes.getNodeAs<clang::ContinueStmt>("mccf145");
+
+      SourceLocation SL = CS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "14.5 : " << "ContinueStmt used: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -1380,7 +1432,8 @@ public:
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
-    HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R) {
+    HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
+    HandlerForCF145(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1464,8 +1517,12 @@ public:
                                             eachOf(hasLHS(expr().bind("mccse1332rl")), hasRHS(expr().bind("mccse1332rl"))))).bind("mccse1332daddy"), &HandlerForCSE1332);
     Matcher.addMatcher(forStmt().bind("mccse134"), &HandlerForCSE134);
 
-    Matcher.addMatcher(forStmt(forEachDescendant(stmt(eachOf(unaryOperator(allOf(anyOf(hasOperatorName("++"), hasOperatorName("--")), hasUnaryOperand(declRefExpr().bind("mccse136kiddo")))), binaryOperator(allOf(hasOperatorName("="), hasLHS(declRefExpr().bind("mccse136kiddo")))))))).bind("mccse136daddy"), &HandlerForCSE136);
-    //Matcher.addMatcher(forStmt(forEachDescendant(eachOf(unaryOperator(hasOperatorName("--")), binaryOperator(hasOperatorName("="))))).bind("mccse136daddy"), &HandlerForCSE136);
+    Matcher.addMatcher(forStmt(forEachDescendant(stmt(eachOf(unaryOperator(allOf(anyOf(hasOperatorName("++"), hasOperatorName("--")), hasUnaryOperand(declRefExpr().bind("mccse136kiddo")))), \
+                               binaryOperator(allOf(hasOperatorName("="), hasLHS(declRefExpr().bind("mccse136kiddo")))))))).bind("mccse136daddy"), &HandlerForCSE136);
+
+    Matcher.addMatcher(gotoStmt().bind("mccf144"), &HandlerForCF144);
+
+    Matcher.addMatcher(continueStmt().bind("mccf145"), &HandlerForCF145);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1510,6 +1567,8 @@ private:
   MCCSE1332 HandlerForCSE1332;
   MCCSE134 HandlerForCSE134;
   MCCSE136 HandlerForCSE136;
+  MCCF144 HandlerForCF144;
+  MCCF145 HandlerForCF145;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
