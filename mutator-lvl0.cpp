@@ -1593,6 +1593,33 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCSwitch154 : public MatchFinder::MatchCallback\
+{
+public:
+  MCSwitch154 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcswitch154");
+
+    SourceLocation SL = EXP->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    if (EXP->isKnownToHaveBooleanValue())
+    {
+      std::cout << "15.4 : " << "Switch expression is effectively boolean: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
@@ -1604,7 +1631,7 @@ public:
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
-    HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R) {
+    HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1706,6 +1733,8 @@ public:
     Matcher.addMatcher(doStmt(unless(has(compoundStmt()))).bind("mccf148do"), &HandlerForCF148);
 
     Matcher.addMatcher(switchStmt(unless(has(compoundStmt()))).bind("mccf148switch"), &HandlerForCF148);
+
+    Matcher.addMatcher(switchStmt(hasCondition(expr().bind("mcswitch154"))).bind("mcswitch154daddy"), &HandlerForSwitch154);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1755,6 +1784,7 @@ private:
   MCCF146 HandlerForCF146;
   MCCF147 HandlerForCF147;
   MCCF148 HandlerForCF148;
+  MCSwitch154 HandlerForSwitch154;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
