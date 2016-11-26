@@ -47,8 +47,10 @@ public:
       SourceLocation SL = FS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+#if 0
       std::cout << "14.8 : " << "\"For\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+#endif
     }
     else
     {
@@ -73,8 +75,10 @@ public:
       SourceLocation SL = WS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+#if 0
       std::cout << "14.8 : " << "\"While\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+#endif
     }
     else
     {
@@ -1419,8 +1423,175 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCCF146 : public MatchFinder::MatchCallback
+{
+public:
+  MCCF146 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccffofo") != nullptr)
+    {
+      const ForStmt* FS =  MR.Nodes.getNodeAs<clang::ForStmt>("mccffofo");
+
+      SL = FS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+    }
+
+    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccfwuwu") != nullptr)
+    {
+      const WhileStmt* WS =  MR.Nodes.getNodeAs<clang::WhileStmt>("mccfwuwu");
+
+      SL = WS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+    }
+
+    if (MR.Nodes.getNodeAs<clang::DoStmt>("mccfdodo") != nullptr)
+    {
+      const DoStmt* DS =  MR.Nodes.getNodeAs<clang::DoStmt>("mccfdodo");
+
+      SL = DS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+    }
+
+    NewSL = SL;
+
+    if (OldSL != NewSL)
+    {
+      AlreadyTagged = false;
+      BreakCounter = 1U;
+    }
+
+    if (OldSL == NewSL)
+    {
+      BreakCounter++;
+    }
+
+    if (BreakCounter >= 2U && !AlreadyTagged)
+    {
+      std::cout << "14.6 : " << "More than one BreakStmt used in the loop counter: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      AlreadyTagged = true;
+    }
+
+    OldSL = NewSL;
+  }
+
+private:
+  SourceLocation OldSL;
+  SourceLocation NewSL;
+  bool AlreadyTagged = false;
+  unsigned int BreakCounter = 0U;
+  SourceLocation SL;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
+class MCCF147 : public MatchFinder::MatchCallback
+{
+public:
+  MCCF147 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mccf147") != nullptr)
+    {
+      const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mccf147");
+
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      NewSL = SL;
+
+      if (OldSL != NewSL)
+      {
+        AlreadyTagged = false;
+        ReturnCounter = 1U;
+      }
+
+      if (OldSL == NewSL)
+      {
+        ReturnCounter++;
+      }
+
+      if (ReturnCounter >= 2U && !AlreadyTagged)
+      {
+        std::cout << "14.7 : " << "More than one ReturnStmt used in the body of FunctionDecl: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        AlreadyTagged = true;
+      }
+
+      OldSL = NewSL;
+    }
+  }
+
+private:
+  SourceLocation NewSL;
+  SourceLocation OldSL;
+  unsigned int ReturnCounter = 0U;
+  bool AlreadyTagged = false;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
+class MCCF148 : public MatchFinder::MatchCallback
+{
+public:
+  MCCF148 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccf148for") != nullptr)
+    {
+      const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccf148for");
+
+      SL = FS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "14.8 : " << "ForStmt does not have a child CompoundStmt: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+
+    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while") != nullptr)
+    {
+      const WhileStmt* WS = MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while");
+
+      SL = WS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "14.8 : " << "WhileStmt does not have a child CompoundStmt: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+
+    if (MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do") != nullptr)
+    {
+      const DoStmt* DS = MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do");
+
+      SL = DS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "14.8 : " << "DoStmt does not have a child CompoundStmt: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch") != nullptr)
+    {
+      const SwitchStmt* SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch");
+
+      SL = SS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "14.8 : " << "SwitchStmt does not have a child CompoundStmt: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  SourceLocation SL;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -1433,7 +1604,7 @@ public:
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
-    HandlerForCF145(R) {
+    HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1523,6 +1694,18 @@ public:
     Matcher.addMatcher(gotoStmt().bind("mccf144"), &HandlerForCF144);
 
     Matcher.addMatcher(continueStmt().bind("mccf145"), &HandlerForCF145);
+
+    Matcher.addMatcher(breakStmt(hasAncestor(stmt(anyOf(forStmt().bind("mccffofo"), doStmt().bind("mccfdodo"), whileStmt().bind("mccfwuwu"))))), &HandlerForCF146);
+
+    Matcher.addMatcher(returnStmt(hasAncestor(functionDecl().bind("mccf147"))), &HandlerForCF147);
+
+    Matcher.addMatcher(forStmt(unless(has(compoundStmt()))).bind("mccf148for"), &HandlerForCF148);
+
+    Matcher.addMatcher(whileStmt(unless(has(compoundStmt()))).bind("mccf148while"), &HandlerForCF148);
+
+    Matcher.addMatcher(doStmt(unless(has(compoundStmt()))).bind("mccf148do"), &HandlerForCF148);
+
+    Matcher.addMatcher(switchStmt(unless(has(compoundStmt()))).bind("mccf148switch"), &HandlerForCF148);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1569,6 +1752,9 @@ private:
   MCCSE136 HandlerForCSE136;
   MCCF144 HandlerForCF144;
   MCCF145 HandlerForCF145;
+  MCCF146 HandlerForCF146;
+  MCCF147 HandlerForCF147;
+  MCCF148 HandlerForCF148;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
