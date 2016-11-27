@@ -1334,18 +1334,19 @@ public:
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mccse136kiddo");
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse136daddy");
 
-      const Stmt* FSS = FS->getInit();
+      const Stmt* FSInit = FS->getInit();
       const Expr* FSInc = FS->getInc();
+      const Expr* FSCond = FS->getCond();
 
       SourceLocation SLD = FS->getLocStart();
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
       SourceLocation SL = DRE->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (FSS != nullptr && FSInc != nullptr)
+      if (FSInit != nullptr && FSInc != nullptr)
       {
-        SourceLocation SLFSS = FSS->getLocStart();
-        SLFSS = Devi::SourceLocationHasMacro(SLFSS, Rewrite, "start");
+        SourceLocation SLFSInit = FSInit->getLocStart();
+        SLFSInit = Devi::SourceLocationHasMacro(SLFSInit, Rewrite, "start");
         SourceLocation SLFSInc = FSInc->getLocStart();
         SLFSInc = Devi::SourceLocationHasMacro(SLFSInc, Rewrite, "start");
 
@@ -1353,8 +1354,9 @@ public:
 
         std::string NameString = DNI.getAsString();
 
+        /*JANKY*/
         /*the third condition is put in place to accomodate the prefix unary increment or decrement operator.*/
-        if (SLFSS == SL || SLFSInc == SL || SLFSInc.getLocWithOffset(2) == SL)
+        if (SLFSInit == SL || SLFSInc == SL || SLFSInc.getLocWithOffset(2) == SL)
         {
           ControlVarName = NameString;
         }
@@ -1616,6 +1618,180 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCPTC111 : public MatchFinder::MatchCallback
+{
+public:
+  MCPTC111 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcptc111");
+
+    SourceLocation SL = DRE->getLocStart();
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    ASTContext *const ASTC = MR.Context;
+
+    ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*DRE);
+
+    /*assumptions:nothing has more than one parent in C.*/
+    ast_type_traits::DynTypedNode ParentNode = NodeList[0];
+
+    ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
+
+    std::string StringKind = ParentNodeKind.asStringRef().str();
+
+    if (StringKind == "ImplicitCastExpr")
+    {
+      //ParentICE = ParentNode.get();
+      /*the tests for CastKind go here*/
+    }
+
+  }
+
+private:
+  const clang::ImplicitCastExpr* ParentICE;
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCCSE137 : public MatchFinder::MatchCallback
+{
+public:
+  MCCSE137 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mccse137") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse137");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext *const ASTC = MR.Context;
+
+      if (EXP->isKnownToHaveBooleanValue())
+      {
+        if (EXP->isEvaluatable(*ASTC, Expr::SE_NoSideEffects))
+        {
+          std::cout << "13.7 : " << "EffectivelyBooleanExpr's result is known at compile-time: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        }
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/*if the call is coming from another file, getdirectcalle returns the definition,
+but if its coming from the same file, it returns the declaration that is not a definition.*/
+/*if youve already matched the definition, getdefinition returns null.*/
+class MCDCDF810 : public MatchFinder::MatchCallback
+{
+public:
+  MCDCDF810 (Rewriter &Rewrite) : Rewrite(Rewrite)
+  {
+    FuncScopeProto.push_back(FuncScope());
+
+    VecC = 0U;
+  }
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::CallExpr>("mcdcdf810") != nullptr && MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf810daddy") != nullptr)
+    {
+      AlreadyTagged = false;
+
+      const CallExpr* CE = MR.Nodes.getNodeAs<clang::CallExpr>("mcdcdf810");
+      const FunctionDecl* FDDad = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf810daddy");
+      const FunctionDecl* FD = CE->getDirectCallee();
+      const FunctionDecl* FDDef = FD->getDefinition();;
+
+      if (FDDef == nullptr)
+      {
+        FDDef = CE->getDirectCallee();
+      }
+
+      SourceLocation CESL = CE->getLocStart();
+      CESL = Devi::SourceLocationHasMacro(CESL, Rewrite, "start");
+      SourceLocation FDDadSL = FDDad->getLocStart();
+      FDDadSL = Devi::SourceLocationHasMacro(FDDadSL, Rewrite, "start");
+      SourceLocation FDSL = FDDef->getLocStart();
+      FDSL = Devi::SourceLocationHasMacro(FDSL, Rewrite, "start");
+
+      ASTContext *const ASTC = MR.Context;
+
+      FullSourceLoc FDDadFullSL = ASTC->getFullLoc(FDDadSL);
+      FullSourceLoc FDFullSL = ASTC->getFullLoc(FDSL);
+
+      DeclarationNameInfo DNI = FDDef->getNameInfo();
+      std::string MatchedName = DNI.getAsString();
+
+      /*going through the already matched functions,making sure we are not adding duplicates.*/
+      for (unsigned x = 0; x < VecC; ++x)
+      {
+        if (FuncScopeProto[x].FuncNameString == MatchedName && FuncScopeProto[x].DefinitionSL == FDSL.printToString(*MR.SourceManager))
+        {
+          AlreadyTagged = true;
+
+          if (FDDef->isExternC())
+          {
+            if (FDDadFullSL.getFileID() != FDFullSL.getFileID())
+            {
+              FuncScopeProto[x].hasExternalCall = true;
+            }
+          }
+        }
+      }
+
+      if (AlreadyTagged == false && FDDef->isExternC())
+      {
+        FuncScopeProto.push_back(FuncScope());
+        FuncScopeProto[VecC].FuncNameString = MatchedName;
+        FuncScopeProto[VecC].DefinitionSL = FDSL.printToString(*MR.SourceManager);
+
+        if (FDDef->isExternC())
+        {
+          if (FDDadFullSL.getFileID() != FDFullSL.getFileID())
+          {
+            FuncScopeProto[VecC].hasExternalCall = true;
+          }
+        }
+
+        VecC++;
+      }
+    }
+  }
+
+  virtual void onEndOfTranslationUnit()
+  {
+    for (unsigned x = 0; x < VecC; ++x)
+    {
+      if (FuncScopeProto[x].hasExternalCall == false)
+      {
+        std::cout << "8.10 : " << "Function does not have any external calls but is not declare as static : " << std::endl;
+        std::cout << FuncScopeProto[x].DefinitionSL << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  struct FuncScope {
+    std::string FuncNameString;
+    bool hasExternalCall = false;
+    std::string DefinitionSL;
+  };
+
+  bool AlreadyTagged = false;
+
+  unsigned VecC;
+
+  std::vector<FuncScope> FuncScopeProto;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -1631,7 +1807,8 @@ public:
     HandlerForInit91(R), HandlerForInit92(R), HandlerForInit93(R), HandlerForExpr123(R), HandlerForExpr124(R), HandlerForExpr125(R), \
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
-    HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R) {
+    HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
+    HandlerForCSE137(R), HandlerForDCDF810(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1735,6 +1912,12 @@ public:
     Matcher.addMatcher(switchStmt(unless(has(compoundStmt()))).bind("mccf148switch"), &HandlerForCF148);
 
     Matcher.addMatcher(switchStmt(hasCondition(expr().bind("mcswitch154"))).bind("mcswitch154daddy"), &HandlerForSwitch154);
+
+    Matcher.addMatcher(declRefExpr().bind("mcptc111"), &HandlerForPTC111);
+
+    Matcher.addMatcher(expr().bind("mccse137"), &HandlerForCSE137);
+
+    Matcher.addMatcher(callExpr(hasAncestor(functionDecl().bind("mcdcdf810daddy"))).bind("mcdcdf810"), &HandlerForDCDF810);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1785,6 +1968,9 @@ private:
   MCCF147 HandlerForCF147;
   MCCF148 HandlerForCF148;
   MCSwitch154 HandlerForSwitch154;
+  MCPTC111 HandlerForPTC111;
+  MCCSE137 HandlerForCSE137;
+  MCDCDF810 HandlerForDCDF810;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
