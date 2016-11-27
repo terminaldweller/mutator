@@ -87,12 +87,12 @@ void testFuncMultiInstantiation (int level);
 void testFuncQMark (int int1, int int2);
 void testFuncCallBool (void);
 
-void im_a_mlaign_func (void);
-void im_a_benign_func (void);
+static void im_a_mlaign_func (void);
+static void im_a_benign_func (void);
 void im_a_dummy (void);
 void im_a_minion_01 (void);
 void im_a_minion_02 (void);
-void im_a_minion_03 (void);
+static void im_a_minion_03 (void);
 
 #if (TRUE == INLINE)
 #if (MPC == COMPILER)

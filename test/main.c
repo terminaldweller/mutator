@@ -1,7 +1,7 @@
 
 /*intentionally left blank.*/
 #include "testFuncs1.h"
-#include <string.h>
+//#include <string.h>
 
 main()
 {
@@ -46,13 +46,6 @@ main()
 #endif
 	testFuncQMark (int1, int2);
 	testFuncCallBool ();
-
-	im_a_mlaign_func ();
-	im_a_benign_func ();
-	im_a_dummy ();
-	im_a_minion_01 ();
-	im_a_minion_02 ();
-	im_a_minion_03 ();
 
 	test3();
 	test4 (aa, bb, cc);

@@ -415,14 +415,14 @@ void testFuncCallBool (void)
 
 
 /*the function that is *supposedly* carrying a bug*/
-void im_a_mlaign_func (void)
+static void im_a_mlaign_func (void)
 {
 	/* KATSU!*/
 }
 
 
 /*the function that is *supposedly* the good guy here*/
-void im_a_benign_func (void)
+static void im_a_benign_func (void)
 {
 	/* see the light ring?!*/
 }
@@ -450,7 +450,7 @@ void im_a_minion_02 (void)
 
 
 /* minion function number #03*/
-void im_a_minion_03 (void)
+static void im_a_minion_03 (void)
 {
 	/* minion1*/
 }
@@ -1133,6 +1133,34 @@ void test32(void)
 		a--;
 	}
 }
+
+static void test33(void)
+{
+	short int a;
+	long int b;
+
+	b = (int)a;
+}
+
+void test34(void)
+{
+	int i, a;
+
+	i >= 3;
+
+	for (;; i++)
+	{
+		a++;
+	}
+
+	; /*yadayada*/
+	;/*:P*/
+
+	; int b;
+
+	test33();
+}
+
 
 /**********************************************************************************************************************/
 /*the last line's been intentionally left blank.*/
