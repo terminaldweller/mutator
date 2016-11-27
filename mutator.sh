@@ -4,7 +4,7 @@
 #the arguments' positions are not important. you also get log and short options.
 
 #default args
-INPUT="./test/testFuncs1.c"
+INPUT="./test/testFuncs1.c ./test/main.c"
 OUTPUT="./mutant.c"
 OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
