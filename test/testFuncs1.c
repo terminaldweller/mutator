@@ -1134,7 +1134,7 @@ void test32(void)
 	}
 }
 
-static void test33(void)
+void test33(void)
 {
 	short int a;
 	long int b;
