@@ -754,6 +754,49 @@ public:
 
       SourceLocation SL = VD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SourceLocation SLE = VD->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
+
+      QualType QT = VD->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      /*start of 8.12*/
+      if (!VD->hasInit())
+      {
+        if (VD->hasExternalStorage())
+        {
+          if (TP->isIncompleteArrayType())
+          {
+            /*end of 8.12*/
+            std::cout << "8.12 : " << "External array type is incomplete and has no initialization : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          }
+        }
+      }
+      /*start of 9.2*/
+      else
+      {
+        if (TP->isArrayType() || TP->isStructureType())
+        {
+          /*JANKY*/
+          const Expr* InitExpr = VD->getInit();
+          SourceRange InitExprSR;
+          InitExprSR.setBegin(SL);
+          InitExprSR.setEnd(SLE);
+
+          std::string InitExprString = Rewrite.getRewrittenText(InitExprSR);
+          size_t openingcbraces = InitExprString.find("{", 0);
+          size_t closingcbraces = InitExprString.find("}", 0);
+
+          if (openingcbraces == std::string::npos || closingcbraces == std::string::npos)
+          {
+            std::cout << "9.2 : " << "Curly braces not used : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          }
+        }
+      }
+      /*end of 9.2*/
 
       /*we only check for local static since global static is meaningless.*/
       if (!VD->isStaticLocal() && VD->isLocalVarDecl())
@@ -1678,6 +1721,26 @@ public:
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
         }
       }
+
+      QualType QT = EXP->getType();
+      const clang::Type* TP = QT.getTypePtr();
+
+      if (TP->isIntegerType())
+      {
+        ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*EXP);
+
+        /*assumptions:nothing has more than one parent in C.*/
+        ast_type_traits::DynTypedNode ParentNode = NodeList[0];
+
+        ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
+
+        std::string StringKind = ParentNodeKind.asStringRef().str();
+
+        if (StringKind == "ImplicitCastExpr")
+        {
+
+        }
+      }
     }
   }
 
@@ -1771,7 +1834,7 @@ public:
     {
       if (FuncScopeProto[x].hasExternalCall == false)
       {
-        std::cout << "8.10 : " << "Function does not have any external calls but is not declare as static : " << std::endl;
+        std::cout << "8.11 : " << "Function does not have any external calls but is not declared as static : " << std::endl;
         std::cout << FuncScopeProto[x].DefinitionSL << "\n" << std::endl;
       }
     }
@@ -1793,7 +1856,71 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*also flags the main.*/
+class MCFunction165 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction165 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction165") != nullptr)
+    {
+      const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction165");
+
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "16.5 : " << "Function does not return anything but is missing the void keyword for the return type : " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
+class MCFunction1652 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction1652 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction1652") != nullptr)
+    {
+      const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction1652");
+
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SourceLocation SLE = FD->getBody()->getLocStart();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+
+      SourceRange SR;
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
+
+      std::string FunctionSigAsString = Rewrite.getRewrittenText(SR);
+
+      DeclarationNameInfo DNI = FD->getNameInfo();
+
+      std::string NameAsString = DNI.getAsString();
+
+      size_t voidposition = FunctionSigAsString.find(NameAsString, 0U);
+      unsigned lengthofstring = NameAsString.length();
+      size_t voidposition2 = FunctionSigAsString.find("void", voidposition + lengthofstring - 1U);
+
+      if (voidposition2 == std::string::npos)
+      {
+        std::cout << "16.5 : " << "Function does not take any parameters but is not using the void keyword : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -1808,7 +1935,7 @@ public:
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
-    HandlerForCSE137(R), HandlerForDCDF810(R) {
+    HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -1918,6 +2045,10 @@ public:
     Matcher.addMatcher(expr().bind("mccse137"), &HandlerForCSE137);
 
     Matcher.addMatcher(callExpr(hasAncestor(functionDecl().bind("mcdcdf810daddy"))).bind("mcdcdf810"), &HandlerForDCDF810);
+
+    Matcher.addMatcher(functionDecl(allOf(returns(anything()), unless(returns(asString("void"))), hasBody(compoundStmt()) , unless(hasDescendant(returnStmt())))).bind("mcfunction165"), &HandlerForFunction165);
+
+    Matcher.addMatcher(functionDecl(allOf(parameterCountIs(0), hasBody(compoundStmt()))).bind("mcfunction1652"), &HandlerForFunction1652);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -1971,6 +2102,8 @@ private:
   MCPTC111 HandlerForPTC111;
   MCCSE137 HandlerForCSE137;
   MCDCDF810 HandlerForDCDF810;
+  MCFunction165 HandlerForFunction165;
+  MCFunction1652 HandlerForFunction1652;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
