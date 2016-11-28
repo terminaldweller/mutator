@@ -39,12 +39,12 @@ int testfunc6(void)
 {
 	int a;
 	int b;
-	return ();
+	//return ();
 }
 
 int testfunc7(void)
 {
 	int a;
 	int b;
-	return;
+	//return;
 }

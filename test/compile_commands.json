@@ -8,5 +8,10 @@
         "command": "cc -c -o CMakeFiles/tddtest.dir/testFuncs1.c.o /home/bloodstalker/devi/hell2/test/testFuncs1.c", 
         "directory": "/home/bloodstalker/devi/hell2/test", 
         "file": "/home/bloodstalker/devi/hell2/test/testFuncs1.c"
+    }, 
+    {
+        "command": "cc -c -o CMakeFiles/tddtest.dir/testFuncs2.c.o /home/bloodstalker/devi/hell2/test/testFuncs2.c", 
+        "directory": "/home/bloodstalker/devi/hell2/test", 
+        "file": "/home/bloodstalker/devi/hell2/test/testFuncs2.c"
     }
 ]
