@@ -1922,6 +1922,108 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*has false-positives*/
+class MCPointer171 : public MatchFinder::MatchCallback
+{
+public:
+  MCPointer171 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer171") != nullptr)
+    {
+      const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer171") ;
+
+      SourceLocation SL = DRE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QT = DRE->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      if (TP->isAnyPointerType())
+      {
+        std::cout << "17.1 : " << "Pointer arithmatic for non-array pointers : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/*has a lot of false positives. now works based on array types not the array itself.*/
+class MCPointer1723 : public MatchFinder::MatchCallback
+{
+public:
+  MCPointer1723 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723rhs") != nullptr && MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723lhs"))
+    {
+      const DeclRefExpr* DRER = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723rhs");
+      const DeclRefExpr* DREL = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723lhs");
+      const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcpointer1723daddy");
+
+      SourceLocation SL = BO->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QTR = DRER->getType();
+      QualType QTL = DREL->getType();
+
+      const clang::Type* TPR = QTR.getTypePtr();
+      const clang::Type* TPL = QTL.getTypePtr();
+
+      if (TPR->getPointeeType() != TPL->getPointeeType())
+      {
+        std::cout << "17.2 | 17.3 : " << "Pointer-type operands to BinaryOperator dont point to the same array : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class MCPointer174 : public MatchFinder::MatchCallback
+{
+public:
+  MCPointer174 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::CastExpr>("mcpointer174") != nullptr)
+    {
+      const CastExpr* CE = MR.Nodes.getNodeAs<clang::CastExpr>("mcpointer174");
+
+      SourceLocation SL = CE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742") != nullptr)
+    {
+      const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742");
+
+      SourceLocation SL = DRE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -1935,7 +2037,8 @@ public:
     HandlerForExpr126(R), HandlerForExpr127(R), HandlerForExpr128(R), HandlerForExpr129(R), HandlerForExpr1210(R), HandlerForExpr1213(R), \
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
-    HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R) {
+    HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
+    HandlerForPointer1723(R), HandlerForPointer174(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -2049,6 +2152,54 @@ public:
     Matcher.addMatcher(functionDecl(allOf(returns(anything()), unless(returns(asString("void"))), hasBody(compoundStmt()) , unless(hasDescendant(returnStmt())))).bind("mcfunction165"), &HandlerForFunction165);
 
     Matcher.addMatcher(functionDecl(allOf(parameterCountIs(0), hasBody(compoundStmt()))).bind("mcfunction1652"), &HandlerForFunction1652);
+
+    Matcher.addMatcher(declRefExpr(allOf(to(varDecl().bind("loco")), unless(hasParent(castExpr(hasCastKind(clang::CK_ArrayToPointerDecay)))), hasAncestor(stmt(eachOf(binaryOperator(hasOperatorName("+")).bind("bino"), \
+                                         binaryOperator(hasOperatorName("-")).bind("bino"), unaryOperator(hasOperatorName("++")).bind("uno"), \
+                                         unaryOperator(hasOperatorName("--")).bind("uno"), binaryOperator(hasOperatorName("/")).bind("bino"), \
+                                         binaryOperator(hasOperatorName("*")).bind("bino"), binaryOperator(hasOperatorName("<")).bind("bino"), \
+                                         binaryOperator(hasOperatorName("<=")).bind("bino"), binaryOperator(hasOperatorName(">")).bind("bino"), \
+                                         binaryOperator(hasOperatorName(">=")).bind("bino")))))).bind("mcpointer171"), &HandlerForPointer171);
+
+    /*start of 17.3 matchers*/
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("<="), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
+                                            has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
+                                            hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
+                                                has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("<"), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
+                                            has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
+                                            hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
+                                                has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName(">="), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
+                                            has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
+                                            hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
+                                                has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName(">"), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
+                                            has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
+                                            hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
+                                                has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("-"), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
+                                            has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
+                                            hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
+                                                has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("-="), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
+                                            has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
+                                            hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
+                                                has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
+    /*end of 17.3 matchers*/
+
+    /*start of 17.4 matchers*/
+    Matcher.addMatcher(castExpr(allOf(hasCastKind(CK_ArrayToPointerDecay), unless(hasParent(arraySubscriptExpr())))).bind("mcpointer174"), &HandlerForPointer174);
+
+    Matcher.addMatcher(declRefExpr(allOf(hasAncestor(expr(anyOf(binaryOperator(hasOperatorName("-=")), \
+                                         unaryOperator(hasOperatorName("++")), unaryOperator(hasOperatorName("--")), \
+                                         binaryOperator(hasOperatorName("+")), binaryOperator(hasOperatorName("+=")), \
+                                         binaryOperator(hasOperatorName("-"))))), to(varDecl(hasType(pointerType()))))).bind("mcpointer1742"), &HandlerForPointer174);
+    /*end of 17.4 matchers*/
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -2104,6 +2255,9 @@ private:
   MCDCDF810 HandlerForDCDF810;
   MCFunction165 HandlerForFunction165;
   MCFunction1652 HandlerForFunction1652;
+  MCPointer171 HandlerForPointer171;
+  MCPointer1723 HandlerForPointer1723;
+  MCPointer174 HandlerForPointer174;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
