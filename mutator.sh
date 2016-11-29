@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #the UI for mutator. it's supposed to mimic the normal 'nix argument passing.
-#the arguments' positions are not important. you also get log and short options.
+#the arguments' positions are not important. you also get long and short options.
 
 #default args
-INPUT="./test/testFuncs1.c ./test/main.c"
+INPUT='./test/testFuncs1.c ./test/main.c ./test/testFuncs2.c'
 OUTPUT="./mutant.c"
 OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
@@ -46,6 +46,12 @@ do
 		-i|--input|-input)
 		INPUT="$2"
 		shift
+		while [[ $# -gt 0 ]]
+		do
+		case &arg in
+			
+		esac	
+		done
 		;;
 		-o|--output|-output)
 		OUTPUT="$2"
