@@ -48,3 +48,33 @@ int testfunc7(void)
 	int b;
 	//return;
 }
+
+int testfunc8(void)
+{
+	int a[10];
+	int b[10];
+
+	int* p;
+
+	p = &a[0];
+
+	int i;
+	int sum;
+	int sum2;
+	int garbage;
+	int garbage2;
+
+	for (i = 0; i < 10; ++i)
+	{
+		sum += *(a + i);
+		sum2 += *(p + i);
+		//garbage = *(a - b);
+	}
+
+	for (i = 10; i < 1; i++)
+	{
+		sum += *(a - i);
+		sum2 += *(p - i);
+		//garbage2 = *(p - a);
+	}
+}

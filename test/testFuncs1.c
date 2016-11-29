@@ -730,9 +730,44 @@ void test7(void)
 {
 	double a[100];
 
+	double b[100];
+
+	char c[100];
+
 	double *pointer;
 
+	double* pointerb;
+
+	char* pointerc;
+
+	pointerb = b;
+
 	pointer = a;
+
+	pointerc = c;
+
+	if (a - b >= a)
+	{}
+	else if (b - a < a)
+	{}
+
+	if (a < b)
+	{}
+
+	if (pointer < pointerb)
+	{}
+
+	if (pointer > pointerb)
+	{}
+
+	if (pointerb <= pointer)
+	{}
+
+	if (pointer >= pointerb)
+	{}
+
+	if (pointer < pointerc)
+	{}
 
 	int i = 0;
 
