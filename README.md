@@ -9,6 +9,7 @@ The **utility** folder holds the C source and headers that are necessary to run 
 **mutator-aux.cpp.h** hold the auxillary functions that most modules will need.<br/>
 Well there is the **makefile**.<br/>
 The **test** folder holds the **TDD** tests.<br/>
+#### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is buildable and usable.**<br/>
 
 ###Building mutator
 To build the project, you need to have the LLVM libraries 4.0 to avoid any unforseen results. The project can not be built with LLVM 3.8 or lower, but I havent tested LLVM 3.9. Just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
