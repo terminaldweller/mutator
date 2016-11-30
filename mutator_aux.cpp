@@ -73,17 +73,23 @@ void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string Misr
   MisraElement->SetAttribute("SpellingLineNumber", LineNumber);
   MisraElement->SetAttribute("SpellingColumnNumber", ColumnNumber);
   RootPointer->InsertEndChild(MisraElement);
+}
 
+void XMLReport::XMLAddNode(FullSourceLoc FullSrcLoc, SourceLocation SL, std::string MisraRule, std::string Description)
+{
+  unsigned LineNumber = FullSrcLoc.getSpellingLineNumber();
+  unsigned ColumnNumber = FullSrcLoc.getSpellingColumnNumber();
 
-#if 0
-  XMLElement* pElement = XMLReportDoc.NewElement("SourceLocation");
-  pElement->SetText("rule:filename:line:column");
-  pElement->SetAttribute("rule", "17.4");
-  pElement->SetAttribute("filename", "testFuncs2.c");
-  pElement->SetAttribute("line", 67);
-  pElement->SetAttribute("column", 12);
-  RootPointer->InsertEndChild(pElement);
-#endif
+  const SourceManager& SM = FullSrcLoc.getManager();
+  std::string FileNameString = SM.getFilename(SL).str();
+
+  XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
+  MisraElement->SetText(Description.c_str());
+  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("FileName", FileNameString.c_str());
+  MisraElement->SetAttribute("SpellingLineNumber", LineNumber);
+  MisraElement->SetAttribute("SpellingColumnNumber", ColumnNumber);
+  RootPointer->InsertEndChild(MisraElement);
 }
 
 void XMLReport::SaveReport(void)
