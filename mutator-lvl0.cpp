@@ -4,6 +4,7 @@
 /*included modules*/
 /*project headers*/
 #include "mutator_aux.h"
+#include "tinyxml2/tinyxml2.h"
 /*standard headers*/
 #include <string>
 #include <iostream>
@@ -31,6 +32,7 @@ using namespace clang::driver;
 using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
+Devi::XMLReport XMLDocOut;
 
 static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
 /**********************************************************************************************************************/
@@ -105,6 +107,8 @@ public:
 
       std::cout << "14.9 : " << "\"Else\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"Else\" statement has no braces {}: ");
     }
     else
     {
@@ -131,6 +135,8 @@ public:
 
       std::cout << "14.9 : " << "\"If\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"If\" statement has no braces {}: ");
     }
     else
     {
@@ -158,6 +164,8 @@ public:
 
       std::cout << "14.10 : " << "\"If-Else If\" statement has no ending Else: " << std::endl;
       std::cout << IFESL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, IFESL, "14.10", "\"If-Else If\" statement has no ending Else: ");
     }
     else
     {
@@ -186,6 +194,8 @@ public:
 
       std::cout << "15.2 : " << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
     }
     else
     {
@@ -213,6 +223,8 @@ public:
 
       std::cout << "15.3 : " << "\"SwitchStmt\" does not have a defaultStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "15.3", "\"SwitchStmt\" does not have a defaultStmt: ");
     }
     else
     {
@@ -255,6 +267,8 @@ public:
       {
         std::cout << "15.1 : " << "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "15.1", "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: ");
       }
     }
     else
@@ -283,6 +297,8 @@ public:
 
       std::cout << "15.5 : " << "\"SwitchStmt\" does not have a CaseStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "15.5", "\"SwitchStmt\" does not have a CaseStmt: ");
     }
     else
     {
@@ -313,6 +329,8 @@ public:
 
         std::cout << "16.1 : " << "\"FunctionDecl\" is variadic: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "16.1", "\"FunctionDecl\" is variadic: ");
       }
     }
     else
@@ -351,6 +369,8 @@ public:
         {
           std::cout << "16.2 : " << "\"FunctionDecl\" is recursive: " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "16.2", "\"FunctionDecl\" is recursive: ");
         }
         else
         {
@@ -412,6 +432,8 @@ public:
                 std::cout << "16.4 : " << "FunctionDecl parameter names are not the same as function definition parameter names: " << std::endl;
                 std::cout << SL.printToString(*MR.SourceManager) << "  &  " << SLDcl.printToString(*MR.SourceManager) << "\n" << std::endl;
 
+                XMLDocOut.XMLAddNode(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
+
                 break;
               }
               else
@@ -453,6 +475,8 @@ public:
       {
         std::cout << "16.6 : " << "CallExpr number of arguments does not equal the number of parameters in the declaration: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
       }
     }
     else
@@ -525,6 +549,8 @@ public:
       {
         std::cout << "16.9 : " << "FunctionToPointerDecay: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "16.9", "FunctionToPointerDecay: ");
       }
     }
   }
@@ -574,6 +600,8 @@ public:
 
       std::cout << "18.4 : " << "Union declared: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "18.4", "Union declared: ");
     }
   }
 
@@ -603,6 +631,8 @@ public:
         /*this part is ueless since the clang parser wont let such a bitfield through.*/
         std::cout << "6.4 : " << "BitField has a type other than int or unsigned int: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
       }
 
       ASTContext *const ASTC = MR.Context;
@@ -614,6 +644,8 @@ public:
         {
           std::cout << "6.5 : " << "BitField of type signed integer has a length of less than 2 in bits : " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
         }
       }
     }
@@ -771,6 +803,8 @@ public:
             /*end of 8.12*/
             std::cout << "8.12 : " << "External array type is incomplete and has no initialization : " << std::endl;
             std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
           }
         }
       }
@@ -793,6 +827,8 @@ public:
           {
             std::cout << "9.2 : " << "Curly braces not used : " << std::endl;
             std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "9.2", "Curly braces not used : ");
           }
         }
       }
@@ -805,6 +841,8 @@ public:
         {
           std::cout << "9.1 : " << "staic local variable does not have initialization : " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "9.1", "staic local variable does not have initialization : ");
         }
       }
     }
@@ -899,6 +937,8 @@ public:
             /*in breach of misrac*/
             std::cout << "9.3 : " << "first enumeration has integerliteral initialization but not all enumerations do : " << std::endl;
             std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
           }
           else
           {
@@ -912,6 +952,8 @@ public:
             /*in breach of misrac*/
             std::cout << "9.3 : " << "first enumeration does not have integerliteral initialization but at least one other enumeration does : " << std::endl;
             std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
           }
           else
           {
@@ -959,6 +1001,8 @@ public:
       {
         std::cout << "12.3 : " << "sizeof working on an expr with a side-effect : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "12.3", "sizeof working on an expr with a side-effect : ");
       }
     }
   }
@@ -987,6 +1031,8 @@ public:
       {
         std::cout << "12.4 : " << "Righ-hand expr has side-effect : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
       }
     }
   }
@@ -1039,6 +1085,8 @@ public:
       {
         std::cout << "12.5 : " << "RHS and/or LHS operands are not primary expressions : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
       }
     }
   }
@@ -1067,6 +1115,8 @@ public:
       {
         std::cout << "12.6 : " << "RHS and/or LHS operands are not effectively-boolean values : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "12.6", "RHS and/or LHS operands are not effectively-boolean values : ");
       }
     }
   }
@@ -1097,6 +1147,8 @@ public:
       {
         std::cout << "12.7 : " << "Bitwise operator has signed RHS and/or LHS operands: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "12.7", "Bitwise operator has signed RHS and/or LHS operands: ");
       }
     }
   }
@@ -1157,6 +1209,8 @@ public:
       {
         std::cout << "12.9 : " << "UnaryOperator - has an expr with an unsigned underlying type: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "12.9", "UnaryOperator - has an expr with an unsigned underlying type: ");
       }
     }
   }
@@ -1181,6 +1235,8 @@ public:
 
       std::cout << "12.10 : " << "Comma used: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "12.10", "Comma used: ");
     }
   }
 
@@ -1204,6 +1260,8 @@ public:
 
       std::cout << "12.13 : " << "Unary ++ or -- have been used in an expr with other operators: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "12.13", "Unary ++ or -- have been used in an expr with other operators: ");
     }
   }
 
@@ -1229,6 +1287,8 @@ public:
       {
         std::cout << "13.1 : " << "assignment operator used in an expr that is known to return boolean: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "13.1", "assignment operator used in an expr that is known to return boolean: ");
       }
     }
   }
@@ -1255,6 +1315,8 @@ public:
       {
         std::cout << "13.2 : " << "Implicit test of an expr against zero which is not known to return a boolean result: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "13.2", "Implicit test of an expr against zero which is not known to return a boolean result: ");
       }
     }
   }
@@ -1292,6 +1354,8 @@ public:
         {
           std::cout << "13.3 : " << "Float type expression checked for equality/inequality: " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
         }
       }
 
@@ -1336,6 +1400,8 @@ public:
           std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
           AlreadyHaveAHit = true;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
         }
       }
 
@@ -1350,6 +1416,8 @@ public:
           std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
           AlreadyHaveAHit = true;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
         }
       }
     }
@@ -1409,6 +1477,8 @@ public:
           {
             std::cout << "13.6 : " << "ForStmt controlling variable modified in the body of the loop: " << std::endl;
             std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
           }
         }
 
@@ -1438,6 +1508,8 @@ public:
 
       std::cout << "14.4 : " << "GotoStmt used: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.4", "GotoStmt used: ");
     }
   }
 
@@ -1461,6 +1533,8 @@ public:
 
       std::cout << "14.5 : " << "ContinueStmt used: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.5", "ContinueStmt used: ");
     }
   }
 
@@ -1517,6 +1591,8 @@ public:
       std::cout << "14.6 : " << "More than one BreakStmt used in the loop counter: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
       AlreadyTagged = true;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.6", "More than one BreakStmt used in the loop counter: ");
     }
 
     OldSL = NewSL;
@@ -1564,6 +1640,8 @@ public:
         std::cout << "14.7 : " << "More than one ReturnStmt used in the body of FunctionDecl: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
         AlreadyTagged = true;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "14.7", "More than one ReturnStmt used in the body of FunctionDecl: ");
       }
 
       OldSL = NewSL;
@@ -1596,6 +1674,8 @@ public:
 
       std::cout << "14.8 : " << "ForStmt does not have a child CompoundStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "ForStmt does not have a child CompoundStmt: ");
     }
 
     if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while") != nullptr)
@@ -1607,6 +1687,8 @@ public:
 
       std::cout << "14.8 : " << "WhileStmt does not have a child CompoundStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "WhileStmt does not have a child CompoundStmt: ");
     }
 
     if (MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do") != nullptr)
@@ -1618,6 +1700,8 @@ public:
 
       std::cout << "14.8 : " << "DoStmt does not have a child CompoundStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "DoStmt does not have a child CompoundStmt: ");
     }
 
     if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch") != nullptr)
@@ -1629,6 +1713,8 @@ public:
 
       std::cout << "14.8 : " << "SwitchStmt does not have a child CompoundStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "SwitchStmt does not have a child CompoundStmt: ");
     }
   }
 
@@ -1654,6 +1740,8 @@ public:
     {
       std::cout << "15.4 : " << "Switch expression is effectively boolean: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "15.4", "Switch expression is effectively boolean: ");
     }
   }
 
@@ -1719,6 +1807,8 @@ public:
         {
           std::cout << "13.7 : " << "EffectivelyBooleanExpr's result is known at compile-time: " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
         }
       }
 
@@ -1873,6 +1963,8 @@ public:
 
       std::cout << "16.5 : " << "Function does not return anything but is missing the void keyword for the return type : " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "16.5", "Function does not return anything but is missing the void keyword for the return type : ");
     }
   }
 
@@ -1914,6 +2006,8 @@ public:
       {
         std::cout << "16.5 : " << "Function does not take any parameters but is not using the void keyword : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "16.5", "Function does not take any parameters but is not using the void keyword : ");
       }
     }
   }
@@ -1945,6 +2039,8 @@ public:
       {
         std::cout << "17.1 : " << "Pointer arithmatic for non-array pointers : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "17.1", "Pointer arithmatic for non-array pointers : ");
       }
     }
   }
@@ -1980,6 +2076,8 @@ public:
       {
         std::cout << "17.2 | 17.3 : " << "Pointer-type operands to BinaryOperator dont point to the same array : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "17.2 | 17.3", "Pointer-type operands to BinaryOperator dont point to the same array : ");
       }
     }
   }
@@ -2004,6 +2102,8 @@ public:
 
       std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
     }
 
     if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742") != nullptr)
@@ -2015,6 +2115,8 @@ public:
 
       std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
     }
   }
 
@@ -2284,6 +2386,12 @@ int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, MatcherSampleCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
-  return Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+  XMLDocOut.XMLCreateReport();
+
+  int RunResult = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+
+  XMLDocOut.SaveReport();
+
+  return RunResult;
 }
 /*last line intentionally left blank.*/
