@@ -54,8 +54,8 @@ void XMLReport::XMLCreateReport(void)
   XMLReportDoc.InsertFirstChild(RootPointer);
 }
 
-/*it is the caller's responsibility to make sure the sourcelocation passed to this member function
-contains only the spelling location.*/
+/*it is the caller's responsibility to make sure the sourcelocation passed to this member function and its overload
+contain only the spelling location.*/
 void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description)
 {
   FullSourceLoc FSL = ASTC->getFullLoc(SL);
