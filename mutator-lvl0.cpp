@@ -707,6 +707,8 @@ public:
         {
           /*save the sourcelocation only if the functiondecl is a definition.*/
           FuncInfoProto[VecC].StrcSL = SL.printToString(*MR.SourceManager);
+          FuncInfoProto[VecC].FuncSL = SL;
+          FuncInfoProto[VecC].FuncFSL = MR.Context->getFullLoc(SL);
         }
 
         VecC++;
@@ -723,6 +725,8 @@ public:
       {
         std::cout << "8.1 : " << "Function does not have a FunctionDecl that is not a definition : " << std::endl;
         std::cout << FuncInfoProto[x].StrcSL << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(FuncInfoProto[x].FuncFSL, FuncInfoProto[x].FuncSL, "8.1", "Function does not have a FunctionDecl that is not a definition : ");
       }
     }
 
@@ -733,6 +737,8 @@ private:
     std::string FuncNameString;
     std::string StrcSL;
     bool HasDecThatisNotDef = false;
+    SourceLocation FuncSL;
+    FullSourceLoc FuncFSL;
   };
 
   std::vector<FuncInfo> FuncInfoProto;
@@ -1904,6 +1910,8 @@ public:
         FuncScopeProto.push_back(FuncScope());
         FuncScopeProto[VecC].FuncNameString = MatchedName;
         FuncScopeProto[VecC].DefinitionSL = FDSL.printToString(*MR.SourceManager);
+        FuncScopeProto[VecC].FuncScopeSL = FDSL;
+        FuncScopeProto[VecC].FuncScopeFSL = MR.Context->getFullLoc(FDSL);
 
         if (FDDef->isExternC())
         {
@@ -1926,6 +1934,8 @@ public:
       {
         std::cout << "8.11 : " << "Function does not have any external calls but is not declared as static : " << std::endl;
         std::cout << FuncScopeProto[x].DefinitionSL << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(FuncScopeProto[x].FuncScopeFSL, FuncScopeProto[x].FuncScopeSL, "8.11", "Function does not have any external calls but is not declared as static : ");
       }
     }
   }
@@ -1935,6 +1945,8 @@ private:
     std::string FuncNameString;
     bool hasExternalCall = false;
     std::string DefinitionSL;
+    SourceLocation FuncScopeSL;
+    FullSourceLoc FuncScopeFSL;
   };
 
   bool AlreadyTagged = false;
