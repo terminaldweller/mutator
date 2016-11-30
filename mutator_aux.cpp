@@ -4,8 +4,10 @@
 #include "clang/AST/AST.h"
 #include "mutator_aux.h"
 #include "clang/Rewrite/Core/Rewriter.h"
+#include "tinyxml2/tinyxml2.h"
 
 using namespace clang;
+using namespace tinyxml2;
 
 namespace Devi {
 /*a simple function that checks the sourcelocations for a macro expansion. returns the sourcelocation without
@@ -40,4 +42,58 @@ SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std
 
   return (SL);
 }
+/*********************************************************************************************************************/
+XMLReport::XMLReport()
+{
+  RootPointer = XMLReportDoc.NewElement("Report");
+}
+
+void XMLReport::XMLCreateReport(void)
+{
+
+  XMLReportDoc.InsertFirstChild(RootPointer);
+}
+
+/*it is the caller's responsibility to make sure the sourcelocation passed to this member function
+contains only the spelling location.*/
+void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description)
+{
+  FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
+  unsigned LineNumber = FSL.getSpellingLineNumber();
+  unsigned ColumnNumber = FSL.getSpellingColumnNumber();
+
+  const SourceManager& SM = FSL.getManager();
+  std::string FileNameString = SM.getFilename(SL).str();
+
+  XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
+  MisraElement->SetText(Description.c_str());
+  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("FileName", FileNameString.c_str());
+  MisraElement->SetAttribute("SpellingLineNumber", LineNumber);
+  MisraElement->SetAttribute("SpellingColumnNumber", ColumnNumber);
+  RootPointer->InsertEndChild(MisraElement);
+
+
+#if 0
+  XMLElement* pElement = XMLReportDoc.NewElement("SourceLocation");
+  pElement->SetText("rule:filename:line:column");
+  pElement->SetAttribute("rule", "17.4");
+  pElement->SetAttribute("filename", "testFuncs2.c");
+  pElement->SetAttribute("line", 67);
+  pElement->SetAttribute("column", 12);
+  RootPointer->InsertEndChild(pElement);
+#endif
+}
+
+void XMLReport::SaveReport(void)
+{
+  XMLError XMLErrorResult = XMLReportDoc.SaveFile("/home/bloodstalker/devi/hell2/test/misrareport.xml");
+
+  if (XMLErrorResult != XML_SUCCESS)
+  {
+    std::cout << "could not write xml misra report." << std::endl;
+  }
+}
+/*********************************************************************************************************************/
 }
