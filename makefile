@@ -7,7 +7,7 @@ CXX_FLAGS=$(shell /home/bloodstalker/llvm/llvm/build/bin/llvm-config --cxxflags)
 #CXX_FLAGS=$(shell llvm-config --cxxflags)
 
 EXTRA_CXX_FALGS=-I/home/bloodstalker/llvm/llvm/llvm/tools/clang/include -I/home/bloodstalker/llvm/llvm/build/tools/clang/include
-EXTRA_LD_FLAGS=-v
+EXTRA_LD_FLAGS=-v ./tinyxml2/tinyxml2.o
 
 LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
 -lclangDriver -lclangEdit -lclangFrontend -lclangFrontendTool\
@@ -34,6 +34,7 @@ all: $(TARGET) $(TARGET2) $(TARGET0)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
+	$(MAKE) -C tinyxml2
 
 $(TARGET): $(TARGET).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
