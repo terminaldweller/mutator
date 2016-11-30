@@ -20,6 +20,9 @@ public:
 
   void XMLCreateReport(void);
   void XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description);
+  /*overloaded for rule checks that announce the result on onendoftranslation instead of run
+  since they dont have access to matchresult or astcontext.*/
+  void XMLAddNode(FullSourceLoc FSL, SourceLocation SL, std::string MisraRule, std::string Description);
   void SaveReport(void);
 
 private:
