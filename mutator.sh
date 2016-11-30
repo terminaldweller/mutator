@@ -4,7 +4,7 @@
 #the arguments' positions are not important. you also get long and short options.
 
 #default args
-INPUT='./test/testFuncs1.c ./test/main.c ./test/testFuncs2.c'
+INPUT="./test/testFuncs1.c ./test/main.c ./test/testFuncs2.c"
 OUTPUT="./mutant.c"
 OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
@@ -46,14 +46,6 @@ do
 		-i|--input|-input)
 		INPUT="$2"
 		shift
-		while [[ $# -gt 0 ]]
-		do
-		case &arg in
-			-*)
-			;;
-			default)
-		esac	
-		done
 		;;
 		-o|--output|-output)
 		OUTPUT="$2"
@@ -88,13 +80,13 @@ elif [[ "$COMMAND" == "build-all" ]]; then
 	"make" all
 elif [[ "$COMMAND" == "run" ]];then
 	echo "Running executables on target file..."
-	"./mutator" "$INPUT" -- > mutant-lvl1.c
+	"./mutator" $INPUT -- > mutant-lvl1.c
 	"./mutator-lvl2" mutant-lvl1.c -- > $OUTPUT
 elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Removing previous XML report..."
 	"rm" ./test/misrareport.xml
 	echo "checking input file(s) against Misra-C 2004..."
-	"./mutator-lvl0" "$INPUT" -- > ./test/misra-log
+	"./mutator-lvl0" $INPUT -- > ./test/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
