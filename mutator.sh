@@ -49,7 +49,9 @@ do
 		while [[ $# -gt 0 ]]
 		do
 		case &arg in
-			
+			-*)
+			;;
+			default)
 		esac	
 		done
 		;;
@@ -89,6 +91,8 @@ elif [[ "$COMMAND" == "run" ]];then
 	"./mutator" "$INPUT" -- > mutant-lvl1.c
 	"./mutator-lvl2" mutant-lvl1.c -- > $OUTPUT
 elif [[ "$COMMAND" == "misrac" ]]; then
+	echo "Removing previous XML report..."
+	"rm" ./test/misrareport.xml
 	echo "checking input file(s) against Misra-C 2004..."
 	"./mutator-lvl0" "$INPUT" -- > ./test/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
