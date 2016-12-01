@@ -15,9 +15,12 @@
 #include "clang/AST/ASTConsumer.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/Lexer.h"
+#include "clang/Lex/Preprocessor.h"
+#include "clang/Lex/PPCallbacks.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
@@ -2136,6 +2139,105 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class PPInclusion : public PPCallbacks
+{
+public:
+  explicit PPInclusion (SourceManager *SM) : SM(*SM) {}
+
+  virtual void InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, StringRef FileName, \
+                                   bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
+                                   StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported)
+  {
+    if (IsAngled)
+    {
+      size_t singleQPos = FileName.find("\'", 0);
+      size_t doubleQPos = FileName.find("\"", 0);
+      size_t whateverSlashPos = FileName.find("\\", 0);
+      size_t commentPos = FileName.find("\\*", 0);
+
+      if (singleQPos != std::string::npos || doubleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
+      {
+        std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
+        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+      }
+
+      if (FileName == "time.h")
+      {
+        std::cout << "20.12 : " << "stdlib time.h is included in the project. use is forbidden : " << std::endl;
+        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+      }
+
+      if (FileName == "stdio.h")
+      {
+        std::cout << "20.9 : " << "stdlib stdio.h is included in the project. use is forbidden : " << std::endl;
+        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+      }
+
+      if (FileName == "signal.h")
+      {
+        std::cout << "20.8 : " << "stdlib signal.h is included in the project. use is forbidden : " << std::endl;
+        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+      }
+    }
+    else
+    {
+      size_t singleQPos = FileName.find("\'", 0);
+      size_t whateverSlashPos = FileName.find("\\", 0);
+      size_t commentPos = FileName.find("\\*", 0);
+
+      if (singleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
+      {
+        std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
+        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+      }
+    }
+
+    size_t whateverSlashPos = FileName.find("\\", 0);
+    size_t theotherSlashPos = FileName.find("/", 0);
+
+    if (whateverSlashPos != std::string::npos || theotherSlashPos != std::string::npos)
+    {
+      std::cout << "19.3 : " << "Include directive contains file address, not just name : " << std::endl;
+      std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+    }
+
+  }
+
+  virtual void MacroUndefined(const Token &MacroNameTok, const MacroDefinition &MD)
+  {
+    SourceLocation SL = MacroNameTok.getLocation();
+
+    std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
+    std::cout << SL.printToString(SM) << "\n" << std::endl;
+  }
+
+  virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD)
+  {
+    const MacroInfo* MI = MD->getMacroInfo();
+
+    if (MI->isFunctionLike())
+    {
+      SourceLocation SL = MacroNameTok.getLocation();
+
+      std::cout << "19.7 : " << "Function-like macro used : " << std::endl;
+      std::cout << SL.printToString(SM) << "\n" << std::endl;
+    }
+  }
+
+  virtual void MacroExpands(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range, const MacroArgs *Args)
+  {
+    DefMacroDirective* DMD = MD.getLocalDirective();
+
+    if (!DMD->isDefined())
+    {
+      std::cout << "19.11 : " << "Use of undefined macro : " << std::endl;
+      std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+    }
+  }
+
+private:
+  const SourceManager &SM;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -2375,16 +2477,16 @@ private:
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
-class MyFrontendAction : public ASTFrontendAction {
+/**********************************************************************************************************************/
+class MyFrontendAction : public ASTFrontendAction
+{
 public:
   MyFrontendAction() {}
-  void EndSourceFileAction() override {
-#if 0
-    TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
-#endif
-  }
 
-  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
+  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+  {
+    CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
+
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
   }
@@ -2394,7 +2496,8 @@ private:
 };
 /**********************************************************************************************************************/
 /*Main*/
-int main(int argc, const char **argv) {
+int main(int argc, const char **argv)
+{
   CommonOptionsParser op(argc, argv, MatcherSampleCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
