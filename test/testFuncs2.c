@@ -3,9 +3,25 @@
 /*********************************************************************************************************************/
 /*inclusion directives*/
 #include "testFuncs2.h"
+#if 0
+#include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <signal.h>
+#include <time.h>
+#endif
 /*********************************************************************************************************************/
 /*macro and definitions*/
 typedef const* INTPTR;
+
+#define XMACRO Y
+
+#define ABSOLUTE(X) (((X) >= 0) ? (X) : -(X))
+#define ABSOLUTE2(X) ((X >= 0) ? X : -X)
+#define ABSOLUTE3(XMACRO) (((XMACRO) <= 0) ? (XMACRO) : -(XMACRO))
+
+#define LOCOLUPO
+#undef LOCOLUPO
 /*********************************************************************************************************************/
 /*Globals*/
 
@@ -13,6 +29,7 @@ typedef const* INTPTR;
 /*functions go here.*/
 static void test33(void)
 {
+
 	short int a;
 	long int b;
 
@@ -26,6 +43,9 @@ void testfunc1(void)
 
 	b =  a;
 }
+
+#if CRAZYMACRO < 0
+#endif
 
 testfunc2(void)
 {
@@ -41,6 +61,9 @@ void testfunc3()
 	int a;
 	int b;
 	int c;
+
+	int abcdefghijklmnopqrstuvwxyz1234567890;
+	int abcdefghijklmnopqrstuvwxyz12345678902;
 
 	/*do stuff*/
 }

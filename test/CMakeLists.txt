@@ -1,3 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
 project (tdd_test)
+set(CMAKE_C_COMPILER_ID "Clang")
+set(CMAKE_CXX_COMPILER_ID "Clang")
 add_executable(tddtest main.c testFuncs1.c testFuncs2.c)

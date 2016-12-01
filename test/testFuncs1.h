@@ -2,8 +2,8 @@
 /*the first line's been intentionally left blank.*/
 /***********************************************************************************************************/
 /*defines*/
-#ifndef TESTFUNCS1_H
-#define TESTFUNCS1_H
+#ifndef _TEST1_H
+#define _TEST1_H
 
 #define FALSE 0
 #define TRUE 1
@@ -129,7 +129,6 @@ void test27(void);
 void test28(void);
 int test29(int a);
 int test31(void);
-
 #endif
 /***********************************************************************************************************/
 /*ive been intentionally left blank. dont touch me.*/
