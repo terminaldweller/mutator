@@ -2140,6 +2140,108 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*in case of function pointers, where an argument has more than two levels of indirection,
+the argument and the function pointer both get tagged. technically, it is a defendable.*/
+class MCPointer175 : public MatchFinder::MatchCallback
+{
+public:
+  MCPointer175 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    const VarDecl* VD;
+    const FieldDecl* FD;
+    SourceLocation SL;
+    QualType QT;
+
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcpointer175") != nullptr)
+    {
+      VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpointer175");
+
+      SL = VD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QT = VD->getType();
+    }
+
+    if (MR.Nodes.getNodeAs<clang::FieldDecl>("mcpointer175field") != nullptr)
+    {
+      FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mcpointer175field");
+
+      SL = FD->getSourceRange().getBegin();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QT = FD->getType();
+    }
+
+
+    QualType CQT = QT.getCanonicalType();
+
+    std::string CQTAsString = CQT.getAsString();
+
+    const clang::Type* TP = CQT.getTypePtr();
+
+    unsigned starCounter = 0U;
+    size_t StarPos = 0U;
+    size_t OpenParens = 0U;
+    size_t NextOpenParens = 0U;
+    size_t CommaPos = 0U;
+    size_t NextCommaPos = 0U;
+    bool FoundAMatch = false;
+
+    while (StarPos != std::string::npos)
+    {
+      StarPos = CQTAsString.find("*", StarPos + 1);
+      OpenParens = CQTAsString.find("(", NextOpenParens + 1);
+      CommaPos = CQTAsString.find(",", NextCommaPos + 1);
+
+      if (OpenParens != std::string::npos)
+      {
+        if (StarPos > OpenParens)
+        {
+          starCounter = 0U;
+          NextOpenParens = OpenParens;
+        }
+
+      }
+
+      if (CommaPos != std::string::npos)
+      {
+        if (StarPos > CommaPos)
+        {
+          starCounter = 0U;
+          NextCommaPos = CommaPos;
+        }
+      }
+
+      if (StarPos != std::string::npos)
+      {
+        starCounter++;
+      }
+
+      if (starCounter >= 3U)
+      {
+        std::cout << "17.5 : " << "Pointer has more than 2 levels of indirection : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "17.5", "Pointer has more than 2 levels on indirection : ");
+
+        break;
+      }
+    }
+
+
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /*the sourcelocation used in the overload of XMLAddNode that takes sourcemanager as input parameter uses
 the speeling location so the client does not need to check the sourcelocation for macros.*/
 class PPInclusion : public PPCallbacks
@@ -2277,7 +2379,7 @@ public:
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
-    HandlerForPointer1723(R), HandlerForPointer174(R) {
+    HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -2439,6 +2541,9 @@ public:
                                          binaryOperator(hasOperatorName("+")), binaryOperator(hasOperatorName("+=")), \
                                          binaryOperator(hasOperatorName("-"))))), to(varDecl(hasType(pointerType()))))).bind("mcpointer1742"), &HandlerForPointer174);
     /*end of 17.4 matchers*/
+    Matcher.addMatcher(varDecl(hasType(pointerType())).bind("mcpointer175"), &HandlerForPointer175);
+
+    Matcher.addMatcher(fieldDecl().bind("mcpointer175field"), &HandlerForPointer175);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -2497,6 +2602,7 @@ private:
   MCPointer171 HandlerForPointer171;
   MCPointer1723 HandlerForPointer1723;
   MCPointer174 HandlerForPointer174;
+  MCPointer175 HandlerForPointer175;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
