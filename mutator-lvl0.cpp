@@ -2230,7 +2230,6 @@ public:
       }
     }
 
-
   }
 
 private:
@@ -2334,14 +2333,134 @@ public:
   {
     const MacroInfo* MI = MD->getMacroInfo();
 
+    SourceLocation SL = MacroNameTok.getLocation();
+    unsigned MacroNumArgs = MI->getNumArgs();
+
+    ArrayRef<Token> TokenArrayRef = MI->tokens();
+    ArrayRef<const IdentifierInfo*> MacroArgsArrRef = MI->args();
+
+    unsigned NumOfTokens = MI->getNumTokens();
+
+    bool hasSingleHash = false;
+    bool hasDoubleHash = false;
+
+    for (unsigned x = 0; x < NumOfTokens; ++x)
+    {
+      if (TokenArrayRef[x].getKind() == tok::hash)
+      {
+        hasSingleHash = true;
+
+        std::cout << "19.13 : " << "Macro has # token : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has # token : ");
+      }
+
+      if (TokenArrayRef[x].getKind() == tok::hashhash)
+      {
+        hasDoubleHash = true;
+
+        std::cout << "19.13 : " << "Macro has ## token : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has ## token : ");
+      }
+    }
+
+    if (hasSingleHash && hasDoubleHash)
+    {
+      std::cout << "19.12 : " << "Macro has # and ## tokens : " << std::endl;
+      std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "19.12", "Macro has # and ## tokens : ");
+    }
+
     if (MI->isFunctionLike())
     {
-      SourceLocation SL = MacroNameTok.getLocation();
+      bool ShouldBeTagged = false;
+      bool IsIdentifierMacroArg = false;
+      bool HasHash = false;
+
+      for (unsigned x = 0U; x < NumOfTokens; ++x)
+      {
+        if (TokenArrayRef[x].getKind() == tok::identifier)
+        {
+          for (unsigned  xx = 0; xx < MacroNumArgs; ++xx)
+          {
+            if (TokenArrayRef[x].getIdentifierInfo()->getName().str() == MacroArgsArrRef[xx]->getName().str())
+            {
+              IsIdentifierMacroArg = true;
+            }
+          }
+
+          if (IsIdentifierMacroArg)
+          {
+            if (x <= NumOfTokens - 2U)
+            {
+              if (TokenArrayRef[x + 1U].getKind() == tok::hashhash)
+              {
+                HasHash = true;
+              }
+            }
+
+            if (x >= 1U)
+            {
+              if (TokenArrayRef[x - 1U].getKind() == tok::hash || TokenArrayRef[x - 1U].getKind() == tok::hashhash)
+              {
+                HasHash = true;
+              }
+            }
+
+            if (x <= NumOfTokens - 2U)
+            {
+              if (!(TokenArrayRef[x + 1U].getKind() == tok::r_paren) && !HasHash)
+              {
+                ShouldBeTagged = true;
+              }
+            }
+
+            if (x >= 1U)
+            {
+              if (!(TokenArrayRef[x - 1U].getKind() == tok::l_paren) && !HasHash)
+              {
+                ShouldBeTagged = true;
+              }
+            }
+          }
+        }
+
+        IsIdentifierMacroArg = false;
+        HasHash = false;
+      }
+
+      if (ShouldBeTagged)
+      {
+        std::cout << "19.10 : " << "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, SL, "19.10", "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : ");
+      }
 
       std::cout << "19.7 : " << "Function-like macro used : " << std::endl;
       std::cout << SL.printToString(SM) << "\n" << std::endl;
 
       XMLDocOut.XMLAddNode(SM, SL, "19.7", "Function-like macro used : ");
+
+      if (MacroNumArgs != 0)
+      {
+        for (unsigned x = 0; x < MacroNumArgs; ++x)
+        {
+          if (MacroArgsArrRef[0]->hasMacroDefinition())
+          {
+            std::cout << "19.9 : " << "Function-like macro's argument contains macros : " << std::endl;
+            std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(SM, SL, "19.9", "Function-like macro's argument contains macros : ");
+
+            break;
+          }
+        }
+      }
     }
   }
 
