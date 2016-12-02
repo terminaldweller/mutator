@@ -2139,6 +2139,8 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*the sourcelocation used in the overload of XMLAddNode that takes sourcemanager as input parameter uses
+the speeling location so the client does not need to check the sourcelocation for macros.*/
 class PPInclusion : public PPCallbacks
 {
 public:
@@ -2159,24 +2161,32 @@ public:
       {
         std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
         std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
       }
 
       if (FileName == "time.h")
       {
         std::cout << "20.12 : " << "stdlib time.h is included in the project. use is forbidden : " << std::endl;
         std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
       }
 
       if (FileName == "stdio.h")
       {
         std::cout << "20.9 : " << "stdlib stdio.h is included in the project. use is forbidden : " << std::endl;
         std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
       }
 
       if (FileName == "signal.h")
       {
         std::cout << "20.8 : " << "stdlib signal.h is included in the project. use is forbidden : " << std::endl;
         std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
       }
     }
     else
@@ -2189,6 +2199,8 @@ public:
       {
         std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
         std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
       }
     }
 
@@ -2199,6 +2211,8 @@ public:
     {
       std::cout << "19.3 : " << "Include directive contains file address, not just name : " << std::endl;
       std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
     }
 
   }
@@ -2209,6 +2223,8 @@ public:
 
     std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
     std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+    XMLDocOut.XMLAddNode(SM, SL, "19.6", "Use of #undef is illegal : ");
   }
 
   virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD)
@@ -2221,17 +2237,23 @@ public:
 
       std::cout << "19.7 : " << "Function-like macro used : " << std::endl;
       std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "19.7", "Function-like macro used : ");
     }
   }
 
   virtual void MacroExpands(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range, const MacroArgs *Args)
   {
+    SourceLocation SL = MacroNameTok.getLocation();
+
     DefMacroDirective* DMD = MD.getLocalDirective();
 
     if (!DMD->isDefined())
     {
       std::cout << "19.11 : " << "Use of undefined macro : " << std::endl;
       std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "19.11", "Use of undefined macro : ");
     }
   }
 
