@@ -19,9 +19,11 @@ Here's a quick look into the project files and directories:<br/>
 #### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
 
 ###Building and Running
-To build the project, you need to have the LLVM libraries 4.0(that's the version the project is currently using) to avoid any unforseen results. The project can not be built with LLVM 3.8 or lower, but I haven't tested LLVM 3.9. Just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
+To build the project, you need to have the LLVM libraries 4.0(that's the version the project is currently using) to avoid any unforseen results. The project can not be built with LLVM 3.8 or lower, but I haven't tested LLVM 3.9. Before you run make, remove everything from **EXTRA_CXX_FLAGS**. After that, just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
+<br/>
 You need to make sure that **llvm-configure** is in path since that's how the make file access the build parameters used to build the library (Thank you LLVM!).<br/>
 The makefile uses **clang++ 4.0** as the compiler to build the project. On paper, any latest version of g++ should do the trick but this remains untested.<br/>
+<br/>
 **mutator-lvl0** will run the Misra-C:2004 checks.<br/>
 **mutator** will run the level-1 Misra-C:2004 implementers.<br/>
 **mutator-lvl2** will run the level-2 Misra-C:2004 implementers.<br/>
@@ -42,6 +44,9 @@ Also a note regarding building the LLVM libraries. It is safer to build the libr
 The master branch is the dev version. Release versions will be forked.<br/>
 Doxygen comments will be added later on.<br/>
 The XML Misra-C report uses [TinyXML-2](https://github.com/leethomason/tinyxml2). It is lighweight and fast and the license suits the mutator project.<br/>
+
+### Feedback
+If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any) .<br/>
 
 ### Future Feature
 * Misra-c:2012 check support<br/>
