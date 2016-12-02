@@ -1,14 +1,18 @@
 
+/*first line intentionally left blank.*/
+/*********************************************************************************************************************/
+/*inclusion directives*/
+#include "mutator_aux.h"
 #include <string>
 #include <iostream>
 #include "clang/AST/AST.h"
-#include "mutator_aux.h"
+#include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "tinyxml2/tinyxml2.h"
-
+/*********************************************************************************************************************/
 using namespace clang;
 using namespace tinyxml2;
-
+/*********************************************************************************************************************/
 namespace Devi {
 /*a simple function that checks the sourcelocations for a macro expansion. returns the sourcelocation without
 macro expansion address.*/
@@ -48,7 +52,7 @@ XMLReport::XMLReport()
   RootPointer = XMLReportDoc.NewElement("Report");
 }
 
-void XMLReport::XMLCreateReport(void)
+void XMLReport::XMLCreateReport()
 {
 
   XMLReportDoc.InsertFirstChild(RootPointer);
@@ -92,6 +96,24 @@ void XMLReport::XMLAddNode(FullSourceLoc FullSrcLoc, SourceLocation SL, std::str
   RootPointer->InsertEndChild(MisraElement);
 }
 
+void XMLReport::XMLAddNode(const SourceManager &SM, SourceLocation SL, std::string MisraRule, std::string Description)
+{
+  SL = SM.getSpellingLoc(SL);
+
+  unsigned LineNumber = SM.getSpellingLineNumber(SL);
+  unsigned ColumnNumber = SM.getSpellingColumnNumber(SL);
+
+  std::string FileNameString = SM.getFilename(SL).str();
+
+  XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
+  MisraElement->SetText(Description.c_str());
+  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("FileName", FileNameString.c_str());
+  MisraElement->SetAttribute("SpellingLineNumber", LineNumber);
+  MisraElement->SetAttribute("SpellingColumnNumber", ColumnNumber);
+  RootPointer->InsertEndChild(MisraElement);
+}
+
 void XMLReport::SaveReport(void)
 {
   XMLError XMLErrorResult = XMLReportDoc.SaveFile("/home/bloodstalker/devi/hell2/test/misrareport.xml");
@@ -103,3 +125,5 @@ void XMLReport::SaveReport(void)
 }
 /*********************************************************************************************************************/
 }
+/*********************************************************************************************************************/
+/*last line intentionally left blank.*/
