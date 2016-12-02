@@ -20,6 +20,11 @@ typedef const* INTPTR;
 #define ABSOLUTE2(X) ((X >= 0) ? X : -X)
 #define ABSOLUTE3(XMACRO) (((XMACRO) <= 0) ? (XMACRO) : -(XMACRO))
 #define MINUS(X,Y) ((X) - (Y))
+#define PRINT(bubba) printf(#bubba "%d\n", bubba)
+#define LOCO i##nt
+#define LOCO2 #LOCO2
+#define LOCO3(bubba) printf(#bubba "%d\n", bu##bba)
+#define DEFINEVAR(X,Y) int X##Y
 
 #define LOCOLUPO
 #undef LOCOLUPO
