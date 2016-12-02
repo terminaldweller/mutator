@@ -48,7 +48,7 @@ The XML Misra-C report uses [TinyXML-2](https://github.com/leethomason/tinyxml2)
 ### Feedback
 If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any) .<br/>
 
-### Future Feature
+### Future Features
 * Misra-c:2012 check support<br/>
 * Support for JSON report output<br/>
 
