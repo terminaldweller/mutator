@@ -1,5 +1,6 @@
 
 /*first line intentionally left blank.*/
+/*code structure inspired by Eli Bendersky's tutorial on Rewriters.*/
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
