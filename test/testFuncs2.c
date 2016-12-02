@@ -138,6 +138,13 @@ void testfunc9(void)
 	int ** (**pfunc2)();
 	int ** (***pfunc3)();
 	int *** (**pfunc4)();
+	int ** (**pfunc5)(int**, int**);
+	int ** (**pfunc6)(int**, int***);
+}
+
+void testfunc10 (int ** (**p5)(int**, int**), int ** (**p6)(int**, int***))
+{
+
 }
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
