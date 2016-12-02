@@ -19,6 +19,7 @@ typedef const* INTPTR;
 #define ABSOLUTE(X) (((X) >= 0) ? (X) : -(X))
 #define ABSOLUTE2(X) ((X >= 0) ? X : -X)
 #define ABSOLUTE3(XMACRO) (((XMACRO) <= 0) ? (XMACRO) : -(XMACRO))
+#define MINUS(X,Y) ((X) - (Y))
 
 #define LOCOLUPO
 #undef LOCOLUPO
@@ -32,6 +33,9 @@ static void test33(void)
 
 	short int a;
 	long int b;
+
+	MINUS(a, b);
+	//MINUS(a);
 
 	b = (int)a;
 }
