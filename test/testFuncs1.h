@@ -10,21 +10,21 @@
 
 /***********************************************Global******************************************************/
 extern union uni {
-	int a;
-	double b;
-	char str[20];
+  int a;
+  double b;
+  char str[20];
 } uni1;
 
 extern cucu;
 /***********************************************************************************************************/
 /*choose the compiler*/
-#define COMPILER 	GCC
+#define COMPILER  GCC
 
-#define HCS12	1U
-#define MPC 	2U
-#define RL78	3U
-#define GCC		4U
-#define CLANG	5U
+#define HCS12 1U
+#define MPC   2U
+#define RL78  3U
+#define GCC   4U
+#define CLANG 5U
 
 /***********************************************************************************************************/
 /*options*/
@@ -129,6 +129,8 @@ void test27(void);
 void test28(void);
 int test29(int a);
 int test31(void);
+
+void malloc (void);
 #endif
 /***********************************************************************************************************/
 /*ive been intentionally left blank. dont touch me.*/

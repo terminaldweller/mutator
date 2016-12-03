@@ -21,15 +21,15 @@ void testFunc1(void);
 
 void testFunc4()
 {
-	/*do shit*/
+  /*do shit*/
 }
 
 testFunc5( void)
 {
-	//different kind of comment
-	///another kind
-	/*this kind*/
-	/**that kind*/
+  //different kind of comment
+  ///another kind
+  /*this kind*/
+  /**that kind*/
 }
 
 void testFunc9(void);
