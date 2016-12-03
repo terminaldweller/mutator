@@ -38,6 +38,10 @@ using namespace clang::tooling;
 /*global vars*/
 Devi::XMLReport XMLDocOut;
 
+std::vector<SourceLocation> MacroDefSourceLocation;
+std::vector<SourceLocation> MacroUndefSourceLocation;
+std::vector<std::string> MacroNameString;
+
 static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
 /**********************************************************************************************************************/
 class MCForCmpless : public MatchFinder::MatchCallback {
@@ -475,6 +479,54 @@ public:
 
       const FunctionDecl *FD = CE->getDirectCallee();
 
+      DeclarationNameInfo DNI = FD->getNameInfo();
+
+      std::string FuncNameString = DNI.getAsString();
+
+      ASTContext *const ASTC = MR.Context;
+
+      const SourceManager &SM = ASTC->getSourceManager();
+
+      /*start of 20.4*/
+      if ((FuncNameString == "malloc" || FuncNameString == "calloc" || FuncNameString == "free" || FuncNameString == "realloc") && SM.isInSystemHeader(FD->getLocStart()))
+      {
+        std::cout << "20.4 : " << "Dynamic heap memory allocation used: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
+      }
+      /*end of 20.4*/
+
+      /*start of 20.7*/
+      if ((FuncNameString == "longjmp") && SM.isInSystemHeader(FD->getLocStart()))
+      {
+        std::cout << "20.7 : " << "Use of lonjmp is illegal: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
+      }
+      /*end of 20.7*/
+
+      /*start of 20.10*/
+      if ((FuncNameString == "atof" || FuncNameString == "atoi" || FuncNameString == "atol") && SM.isInSystemHeader(FD->getLocStart()))
+      {
+        std::cout << "20.10 : " << "Use of atof,atoi and atol is illegal: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
+      }
+      /*end of 20.10*/
+
+      /*start of 20.11*/
+      if ((FuncNameString == "abort" || FuncNameString == "exit" || FuncNameString == "getenv" || FuncNameString == "system") && SM.isInSystemHeader(FD->getLocStart()))
+      {
+        std::cout << "20.11 : " << "Use of abort,exit,getenv and system is illegal : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
+      }
+      /*end of 20.11*/
+
       if (CE->getNumArgs() != FD->getNumParams())
       {
         std::cout << "16.6 : " << "CallExpr number of arguments does not equal the number of parameters in the declaration: " << std::endl;
@@ -669,7 +721,6 @@ public:
     VecC = 0U;
   };
 
-  /*underdev*/
   virtual void run(const MatchFinder::MatchResult &MR)
   {
     if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81") != nullptr)
@@ -682,6 +733,46 @@ public:
 
       SourceLocation SL = FD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      SourceLocation SLE = FD->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
+
+      ASTContext* const ASTC = MR.Context;
+      const SourceManager &SM = ASTC->getSourceManager();
+      FullSourceLoc FSL = ASTC->getFullLoc(SL);
+      FullSourceLoc FSLE = ASTC->getFullLoc(SLE);
+
+      /*start of checks for 19.5*/
+      /*has false positives.*/
+      if (FD->isThisDeclarationADefinition())
+      {
+        for (unsigned x = 0; x < MacroDefSourceLocation.size(); ++x)
+        {
+          if (FSL.isBeforeInTranslationUnitThan(MacroDefSourceLocation[x]) && \
+              !FSLE.isBeforeInTranslationUnitThan(MacroDefSourceLocation[x]) && \
+              SM.isInMainFile(MacroDefSourceLocation[x]) && !SM.isInSystemHeader(MacroDefSourceLocation[x]))
+          {
+            std::cout << "19.5 : " << "Macro defined inside a block : " << std::endl;
+            std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << " " << MacroNameString[x] << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
+          }
+        }
+
+        for (unsigned x = 0; x < MacroUndefSourceLocation.size(); ++x)
+        {
+          if (FSL.isBeforeInTranslationUnitThan(MacroUndefSourceLocation[x]) && \
+              !FSLE.isBeforeInTranslationUnitThan(MacroUndefSourceLocation[x]) && \
+              SM.isInMainFile(MacroUndefSourceLocation[x]) && !SM.isInSystemHeader(MacroUndefSourceLocation[x]))
+          {
+            std::cout << "19.5 : " << "Macro undefined inside a block : " << std::endl;
+            std::cout << MacroUndefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, MacroUndefSourceLocation[x], "19.5", "Macro undefined inside a block : ");
+          }
+        }
+      }
+      /*end of checks for 19.5*/
 
       /*going through the already matched functions,making sure we are not adding duplicates.*/
       for (unsigned x = 0; x < VecC; ++x)
@@ -2242,7 +2333,7 @@ private:
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /*the sourcelocation used in the overload of XMLAddNode that takes sourcemanager as input parameter uses
-the speeling location so the client does not need to check the sourcelocation for macros.*/
+the spelling location so the client does not need to check the sourcelocation for macros expansions.*/
 class PPInclusion : public PPCallbacks
 {
 public:
@@ -2265,6 +2356,14 @@ public:
         std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+      }
+
+      if (FileName == "errno.h")
+      {
+        std::cout << "20.5 : " << "errno shall not be used : " << std::endl;
+        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, HashLoc, "20.5", "errno shall not be used : ");
       }
 
       if (FileName == "time.h")
@@ -2319,9 +2418,108 @@ public:
 
   }
 
+  /*if the macro is not checked for being defined before almost any kind of use, the code will break in seemingly random ways.*/
+  /*FIXME-the macro definition is the definition of the macro passed to defined. not sure what happens if there are more than two.
+  basically i dont know how to just get the tokens after defined.*/
+  virtual void Defined(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range)
+  {
+    SourceLocation SL = Range.getBegin();
+
+    const MacroInfo* MI = MD.getMacroInfo();
+
+    DefMacroDirective* DMD = MD.getLocalDirective();
+
+    bool ShouldBeTagged195 = false;
+
+    if (DMD->isDefined())
+    {
+      if (!MI->tokens_empty())
+      {
+        ArrayRef<Token> TokenArrayRef = MI->tokens();
+
+        unsigned NumOfTokens = MI->getNumTokens();
+
+        if (NumOfTokens == 1U)
+        {
+          if (!(TokenArrayRef[0].getKind() == tok::identifier))
+          {
+            ShouldBeTagged195 = true;
+          }
+        }
+        else if (NumOfTokens == 3U)
+        {
+          if (!(TokenArrayRef[0].getKind() == tok::l_paren && TokenArrayRef[1].getKind() == tok::identifier && TokenArrayRef[2].getKind() == tok::r_paren))
+          {
+            //ShouldBeTagged195 = true;
+          }
+        }
+        else
+        {
+          //ShouldBeTagged195 = true;
+        }
+      }
+      else
+      {
+        //ShouldBeTagged195 = true;
+      }
+
+      if (ShouldBeTagged195)
+      {
+#if 0
+        std::cout << "19.14 : " << "Illegal \"defined\" form : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, SL, "19.14", "Illegal \"defined\" form : ");
+#endif
+      }
+    }
+
+  }
+
   virtual void MacroUndefined(const Token &MacroNameTok, const MacroDefinition &MD)
   {
+    const MacroInfo* MI = MD.getMacroInfo();
+
+    DefMacroDirective* DMD = MD.getLocalDirective();
+
     SourceLocation SL = MacroNameTok.getLocation();
+
+    /*start of 20.1*/
+    /*inline and restrict are C99*/
+    if (MacroNameTok.isOneOf(tok::kw_auto, tok::kw_break, tok::kw_case, tok::kw_char, tok::kw_const, tok::kw_continue, \
+                             tok::kw_default, tok::kw_do, tok::kw_double, tok::kw_else, tok::kw_enum, tok::kw_extern, \
+                             tok::kw_float, tok::kw_for, tok::kw_goto, tok::kw_if, tok::kw_inline, tok::kw_int, tok::kw_long, \
+                             tok::kw_register, tok::kw_restrict, tok::kw_return, tok::kw_short, tok::kw_signed, tok::kw_sizeof, \
+                             tok::kw_static, tok::kw_struct, tok::kw_switch, \
+                             tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
+    {
+      std::cout << "20.1 : " << "C keyword undefined : " << std::endl;
+      std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword undefined : ");
+    }
+
+    if (DMD->getPrevious() != nullptr)
+    {
+      const MacroDirective* PMD = DMD->getPrevious();
+      SourceLocation PSL = PMD->getLocation();
+
+      if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
+      {
+        std::cout << "20.1 : " << "C standard library macro undefined : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro undefined : ");
+      }
+    }
+    /*end of 20.1*/
+
+    /*start of 19.5*/
+    if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL))
+    {
+      MacroUndefSourceLocation.push_back(SL);
+    }
+    /*end of 19.5*/
 
     std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
     std::cout << SL.printToString(SM) << "\n" << std::endl;
@@ -2335,6 +2533,44 @@ public:
 
     SourceLocation SL = MacroNameTok.getLocation();
     unsigned MacroNumArgs = MI->getNumArgs();
+
+    /*start of 19.5*/
+    if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL))
+    {
+      MacroDefSourceLocation.push_back(SM.getExpansionLoc(SL));
+      MacroNameString.push_back(MacroNameTok.getIdentifierInfo()->getName().str());
+    }
+    /*end of 19.5*/
+
+    /*start of 20.1*/
+    /*inline and restrict are C99*/
+    if (MacroNameTok.isOneOf(tok::kw_auto, tok::kw_break, tok::kw_case, tok::kw_char, tok::kw_const, tok::kw_continue, \
+                             tok::kw_default, tok::kw_do, tok::kw_double, tok::kw_else, tok::kw_enum, tok::kw_extern, \
+                             tok::kw_float, tok::kw_for, tok::kw_goto, tok::kw_if, tok::kw_inline, tok::kw_int, tok::kw_long, \
+                             tok::kw_register, tok::kw_restrict, tok::kw_return, tok::kw_short, tok::kw_signed, tok::kw_sizeof, \
+                             tok::kw_static, tok::kw_struct, tok::kw_switch, \
+                             tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
+    {
+      std::cout << "20.1 : " << "C keyword defined : " << std::endl;
+      std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword defined : ");
+    }
+
+    if (MD->getPrevious() != nullptr)
+    {
+      const MacroDirective* PMD = MD->getPrevious();
+      SourceLocation PSL = PMD->getLocation();
+
+      if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
+      {
+        std::cout << "20.1 : " << "C standard library macro redefined : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro redefined : ");
+      }
+    }
+    /*end of 20.1*/
 
     ArrayRef<Token> TokenArrayRef = MI->tokens();
     ArrayRef<const IdentifierInfo*> MacroArgsArrRef = MI->args();
@@ -2468,7 +2704,27 @@ public:
   {
     SourceLocation SL = MacroNameTok.getLocation();
 
+    IdentifierInfo* II = MacroNameTok.getIdentifierInfo();
+
+    std::string MacroNameString = II->getName().str();
+
     DefMacroDirective* DMD = MD.getLocalDirective();
+
+    if (MacroNameString == "offsetof" && SM.isInSystemHeader(DMD->getLocation()))
+    {
+      std::cout << "20.6 : " << "use of offsetof is illegal : " << std::endl;
+      std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "20.6", "use of offsetof is illegal : ");
+    }
+
+    if (MacroNameString == "setjmp" && SM.isInSystemHeader(DMD->getLocation()))
+    {
+      std::cout << "20.7 : " << "use of setjmp is illegal : " << std::endl;
+      std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "20.7", "use of setjmp is illegal : ");
+    }
 
     if (!DMD->isDefined())
     {
