@@ -16,6 +16,9 @@ extern union uni {
 } uni1;
 
 extern cucu;
+int yetanotherheadervar;
+
+double yetanotherdoubleinsideaheader;
 /***********************************************************************************************************/
 /*choose the compiler*/
 #define COMPILER  GCC
@@ -129,6 +132,14 @@ void test27(void);
 void test28(void);
 int test29(int a);
 int test31(void);
+
+void headerfund(void)
+{
+  int a;
+  int b;
+  int sum;
+  sum = a + b;
+}
 
 void malloc (void);
 #endif

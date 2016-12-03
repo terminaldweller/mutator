@@ -13,6 +13,9 @@ extern int bbbb[] = {1, 2, 3, 4, 5, 6};
 int c[2][3] = {1, 2, 3, 4, 5, 6};
 
 int d[2][3] = {{1, 2, 3}, {4, 5, 6}};
+
+int headervar;
+double headervardouble;
 /*********************************************************************************************************************/
 /*funciton types go here.*/
 static void test33(void);
@@ -30,6 +33,11 @@ testFunc5( void)
   ///another kind
   /*this kind*/
   /**that kind*/
+}
+
+void anotherheaderfunc (void)
+{
+  /*i dont do jack.*/
 }
 
 void testFunc9(void);
