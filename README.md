@@ -32,6 +32,11 @@ Currently, the mutation-only features(mutation for the sake of mutation, technic
 <br/>
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile.<br/>
 
+### Dev Method
+TDD tests are created for each added feature which are stored under the **test** folder in the repo.<br/>
+Smoke tests and Daily builds are conducted to make sure the code base builds correctly more than once every day.<br/>
+Everytime there is a new commit, the code base is buildable and runnable. If you are having problems, raise an issue or let me know.<br/>
+
 ### Notes
 #### **The project will be updated everytime there is a major LLVM release and will use those libraries instead of the old ones.**
 #### **As soon as I manage to find a copy of the Misra-C:2012 document, I'll implement that. Currently the tool only supports Misra-C:2004.**
@@ -46,11 +51,14 @@ Doxygen comments will be added later on.<br/>
 The XML Misra-C report uses [TinyXML-2](https://github.com/leethomason/tinyxml2). It is lighweight and fast and the license suits the mutator project.<br/>
 
 ### Feedback
-If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any) .<br/>
+If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any).<br/>
 
 ### Future Features
 * Misra-c:2012 check support<br/>
 * Support for JSON report output<br/>
+* Ability to turn off some rule checks<br/>
 
 ###Support
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>
+If the company/organization you represent wants to sponsor mutator, let me know.<br/>
+#### Testers are always welcome. If you are interested, let me know. Testing mutator is as important, if not more, than implementing it.<br/>
