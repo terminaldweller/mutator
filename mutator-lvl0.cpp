@@ -41,6 +41,7 @@ Devi::XMLReport XMLDocOut;
 std::vector<SourceLocation> MacroDefSourceLocation;
 std::vector<SourceLocation> MacroUndefSourceLocation;
 std::vector<std::string> MacroNameString;
+std::vector<std::string> IncludeFileArr;
 
 static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
 /**********************************************************************************************************************/
@@ -742,6 +743,30 @@ public:
       FullSourceLoc FSL = ASTC->getFullLoc(SL);
       FullSourceLoc FSLE = ASTC->getFullLoc(SLE);
 
+      /*start of 8.5*/
+      bool FunctionDeclaredInsideHeader = false;
+
+      if (FD->isThisDeclarationADefinition())
+      {
+        for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
+        {
+          if (SM.getFilename(SL).str() == IncludeFileArr[x])
+          {
+            FunctionDeclaredInsideHeader = true;
+          }
+        }
+      }
+
+      if (FunctionDeclaredInsideHeader)
+      {
+        std::cout << "8.5 : " << "Function definition inside a header file : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Function definition inside a header file : ");
+      }
+      /*end of 8.5*/
+
+
       /*start of checks for 19.5*/
       /*has false positives.*/
       if (FD->isThisDeclarationADefinition())
@@ -893,6 +918,33 @@ public:
       QualType QT = VD->getType();
 
       const clang::Type* TP = QT.getTypePtr();
+
+      ASTContext *const ASTC = MR.Context;
+
+      SourceManager &SM = ASTC->getSourceManager();
+
+      /*start of 8.5*/
+      bool VarDeclaredInsideHeader = false;
+
+      if (VD->isThisDeclarationADefinition(*ASTC) && !(!VD->isLocalVarDecl() && VD->isLocalVarDeclOrParm()))
+      {
+        for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
+        {
+          if (SM.getFilename(SL).str() == IncludeFileArr[x])
+          {
+            VarDeclaredInsideHeader = true;
+          }
+        }
+      }
+
+      if (VarDeclaredInsideHeader)
+      {
+        std::cout << "8.5 : " << "Variable definition inside a header file : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Variable definition inside a header file : ");
+      }
+      /*end of 8.5*/
 
       /*start of 8.12*/
       if (!VD->hasInit())
@@ -2402,6 +2454,22 @@ public:
         std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+      }
+
+      bool IsNewIncludeFile = true;
+
+      for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
+      {
+        if (FileName.str() == IncludeFileArr[x])
+        {
+          IsNewIncludeFile = false;
+          break;
+        }
+      }
+
+      if (IsNewIncludeFile)
+      {
+        IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
       }
     }
 
