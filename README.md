@@ -1,5 +1,10 @@
 # mutator
 
+<a href="https://scan.coverity.com/projects/bloodstalker-mutator">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/11154/badge.svg"/>
+</a>
+
 A C code mutator,Misra-C checker and when possible, a Misra-C implementer using the Clang frontend written mostly in C++ and some bash.<br/>
 <br/>
 Here's a quick look into the project files and directories:<br/>
