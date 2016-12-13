@@ -1,5 +1,6 @@
 #!/bin/bash
 
+"apt-get" update -y
 "cd" ~
 "mkdir" llvm-clang4
 "cd" llvm-clang4
