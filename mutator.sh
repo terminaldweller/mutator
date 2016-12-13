@@ -4,7 +4,7 @@
 #the arguments' positions are not important. you also get long and short options.
 
 #default args
-INPUT="./test/testFuncs1.c ./test/main.c ./test/testFuncs2.c"
+INPUT="./test/testFuncs1.c ./test/testFuncs2.c"
 OUTPUT="./mutant.c"
 OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
@@ -86,7 +86,7 @@ elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Removing previous XML report..."
 	"rm" ./test/misrareport.xml
 	echo "checking input file(s) against Misra-C 2004..."
-	"./mutator-lvl0" $INPUT > ./test/misra-log
+	"./mutator-lvl0" $INPUT -- > ./test/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
