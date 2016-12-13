@@ -1,0 +1,7 @@
+
+
+before_script:
+  - ./extra-tools/CITPreBuildDep.sh
+language: cpp
+compiler: clang
+
