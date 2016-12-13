@@ -1,7 +1,7 @@
 
-
-before_script:
-  - ./extra-tools/CITPreBuildDep.sh
+sudo: required
 language: cpp
 compiler: clang
-
+before_script:
+  - ./extra-tools/CITPreBuildDep.sh
+script: make
