@@ -3,5 +3,5 @@ sudo: required
 language: cpp
 compiler: clang
 before_script:
-  - travis_wait 60 ./extra-tools/CITPreBuildDep.sh
+  - travis_wait 180 ./extra-tools/CITPreBuildDep.sh
 script: make
