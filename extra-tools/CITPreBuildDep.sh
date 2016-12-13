@@ -2,6 +2,8 @@
 
 "sudo" apt-get -qq update
 
+"sudo" apt-get install libstdc++
+
 #building cmkae 3.4.3 since the CI Travis virtual host is Ubuntu(???)
 "wget" http://www.cmake.org/files/v3.4/cmake-3.4.3.tar.gz
 "tar" -xvzf cmake-3.4.3.tar.gz 
@@ -21,5 +23,5 @@
 "svn" co http://llvm.org/svn/llvm-project/cfe/trunk clang
 "cd" ../..
 "cd" build
-"cmake" -G "Unix Makefiles" ../llvm -DC_MAKE_TYPE=Release
+"cmake" -G "Unix Makefiles" ../llvm -DC_BUILD_TYPE=Release
 "make"
