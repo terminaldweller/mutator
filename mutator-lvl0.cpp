@@ -928,6 +928,7 @@ public:
 
       if (VD->isThisDeclarationADefinition(*ASTC) && !(!VD->isLocalVarDecl() && VD->isLocalVarDeclOrParm()))
       {
+        std::cout << "XXXXXXXXXXXXXXXXXXXXXXXX" << " " << IncludeFileArr.size() << std::endl;
         for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
         {
           if (SM.getFilename(SL).str() == IncludeFileArr[x])
@@ -2460,21 +2461,30 @@ public:
 
       for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
       {
-        if (FileName.str() == IncludeFileArr[x])
+        if (SearchPath.str() + "/" + FileName.str() == IncludeFileArr[x])
         {
           IsNewIncludeFile = false;
           break;
         }
       }
 
+      /*its supposed to supprt linux and cygwin,mingw and mac builds.*/
       if (IsNewIncludeFile)
       {
+#if defined(__linux__)
         IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
+#elif defined(__MACH__) && defined(__APPLE__)
+        IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
+#elif defined(__CYGWIN__) || defined(_WIN32) || defined(_WIN64)
+        IncludeFileArr.push_back(SearchPath.str() + "\\" + FileName.str());
+#else
+        IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
+#endif
       }
     }
 
     size_t whateverSlashPos = FileName.find("\\", 0);
-    size_t theotherSlashPos = FileName.find("/", 0);
+    size_t theotherSlashPos = FileName.find(" / ", 0);
 
     if (whateverSlashPos != std::string::npos || theotherSlashPos != std::string::npos)
     {
@@ -2497,7 +2507,7 @@ public:
 
     DefMacroDirective* DMD = MD.getLocalDirective();
 
-    bool ShouldBeTagged195 = false;
+    bool ShouldBeTagged194 = false;
 
     if (DMD->isDefined())
     {
@@ -2511,27 +2521,27 @@ public:
         {
           if (!(TokenArrayRef[0].getKind() == tok::identifier))
           {
-            ShouldBeTagged195 = true;
+            ShouldBeTagged194 = true;
           }
         }
         else if (NumOfTokens == 3U)
         {
           if (!(TokenArrayRef[0].getKind() == tok::l_paren && TokenArrayRef[1].getKind() == tok::identifier && TokenArrayRef[2].getKind() == tok::r_paren))
           {
-            //ShouldBeTagged195 = true;
+            ShouldBeTagged194 = true;
           }
         }
         else
         {
-          //ShouldBeTagged195 = true;
+          ShouldBeTagged194 = true;
         }
       }
       else
       {
-        //ShouldBeTagged195 = true;
+        ShouldBeTagged194 = true;
       }
 
-      if (ShouldBeTagged195)
+      if (ShouldBeTagged194)
       {
 #if 0
         std::cout << "19.14 : " << "Illegal \"defined\" form : " << std::endl;
@@ -3057,7 +3067,9 @@ public:
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
   {
+#if 1
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
+#endif
 
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
