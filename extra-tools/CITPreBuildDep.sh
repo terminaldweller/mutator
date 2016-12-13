@@ -3,7 +3,7 @@
 "sudo" apt-get -qq update
 
 #building cmkae 3.4.3 since the CI Travis virtual host is Ubuntu(???)
-"wget" http://www.cmake.org/files/v3.4/cmake-3.4.1.tar.gz 
+"wget" http://www.cmake.org/files/v3.4/cmake-3.4.3.tar.gz
 "tar" -xvzf cmake-3.4.3.tar.gz 
 "cd" cmake-3.4.3/
 "./configure"
