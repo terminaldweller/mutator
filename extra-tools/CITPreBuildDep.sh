@@ -1,6 +1,17 @@
 #!/bin/bash
 
-"sudo apt-get" install cmake -y
+"sudo" apt-get -qq update
+
+#building cmkae 3.4.3 since the CI Travis virtual host is Ubuntu(???)
+"wget" http://www.cmake.org/files/v3.4/cmake-3.4.1.tar.gz 
+"tar" -xvzf cmake-3.4.3.tar.gz 
+"cd" cmake-3.4.3/
+"./configure"
+"make"
+"sudo" make install
+"update-alternatives" --install /usr/bin/cmake cmake /usr/local/bin/cmake 1 --force
+
+#building llvm and clang 4.0.0
 "cd" ~
 "mkdir" llvm-clang4
 "cd" llvm-clang4
