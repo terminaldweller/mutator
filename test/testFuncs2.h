@@ -2,8 +2,8 @@
 /*first line intentionally left blank.*/
 /*********************************************************************************************************************/
 /*Defines*/
-#ifndef _TEST2_H
-#define _TEST2_H
+#ifndef TEST2_H
+#define TEST2_H
 /*********************************************************************************************************************/
 /*Globals*/
 extern int aaaa[];
@@ -24,23 +24,24 @@ void testFunc1(void);
 
 void testFunc4()
 {
-  /*do shit*/
+	/*do shit*/
 }
 
 testFunc5( void)
 {
-  //different kind of comment
-  ///another kind
-  /*this kind*/
-  /**that kind*/
+	//different kind of comment
+	///another kind
+	/*this kind*/
+	/**that kind*/
 }
 
 void anotherheaderfunc (void)
 {
-  /*i dont do jack.*/
+	/*i dont do jack.*/
 }
 
 void testFunc9(void);
+void testFunc11(void);
 
 /*********************************************************************************************************************/
 #endif

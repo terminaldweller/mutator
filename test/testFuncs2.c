@@ -51,6 +51,13 @@ typedef const* INTPTR;
 #if defined LOCO
 #endif
 
+#if defined(LOCO)
+#endif
+
+#define DEFINED defined
+#if DEFINED(X)
+#endif
+
 #if defined LOCOLUPO || LOCO
 #endif
 
@@ -185,6 +192,20 @@ void testfunc9(void)
 void testfunc10 (int ** (**p5)(int**, int**), int ** (**p6)(int**, int***))
 {
 
+}
+
+void testfunc11(void)
+{
+  long int a;
+  double dd;
+  short unsigned int b;
+  short int* p1;
+  long int* p2;
+
+  p2 = (long int*)p1;
+  p1 = (short int*)p2;
+  b = a;
+  dd = b;
 }
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/

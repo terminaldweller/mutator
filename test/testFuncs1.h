@@ -2,8 +2,8 @@
 /*the first line's been intentionally left blank.*/
 /***********************************************************************************************************/
 /*defines*/
-#ifndef _TEST1_H
-#define _TEST1_H
+#ifndef TEST1_H
+#define TEST1_H
 
 #define FALSE 0
 #define TRUE 1
@@ -14,6 +14,8 @@ extern union uni {
   double b;
   char str[20];
 } uni1;
+
+extern int cccc[];
 
 extern cucu;
 int yetanotherheadervar;
@@ -141,7 +143,34 @@ void headerfund(void)
   sum = a + b;
 }
 
+void testfunc9999(void)
+{
+  int** p1;
+  int*** p2;
+
+  struct
+  {
+    int* sp1;
+    int** sp2;
+    int*** sp3;
+  };
+
+  struct s* ps1;
+  struct s** ps2;
+  struct s*** ps3;
+
+  //INTPTR *const* const fedupp1;
+
+  int ** (*pfunc1)();
+  int ** (**pfunc2)();
+  int ** (***pfunc3)();
+  int *** (**pfunc4)();
+  int ** (**pfunc5)(int**, int**);
+  int ** (**pfunc6)(int**, int***);
+}
+
 void malloc (void);
+
 #endif
 /***********************************************************************************************************/
 /*ive been intentionally left blank. dont touch me.*/
