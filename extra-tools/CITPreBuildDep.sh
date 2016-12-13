@@ -2,7 +2,9 @@
 
 "sudo" apt-get -qq update
 
-"sudo" apt-get install libstdc++
+#installing libstdc++ 4.8
+"gcc" -v
+
 
 #building cmkae 3.4.3 since the CI Travis virtual host is Ubuntu(???)
 "wget" http://www.cmake.org/files/v3.4/cmake-3.4.3.tar.gz
