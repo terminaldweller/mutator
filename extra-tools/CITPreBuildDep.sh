@@ -27,11 +27,9 @@
 "make"
 "sudo" make install -j8
 "sudo" update-alternatives --install /usr/bin/cmake cmake /usr/local/bin/cmake 1 --force
-
-"cd" ~/bloodstalker/llvm
+"cd" ..
 
 #building llvm and clang 4.0.0
-"cd" ~
 "mkdir" llvm-clang4
 "cd" llvm-clang4
 "svn" co http://llvm.org/svn/llvm-project/llvm/trunk llvm
@@ -40,5 +38,7 @@
 "svn" co http://llvm.org/svn/llvm-project/cfe/trunk clang
 "cd" ../..
 "cd" build
-"cmake" -G "Unix Makefiles" -DC_BUILD_TYPE=Release ../llvm
+"cmake" -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
 "make" -j8
+"sudo" make install
+"cd" ../..
