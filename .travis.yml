@@ -8,6 +8,7 @@ addons:
     packages:
       - libclang-3.9-dev
       - libllvm3.9
+      - libstdc++-6-dev
 before_script:
   - travis_wait 60 ./extra-tools/CITPreBuildDep.sh
 script: make
