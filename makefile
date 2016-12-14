@@ -1,13 +1,13 @@
 
 #######################################VARS####################################
 #CXX=g++
-CXX=/home/bloodstalker/llvm/llvm/build/bin/clang++
+CXX=clang++
 
-CXX_FLAGS=$(shell /home/bloodstalker/llvm/llvm/build/bin/llvm-config --cxxflags)
-#CXX_FLAGS=$(shell llvm-config --cxxflags)
+CXX_FLAGS=$(shell llvm-config --cxxflags)
 
-EXTRA_CXX_FALGS=-I/home/bloodstalker/llvm/llvm/llvm/tools/clang/include -I/home/bloodstalker/llvm/llvm/build/tools/clang/include
-EXTRA_LD_FLAGS=-v ./tinyxml2/tinyxml2.o
+#EXTRA_CXX_FALGS=-I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include
+EXTRA_CXX_FALGS=-I$(shell llvm-config --src-root)/tools/clang/include -I$(shell llvm-config --obj-root)/tools/clang/include
+EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 
 LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
 -lclangDriver -lclangEdit -lclangFrontend -lclangFrontendTool\
@@ -15,8 +15,7 @@ LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
 -lclangRewrite -lclangRewriteFrontend -lclangStaticAnalyzerFrontend\
 -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore\
 -lclangSerialization -lclangToolingCore -lclangTooling -Wl,--end-group
-LD_FLAGS+=$(shell /home/bloodstalker/llvm/llvm/build/bin/llvm-config --ldflags --libs --system-libs)
-#LD_FLAGS+=$(shell llvm-config --ldflags --libs --system-libs)
+LD_FLAGS+=$(shell llvm-config --ldflags --libs --system-libs)
 
 CXX_FLAGS+=$(EXTRA_CXX_FALGS)
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
