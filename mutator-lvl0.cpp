@@ -865,7 +865,7 @@ private:
 
   unsigned int VecC;
 
-  bool alreadymatched;
+  bool alreadymatched = false;
 
   Rewriter &Rewrite;
 };
@@ -1126,7 +1126,7 @@ private:
   SourceLocation oldSourceLocation;
   SourceLocation newSourceLocation;
 
-  bool isFirstElement;
+  bool isFirstElement = false;
   bool doesFirstElementHaveInit;
   bool someoneHasInit = false;
   bool everyoneHasInit = true;
