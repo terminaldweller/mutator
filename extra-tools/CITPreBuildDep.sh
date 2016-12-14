@@ -30,15 +30,15 @@
 "cd" ..
 
 #building llvm and clang 4.0.0
-"mkdir" llvm-clang4
-"cd" llvm-clang4
-"svn" co http://llvm.org/svn/llvm-project/llvm/trunk llvm
-"mkdir" build
-"cd" ./llvm/tools
-"svn" co http://llvm.org/svn/llvm-project/cfe/trunk clang
-"cd" ../..
-"cd" build
-"cmake" -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
-"make" -j8
-"sudo" make install
-"cd" ../..
+#"mkdir" llvm-clang4
+#"cd" llvm-clang4
+#"svn" co http://llvm.org/svn/llvm-project/llvm/trunk llvm
+#"mkdir" build
+#"cd" ./llvm/tools
+#"svn" co http://llvm.org/svn/llvm-project/cfe/trunk clang
+#"cd" ../..
+#"cd" build
+#"cmake" -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
+#"make" -j8
+#"sudo" make install
+#"cd" ../..
