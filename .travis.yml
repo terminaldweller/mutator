@@ -1,14 +1,13 @@
 
 dist: precise
-sudo: false
 language: cpp
 compiler: clang
-before_script:
-  - travis_wait 10 ./extra-tools/CITPreBuildDep.sh
 addons:
   apt:
     packages:
       - libclang-3.9-dev
       - libllvm3.9
       - libstdc++-6-dev
+before_script:
+  - travis_wait 10 ./extra-tools/CITPreBuildDep.sh
 script: make
