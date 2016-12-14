@@ -1,5 +1,5 @@
 
-dist: trusty
+dist: precise
 sudo: required
 language: cpp
 compiler: clang
