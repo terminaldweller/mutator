@@ -2,6 +2,11 @@
 sudo: required
 language: cpp
 compiler: clang
+addons:
+  apt:
+    packages:
+      - libclang-3.9-dev
+      - libllvm3.9
 before_script:
   - travis_wait 60 ./extra-tools/CITPreBuildDep.sh
 script: make
