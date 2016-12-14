@@ -226,7 +226,7 @@ public:
       SourceLocation MRForSLE = MRFor->getBody()->getLocEnd();
       MRForSLE = Devi::SourceLocationHasMacro(MRForSLE, Rewrite, "end");
 
-      Rewrite.InsertText(MRForSL, "{\n", "true", "false");
+      Rewrite.InsertText(MRForSL, "{\n", true, false);
       /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
       /*line-terminating semicolons are not included in the matches.*/
       Rewrite.InsertTextAfterToken(MRForSLE.getLocWithOffset(2U), "\n}");
@@ -265,7 +265,7 @@ public:
 
       /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
       /*line-terminating semicolons are not included in the matches.*/
-      Rewrite.InsertText(WFSL, "{\n", "true", "true");
+      Rewrite.InsertText(WFSL, "{\n", true, true);
       Rewrite.InsertTextAfterToken(WFSLE.getLocWithOffset(2U), "\n}");
     }
     else
@@ -309,7 +309,7 @@ public:
       //std::cout << IFESLE.printToString(*MR.SourceManager) << "\n" << std::endl;
 
 #if 1
-      Rewrite.InsertText(IFESL, "{\n", "true", "true");
+      Rewrite.InsertText(IFESL, "{\n", true, true);
       Rewrite.InsertTextAfterToken(IFESL.getLocWithOffset(RangeSize), "\n}");
 #endif
     }
@@ -350,7 +350,7 @@ public:
       /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
       /*line-terminating semicolons are not included in the matches.*/
 #if 1
-      Rewrite.InsertText(FFSL, "{\n", "true", "true");
+      Rewrite.InsertText(FFSL, "{\n", true, true);
       Rewrite.InsertTextAfterToken(FFSL.getLocWithOffset(RangeSize), "\n}");
 #endif
     }
