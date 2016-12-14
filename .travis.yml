@@ -1,5 +1,5 @@
 
-dist: precise
+dist: ubuntu-precise
 language: cpp
 compiler: clang
 addons:
