@@ -25,7 +25,7 @@ Here's a quick look into the project files and directories:<br/>
 #### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
 
 ###Building and Running
-To build the project, you need to have the LLVM libraries 4.0(that's the version the project is currently using) to avoid any unforseen results. The project can not be built with LLVM 3.8 or lower, but I haven't tested LLVM 3.9. Before you run make, remove everything from **EXTRA_CXX_FLAGS**. After that, just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
+To build the project, you need to have the LLVM libraries 4.0(that's the version the project is currently using) to avoid any unforseen results. The project can not be built with LLVM 3.8 or lower, but I haven't tested LLVM 3.9. To Build the project just run `make`. After that, just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
 <br/>
 You need to make sure that **llvm-configure** is in path since that's how the make file access the build parameters used to build the library (Thank you LLVM!).<br/>
 The makefile uses **clang++ 4.0** as the compiler to build the project. On paper, any latest version of g++ should do the trick but this remains untested.<br/>
