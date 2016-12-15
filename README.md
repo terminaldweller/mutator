@@ -1,11 +1,12 @@
 # mutator
 
+[![Build Status](https://travis-ci.org/bloodstalker/mutator.svg?branch=master)](https://travis-ci.org/bloodstalker/mutator)
 <a href="https://scan.coverity.com/projects/bloodstalker-mutator">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
 </a>
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
-[![Build Status](https://travis-ci.org/bloodstalker/mutator.svg?branch=master)](https://travis-ci.org/bloodstalker/mutator)
+
 
 A C code mutator,Misra-C checker and when possible, a Misra-C implementer using the Clang frontend written mostly in C++ and some bash.<br/>
 <br/>
@@ -43,6 +44,7 @@ If your code needs a compilation database for clang to understand it and you don
 TDD tests are created for each added feature which are stored under the **test** folder in the repo.<br/>
 Smoke tests and Daily builds are conducted to make sure the code base builds correctly more than once every day.<br/>
 Everytime there is a new commit, the code base is buildable and runnable. If you are having problems, raise an issue or let me know.<br/>
+The code base uses Coverity for static analysis and CI Travis for checking the build matrix.<br/>
 
 ### Notes
 #### **The project will be updated everytime there is a major LLVM release and will use those libraries instead of the old ones.**
