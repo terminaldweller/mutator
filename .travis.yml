@@ -12,4 +12,4 @@ matrix:
     env: COMPILER=clang++3.9
     compiler: clang
 install: if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
-script: make CXX=$COMPILER
+script: make
