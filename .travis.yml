@@ -22,10 +22,10 @@ matrix:
       compiler: clang
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.8']
-          packages: ['clang-3.8']
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.9']
+          packages: ['clang-3.9']
       env: 
-        - COMPILER=clang++-3.8
+        - COMPILER=clang++-3.9
         - LLVMCONFIG=llvm-config-3.9
 
 # Activate when 3.7 is released and the repository is available
