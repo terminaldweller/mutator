@@ -2,6 +2,8 @@ dist: ubuntu-precise
 language: cpp
 matrix:
   include:
+    os: linux
+    compiler: clang
     addons: 
       apt: 
         packages: 
@@ -10,5 +12,4 @@ matrix:
           - libllvm3.9
           - libstdc++-6-dev
     env: COMPILER=clang++-3.9
-    compiler: clang
 script: make CXX=$COMPILER
