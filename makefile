@@ -5,7 +5,7 @@ LLVM_CONF?=llvm-config
 
 CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 
-EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include -std=c++11
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include -std=c++11 -stdlib=libstdc++
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 
 LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
@@ -13,7 +13,7 @@ LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
 -lclangLex -lclangParse -lclangSema -lclangEdit -lclangASTMatchers\
 -lclangRewrite -lclangRewriteFrontend -lclangStaticAnalyzerFrontend\
 -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore\
--lclangSerialization -lclangToolingCore -lclangTooling -lpthread -Wl,--end-group
+-lclangSerialization -lclangToolingCore -lclangTooling -lstdc++ -Wl,--end-group
 LD_FLAGS+=$(shell $(LLVM_CONF) --ldflags --libs --system-libs)
 
 CXX_FLAGS+=$(EXTRA_CXX_FALGS)
