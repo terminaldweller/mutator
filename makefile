@@ -3,10 +3,12 @@
 #CXX=g++
 CXX?=clang++
 
-CXX_FLAGS=$(shell llvm-config --cxxflags)
+LLVM_CONF?=llvm-config
+
+CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 
 #EXTRA_CXX_FALGS=-I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include
-EXTRA_CXX_FALGS=-I$(shell llvm-config --src-root)/tools/clang/include -I$(shell llvm-config --obj-root)/tools/clang/include -std=c++11
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell llvm-config --obj-root)/tools/clang/include -std=c++11
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 
 LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
