@@ -1,4 +1,4 @@
-#dist: ubuntu-precise
+dist: ubuntu-precise
 language: cpp
 matrix:
   include:
@@ -6,12 +6,10 @@ matrix:
     compiler: clang
     addons: 
       apt: 
-        sources:
-          - ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.8']
         packages: 
-          - clang-3.8
+          - clang-3.9
           - libclang-3.9-dev
           - libllvm3.9
           - libstdc++-6-dev
-    env: COMPILER=clang++-3.8
+    env: COMPILER=clang++-3.9
     script: make CXX=$COMPILER
