@@ -14,5 +14,5 @@ matrix:
     #      - libstdc++-6-dev
     #env: COMPILER=clang++-3.9
 
-before_script: apt-get install clang-4.0 libclang-common-4.0-dev libclang-4.0-dev libclang1-4.0 libclang1-4.0-dbg libllvm4.0 libllvm4.0-dbg lldb-4.0 llvm-4.0 llvm-4.0-dev llvm-4.0-runtime lldb-4.0-dev liblldb-4.0-dbg
+before_script: sudo apt-get install clang-4.0 libclang-common-4.0-dev libclang-4.0-dev libclang1-4.0 libclang1-4.0-dbg libllvm4.0 libllvm4.0-dbg lldb-4.0 llvm-4.0 llvm-4.0-dev llvm-4.0-runtime lldb-4.0-dev liblldb-4.0-dbg
 script: make CXX=$COMPILER
