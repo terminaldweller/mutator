@@ -35,13 +35,13 @@ all: $(TARGET) $(TARGET2) $(TARGET0)
 	$(MAKE) -C tinyxml2
 
 $(TARGET): $(TARGET).o mutator_aux.o
-	$(CXX) $^ -o $(LD_FLAGS) $@
+	$(CXX) $^ $(LD_FLAGS) -o $@
 
 $(TARGET2): $(TARGET2).o mutator_aux.o
-	$(CXX) $^ -o $(LD_FLAGS) $@	
+	$(CXX) $^ $(LD_FLAGS) -o $@	
 
 $(TARGET0): $(TARGET0).o mutator_aux.o
-	$(CXX) $^ -o $(LD_FLAGS) $@
+	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
 	rm -f *.o *~ $(TARGET0) $(TARGET) $(TARGET2) 
