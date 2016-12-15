@@ -8,4 +8,4 @@ addons:
       - libclang-3.9-dev
       - libllvm3.9
       - libstdc++-6-dev
-script: make CXX=clang++3.9
+script: make CXX=clang3.9
