@@ -11,4 +11,4 @@ matrix:
           - libstdc++-6-dev
     env: COMPILER=clang++3.9
     compiler: clang
-script: make CXX=$COMPILER
+script: make COMPILER=clang
