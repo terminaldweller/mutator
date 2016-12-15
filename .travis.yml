@@ -1,7 +1,9 @@
 
 dist: ubuntu-precise
 sudo: required
-before_install: sudo apt-get remove clang
+before_install: 
+  - sudo apt-get remove clang
+  - sudo apt-get install clang-3.9
 language: cpp
 compiler: clang
 addons:
