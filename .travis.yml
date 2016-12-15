@@ -1,11 +1,14 @@
 dist: ubuntu-precise
 language: cpp
 compiler: clang
-addons: 
-  apt: 
-    packages: 
-      - clang-3.9
-      - libclang-3.9-dev
-      - libllvm3.9
-      - libstdc++-6-dev
-script: make CXX=clang3.9
+matrix:
+  include:
+    addons: 
+      apt: 
+        packages: 
+          - clang-3.9
+          - libclang-3.9-dev
+          - libllvm3.9
+          - libstdc++-6-dev
+    env: COMPILER=clang++3.7      
+script: make CXX=$COMPILER
