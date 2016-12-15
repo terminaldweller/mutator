@@ -10,5 +10,4 @@ matrix:
             - libclang-3.9-dev
             - libllvm3.9
             - libstdc++-6-dev
-      env: CXX=clang++3.9
 script: make CXX=clang++3.9
