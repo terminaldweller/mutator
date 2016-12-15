@@ -1,4 +1,4 @@
-dist: ubuntu-precise
+dist: precise
 language: cpp
 matrix:
   include:
