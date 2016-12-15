@@ -1,4 +1,4 @@
-dist: ubuntu-precise
+#dist: ubuntu-precise
 language: cpp
 matrix:
   include:
@@ -7,7 +7,7 @@ matrix:
     addons: 
       apt: 
         sources:
-          - llvm-toolchain-precise-3.9
+          - ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.8']
         packages: 
           - clang-3.9
           - libclang-3.9-dev
