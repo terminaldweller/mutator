@@ -7,9 +7,9 @@ matrix:
     addons: 
       apt: 
         packages: 
-          - clang-3.7
-          - libclang-3.7-dev
-          - libllvm3.7
+          - clang-3.9
+          - libclang-3.9-dev
+          - libllvm3.9
           - libstdc++-6-dev
-    env: COMPILER=clang++-3.7
-script: make CXX=$COMPILER
+    env: COMPILER=clang++-3.9
+    script: make CXX=$COMPILER
