@@ -8,11 +8,8 @@ matrix:
         apt:
           packages:
             - clang-3.9
+            - libclang-3.9-dev
+            - libllvm3.9
+            - libstdc++-6-dev
       env: COMPILER=clang++3.9  
-addons:
-  apt:
-    packages:
-      - libclang-3.9-dev
-      - libllvm3.9
-      - libstdc++-6-dev
-script: make
+      script: make
