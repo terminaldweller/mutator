@@ -1,6 +1,6 @@
 #!/bin/bash
 
-"sudo" apt-get -qq update
+#"sudo" apt-get -qq update
 
 #installing libstdc++ 4.8
 #"gcc" -v
