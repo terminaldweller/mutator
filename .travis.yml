@@ -1,5 +1,7 @@
 
 dist: ubuntu-precise
+sudo: required
+before_install: sudo apt-get remove clang
 language: cpp
 compiler: clang
 addons:
