@@ -1,7 +1,7 @@
 
 #######################################VARS####################################
 #CXX=g++
-CXX=clang++
+CXX?=clang++
 
 CXX_FLAGS=$(shell llvm-config --cxxflags)
 
