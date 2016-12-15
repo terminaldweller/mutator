@@ -6,6 +6,8 @@ matrix:
     compiler: clang
     addons: 
       apt: 
+        sources:
+          - llvm-toolchain-precise-3.9
         packages: 
           - clang-3.9
           - libclang-3.9-dev
