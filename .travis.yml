@@ -1,4 +1,4 @@
-#dist: ubuntu-precise
+dist: ubuntu-precise
 language: cpp
 matrix:
   include:
@@ -12,5 +12,5 @@ matrix:
           - libllvm3.9
           - libstdc++-6-dev
     env: COMPILER=clang++-3.9
-    
+
 script: make CXX=$COMPILER
