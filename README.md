@@ -6,6 +6,7 @@
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
 </a>
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
+[![Code Health](https://landscape.io/github/bloodstalker/mutator/master/landscape.svg?style=flat)](https://landscape.io/github/bloodstalker/mutator/master)
 
 
 A C code mutator,Misra-C checker and when possible, a Misra-C implementer using the Clang frontend written mostly in C++ and some bash.<br/>
@@ -42,9 +43,13 @@ Here Are the build options:<br/>
 * The `LLVM_CONF` option is used to tell the compiler which `llvm-config` to use. The default value is `llvm-config`.<br/>
 
 So for example if you want to build the code with `clang++` without any coverage, and you only want to build the Misra-C rule checker, you should run:<br/>
+<br/>
 `make mutator-lvl0 CXX=clang++ BUILD_MODE=COV_NO_CLANG`<br/>
+<br/>
 Note: if you are building the llvm and clang libraries from source, then the llvm-config name will be `llvm-config` but if you are getting the libraries from a repository the llvm-config executable name may not be the same. In that case, you need to also pass `make` the `LLVM_CONF` variable. For example on Ubuntu trusty, if you get the repositories from llvm nightly builds, the llvm-config executable name will be `llvm-config-3.9` so you need to run:<br/>
+<br/>
 `make mutator-lvl0 CXX=clang++ BUILD_MODE=COV_NO_CLANG LLVM_CONF=llvm-config-3.9`<br/>
+<br/>
 Also do note that building the llvm libraries from source in Debug mode will require big space on your harddrive and will need more than 4GB of RAM. Release mode is less resource-greedy, of course.<br/>
 Finally if you are having problems with the build, you could take a look at `.travis.yml` or under `CITPreBuildDep.sh` under `extra-tools` for some hints or help apart from asking for help, of course.<br/>
 
