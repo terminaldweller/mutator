@@ -768,7 +768,7 @@ public:
 
 
       /*start of checks for 19.5*/
-      /*has false positives.*/
+      /*has false positives. false positives go away if the main.c is not included(main.c includes another header)*/
       if (FD->isThisDeclarationADefinition())
       {
         for (unsigned x = 0; x < MacroDefSourceLocation.size(); ++x)
@@ -1130,7 +1130,7 @@ private:
   SourceLocation newSourceLocation;
 
   bool isFirstElement = false;
-  bool doesFirstElementHaveInit;
+  bool doesFirstElementHaveInit = false;
   bool someoneHasInit = false;
   bool everyoneHasInit = true;
 
@@ -1931,14 +1931,18 @@ public:
 
     if (StringKind == "ImplicitCastExpr")
     {
-      //ParentICE = ParentNode.get();
+#if 0
+      ParentICE = ParentNode.get();
+#endif
       /*the tests for CastKind go here*/
     }
 
   }
 
 private:
+#if 0
   const clang::ImplicitCastExpr* ParentICE;
+#endif
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
