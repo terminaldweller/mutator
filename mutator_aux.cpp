@@ -4,6 +4,7 @@
 /*inclusion directives*/
 #include "mutator_aux.h"
 #include <string>
+#include <cassert>
 #include <iostream>
 #include "clang/AST/AST.h"
 #include "clang/Basic/SourceManager.h"
@@ -58,10 +59,12 @@ void XMLReport::XMLCreateReport()
   XMLReportDoc.InsertFirstChild(RootPointer);
 }
 
-/*it is the caller's responsibility to make sure the sourcelocation passed to this member function and its overload
-contain only the spelling location.*/
+/*it is the caller's responsibility to make sure the sourcelocation passed to this overload of the member function
+contains only the spelling location.*/
 void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description)
 {
+  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(1) of XMLAddNode is not valid.");
+
   FullSourceLoc FSL = ASTC->getFullLoc(SL);
 
   unsigned LineNumber = FSL.getSpellingLineNumber();
@@ -81,6 +84,8 @@ void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string Misr
 
 void XMLReport::XMLAddNode(FullSourceLoc FullSrcLoc, SourceLocation SL, std::string MisraRule, std::string Description)
 {
+  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(2) of XMLAddNode is not valid.");
+
   unsigned LineNumber = FullSrcLoc.getSpellingLineNumber();
   unsigned ColumnNumber = FullSrcLoc.getSpellingColumnNumber();
 
@@ -99,6 +104,8 @@ void XMLReport::XMLAddNode(FullSourceLoc FullSrcLoc, SourceLocation SL, std::str
 void XMLReport::XMLAddNode(const SourceManager &SM, SourceLocation SL, std::string MisraRule, std::string Description)
 {
   SL = SM.getSpellingLoc(SL);
+
+  assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
 
   unsigned LineNumber = SM.getSpellingLineNumber(SL);
   unsigned ColumnNumber = SM.getSpellingColumnNumber(SL);
