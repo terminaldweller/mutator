@@ -778,7 +778,10 @@ public:
               SM.isInMainFile(MacroDefSourceLocation[x]) && !SM.isInSystemHeader(MacroDefSourceLocation[x]))
           {
             std::cout << "19.5 : " << "Macro defined inside a block : " << std::endl;
+#if 0
             std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << " " << MacroNameString[x] << "\n" << std::endl;
+#endif
+            std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
           }
