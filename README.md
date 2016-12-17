@@ -26,11 +26,43 @@ Here's a quick look into the project files and directories:<br/>
 
 #### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
 
-###Building and Running
-To build the project, you need to have the LLVM libraries 4.0(that's the version the project is currently using) to avoid any unforseen results. The project can not be built with LLVM 3.8 or lower, but I haven't tested LLVM 3.9. To Build the project just run `make`. After that, just run **make** and you're good to go. Running make will build three executables which can be used independently or with **mutator.sh**(use -h to see a list of options.)<br/>
-<br/>
-You need to make sure that **llvm-configure** is in path since that's how the make file access the build parameters used to build the library (Thank you LLVM!).<br/>
-The makefile uses **clang++ 4.0** as the compiler to build the project. On paper, any latest version of g++ should do the trick but this remains untested.<br/>
+##Building and Running
+
+###Building
+To build the project, you need to have the LLVM libraries 3.9 and up. The project can not be built with LLVM 3.8 or lower.<br/>
+Here Are the build options:<br/>
+* Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
+* Running `make target-name` will only build the target. So for example, if you are only interested in building the Misra-C rule checker you can run `make mutator-lvl0`.<br/>
+* The makefile option `CXX` tells the makefile which compiler to use. The default value is `clang++`. Currently the only two supported values are `clang++` and `g++`.<br/>
+* The makefile option `BUILD_MODE` determines the build mode regarding coverage and support for builds with `g++`.<br/>
+	* `COV_USE` and `COV_GEN` are for use with the `profdata` format. This option can only be used to build with `clang++`.<br/>
+	* `COV_GNU` will generate `gcov` compliant coverage data. This option can only be used to build with `clang++`.<br/>
+	* `COV_NO_CLANG` will build the executable with no source coverage instrumentation. This option can only be used to build with `clang++`.<br/>
+	* `GNU_MODE` will build the executable with no source code coverage instrumentation for g++. Can only be used to build with `g++`.<br/>
+* The `LLVM_CONF` option is used to tell the compiler which `llvm-config` to use. The default value is `llvm-config`.<br/>
+
+So for example if you want to build the code with `clang++` without any coverage, and you only want to build the Misra-C rule checker, you should run:<br/>
+`make mutator-lvl0 CXX=clang++ BUILD_MODE=COV_NO_CLANG`<br/>
+Note: if you are building the llvm and clang libraries from source, then the llvm-config name will be `llvm-config` but if you are getting the libraries from a repository the llvm-config executable name may not be the same. In that case, you need to also pass `make` the `LLVM_CONF` variable. For example on Ubuntu trusty, if you get the repositories from llvm nightly builds, the llvm-config executable name will be `llvm-config-3.9` so you need to run:<br/>
+`make mutator-lvl0 CXX=clang++ BUILD_MODE=COV_NO_CLANG LLVM_CONF=llvm-config-3.9`<br/>
+Also do note that building the llvm libraries from source in Debug mode will require big space on your harddrive and will need more than 4GB of RAM. Release mode is less resource-greedy, of course.<br/>
+Finally if you are having problems with the build, you could take a look at `.travis.yml` or under `CITPreBuildDep.sh` under `extra-tools` for some hints or help apart from asking for help, of course.<br/>
+
+###Running
+To run any of the tree executables, just give a filename or a whitespace-separated list of files. The executables will print out the results to stdout.<br/>
+To run the executables with the mutator UI, you can use `mutator.sh`. For a list of available options, you can type `./mutator.sh -h`.<br/>
+* `-h, --help` prints out the help.<br/>
+* `-c, --command` specifies the command you want to use.<br/>
+	* `clean` runs make clean.<br/>
+	* `build-all` runs make all.<br/>
+	* `run` runs the `mutator` and `mutator-lvl2` executables on the inputs.<br/>
+	* `default` runs build-all and then run.<br/>
+	* `format` calls `clang-format` to format the mutant. later to be used for the test command.<br/>
+	* `test` runs the tests on the executables and checks the results (not implemented yet).<br/>
+	* `misrac` checks for misrac rules.<br/>
+* `-v, --version` prints out the version.<br/>
+* `-i, --input, -input` lets you choose the input file that is going to be passed to the mutator executable(s).<br/>
+* `-o, --output, -output` lets you choose where to put the mutant.<br/>
 <br/>
 **mutator-lvl0** will run the Misra-C:2004 checks.<br/>
 **mutator** will run the level-1 Misra-C:2004 implementers.<br/>
@@ -38,7 +70,7 @@ The makefile uses **clang++ 4.0** as the compiler to build the project. On paper
 <br/>
 Currently, the mutation-only features(mutation for the sake of mutation, technically implementing Misra-C is also a form of mutation) are turned off in **mutator** and **mutator-lvl2** though some automatic code refactoring features work in both executables. Just run a sample code through **mutator** and then **mutator-lvl2** for a demo.<br/>
 <br/>
-If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile.<br/>
+If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile. So run `make clean` before invoking `bear make target`.<br/>
 
 ### Dev Method
 TDD tests are created for each added feature which are stored under the **test** folder in the repo.<br/>
