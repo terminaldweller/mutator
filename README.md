@@ -87,7 +87,7 @@ The code base uses Coverity for static analysis and CI Travis for checking the b
 #### **As soon as I manage to find a copy of the Misra-C:2012 document, I'll implement that. Currently the tool only supports Misra-C:2004.**
 Misra-C rule checker outputs a simple text or xml report. JSON support will be implemented in the future.<br/>
 I'm using **TDD**. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.Those tests will be added later.<br/>
-The project has been tested to biuld on Fedora23(other major linux distros should be fine) and Ubuntu trusty. Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
+The project has been tested to biuld on Fedora23(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
 The project might, at a later point in time, start using **Cmake** for the build process. Currently the TDD tests use CMake as an extra check.<br/>
 Misra 2012 support will be added in the future.<br/>
 Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if youre going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
