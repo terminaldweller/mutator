@@ -14,6 +14,8 @@
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
+#include "clang/AST/ASTTypeTraits.h"
+#include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
@@ -641,28 +643,174 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*18.1 has false positives. incomplete types that have the same name as another incomplete
+type in another scope are unrecognizable by this code.*/
 class MCSU184 : public MatchFinder::MatchCallback
 {
 public:
-  MCSU184 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  MCSU184 (Rewriter &Rewrite) : Rewrite(Rewrite)
+  {
+    UnionInfoProto.push_back(UnionInfo());
+
+    StructInfoProto.push_back(StructInfo());
+
+    StructCounter = 0U;
+    UnionCounter = 0U;
+  }
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
     if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184") != nullptr)
     {
+      alreadymatched = false;
+
       const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184");
 
       SourceLocation SL = RD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      ASTContext* const ASTC = MR.Context;
+      FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
       std::cout << "18.4 : " << "Union declared: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "18.4", "Union declared: ");
+
+      std::string MatchedName = RD->getNameAsString();
+
+      for (unsigned x = 0; x < UnionCounter; ++x)
+      {
+        if (UnionInfoProto[x].UnionName == MatchedName)
+        {
+          alreadymatched = true;
+
+          if (RD->isCompleteDefinition())
+          {
+            UnionInfoProto[x].IsIncompleteType = false;
+          }
+        }
+      }
+
+      if (alreadymatched == false)
+      {
+        UnionInfoProto.push_back(UnionInfo());
+        UnionInfoProto[UnionCounter].UnionName = MatchedName;
+        UnionInfoProto[UnionCounter].UnionSL = SL.printToString(*MR.SourceManager);
+        UnionInfoProto[UnionCounter].FSL = FSL;
+        UnionInfoProto[UnionCounter].SL = SL;
+
+        if (RD->isCompleteDefinition())
+        {
+          /*this function has a declaration that is not a definition.*/
+          UnionInfoProto[UnionCounter].IsIncompleteType = false;
+        }
+
+        UnionCounter++;
+      }
+    }
+
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu181struct") != nullptr)
+    {
+      alreadymatched = false;
+
+      const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu181struct");
+
+      SourceLocation SL = RD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext* const ASTC = MR.Context;
+      FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
+      std::string MatchedName = RD->getNameAsString();
+
+      for (unsigned x = 0; x < StructCounter; ++x)
+      {
+        if (StructInfoProto[x].StructName == MatchedName)
+        {
+          alreadymatched = true;
+
+          if (RD->isCompleteDefinition())
+          {
+            StructInfoProto[x].IsIncompleteType = false;
+          }
+        }
+      }
+
+      if (alreadymatched == false)
+      {
+        StructInfoProto.push_back(StructInfo());
+        StructInfoProto[StructCounter].StructName = MatchedName;
+        StructInfoProto[StructCounter].StructSL = SL.printToString(*MR.SourceManager);
+        StructInfoProto[StructCounter].FSL = FSL;
+        StructInfoProto[StructCounter].SL = SL;
+
+        if (RD->isCompleteDefinition())
+        {
+          /*this function has a declaration that is not a definition.*/
+          StructInfoProto[StructCounter].IsIncompleteType = false;
+        }
+
+        StructCounter++;
+      }
     }
   }
 
+  virtual void onEndOfTranslationUnit()
+  {
+    for (unsigned x = 0; x < StructCounter; ++x)
+    {
+      if (StructInfoProto[x].IsIncompleteType)
+      {
+        std::cout << "18.1 : " << "Incomplete struct declared: " << std::endl;
+        std::cout << StructInfoProto[x].StructSL << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
+      }
+    }
+
+    for (unsigned x = 0; x < UnionCounter; ++x)
+    {
+      if (UnionInfoProto[x].IsIncompleteType)
+      {
+        std::cout << "18.1 : " << "Incomplete union declared: " << std::endl;
+        std::cout << UnionInfoProto[x].UnionSL << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(UnionInfoProto[x].FSL, UnionInfoProto[x].SL, "18.1", "Incomplete union declared: ");
+      }
+    }
+  }
+
+
 private:
+  struct UnionInfo
+  {
+    std::string UnionSL;
+    FullSourceLoc FSL;
+    SourceLocation SL;
+    std::string UnionName;
+    bool IsIncompleteType = true;
+  };
+
+  unsigned int UnionCounter;
+
+  std::vector<UnionInfo> UnionInfoProto;
+
+  struct StructInfo
+  {
+    std::string StructSL;
+    FullSourceLoc FSL;
+    SourceLocation SL;
+    std::string StructName;
+    bool IsIncompleteType = true;
+  };
+
+  unsigned StructCounter;
+
+  bool alreadymatched = false;
+
+  std::vector<StructInfo> StructInfoProto;
+
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
@@ -931,7 +1079,9 @@ public:
 
       if (VD->isThisDeclarationADefinition(*ASTC) && !(!VD->isLocalVarDecl() && VD->isLocalVarDeclOrParm()))
       {
+#if 0
         std::cout << "XXXXXXXXXXXXXXXXXXXXXXXX" << " " << IncludeFileArr.size() << std::endl;
+#endif
         for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
         {
           if (SM.getFilename(SL).str() == IncludeFileArr[x])
@@ -1913,36 +2063,66 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcptc111");
-
-    SourceLocation SL = DRE->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-    ASTContext *const ASTC = MR.Context;
-
-    ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*DRE);
-
-    /*assumptions:nothing has more than one parent in C.*/
-    ast_type_traits::DynTypedNode ParentNode = NodeList[0];
-
-    ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
-
-    std::string StringKind = ParentNodeKind.asStringRef().str();
-
-    if (StringKind == "ImplicitCastExpr")
+    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcptc111") != nullptr)
     {
-#if 0
-      ParentICE = ParentNode.get();
-#endif
-      /*the tests for CastKind go here*/
-    }
+      const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcptc111");
 
+      SourceLocation SL = ICE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QT = ICE->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      ASTContext *const ASTC = MR.Context;
+
+      const ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*ICE);
+
+      /*assumptions:implicitcastexpr does not have more than one parent in C.*/
+      const ast_type_traits::DynTypedNode ParentNode = NodeList[0];
+
+      ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
+
+      std::string StringKind = ParentNodeKind.asStringRef().str();
+
+      CastKind CK = ICE->getCastKind();
+
+      bool ShouldBeTagged111 = false;
+
+      if (TP->isFunctionPointerType())
+      {
+        if (((CK != CK_IntegralToPointer) && (CK != CK_PointerToIntegral) && \
+             (CK != CK_LValueToRValue) && (CK != CK_FunctionToPointerDecay) && \
+             (CK != CK_ArrayToPointerDecay)))
+        {
+          ShouldBeTagged111 = true;
+        }
+
+        if (CK == CK_BitCast)
+        {
+          ShouldBeTagged111 = true;
+        }
+
+        if (ShouldBeTagged111)
+        {
+          std::cout << "11.1 : " << "FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "FunctionPointerType converted to or from a type other than IntegralType: ");
+        }
+      }
+
+      if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
+      {
+        std::cout << "11.3 : " << "Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "Conversion of PointerType to or from IntegralType is recommended against: ");
+      }
+    }
   }
 
 private:
-#if 0
-  const clang::ImplicitCastExpr* ParentICE;
-#endif
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
@@ -2387,7 +2567,63 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCTypes61 : public MatchFinder::MatchCallback
+{
+public:
+  MCTypes61 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mctypes61rhs") != nullptr && MR.Nodes.getNodeAs<clang::VarDecl>("mctypes61lhs") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mctypes61rhs");
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mctypes61lhs");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QT = EXP->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      if (TP->isCharType())
+      {
+        std::cout << "6.1 : " << "Plain char type contains a value other than character values : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "6.1", "Plain char type contains a value other than character values : ");
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
+class MCSU181 : public MatchFinder::MatchCallback
+{
+public:
+  MCSU181 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcsu181arr") != nullptr)
+    {
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcsu181arr");
+
+      SourceLocation SL = VD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      std::cout << "18.1 : " << "ArrayType incomplete at the end of the translation unit : " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "18.1", "ArrayType incomplete at the end of the translation unit : ");
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -2839,7 +3075,7 @@ public:
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
-    HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R) {
+    HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -2944,7 +3180,7 @@ public:
 
     Matcher.addMatcher(switchStmt(hasCondition(expr().bind("mcswitch154"))).bind("mcswitch154daddy"), &HandlerForSwitch154);
 
-    Matcher.addMatcher(declRefExpr().bind("mcptc111"), &HandlerForPTC111);
+    Matcher.addMatcher(implicitCastExpr().bind("mcptc111"), &HandlerForPTC111);
 
     Matcher.addMatcher(expr().bind("mccse137"), &HandlerForCSE137);
 
@@ -3004,6 +3240,13 @@ public:
     Matcher.addMatcher(varDecl(hasType(pointerType())).bind("mcpointer175"), &HandlerForPointer175);
 
     Matcher.addMatcher(fieldDecl().bind("mcpointer175field"), &HandlerForPointer175);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasRHS(expr().bind("mctypes61rhs")), \
+                                            hasLHS(declRefExpr(to(varDecl(hasType(isAnyCharacter())).bind("mctypes61lhs")))))).bind("mctypes61"), &HandlerForTypes61);
+
+    Matcher.addMatcher(varDecl(hasType(incompleteArrayType())).bind("mcsu181arr"), &HandlerForSU181);
+
+    Matcher.addMatcher(recordDecl(isStruct()).bind("mcsu181struct"), &HandlerForSU184);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3063,6 +3306,8 @@ private:
   MCPointer1723 HandlerForPointer1723;
   MCPointer174 HandlerForPointer174;
   MCPointer175 HandlerForPointer175;
+  MCTypes61 HandlerForTypes61;
+  MCSU181 HandlerForSU181;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
