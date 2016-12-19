@@ -86,7 +86,7 @@ elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Removing previous XML report..."
 	"rm" ./test/misrareport.xml
 	echo "checking input file(s) against Misra-C 2004..."
-	"./mutator-lvl0" $INPUT -- > ./test/misra-log
+	"./mutator-lvl0" $INPUT -- -Wall > ./test/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
