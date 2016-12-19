@@ -39,5 +39,6 @@ do
 done
 
 if [[ "$RUN" == "1" ]]; then
-	"/home/bloodstalker/llvm/llvm/build/bin/clang" -Xclang -ast-dump -fsyntax-only "$INPUT" "$OPTIONS" > "$OUTPUT"
+	"clang" -Xclang -ast-dump -fsyntax-only "$INPUT" "$OPTIONS" > "$OUTPUT"
+
 fi
