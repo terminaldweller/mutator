@@ -68,6 +68,29 @@ typedef const* INTPTR;
 #endif
 /*********************************************************************************************************************/
 /*Globals*/
+int incompletearr1[];
+int incompletearr2[];
+
+int incompletearr1[10];
+
+union u3;
+union u4;
+
+union u3
+{
+  int ua;
+  char ub;
+};
+
+struct s10;
+struct s11;
+
+struct s10
+{
+  int sa[10];
+  char sb;
+  int sc;
+};
 
 /*********************************************************************************************************************/
 /*functions go here.*/
@@ -87,8 +110,19 @@ void testfunc1(void)
 {
   unsigned char a;
   unsigned char b;
+  char c;
 
   b =  a;
+  c = 123;
+  c = 'c';
+  c = "c";
+  c = '\n';
+
+  ;;;;
+  ;/*comment*/
+  ; /*comment*/
+
+  c = '5';
 }
 
 #if CRAZYMACRO < 0
@@ -176,13 +210,19 @@ void testfunc9(void)
   };
 
   struct s* ps1;
+  /*these two should not be tagged by 18.1 since they are pointers(to pointers) to an incomplete type. the pointer itself is a complete type.*/
   struct s** ps2;
   struct s*** ps3;
 
   INTPTR *const* const fedupp1;
 
   int ** (*pfunc1)();
+  int crazycast1 = (int)pfunc1;
+  int crazycast2;
+  pfunc1 = (int ** (*)())crazycast2;
   int ** (**pfunc2)();
+  pfunc2 = pfunc1;
+  pfunc2 = (int ** (*)())pfunc1;
   int ** (***pfunc3)();
   int *** (**pfunc4)();
   int ** (**pfunc5)(int**, int**);
@@ -206,6 +246,19 @@ void testfunc11(void)
   p1 = (short int*)p2;
   b = a;
   dd = b;
+}
+
+void testfunc12(void)
+{
+  const char* stringlit = "date should be in the form ??-??-??";
+
+  short int port = 0x5aU;
+  short int resultshort;
+  int resultlong;
+  resultshort = (~port) >> 4;
+  resultshort = ((short int)(~port)) >> 4;
+  resultlong = ((int)(~(int)port)) >> 4;
+
 }
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/

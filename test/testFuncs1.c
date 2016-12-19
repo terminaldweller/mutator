@@ -1194,6 +1194,8 @@ void test34(void)
 
   ; int b;
 
+  int ut_int = 0;
+
   test33();
 }
 

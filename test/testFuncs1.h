@@ -156,6 +156,7 @@ void testfunc9999(void)
   };
 
   struct s* ps1;
+  /*these two should not be tagged by 18.1 since they are pointers to an incomplete type. the pointer is a complete type.*/
   struct s** ps2;
   struct s*** ps3;
 
