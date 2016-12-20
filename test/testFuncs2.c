@@ -202,6 +202,11 @@ void testfunc9(void)
   int** p1;
   int*** p2;
 
+  int* pointer1;
+  double d2;
+
+  pointer1 = &d2;
+
   struct
   {
     int* sp1;
@@ -259,6 +264,25 @@ void testfunc12(void)
   resultshort = ((short int)(~port)) >> 4;
   resultlong = ((int)(~(int)port)) >> 4;
 
+}
+
+/*the test are from the misrac doc for 11.5*/
+void testfunc13(void)
+{
+  int x;
+  int * const cpi = &x; /* const pointer */
+  int * const * pcpi; /* pointer to const pointer */
+  const int * * ppci; /* pointer to pointer to const */
+  int * * ppi;
+  const int * pci; /* pointer to const */
+  volatile int * pvi; /* pointer to volatile */
+  int * pi;
+  pi = cpi; /* Compliant - no conversion
+no cast required */
+  pi = (int *)pci; /* Not compliant */
+  pi = (int *)pvi; /* Not compliant */
+  ppi = (int * *)pcpi; /* Not compliant */
+  ppi = (int * *)ppci; /* Not compliant */
 }
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
