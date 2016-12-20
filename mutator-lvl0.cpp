@@ -747,7 +747,6 @@ public:
 
         if (RD->isCompleteDefinition())
         {
-          /*this function has a declaration that is not a definition.*/
           StructInfoProto[StructCounter].IsIncompleteType = false;
         }
 
@@ -2056,6 +2055,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*@DEVI-the current implementation of 11.3 is very strict.*/
 class MCPTC111 : public MatchFinder::MatchCallback
 {
 public:
@@ -2074,6 +2074,7 @@ public:
 
       const clang::Type* TP = QT.getTypePtr();
 
+#if 0
       ASTContext *const ASTC = MR.Context;
 
       const ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*ICE);
@@ -2084,6 +2085,7 @@ public:
       ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
 
       std::string StringKind = ParentNodeKind.asStringRef().str();
+#endif
 
       CastKind CK = ICE->getCastKind();
 
@@ -2105,19 +2107,27 @@ public:
 
         if (ShouldBeTagged111)
         {
-          std::cout << "11.1 : " << "FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
+          std::cout << "11.1 : " << "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "FunctionPointerType converted to or from a type other than IntegralType: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
         }
       }
 
       if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
       {
-        std::cout << "11.3 : " << "Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
+        std::cout << "11.3 : " << "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "Conversion of PointerType to or from IntegralType is recommended against: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+      }
+
+      if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast)
+      {
+        std::cout << "11.x : " << "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
       }
     }
   }
@@ -2625,6 +2635,90 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCPTC11CSTYLE : public MatchFinder::MatchCallback
+{
+public:
+  MCPTC11CSTYLE (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcptc11cstyle") != nullptr)
+    {
+      const CStyleCastExpr* CSCE = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcptc11cstyle");
+
+      SourceLocation SL = CSCE->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      QualType QT = CSCE->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      ASTContext *const ASTC = MR.Context;
+
+#if 0
+      const ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*CSCE);
+
+      /*assumptions:implicitcastexpr does not have more than one parent in C.*/
+      const ast_type_traits::DynTypedNode ParentNode = NodeList[0];
+
+      ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
+
+      std::string StringKind = ParentNodeKind.asStringRef().str();
+#endif
+
+      CastKind CK = CSCE->getCastKind();
+
+      bool ShouldBeTagged11 = false;
+
+      if (TP->isFunctionPointerType())
+      {
+        if (((CK != CK_IntegralToPointer) && (CK != CK_PointerToIntegral) && \
+             (CK != CK_LValueToRValue) && (CK != CK_FunctionToPointerDecay) && \
+             (CK != CK_ArrayToPointerDecay)))
+        {
+          ShouldBeTagged11 = true;
+        }
+
+        if (CK == CK_BitCast)
+        {
+          ShouldBeTagged11 = true;
+        }
+
+        if (ShouldBeTagged11)
+        {
+          std::cout << "11.1 : " << "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+        }
+      }
+
+      if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
+      {
+        std::cout << "11.3 : " << "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+      }
+
+      if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast)
+      {
+        std::cout << "11.x : " << "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -3075,7 +3169,8 @@ public:
     HandlerForCSE131(R), HandlerForCSE132(R), HandlerForCSE1332(R), HandlerForCSE134(R), HandlerForCSE136(R), HandlerForCF144(R), \
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
-    HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R) {
+    HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
+    HandlerForMCPTCCSTYLE(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -3247,6 +3342,8 @@ public:
     Matcher.addMatcher(varDecl(hasType(incompleteArrayType())).bind("mcsu181arr"), &HandlerForSU181);
 
     Matcher.addMatcher(recordDecl(isStruct()).bind("mcsu181struct"), &HandlerForSU184);
+
+    Matcher.addMatcher(cStyleCastExpr().bind("mcptc11cstyle"), &HandlerForMCPTCCSTYLE);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3308,6 +3405,7 @@ private:
   MCPointer175 HandlerForPointer175;
   MCTypes61 HandlerForTypes61;
   MCSU181 HandlerForSU181;
+  MCPTC11CSTYLE HandlerForMCPTCCSTYLE;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
