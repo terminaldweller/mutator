@@ -76,6 +76,12 @@ Currently, the mutation-only features(mutation for the sake of mutation, technic
 <br/>
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile. So run `make clean` before invoking `bear make target`.<br/>
 
+###Implementation Notes
+This parts contains notes regarding the implementation of the mutator executables.
+
+#### mutator-lvl0
+* The implementation for the Misra-C:2004 rules 11.1,11.2,11.4 and 11.5 might seem unorthodox. Here's the explanation. The essence of the 11.1,11.2,11.3 and 11.4 rules as a collective is (after being translated into clang AST) that any time there is an `ImplicitCastExpr` or `CStyleCastExpr` that has `CastKind = CK_BitCast` the rule-checker should tag it. `CK_BitCast` means that a bit-pattern of one kind is being interpreted as a bit-pattern of another kind which is dangerous. This `CastKind` couple with the other `CastKinds` provided by the clang frontend enable us to tag cases where there is a deviation from the specified rules. Of course it is possible to check for exactly what the rules ask for but execution-time.<br/>
+
 ### Dev Method
 TDD tests are created for each added feature which are stored under the **test** folder in the repo.<br/>
 Smoke tests and Daily builds are conducted to make sure the code base builds correctly more than once every day.<br/>
