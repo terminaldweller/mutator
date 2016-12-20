@@ -8,7 +8,7 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
 
 
-A C code mutator,Misra-C checker and when possible, a Misra-C implementer using the Clang frontend written mostly in C++ and some bash.<br/>
+A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
 <br/>
 Here's a quick look into the project files and directories:<br/>
 * **mutator-lvl0.cpp** contains the Misra-C rules to check. The Executable named after it, will run the Misra-C rule checks.<br/>
@@ -26,6 +26,16 @@ Here's a quick look into the project files and directories:<br/>
 
 #### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
 
+### Dev Status
+All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase.<br/>
+* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 102 out of the 143 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
+* **`mutator`** and **`mutator-lvl2`** are collectively the code muatation and code transformation executables. Currently the automatic code transformation implemented is only limited to adding braces to blocks that are missing it and adding `else` if an if-else if is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
+
+### Dev Plans
+* Finish the Misra-C:2004 implementation.
+* Start the unit tests for `mutator-lvl0`.
+* start implementing `mutator` and `mutator-lvl2`.
+
 ##Building and Running
 
 ###Building
@@ -38,7 +48,7 @@ Here Are the build options:<br/>
 	* `COV_USE` and `COV_GEN` are for use with the `profdata` format. This option can only be used to build with `clang++`.<br/>
 	* `COV_GNU` will generate `gcov` compliant coverage data. This option can only be used to build with `clang++`.<br/>
 	* `COV_NO_CLANG` will build the executable with no source coverage instrumentation. This option can only be used to build with `clang++`.<br/>
-	* `GNU_MODE` will build the executable with no source code coverage instrumentation for g++. Can only be used to build with `g++`.<br/>
+	* `GNU_MODE` will build the executable with no source code coverage instrumentation for `g++`. Can only be used to build with `g++`.<br/>
 * The `LLVM_CONF` option is used to tell the compiler which `llvm-config` to use. The default value is `llvm-config`.<br/>
 
 So for example if you want to build the code with `clang++` without any coverage, and you only want to build the Misra-C rule checker, you should run:<br/>
@@ -51,6 +61,7 @@ Note: if you are building the llvm and clang libraries from source, then the llv
 <br/>
 Also do note that building the llvm libraries from source in Debug mode will require big space on your harddrive and will need more than 4GB of RAM. Release mode is less resource-greedy, of course.<br/>
 Finally if you are having problems with the build, you could take a look at `.travis.yml` or under `CITPreBuildDep.sh` under `extra-tools` for some hints or help apart from asking for help, of course.<br/>
+As a general rule, if you have Clang and LLVM libraries 3.9 or up on your platform, you can build `mutator`. If there are any problems with builds on platforms other than the ones in `.travis.yml` let me know.<br/>
 
 ###Running
 To run any of the tree executables, just give a filename or a whitespace-separated list of files. The executables will print out the results to stdout.<br/>
