@@ -2085,6 +2085,8 @@ public:
       ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
 
       std::string StringKind = ParentNodeKind.asStringRef().str();
+
+      const ImplicitCastExpr* ParentICE = ParentNode.get<clang::ImplicitCastExpr>();
 #endif
 
       CastKind CK = ICE->getCastKind();
@@ -2112,6 +2114,14 @@ public:
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
         }
+      }
+
+      if (CK == CK_IntegralToFloating || CK == CK_FloatingToIntegral)
+      {
+        std::cout << "10.1/2 : " << "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: ");
       }
 
       if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
@@ -2715,6 +2725,98 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCATC101 : public MatchFinder::MatchCallback
+{
+public:
+  MCATC101 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    /*underdev*/
+    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy") != nullptr)
+    {
+      const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy");
+
+      if ((ICE->getCastKind() == CK_IntegralCast) || (ICE->getCastKind() == CK_FloatingCast))
+      {
+        SourceLocation SL = ICE->getLocStart();
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        ASTContext *const ASTC = MR.Context;
+
+        QualType QTDaddy = ICE->getType();
+        QualType QTKiddy;
+
+        if (MR.Nodes.getNodeAs<clang::BinaryOperator>("atcdous") != nullptr)
+        {
+          const BinaryOperator* ChildNode = MR.Nodes.getNodeAs<clang::BinaryOperator>("atcdous");
+          QTKiddy = ChildNode->getType();
+        }
+
+        if (MR.Nodes.getNodeAs<clang::UnaryOperator>("atcuno") != nullptr)
+        {
+          const UnaryOperator* ChildNode = MR.Nodes.getNodeAs<clang::UnaryOperator>("atcuno");
+          QTKiddy = ChildNode->getType();
+        }
+
+        if (MR.Nodes.getNodeAs<clang::ParenExpr>("atcparens") != nullptr)
+        {
+          const ParenExpr* ChildNode = MR.Nodes.getNodeAs<clang::ParenExpr>("atcparens");
+          QTKiddy = ChildNode->getType();
+        }
+
+        if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atckidice") != nullptr)
+        {
+          const ImplicitCastExpr* ChildNode = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atckidice");
+          QTKiddy = ChildNode->getType();
+        }
+
+        if (MR.Nodes.getNodeAs<clang::CStyleCastExpr>("atccstyle") != nullptr)
+        {
+          const CStyleCastExpr* ChildNode = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("atccstyle");
+          QTKiddy = ChildNode->getType();
+        }
+
+        const clang::Type* TPDaddy = QTDaddy.getTypePtr();
+        const clang::Type* TPChild = QTKiddy.getTypePtr();
+
+        const clang::Type* CanonTypeDaddy = ASTC->getCanonicalType(TPDaddy);
+        const clang::Type* CanonTypeChild = ASTC->getCanonicalType(TPChild);
+
+        uint64_t ICETypeSize = ASTC->getTypeSize(CanonTypeDaddy);
+        uint64_t ChildTypeSize = ASTC->getTypeSize(CanonTypeChild);
+
+        bool ICETypeIsSignedInt = CanonTypeDaddy->getAsPlaceholderType()->isSignedInteger();
+        bool ChildTypeIsSignedInt = CanonTypeChild->getAsPlaceholderType()->isSignedInteger();
+
+        bool ICETypeIsUSignedInt = CanonTypeDaddy->getAsPlaceholderType()->isUnsignedInteger();
+        bool ChildTypeIsUSignedInt = CanonTypeChild->getAsPlaceholderType()->isUnsignedInteger();
+
+        if (CanonTypeDaddy->getAsPlaceholderType()->isInteger() && CanonTypeChild->getAsPlaceholderType()->isInteger())
+        {
+          if ((ICETypeIsSignedInt && ChildTypeIsUSignedInt) || (ICETypeIsUSignedInt && ChildTypeIsSignedInt))
+          {
+            std::cout << "10.1/2 : " << "ImplicitCastExpr changes the signedness of the type: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr changes the signedness of the type: ");
+          }
+        }
+
+        if (ICETypeSize < ChildTypeSize)
+        {
+          std::cout << "10.1/2 : " << "ImplicitCastExpr is narrowing: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
+        }
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -3170,7 +3272,7 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R) {
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -3344,6 +3446,10 @@ public:
     Matcher.addMatcher(recordDecl(isStruct()).bind("mcsu181struct"), &HandlerForSU184);
 
     Matcher.addMatcher(cStyleCastExpr().bind("mcptc11cstyle"), &HandlerForMCPTCCSTYLE);
+
+    Matcher.addMatcher(implicitCastExpr(has(expr(anyOf(binaryOperator().bind("atcdous"), unaryOperator().bind("atcuno"), \
+                                            parenExpr().bind("atcparens"), implicitCastExpr().bind("atckidice"), \
+                                            cStyleCastExpr().bind("atccstyle"))))).bind("atcdaddy"), &HandlerForATC101);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3406,6 +3512,7 @@ private:
   MCTypes61 HandlerForTypes61;
   MCSU181 HandlerForSU181;
   MCPTC11CSTYLE HandlerForMCPTCCSTYLE;
+  MCATC101 HandlerForATC101;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
