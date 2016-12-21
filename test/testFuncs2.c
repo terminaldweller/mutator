@@ -284,5 +284,29 @@ no cast required */
   ppi = (int * *)pcpi; /* Not compliant */
   ppi = (int * *)ppci; /* Not compliant */
 }
+
+void testfunc14(void)
+{
+  char a;
+  long int b;
+  long int b2;
+  double c;
+  float d;
+  long double e;
+  a = (int)b;
+  a = (int)(b + b2);
+  a = b + b2;
+  a = b++;
+  if ((int)(b + b2))
+  {
+    /*something*/
+  }
+
+  a = c;
+  c = b;
+  d = c;
+  d = e;
+}
+
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
