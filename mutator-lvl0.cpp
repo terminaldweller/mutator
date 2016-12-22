@@ -47,7 +47,7 @@ std::vector<std::string> IncludeFileArr;
 
 static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
 /**********************************************************************************************************************/
-class MCForCmpless : public MatchFinder::MatchCallback {
+class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCmpless : public MatchFinder::MatchCallback {
 public:
   MCForCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
@@ -75,7 +75,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCWhileCmpless : public MatchFinder::MatchCallback {
+class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCWhileCmpless : public MatchFinder::MatchCallback {
 public:
   MCWhileCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
@@ -549,7 +549,7 @@ private:
 };
 /**********************************************************************************************************************/
 /*the clang parser does not allow for such constructs.*/
-class MCFunction168 : public MatchFinder::MatchCallback
+class [[maybe_unused]] MCFunction168 : public MatchFinder::MatchCallback
 {
 public:
   MCFunction168 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
@@ -560,7 +560,7 @@ public:
     {
       const ReturnStmt *RT = MR.Nodes.getNodeAs<clang::ReturnStmt>("mcfunc168");
 
-      const Expr *RE = RT->getRetValue();
+      const Expr *RE [[maybe_unused]] = RT->getRetValue();
 
       SourceLocation SL = RT->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -620,7 +620,7 @@ private:
 /**********************************************************************************************************************/
 /*@DEVI-what is correct: match a pointer then run matcher for implicitcastexpressions of type arraytopointerdecay
 that have unary(--,++) and binary(-,+) operators as parents*/
-class MCPA171 : public MatchFinder::MatchCallback
+class [[maybe_unused]] MCPA171 : public MatchFinder::MatchCallback
 {
 public:
   MCPA171 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -631,7 +631,7 @@ public:
     {
       const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171");
 
-      QualType QT = VD->getType();
+      QualType QT [[maybe_unused]] = VD->getType();
 
 #if 0
       std::cout << QT.getAsString() << "\n" << std::endl;
@@ -640,7 +640,7 @@ public:
   }
 
 private:
-  Rewriter &Rewrite;
+  Rewriter &Rewrite [[maybe_unused]];
 };
 /**********************************************************************************************************************/
 /*18.1 has false positives. incomplete types that have the same name as another incomplete
@@ -1023,7 +1023,7 @@ private:
 /*Notes:clang does not let 8.2 and 8.3 through.*/
 /*clang gives the implicitly-typed vardecl and functiondecl a default type in the AST so we cant use that.
 we should just get the rewritten text and do string searches inside. thats the only way i can think of.*/
-class MCDCDF82 : public MatchFinder::MatchCallback
+class [[maybe_unused]] MCDCDF82 : public MatchFinder::MatchCallback
 {
 public:
   MCDCDF82 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
@@ -1036,7 +1036,7 @@ public:
 
       std::string QualifiedName = VD->getQualifiedNameAsString();
 
-      QualType QT = VD->getType();
+      QualType QT [[maybe_unused]] = VD->getType();
 
 #if 0
       std::cout << QualifiedName << "\n" << std::endl;
@@ -1045,7 +1045,7 @@ public:
   }
 
 private:
-  Rewriter &Rewrite;
+  Rewriter &Rewrite [[maybe_unused]];
 };
 /**********************************************************************************************************************/
 /*this class also matches aggregate types. a simple aggregate check should fix that, if need be.*/
@@ -1120,7 +1120,7 @@ public:
         if (TP->isArrayType() || TP->isStructureType())
         {
           /*JANKY*/
-          const Expr* InitExpr = VD->getInit();
+          const Expr* InitExpr [[maybe_unused]] = VD->getInit();
           SourceRange InitExprSR;
           InitExprSR.setBegin(SL);
           InitExprSR.setEnd(SLE);
@@ -1159,7 +1159,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCInit92 : public MatchFinder::MatchCallback
+class [[maybe_unused]] MCInit92 : public MatchFinder::MatchCallback
 {
 public:
   MCInit92 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -1174,7 +1174,7 @@ public:
       SourceLocation SL = VD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      unsigned int NumInits = ILE->getNumInits();
+      unsigned int NumInits [[maybe_unused]] = ILE->getNumInits();
 
 #if 0
       std::cout << NumInits << "\n" << std::endl;
@@ -1195,7 +1195,7 @@ public:
   {
     if (MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93") != nullptr && MR.Nodes.getNodeAs<clang::EnumDecl>("mcinit93daddy") != nullptr)
     {
-      const EnumConstantDecl * ECD = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93");
+      const EnumConstantDecl * ECD [[maybe_unused]] = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93");
       const EnumDecl* ED = MR.Nodes.getNodeAs<clang::EnumDecl>("mcinit93daddy");
       /*do note that this pointer might very well be nullptr. we are actually counting on that.
       it tells us we could not match an integer initialization for this enumconstantdecl.*/
@@ -1362,9 +1362,9 @@ public:
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      ASTContext *const ASTC = MR.Context;
+      ASTContext *const ASTC [[maybe_unused]] = MR.Context;
 
-      QualType QT = EXP->getType();
+      QualType QT [[maybe_unused]] = EXP->getType();
 
       SourceLocation SLE = EXP->getLocEnd();
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
@@ -1463,7 +1463,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr128 : public MatchFinder::MatchCallback
+class [[maybe_unused]] MCExpr128 : public MatchFinder::MatchCallback
 {
 public:
   MCExpr128 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -1481,8 +1481,8 @@ public:
       QualType RQT = RHS->getType();
       QualType LQT = LHS->getType();
 
-      const clang::Type* RTP = RQT.getTypePtr();
-      const clang::Type* LTP = LQT.getTypePtr();
+      const clang::Type* RTP [[maybe_unused]] = RQT.getTypePtr();
+      const clang::Type* LTP [[maybe_unused]] = LQT.getTypePtr();
 
       /*i need to know the size of underlying types on the target so i cant do much about that.*/
       /*llvm::DataLayout lets you do that but then you need llvm::Module.*/
@@ -1753,7 +1753,7 @@ public:
 
       const Stmt* FSInit = FS->getInit();
       const Expr* FSInc = FS->getInc();
-      const Expr* FSCond = FS->getCond();
+      const Expr* FSCond [[maybe_unused]] = FS->getCond();
 
       SourceLocation SLD = FS->getLocStart();
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
@@ -2530,7 +2530,7 @@ public:
 
     std::string CQTAsString = CQT.getAsString();
 
-    const clang::Type* TP = CQT.getTypePtr();
+    const clang::Type* TP [[maybe_unused]] = CQT.getTypePtr();
 
     unsigned starCounter = 0U;
     size_t StarPos = 0U;
@@ -2538,7 +2538,7 @@ public:
     size_t NextOpenParens = 0U;
     size_t CommaPos = 0U;
     size_t NextCommaPos = 0U;
-    bool FoundAMatch = false;
+    bool FoundAMatch [[maybe_unused]] = false;
 
     while (StarPos != std::string::npos)
     {
@@ -2597,7 +2597,7 @@ public:
     if (MR.Nodes.getNodeAs<clang::Expr>("mctypes61rhs") != nullptr && MR.Nodes.getNodeAs<clang::VarDecl>("mctypes61lhs") != nullptr)
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mctypes61rhs");
-      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mctypes61lhs");
+      const VarDecl* VD [[maybe_unused]] = MR.Nodes.getNodeAs<clang::VarDecl>("mctypes61lhs");
 
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -2663,7 +2663,7 @@ public:
 
       const clang::Type* TP = QT.getTypePtr();
 
-      ASTContext *const ASTC = MR.Context;
+      ASTContext *const ASTC [[maybe_unused]] = MR.Context;
 
 #if 0
       const ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*CSCE);
@@ -2732,7 +2732,6 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    /*underdev*/
     if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy") != nullptr)
     {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy");
@@ -2818,6 +2817,47 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCIdent5 : public MatchFinder::MatchCallback
+{
+public:
+  MCIdent5 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    /*underdev*/
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("MCIdent5") != nullptr)
+    {
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("MCIdent5");
+
+      ASTContext *const ASTC = MR.Context;
+
+      SourceLocation SL = VD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierTable &IT = ASTC->Idents;
+
+      IdentifierInfo* II = VD->getIdentifier();
+
+      StringRef IdentStringRef = II->getName();
+
+      if (!havealreadydonethis)
+      {
+        for (clang::IdentifierTable::const_iterator iter = IT.begin(); iter != IT.end(); iter++)
+        {
+          //std::cout << iter->getName().str() << std::endl;
+        }
+
+        havealreadydonethis = true;
+      }
+
+    }
+  }
+
+private:
+  bool havealreadydonethis = false;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -2835,6 +2875,10 @@ public:
                                    bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
                                    StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported)
   {
+#if 0
+    assert(HashLoc.isValid() && "The SourceLocation for InclusionDirective is invalid.");
+#endif
+
     if (IsAngled)
     {
       size_t singleQPos = FileName.find("\'", 0);
@@ -2940,7 +2984,11 @@ public:
   basically i dont know how to just get the tokens after defined.*/
   virtual void Defined(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range)
   {
-    SourceLocation SL = Range.getBegin();
+    SourceLocation SL [[maybe_unused]] = Range.getBegin();
+
+#if 0
+    assert(SL.isValid(), "the SourceLocation for macro Defined is not valid.");
+#endif
 
     const MacroInfo* MI = MD.getMacroInfo();
 
@@ -3001,6 +3049,10 @@ public:
 
     SourceLocation SL = MacroNameTok.getLocation();
 
+#if 0
+    assert(SL.isValid(), "the SourceLocation for MacroUndefined is not valid.");
+#endif
+
     /*start of 20.1*/
     /*inline and restrict are C99*/
     if (MacroNameTok.isOneOf(tok::kw_auto, tok::kw_break, tok::kw_case, tok::kw_char, tok::kw_const, tok::kw_continue, \
@@ -3049,6 +3101,11 @@ public:
     const MacroInfo* MI = MD->getMacroInfo();
 
     SourceLocation SL = MacroNameTok.getLocation();
+
+#if 0
+    assert(SL->isValid(), "the SourceLocation for MacroDefined is not valid.");
+#endif
+
     unsigned MacroNumArgs = MI->getNumArgs();
 
     /*start of 19.5*/
@@ -3221,6 +3278,10 @@ public:
   {
     SourceLocation SL = MacroNameTok.getLocation();
 
+#if 0
+    assert(SL.isValid(), "the SourceLocation for MacroExpands is not valid.");
+#endif
+
     IdentifierInfo* II = MacroNameTok.getIdentifierInfo();
 
     std::string MacroNameString = II->getName().str();
@@ -3252,6 +3313,48 @@ public:
     }
   }
 
+  virtual void Elif(SourceLocation Loc, SourceRange ConditionRange, ConditionValueKind ConditionValue, SourceLocation IfLoc)
+  {
+    SourceLocation SLoc = SM.getSpellingLoc(Loc);
+    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
+
+    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
+    {
+      std::cout << "19.17 : " << "elif directive is not in the same file as its if directive : " << std::endl;
+      std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
+    }
+  }
+
+  virtual void Else(SourceLocation Loc, SourceLocation IfLoc)
+  {
+    SourceLocation SLoc = SM.getSpellingLoc(Loc);
+    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
+
+    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
+    {
+      std::cout << "19.17 : " << "else directive is not in the same file as its if directive : " << std::endl;
+      std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
+    }
+  }
+
+  virtual void Endif (SourceLocation Loc, SourceLocation IfLoc)
+  {
+    SourceLocation SLoc = SM.getSpellingLoc(Loc);
+    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
+
+    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
+    {
+      std::cout << "19.17 : " << "endif directive is not in the same file as its if directive : " << std::endl;
+      std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
+    }
+  }
+
 private:
   const SourceManager &SM;
 };
@@ -3272,7 +3375,7 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R) {
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -3450,6 +3553,8 @@ public:
     Matcher.addMatcher(implicitCastExpr(has(expr(anyOf(binaryOperator().bind("atcdous"), unaryOperator().bind("atcuno"), \
                                             parenExpr().bind("atcparens"), implicitCastExpr().bind("atckidice"), \
                                             cStyleCastExpr().bind("atccstyle"))))).bind("atcdaddy"), &HandlerForATC101);
+
+    Matcher.addMatcher(varDecl().bind("ident5var"), &HandlerForIdent5);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3513,6 +3618,7 @@ private:
   MCSU181 HandlerForSU181;
   MCPTC11CSTYLE HandlerForMCPTCCSTYLE;
   MCATC101 HandlerForATC101;
+  MCIdent5 HandlerForIdent5;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
@@ -3522,10 +3628,17 @@ class MyFrontendAction : public ASTFrontendAction
 public:
   MyFrontendAction() {}
 
+  void EndSourceFileAction() override
+  {
+
+  }
+
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
   {
-#if 1
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
+
+#if 0
+    const IdentifierTable &IT [[maybe_unused]] = CI.getPreprocessor().getIdentifierTable();
 #endif
 
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
