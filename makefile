@@ -31,6 +31,12 @@ EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
+ifeq ($(BUILD_MODE), COV_NO_CLANG_1Z)
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
+ -std=c++1z -stdlib=libstdc++ -UNDEBUG
+EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
+endif
+
 ifeq ($(BUILD_MODE), GNU_MODE)
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
  -std=c++11 -stdlib=libstdc++ -UNDEBUG
