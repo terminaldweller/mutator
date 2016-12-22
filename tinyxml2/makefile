@@ -6,6 +6,10 @@ CXX_FLAGS+=$(EXTRA_CXX_FALGS)
 
 .DEFAULT: tinyxml2
 
+.PHONY: tinyxml2
 
 tinyxml2.o: tinyxml2.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@	
+
+clean:
+	rm -f *.o
