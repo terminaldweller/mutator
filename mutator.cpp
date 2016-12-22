@@ -391,7 +391,7 @@ public:
       SR.setBegin(SL);
       SR.setEnd(SLE);
       Rewriter::RewriteOptions opts;
-      int RangeSize = Rewrite.getRangeSize(SR, opts);
+      int RangeSize [[maybe_unused]] = Rewrite.getRangeSize(SR, opts);
 
 #if 0
       Rewrite.InsertText(SBSL, "{\n", "true", "true");
@@ -433,7 +433,7 @@ public:
       SR.setBegin(SL);
       SR.setEnd(SLE);
       Rewriter::RewriteOptions opts;
-      int RangeSize = Rewrite.getRangeSize(SR, opts);
+      int RangeSize [[maybe_unused]] = Rewrite.getRangeSize(SR, opts);
 
 #if 0
       Rewrite.InsertText(CSL, "{\n", "true", "true");
