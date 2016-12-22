@@ -260,10 +260,14 @@ void testfunc12(void)
   short int port = 0x5aU;
   short int resultshort;
   int resultlong;
+  int mode;
   resultshort = (~port) >> 4;
   resultshort = ((short int)(~port)) >> 4;
+  /*should not be tagged by 10.1\2*/
   resultlong = ((int)(~(int)port)) >> 4;
 
+  resultlong = ((port << 4) & mode) >> 6;
+  resultlong = ((int)((int)port << 4) & mode) >> 6;
 }
 
 /*the test are from the misrac doc for 11.5*/
