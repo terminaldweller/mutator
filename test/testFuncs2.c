@@ -13,6 +13,16 @@
 /*********************************************************************************************************************/
 /*macro and definitions*/
 typedef const* INTPTR;
+/*clang wont let it through*/
+#if 0
+typedef int dummytypedef;
+#endif
+
+#if 0
+/*clang wont let it through*/
+/*for 5.3*/
+typedef gaga incompletearr1;
+#endif
 
 #define XMACRO Y
 
@@ -82,6 +92,11 @@ union u3
   char ub;
 };
 
+double u3;
+double ua;
+
+int s10;
+
 struct s10;
 struct s11;
 
@@ -145,8 +160,10 @@ void testfunc3()
 
 #define LUPO wolf
 
+#if 1
   int abcdefghijklmnopqrstuvwxyz1234567890;
   int abcdefghijklmnopqrstuvwxyz12345678902;
+#endif
 
   /*do stuff*/
 }
@@ -310,6 +327,14 @@ void testfunc14(void)
   c = b;
   d = c;
   d = e;
+}
+
+void testfunc15 (void)
+{
+  int a[10];
+
+  a[1] = 041;
+  a[2] = 052;
 }
 
 /*********************************************************************************************************************/

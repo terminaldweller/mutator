@@ -15,6 +15,10 @@
 typedef unsigned int ut_int;
 typedef signed int t_int;
 typedef unsigned char BYTE;
+/*5.3:clang doesnt allow typedef redifinition*/
+#if 0
+typedef const int dummytypedef;
+#endif
 
 const unsigned int shift = 10U;
 
