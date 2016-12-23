@@ -19,6 +19,7 @@
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Basic/IdentifierTable.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/Lexer.h"
@@ -2820,41 +2821,149 @@ private:
 class MCIdent5 : public MatchFinder::MatchCallback
 {
 public:
-  MCIdent5 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  MCIdent5 (Rewriter &Rewrite) : Rewrite(Rewrite)
+  {
+    IdenMatchCounter = 0U;
+  }
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
+    IsTypedefIdent = false;
+    IsNamedDecl = false;
+    IsRecordDecl = false;
+    IdenMatchCounter = 0U;
+
+    IdentifierInfo *II;
+
+    SourceLocation SL;
     /*underdev*/
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("MCIdent5") != nullptr)
+    if (MR.Nodes.getNodeAs<clang::NamedDecl>("ident5var") != nullptr)
     {
-      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("MCIdent5");
+      const NamedDecl* ND = MR.Nodes.getNodeAs<clang::NamedDecl>("ident5var");
 
-      ASTContext *const ASTC = MR.Context;
+      II = ND->getIdentifier();
 
-      SourceLocation SL = VD->getLocStart();
+      SL = ND->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      const IdentifierTable &IT = ASTC->Idents;
+      IsNamedDecl = true;
+    }
 
-      IdentifierInfo* II = VD->getIdentifier();
+    if (MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef") != nullptr)
+    {
+      const TypedefDecl* TDD = MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef");
 
+      II = TDD->getIdentifier();
+
+      SL = TDD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      IsTypedefIdent = true;
+    }
+
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record") != nullptr)
+    {
+      const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record");
+
+      II = RD->getCanonicalDecl()->getIdentifier();
+
+      SL = RD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      IsRecordDecl = true;
+    }
+
+    ASTContext *const ASTC = MR.Context;
+
+    const IdentifierTable &IT = ASTC->Idents;
+
+#if 0
+    RawCommentList RCL = ASTC->Comments;
+
+    ArrayRef<RawComment*> RC = RCL.getComments();
+
+    for (auto &iter1 : RC)
+    {
+      if (iter1->getKind() != RawComment::RCK_OrdinaryC)
+      {
+        std::cout << "bad comment" << std::endl;
+      }
+    }
+#endif
+
+    if (II != nullptr)
+    {
       StringRef IdentStringRef = II->getName();
 
-      if (!havealreadydonethis)
-      {
-        for (clang::IdentifierTable::const_iterator iter = IT.begin(); iter != IT.end(); iter++)
-        {
-          //std::cout << iter->getName().str() << std::endl;
-        }
+      IdentifierInfoLookup* IILU = IT.getExternalIdentifierLookup();
 
-        havealreadydonethis = true;
+      if (IILU != nullptr)
+      {
+        std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << " " << IdentStringRef.str() << std::endl;
       }
 
+      //IdentifierIterator* IIter = IILU->getIdentifiers();
+
+      for (auto &iter : IT)
+      {
+        /*only works for UTF-8. for larger sizes we need a multiple of 32. for UTF-16 we need to check against 64.*/
+        if (IdentStringRef.str().size() >= 32U && IsNamedDecl)
+        {
+          //std::cout << iter.getValue()->getName().str() << std::endl;
+          if ((iter.getValue()->getName().str().substr(0U, 32U) == IdentStringRef.str().substr(0U, 32U)) && (iter.getValue()->getName().str() != IdentStringRef.str()))
+          {
+            std::cout << "5.1 : " << "Identifier relies on the signifacance of more than 31 charcaters: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the signifacance of more than 31 charcaters: ");
+          }
+        }
+
+        if (IsRecordDecl)
+        {
+          //std::cout << "XXXXXXXXXXX" << " " << IdentStringRef.str() << " " << iter.getValue()->getName().str() << " " << "ZZZZZ" << IdenMatchCounter << std::endl;
+        }
+
+        if (iter.getValue()->getName().str() == IdentStringRef.str())
+        {
+          IdenMatchCounter++;
+        }
+      }
+
+      if ((IdenMatchCounter >= 2U))
+      {
+        std::cout << "5.7 : " << "identifier is reused: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "5.7", "identifier is reused: ");
+      }
+
+      if ((IdenMatchCounter >= 2U) && IsRecordDecl)
+      {
+        std::cout << "5.4 : " << "tag name is not unique: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "5.4", "tag name is not unique: ");
+      }
+
+      /*@DEVI-clang wont let it through.*/
+      if ((IdenMatchCounter >= 2U) && IsTypedefIdent)
+      {
+        std::cout << "5.3 : " << "typedef identifier is not unique: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "5.3", "typedef identifier is not unique: ");
+      }
     }
+
   }
 
 private:
-  bool havealreadydonethis = false;
+  bool IsTypedefIdent = false;
+  bool IsNamedDecl = false;
+  bool IsRecordDecl = false;
+
+  unsigned IdenMatchCounter;
 
   Rewriter &Rewrite;
 };
@@ -3554,7 +3663,11 @@ public:
                                             parenExpr().bind("atcparens"), implicitCastExpr().bind("atckidice"), \
                                             cStyleCastExpr().bind("atccstyle"))))).bind("atcdaddy"), &HandlerForATC101);
 
-    Matcher.addMatcher(varDecl().bind("ident5var"), &HandlerForIdent5);
+    Matcher.addMatcher(namedDecl().bind("ident5var"), &HandlerForIdent5);
+
+    Matcher.addMatcher(typedefDecl().bind("ident5typedef"), &HandlerForIdent5);
+
+    Matcher.addMatcher(recordDecl().bind("ident5record"), &HandlerForIdent5);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
