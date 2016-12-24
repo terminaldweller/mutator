@@ -3037,6 +3037,16 @@ public:
 private:
   struct MaybeLocalObjInfo
   {
+    MaybeLocalObjInfo(SourceLocation iObjSL, FullSourceLoc iObjFSL, std::string iObjSLStr, std::string iObjNameStr, std::string iFirstDaddyName, bool iHasMoreThanOneDaddy = false)
+    {
+      ObjSL = iObjSL;
+      ObjFSL = iObjFSL;
+      ObjSLStr = iObjSLStr;
+      ObjNameStr = iObjNameStr;
+      FirstDaddyName = iFirstDaddyName;
+      HasMoreThanOneDaddy = iHasMoreThanOneDaddy;
+    }
+
     SourceLocation ObjSL;
     FullSourceLoc ObjFSL;
     std::string ObjSLStr;
