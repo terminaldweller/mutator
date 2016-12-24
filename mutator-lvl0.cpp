@@ -2836,7 +2836,7 @@ public:
     IdentifierInfo *II;
 
     SourceLocation SL;
-    /*underdev*/
+
     if (MR.Nodes.getNodeAs<clang::NamedDecl>("ident5var") != nullptr)
     {
       const NamedDecl* ND = MR.Nodes.getNodeAs<clang::NamedDecl>("ident5var");
@@ -2895,12 +2895,14 @@ public:
     {
       StringRef IdentStringRef = II->getName();
 
-      IdentifierInfoLookup* IILU = IT.getExternalIdentifierLookup();
+      IdentifierInfoLookup* IILU [[maybe_unused]] = IT.getExternalIdentifierLookup();
 
+#if 0
       if (IILU != nullptr)
       {
         std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << " " << IdentStringRef.str() << std::endl;
       }
+#endif
 
       //IdentifierIterator* IIter = IILU->getIdentifiers();
 
@@ -2919,10 +2921,12 @@ public:
           }
         }
 
-        if (IsRecordDecl)
+#if 0
+        if (IdentStringRef.str() == "incompletearr1")
         {
-          //std::cout << "XXXXXXXXXXX" << " " << IdentStringRef.str() << " " << iter.getValue()->getName().str() << " " << "ZZZZZ" << IdenMatchCounter << std::endl;
+          std::cout << iter.getValue()->getName().str() << std::endl;
         }
+#endif
 
         if (iter.getValue()->getName().str() == IdentStringRef.str())
         {
@@ -2968,6 +2972,82 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCDCDF87 : public MatchFinder::MatchCallback
+{
+public:
+  MCDCDF87 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if ((MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcdcdfobj") != nullptr) \
+        && (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf87daddy") != nullptr) && \
+        (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf87origin") != nullptr))
+    {
+      IsNewEntry = true;
+
+      const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf87daddy");
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf87origin");
+
+      std::string VDName = VD->getIdentifier()->getName().str();
+
+      SourceLocation SL = VD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext* const ASTC = MR.Context;
+
+      for (auto &iter : MaybeLocalObjInfoProto)
+      {
+        if (iter.ObjNameStr == VDName && iter.ObjSL == SL)
+        {
+          IsNewEntry = false;
+
+          if ((iter.FirstDaddyName != FD->getNameInfo().getAsString()))
+          {
+            iter.HasMoreThanOneDaddy = true;
+          }
+        }
+      }
+
+      if (IsNewEntry)
+      {
+        MaybeLocalObjInfo Temp = {SL, ASTC->getFullLoc(SL), SL.printToString(*MR.SourceManager), VDName, FD->getNameInfo().getAsString(), false};
+        MaybeLocalObjInfoProto.push_back(Temp);
+      }
+    }
+  }
+
+  virtual void onEndOfTranslationUnit()
+  {
+    for (auto &iter : MaybeLocalObjInfoProto)
+    {
+      if (!iter.HasMoreThanOneDaddy)
+      {
+        std::cout << "8.7 : " << "Object " + iter.ObjNameStr + " is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: " << std::endl;
+        std::cout << iter.ObjSLStr << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(iter.ObjFSL, iter.ObjSL, "8.7", "Object " + iter.ObjNameStr + " is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
+      }
+    }
+  }
+
+
+private:
+  struct MaybeLocalObjInfo
+  {
+    SourceLocation ObjSL;
+    FullSourceLoc ObjFSL;
+    std::string ObjSLStr;
+    std::string ObjNameStr;
+    std::string FirstDaddyName;
+    bool HasMoreThanOneDaddy = false;
+  };
+
+  bool IsNewEntry;
+
+  std::vector<MaybeLocalObjInfo> MaybeLocalObjInfoProto;
+
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -3484,7 +3564,7 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R) {
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -3668,6 +3748,8 @@ public:
     Matcher.addMatcher(typedefDecl().bind("ident5typedef"), &HandlerForIdent5);
 
     Matcher.addMatcher(recordDecl().bind("ident5record"), &HandlerForIdent5);
+
+    Matcher.addMatcher(declRefExpr(allOf(hasAncestor(functionDecl().bind("mcdcdf87daddy")), to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3732,6 +3814,7 @@ private:
   MCPTC11CSTYLE HandlerForMCPTCCSTYLE;
   MCATC101 HandlerForATC101;
   MCIdent5 HandlerForIdent5;
+  MCDCDF87 HandlerForDCDF87;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
