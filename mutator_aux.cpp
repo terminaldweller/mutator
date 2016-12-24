@@ -123,7 +123,7 @@ void XMLReport::XMLAddNode(const SourceManager &SM, SourceLocation SL, std::stri
 
 void XMLReport::SaveReport(void)
 {
-  XMLError XMLErrorResult = XMLReportDoc.SaveFile("/home/bloodstalker/devi/hell2/test/misrareport.xml");
+  XMLError XMLErrorResult = XMLReportDoc.SaveFile("./test/misrareport.xml");
 
   if (XMLErrorResult != XML_SUCCESS)
   {
