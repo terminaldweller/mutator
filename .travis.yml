@@ -22,4 +22,4 @@ before_script:
   - sudo apt-get update -qq
   - travis_wait 30 sudo apt-get install clang-3.9 libclang-3.9-dev libclang-common-3.9-dev libllvm3.9 llvm-3.9-dev llvm-3.9 -y
   #- sudo apt-get install clang-4.0 libclang-common-4.0-dev libclang-4.0-dev libclang1-4.0 libclang1-4.0-dbg libllvm4.0 libllvm4.0-dbg lldb-4.0 llvm-4.0 llvm-4.0-dev llvm-4.0-runtime lldb-4.0-dev liblldb-4.0-dbg
-script: make CXX=clang-3.9 LLVM_CONF=llvm-config-3.9 BUILD_MODE=COV_NO_CLANG
+script: make CXX=clang-3.9 LLVM_CONF=llvm-config-3.9 BUILD_MODE=COV_NO_CLANG_1Z
