@@ -651,6 +651,7 @@ class MCSU184 : public MatchFinder::MatchCallback
 public:
   MCSU184 (Rewriter &Rewrite) : Rewrite(Rewrite)
   {
+    /*@DEVI-these push-backs generate garbage entries*/
     UnionInfoProto.push_back(UnionInfo());
 
     StructInfoProto.push_back(StructInfo());
@@ -865,6 +866,7 @@ class MCDCDF81 : public MatchFinder::MatchCallback
 public:
   MCDCDF81 (Rewriter &Rewrite) : Rewrite(Rewrite)
   {
+    /*@DEVI-the pushback generates garbage entries.*/
     FuncInfoProto.push_back(FuncInfo());
 
     VecC = 0U;
@@ -2208,6 +2210,7 @@ class MCDCDF810 : public MatchFinder::MatchCallback
 public:
   MCDCDF810 (Rewriter &Rewrite) : Rewrite(Rewrite)
   {
+    /*@DEVI-the pushback here generates garbage entries.*/
     FuncScopeProto.push_back(FuncScope());
 
     VecC = 0U;
@@ -2314,7 +2317,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-/*also flags the main.*/
+/*@DEVI-also flags the main.*/
 class MCFunction165 : public MatchFinder::MatchCallback
 {
 public:
@@ -2384,7 +2387,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-/*has false-positives*/
+/*@DEVI-has false-positives*/
 class MCPointer171 : public MatchFinder::MatchCallback
 {
 public:
@@ -2417,7 +2420,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-/*has a lot of false positives. now works based on array types not the array itself.*/
+/*@DEVI-has a lot of false positives. now works based on array types not the array itself.*/
 class MCPointer1723 : public MatchFinder::MatchCallback
 {
 public:
@@ -2492,8 +2495,8 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-/*in case of function pointers, where an argument has more than two levels of indirection,
-the argument and the function pointer both get tagged. technically, it is a defendable.*/
+/*@DEVI-in case of function pointers, where an argument has more than two levels of indirection,
+the argument and the function pointer both get tagged. technically, it is a defendable interpretation of the rule.*/
 class MCPointer175 : public MatchFinder::MatchCallback
 {
 public:
@@ -3022,10 +3025,10 @@ public:
     {
       if (!iter.HasMoreThanOneDaddy)
       {
-        std::cout << "8.7 : " << "Object " + iter.ObjNameStr + " is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: " << std::endl;
+        std::cout << "8.7 : " << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: " << std::endl;
         std::cout << iter.ObjSLStr << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(iter.ObjFSL, iter.ObjSL, "8.7", "Object " + iter.ObjNameStr + " is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
+        XMLDocOut.XMLAddNode(iter.ObjFSL, iter.ObjSL, "8.7", "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
       }
     }
   }
