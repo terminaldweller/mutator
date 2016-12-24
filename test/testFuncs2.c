@@ -81,6 +81,10 @@ typedef gaga incompletearr1;
 int incompletearr1[];
 int incompletearr2[];
 
+int dudu;
+int bubu;
+int fufu;
+
 int incompletearr1[10];
 
 union u3;
@@ -91,6 +95,14 @@ union u3
   int ua;
   char ub;
 };
+
+union yizzy
+{
+  int ua;
+  char ub;
+};
+
+double yizzy;
 
 double u3;
 double ua;
@@ -114,6 +126,9 @@ static void test33(void)
 
   short int a;
   long int b;
+  int sum;
+
+  sum = dudu + bubu + fufu;
 
   MINUS(a, b);
   //MINUS(a);
@@ -126,6 +141,9 @@ void testfunc1(void)
   unsigned char a;
   unsigned char b;
   char c;
+  int sum;
+
+  sum = sum + dudu + fufu;
 
   b =  a;
   c = 123;
@@ -149,7 +167,7 @@ testfunc2(void)
   int b;
   int sum;
 
-  sum = a + b;
+  sum = a + b + dudu;
 }
 
 void testfunc3()
