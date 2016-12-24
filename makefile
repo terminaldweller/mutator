@@ -2,7 +2,7 @@
 #######################################VARS####################################
 CXX?=clang++
 LLVM_CONF?=llvm-config
-BUILD_MODE?=COV_NO_CLANG_1Z
+BUILD_MODE?=COV_NO_CLANG
 
 CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 
