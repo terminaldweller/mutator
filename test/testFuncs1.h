@@ -15,6 +15,8 @@ extern union uni {
   char str[20];
 } uni1;
 
+//extern int eldiablo = 0;
+
 extern int cccc[];
 
 extern cucu;
@@ -170,7 +172,9 @@ void testfunc9999(void)
   int ** (**pfunc6)(int**, int***);
 }
 
+#if 0
 void malloc (void);
+#endif
 
 #endif
 /***********************************************************************************************************/

@@ -84,6 +84,7 @@ int incompletearr2[];
 int dudu;
 int bubu;
 int fufu;
+double badboy = 0.0;
 
 int incompletearr1[10];
 
