@@ -4,10 +4,11 @@
 #the arguments' positions are not important. you also get long and short options.
 
 #default args
-INPUT="./test/testFuncs1.c ./test/testFuncs2.c"
+#INPUT="./test/testFuncs1.c ./test/testFuncs2.c"
 OUTPUT="./mutant.c"
 OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
+OPTIONS=""
 
 while [[ $# -gt 0 ]]
 do
@@ -19,32 +20,40 @@ do
 		shift
 		;;
 		-h|--help|-help)
-		#COMMAND="$2"
-		echo "-h, --help prints out the help.obviously..."
-		echo "-c, --command you can specify the command you want to pass to mutator."
-		echo "		clean runs make clean."
-		echo "		build-all runs make all."
-		echo "		run runs the mutator executable on the target."
-		echo "		default runs build-all and then run."
-		echo "		format calls clang-format to format the mutant. later to be used for the test command."
-		echo "		test runs the tests on the executables and checks the results."
-		echo "		misrac checks for misrac rules"
-		echo "-v, --version prints out the version."
-		echo "-i, --input, -input lets you choose the input file that is going to be passed to the mutator executable(s)."
-		echo "-o, --output, -output lets you choose where to put the mutant."
-		break
+		echo "-h, 	--help prints out the help.obviously..."
+		echo "-c, 	--command you can specify the command you want to pass to mutator."
+		echo "			clean runs make clean."
+		echo "			build-all runs make all."
+		echo "			run runs the mutator executable on the target."
+		echo "			default runs build-all and then run."
+		echo "			format calls clang-format to format the mutant. later to be used for the test command."
+		echo "			test runs the tests on the executables and checks the results."
+		echo "			misrac checks for misrac rules"
+		echo "-v, 	--version prints out the version."
+		echo "-i, 	--input, -input lets you choose the input file(or white-space-separated list of files) that is going to be passed to the mutator executable(s)."
+		echo "-o, 	--output, -output lets you choose where to put the mutant."
+		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation."
+		echo "	for example: -opts \"-Wall std=c89\""
+		exit 0
 		;;
 		-NDEBUG)
 		echo "you are still deciding between passing the arg to make as a make arg or just writing into the makefile with the script."
 		echo "btw youre running in NDEBUG dumbdumb! asserts are not gonna work like this."
-		break
+		exit 0
 		;;
 		-v|--version)
-		echo "Version 1.0.0"
+		echo "Version 1.0.0-Pre-release"
 		break
 		;;
 		-i|--input|-input)
-		INPUT="$2"
+		while [[ ! "$2" == -* ]] && [[ $# -gt 0 ]]; do
+			INPUT="$INPUT"" ""$2"
+			#echo "INPUT = "$INPUT
+			shift
+		done
+		;;
+		-opts|--options)
+		OPTIONS="$2"
 		shift
 		;;
 		-o|--output|-output)
@@ -86,7 +95,8 @@ elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Removing previous XML report..."
 	"rm" ./test/misrareport.xml
 	echo "checking input file(s) against Misra-C 2004..."
-	"./mutator-lvl0" $INPUT -- -Wall > ./test/misra-log
+	echo "Options to pass to executable: "${OPTIONS:0:$((${#OPTIONS}))}
+	"./mutator-lvl0" $INPUT -- ${OPTIONS:0:$((${#OPTIONS}))} > ./test/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
