@@ -76,6 +76,22 @@ typedef gaga incompletearr1;
 #if 1
 #undef LOCOLUPO
 #endif
+
+#define START 0x8000
+#define END 0xFFFF
+#define LEN 0x8000
+#if ((START + LEN) > END)
+#if 0
+#error Buffer Overrun
+#endif
+/* OK because START and LEN are unsigned long */
+#endif
+#if (((END - START) - LEN) < 0)
+#if 0
+#error Buffer Overrun
+#endif
+/* Not OK: subtraction result wraps around to 0xFFFFFFFF */
+#endif
 /*********************************************************************************************************************/
 /*Globals*/
 int incompletearr1[];
@@ -135,6 +151,14 @@ static void test33(void)
   //MINUS(a);
 
   b = (int)a;
+
+  /* contrast the above START + LEN with the following */
+  if ((START + LEN) > END)
+  {
+    //error ("Buffer overrun");
+    /* Not OK: START + LEN wraps around to 0x0000
+    due to unsigned int arithmetic */
+  }
 }
 
 void testfunc1(void)
@@ -339,7 +363,7 @@ void testfunc14(void)
   a = b++;
   if ((int)(b + b2))
   {
-    /*something*/
+    /*somethi/*ng*/
   }
 
   a = c;

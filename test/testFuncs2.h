@@ -8,6 +8,8 @@
 /*Globals*/
 extern int aaaa[];
 
+extern double badboy;
+
 extern int eldiablo = 0;
 
 extern int bbbb[] = {1, 2, 3, 4, 5, 6};
@@ -32,7 +34,7 @@ void testFunc4()
 testFunc5( void)
 {
 	//different kind of comment
-	///another kind
+	///anot/*her kind
 	/*this kind*/
 	/**that kind*/
 }

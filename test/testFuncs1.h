@@ -67,7 +67,7 @@ double yetanotherdoubleinsideaheader;
 #endif
 
 /***********************************************************************************************************/
-/*all the test function prototypes are here.*/
+/*all the test functi/*on prototypes are here.*/
 void testFuncStatementsinmple (void);
 void testFuncStatementComplexIf (void);
 void testFuncStatementNotCoverage (void);
@@ -158,7 +158,7 @@ void testfunc9999(void)
   };
 
   struct s* ps1;
-  /*these two should not be tagged by 18.1 since they are pointers to an incomplete type. the pointer is a complete type.*/
+  /*these two should no/*t be tagged by 18.1 since they are pointers to an incomplete type. the pointer is a complete type.*/
   struct s** ps2;
   struct s*** ps3;
 
