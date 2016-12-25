@@ -1327,6 +1327,7 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
+    /*underdev*/
     if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr124") != nullptr)
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr124");
@@ -1336,12 +1337,47 @@ public:
 
       ASTContext *const ASTC = MR.Context;
 
+      const SourceManager &SM = ASTC->getSourceManager();
+
       if (EXP->HasSideEffects(*ASTC, true))
       {
         std::cout << "12.4 : " << "Righ-hand expr has side-effect : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
+      }
+
+      RawCommentList RCL = ASTC->Comments;
+
+      ArrayRef<RawComment*> RawCommentArrRef = RCL.getComments();
+
+      std::string RawText;
+
+      size_t matchLoc = RawText.find("/*", 0);
+      unsigned MatchCounter = 0U;
+
+      for (auto &iter : RawCommentArrRef)
+      {
+        std::string RawText = iter->getRawText(SM);
+
+        std::cout << "ZZZZZZZZZZZZZZZZZZZZZ" << RawText << std::endl;
+
+        SourceLocation RCSL = iter->getLocStart();
+
+        while (matchLoc != std::string::npos)
+        {
+          MatchCounter++;
+          matchLoc = RawText.find("/*", matchLoc + 1U);
+        }
+
+        if (MatchCounter >= 2U)
+        {
+          /*flag and tag*/
+          std::cout << "2.3 : " << "character sequence \"/*\" used inside the comment : " << std::endl;
+          std::cout << RCSL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+        }
       }
     }
   }
@@ -3131,7 +3167,7 @@ public:
     {
       if (iter.HasMoreThanOneDefinition)
       {
-#if 0
+#if 1
         std::cout << "8.8 : " << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: " << std::endl;
         std::cout << iter.XObjSLStr << "\n" << std::endl;
 
