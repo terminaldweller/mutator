@@ -1337,47 +1337,12 @@ public:
 
       ASTContext *const ASTC = MR.Context;
 
-      const SourceManager &SM = ASTC->getSourceManager();
-
       if (EXP->HasSideEffects(*ASTC, true))
       {
         std::cout << "12.4 : " << "Righ-hand expr has side-effect : " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
-      }
-
-      RawCommentList RCL = ASTC->Comments;
-
-      ArrayRef<RawComment*> RawCommentArrRef = RCL.getComments();
-
-      std::string RawText;
-
-      size_t matchLoc = RawText.find("/*", 0);
-      unsigned MatchCounter = 0U;
-
-      for (auto &iter : RawCommentArrRef)
-      {
-        std::string RawText = iter->getRawText(SM);
-
-        std::cout << "ZZZZZZZZZZZZZZZZZZZZZ" << RawText << std::endl;
-
-        SourceLocation RCSL = iter->getLocStart();
-
-        while (matchLoc != std::string::npos)
-        {
-          MatchCounter++;
-          matchLoc = RawText.find("/*", matchLoc + 1U);
-        }
-
-        if (MatchCounter >= 2U)
-        {
-          /*flag and tag*/
-          std::cout << "2.3 : " << "character sequence \"/*\" used inside the comment : " << std::endl;
-          std::cout << RCSL.printToString(*MR.SourceManager) << "\n" << std::endl;
-
-          XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
-        }
       }
     }
   }
@@ -2933,41 +2898,17 @@ public:
 
     const IdentifierTable &IT = ASTC->Idents;
 
-#if 0
-    RawCommentList RCL = ASTC->Comments;
-
-    ArrayRef<RawComment*> RC = RCL.getComments();
-
-    for (auto &iter1 : RC)
-    {
-      if (iter1->getKind() != RawComment::RCK_OrdinaryC)
-      {
-        std::cout << "bad comment" << std::endl;
-      }
-    }
-#endif
-
     if (II != nullptr)
     {
       StringRef IdentStringRef = II->getName();
 
       IdentifierInfoLookup* IILU [[maybe_unused]] = IT.getExternalIdentifierLookup();
 
-#if 0
-      if (IILU != nullptr)
-      {
-        std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << " " << IdentStringRef.str() << std::endl;
-      }
-#endif
-
-      //IdentifierIterator* IIter = IILU->getIdentifiers();
-
       for (auto &iter : IT)
       {
-        /*only works for UTF-8. for larger sizes we need a multiple of 32. for UTF-16 we need to check against 64.*/
+        /*@DEVI-only works for UTF-8. for larger sizes we need a multiple of 32. for UTF-16 we need to check against 64 and so on.*/
         if (IdentStringRef.str().size() >= 32U && IsNamedDecl)
         {
-          //std::cout << iter.getValue()->getName().str() << std::endl;
           if ((iter.getValue()->getName().str().substr(0U, 32U) == IdentStringRef.str().substr(0U, 32U)) && (iter.getValue()->getName().str() != IdentStringRef.str()))
           {
             std::cout << "5.1 : " << "Identifier relies on the signifacance of more than 31 charcaters: " << std::endl;
@@ -2976,13 +2917,6 @@ public:
             XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the signifacance of more than 31 charcaters: ");
           }
         }
-
-#if 0
-        if (IdentStringRef.str() == "incompletearr1")
-        {
-          std::cout << iter.getValue()->getName().str() << std::endl;
-        }
-#endif
 
         if (iter.getValue()->getName().str() == IdentStringRef.str())
         {
@@ -3117,14 +3051,14 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCDCDF88 : public MatchFinder::MatchCallback
+/*@DEVI-flags all external functions that have a declaration that is not a definition also.*/
+class [[maybe_unused]] MCDCDF88 : public MatchFinder::MatchCallback
 {
 public:
   MCDCDF88 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    /*underdev*/
     if (MR.Nodes.getNodeAs<clang::NamedDecl>("mcdcdf88") != nullptr)
     {
       IsNewEntry = true;
@@ -3205,6 +3139,82 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*@DEVI-ASTContext doesn not have all the comments in a source file. i dunno why.*/
+class MCLangX23 : public MatchFinder::MatchCallback
+{
+public:
+  MCLangX23 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mclangx23") != nullptr)
+    {
+      ASTContext *const ASTC = MR.Context;
+
+      const SourceManager &SM = ASTC->getSourceManager();
+
+      RawCommentList RCL = ASTC->Comments;
+
+      ArrayRef<RawComment*> RawCommentArrRef = RCL.getComments();
+
+      std::string RawText;
+
+      size_t matchLoc;
+
+      unsigned currentLoc = 1U;
+
+      unsigned MatchCounter = 0U;
+
+      for (auto &iter : RawCommentArrRef)
+      {
+        RawText = iter->getRawText(SM);
+
+        //std::cout << "ZZZZZZZZZZZZZZZZZZZZZ" << RawText << std::endl;
+
+        SourceLocation RCSL = iter->getLocStart();
+
+        while (true)
+        {
+          matchLoc = RawText.find("/*", currentLoc);
+
+          if (matchLoc != std::string::npos)
+          {
+            currentLoc = matchLoc + 1U;
+
+            MatchCounter++;
+          }
+          else
+          {
+            break;
+          }
+        }
+
+        currentLoc = 1U;
+
+        if (!once)
+        {
+          if (MatchCounter >= 1U)
+          {
+            /*flag and tag*/
+            std::cout << "2.3 : " << "character sequence \"/*\" used inside the comment : " << " " << RawText << std::endl;
+            std::cout << RCSL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+          }
+        }
+
+        MatchCounter = 0U;
+      }
+
+      once = true;
+
+    }
+  }
+
+private:
+  bool once = false;
+  Rewriter &Rewrite [[maybe_unused]];
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -3724,7 +3734,7 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R) {
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -3913,6 +3923,8 @@ public:
                                          to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
 
     //Matcher.addMatcher(namedDecl(hasExternalFormalLinkage()).bind("mcdcdf88"), &HandlerForDCDF88);
+
+    Matcher.addMatcher(expr().bind("mclangx23"), &HandlerForLangX23);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3979,6 +3991,7 @@ private:
   MCIdent5 HandlerForIdent5;
   MCDCDF87 HandlerForDCDF87;
   //MCDCDF88 HandlerForDCDF88;
+  MCLangX23 HandlerForLangX23;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
