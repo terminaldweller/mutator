@@ -76,8 +76,15 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 	* `test` runs the tests on the executables and checks the results (not implemented yet).<br/>
 	* `misrac` checks for misrac rules.<br/>
 * `-v, --version` prints out the version.<br/>
-* `-i, --input, -input` lets you choose the input file that is going to be passed to the mutator executable(s).<br/>
+* `-i, --input, -input` lets you choose the input file(or a white-space-separated list of files) that is going to be passed to the mutator executable(s).<br/>
 * `-o, --output, -output` lets you choose where to put the mutant.<br/>
+* `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation.`<br/>
+
+So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
+<br/>
+`./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall"`<br/>
+<br/>
+
 <br/>
 **mutator-lvl0** will run the Misra-C:2004 checks.<br/>
 **mutator** will run the level-1 Misra-C:2004 implementers.<br/>
