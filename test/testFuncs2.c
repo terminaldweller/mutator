@@ -23,7 +23,7 @@ typedef int dummytypedef;
 /*for 5.3*/
 typedef gaga incompletearr1;
 #endif
-
+/*gibber/*gabber*/
 #define XMACRO Y
 
 #define ABSOLUTE(X) (((X) >= 0) ? (X) : -(X))

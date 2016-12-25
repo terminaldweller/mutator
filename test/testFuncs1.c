@@ -891,7 +891,7 @@ void test18(void)
 
   if (c && (a = b))
   {
-    /*yada yada*/
+    /*yada /*yada*/
   }
 
   if ((c = a) || a)
