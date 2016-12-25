@@ -3724,7 +3724,7 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForDCDF88(R) {
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -3912,7 +3912,7 @@ public:
     Matcher.addMatcher(declRefExpr(allOf(hasAncestor(functionDecl().bind("mcdcdf87daddy")), \
                                          to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
 
-    Matcher.addMatcher(namedDecl(hasExternalFormalLinkage()).bind("mcdcdf88"), &HandlerForDCDF88);
+    //Matcher.addMatcher(namedDecl(hasExternalFormalLinkage()).bind("mcdcdf88"), &HandlerForDCDF88);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3978,7 +3978,7 @@ private:
   MCATC101 HandlerForATC101;
   MCIdent5 HandlerForIdent5;
   MCDCDF87 HandlerForDCDF87;
-  MCDCDF88 HandlerForDCDF88;
+  //MCDCDF88 HandlerForDCDF88;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
