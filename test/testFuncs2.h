@@ -47,6 +47,7 @@ void anotherheaderfunc (void)
 void testFunc9(void);
 void testFunc11(void);
 void testFunc12(void);
+void testFunc16(void);
 
 /*********************************************************************************************************************/
 #endif

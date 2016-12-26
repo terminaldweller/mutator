@@ -380,5 +380,34 @@ void testfunc15 (void)
   a[2] = 052;
 }
 
+void testfunc16(int* p1, int* p2, int* const p3, const int* p4, int* p5)
+{
+  if (*p1 > 100)
+  {
+    /*do something*/
+  }
+
+  if (*p5 > 100)
+  {
+    /*do something*/
+  }
+
+  p5++;
+  p5 = p5 + 10;
+
+  *p2++;
+  *p2 = *p2 + 100;
+
+  if (*p3 > 1000)
+  {
+    /*do something else*/
+  }
+
+  if (*p4 < 100)
+  {
+    /*yet another task*/
+  }
+}
+
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
