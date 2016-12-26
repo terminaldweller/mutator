@@ -10,9 +10,11 @@
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "tinyxml2/tinyxml2.h"
+#include "json/json.hpp"
 /*********************************************************************************************************************/
 using namespace clang;
 using namespace tinyxml2;
+using json = nlohmann::json;
 /*********************************************************************************************************************/
 namespace Devi {
 /*a simple function that checks the sourcelocations for a macro expansion. returns the sourcelocation without
