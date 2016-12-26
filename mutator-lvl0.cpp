@@ -1327,7 +1327,6 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    /*underdev*/
     if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr124") != nullptr)
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr124");
@@ -3216,6 +3215,36 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /**********************************************************************************************************************/
+/*@DEVI-changes done to the pointee through unaryOperators ++ and -- will not be tagged by this class.
+see implementation notes for the explanation.*/
+class MCFunction167 : public MatchFinder::MatchCallback
+{
+public:
+  MCFunction167 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167") != nullptr)
+    {
+      const ParmVarDecl* PVD = MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167");
+
+      SourceLocation SL = PVD->getLocStart();
+
+      QualType QT = PVD->getOriginalType();
+
+      if (!QT.isConstQualified())
+      {
+        std::cout << "16.7 : " << "pointerType ParmVarDecl is not used to change the contents of the objects it points to but is not declared as const : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the objects it points to but is not declared as const : ");
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite [[maybe_unused]];
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -3734,7 +3763,8 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R) {
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
+    HandlerForFunction167(R) {
 
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
@@ -3925,6 +3955,8 @@ public:
     //Matcher.addMatcher(namedDecl(hasExternalFormalLinkage()).bind("mcdcdf88"), &HandlerForDCDF88);
 
     Matcher.addMatcher(expr().bind("mclangx23"), &HandlerForLangX23);
+
+    Matcher.addMatcher(parmVarDecl(unless(allOf(hasAncestor(functionDecl(hasDescendant(binaryOperator(allOf(hasOperatorName("="), hasLHS(hasDescendant(declRefExpr(allOf(hasAncestor(unaryOperator(hasOperatorName("*"))), to(parmVarDecl(hasType(pointerType())).bind("zulu"))))))))))), equalsBoundNode("zulu")))).bind("mcfunction167"), &HandlerForFunction167);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -3992,6 +4024,7 @@ private:
   MCDCDF87 HandlerForDCDF87;
   //MCDCDF88 HandlerForDCDF88;
   MCLangX23 HandlerForLangX23;
+  MCFunction167 HandlerForFunction167;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
