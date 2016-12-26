@@ -9,22 +9,32 @@
 
 
 A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
+Reports are genrated in simple text, XML and JSON formats.<br/>
 <br/>
-Here's a quick look into the project files and directories:<br/>
-* **mutator-lvl0.cpp** contains the Misra-C rules to check. The Executable named after it, will run the Misra-C rule checks.<br/>
-* **mutator.cpp** contains the mutators which are not copiled for the time being since im working on Misra-C only for the time being, along with some Misra-C implementers.<br/>
-* **mutator-lvl2.cpp** contains some other Misra-C implementers. Rewriting the code in multiple stages allows for more simplistic rewrites and is also a check to see whether the output is actually buildable.<br/>
-* **mutator.sh** is the UI, which is supposed to work like just any other nix UI(option-wise).<br/>
-* The **utility** folder holds the C source and headers that are necessary to run the instrumented code(currently unused).<br/>
-* **mutator-aux.cpp.h** hold the auxillary functions that most modules will need.<br/>
-* Well there is the **makefile**.<br/>
-* The **test** folder holds the **TDD** tests.<br/>
-* The **docs** folder contains the documents related to the project. Currently the doc for the current status of the Misra-C:2004 implementation is there.<br/>
-* The folder named **tinyxml2** holds the tinyxml2 source files.<br/>
-* The folder named **extra-tools** holds some tool that help the dev process. Right now it only holds a little script that has some limited argument parsing abilities to dump AST.<br/>
-* The folder named **samples** holds the output samples for the project. Currently, you can find the text and XML output of the Misra-C rule checker run over the TDD tests.<br/>
 
-#### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
+Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
+
+```XML
+
+<MisraDiag Misra-C:2004Rule="9.1" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1088" SpellingColumnNumber="3">staic local variable does not have initialization : </MisraDiag>
+<MisraDiag Misra-C:2004Rule="13.6" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1092" SpellingColumnNumber="5">ForStmt controlling variable modified in the body of the loop: </MisraDiag>
+<MisraDiag Misra-C:2004Rule="14.9" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1094" SpellingColumnNumber="5">"If" statement has no braces {}: </MisraDiag>
+<MisraDiag Misra-C:2004Rule="14.9" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1096" SpellingColumnNumber="5">"If" statement has no braces {}: </MisraDiag>
+<MisraDiag Misra-C:2004Rule="14.6" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1090" SpellingColumnNumber="3">More than one BreakStmt used in the loop counter: </MisraDiag>
+<MisraDiag Misra-C:2004Rule="13.6" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1102" SpellingColumnNumber="5">ForStmt controlling variable modified in the body of the loop: </MisraDiag>
+
+```
+
+```JSON
+
+{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1094}}
+{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1096}}
+{"MisraDiag":{"Description":"More than one BreakStmt used in the loop counter: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.6","SpellingColumnNumber":3,"SpellingLineNumber":1090}}
+{"MisraDiag":{"Description":"ForStmt controlling variable modified in the body of the loop: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"13.6","SpellingColumnNumber":5,"SpellingLineNumber":1102}}
+{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1103}}
+{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1109}}
+
+```
 
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase.<br/>
@@ -102,6 +112,22 @@ This parts contains notes regarding the implementation of the mutator executable
 
 * The implementation for the Misra-C:2004 rule 16.7 only checks for changes made to the pointee object when the pointer is the LHS of a binary `=` operator. Changes can be made to the pointee object through UnaryOperators `++` and `--` but since the `*` UnaryOperator is also involved, the behaviour is undefined as to which unaryOperator is evaluated at first so depending on the original build toolchain's implementation, it could modify the pointer itself or the pointee object. such cases are already being tagged by 12.13 and the fix to that rule will either make the source code in a way that will be tagged by 16.7 or fix it so it wont get tagged. Either way, it is pointless to look for changes to pointee objects through `++` and `--` operators, postfix or prefix. Do note that even if at later times, mutator supports pragmas for different compiler implementation behaviours, the last argument still stands.<br/>
 
+Here's a quick look into the project files and directories:<br/>
+* **mutator-lvl0.cpp** contains the Misra-C rules to check. The Executable named after it, will run the Misra-C rule checks.<br/>
+* **mutator.cpp** contains the mutators which are not copiled for the time being since im working on Misra-C only for the time being, along with some Misra-C implementers.<br/>
+* **mutator-lvl2.cpp** contains some other Misra-C implementers. Rewriting the code in multiple stages allows for more simplistic rewrites and is also a check to see whether the output is actually buildable.<br/>
+* **mutator.sh** is the UI, which is supposed to work like just any other nix UI(option-wise).<br/>
+* The **utility** folder holds the C source and headers that are necessary to run the instrumented code(currently unused).<br/>
+* **mutator-aux.cpp.h** hold the auxillary functions that most modules will need.<br/>
+* Well there is the **makefile**.<br/>
+* The **test** folder holds the **TDD** tests.<br/>
+* The **docs** folder contains the documents related to the project. Currently the doc for the current status of the Misra-C:2004 implementation is there.<br/>
+* The folder named **tinyxml2** holds the tinyxml2 source files.<br/>
+* The folder named **extra-tools** holds some tool that help the dev process. Right now it only holds a little script that has some limited argument parsing abilities to dump AST.<br/>
+* The folder named **samples** holds the output samples for the project. Currently, you can find the text and XML output of the Misra-C rule checker run over the TDD tests.<br/>
+
+#### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
+
 ### Dev Method
 TDD tests are created for each added feature which are stored under the **test** folder in the repo.<br/>
 Smoke tests and Daily builds are conducted to make sure the code base builds correctly more than once every day.<br/>
@@ -126,7 +152,6 @@ If you run into an issue please raise one here or just contact me with proper in
 
 ### Future Features
 * Misra-c:2012 check support<br/>
-* Support for JSON report output<br/>
 * Ability to turn off some rule checks<br/>
 
 ###Support
