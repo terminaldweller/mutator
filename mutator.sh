@@ -94,6 +94,8 @@ elif [[ "$COMMAND" == "run" ]];then
 elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Removing previous XML report..."
 	"rm" ./test/misrareport.xml
+	echo "Removing previous JSON report..."
+	"rm" ./test/misrareport.json
 	echo "checking input file(s) against Misra-C 2004..."
 	echo "Options to pass to executable: "${OPTIONS:0:$((${#OPTIONS}))}
 	"./mutator-lvl0" $INPUT -- ${OPTIONS:0:$((${#OPTIONS}))} > ./test/misra-log
