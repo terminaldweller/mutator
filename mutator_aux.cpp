@@ -6,6 +6,7 @@
 #include <string>
 #include <cassert>
 #include <iostream>
+#include <fstream>
 #include "clang/AST/AST.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
@@ -49,7 +50,7 @@ SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std
 
   return (SL);
 }
-/*********************************************************************************************************************/
+/******************************************************XMLReport******************************************************/
 XMLReport::XMLReport()
 {
   RootPointer = XMLReportDoc.NewElement("Report");
@@ -132,7 +133,90 @@ void XMLReport::SaveReport(void)
     std::cout << "could not write xml misra report." << std::endl;
   }
 }
-/*********************************************************************************************************************/
+/***************************************************End of XMLReport**************************************************/
+
+/*****************************************************JSONReport******************************************************/
+JSONReport::JSONReport()
+{
+
+}
+
+void JSONReport::JSONCreateReport(void)
+{
+  JSONRepFile.open("./test/misrareport.json", std::ios::out);
+}
+
+void JSONReport::JSONAddElement(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description)
+{
+  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(1) of JSONAddElement is not valid.");
+
+  FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
+  unsigned LineNumber = FSL.getSpellingLineNumber();
+  unsigned ColumnNumber = FSL.getSpellingColumnNumber();
+
+  const SourceManager& SM = FSL.getManager();
+  std::string FileNameString = SM.getFilename(SL).str();
+
+  json RepJ;
+
+  RepJ["MisraDiag"]["Description"] = Description.c_str();
+  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["FileName"] = FileNameString.c_str();
+  RepJ["MisraDiag"]["SpellingLineNumber"] = LineNumber;
+  RepJ["MisraDiag"]["SpellingColumnNumber"] = ColumnNumber;
+
+  JSONRepFile << RepJ << std::endl;
+}
+
+void JSONReport::JSONAddElement(FullSourceLoc FullSrcLoc, SourceLocation SL, std::string MisraRule, std::string Description)
+{
+  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(2) of XMLAddNode is not valid.");
+
+  unsigned LineNumber = FullSrcLoc.getSpellingLineNumber();
+  unsigned ColumnNumber = FullSrcLoc.getSpellingColumnNumber();
+
+  const SourceManager& SM = FullSrcLoc.getManager();
+  std::string FileNameString = SM.getFilename(SL).str();
+
+  json RepJ;
+
+  RepJ["MisraDiag"]["Description"] = Description.c_str();
+  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["FileName"] = FileNameString.c_str();
+  RepJ["MisraDiag"]["SpellingLineNumber"] = LineNumber;
+  RepJ["MisraDiag"]["SpellingColumnNumber"] = ColumnNumber;
+
+  JSONRepFile << RepJ << std::endl;
+}
+
+void JSONReport::JSONAddElement(const SourceManager &SM, SourceLocation SL, std::string MisraRule, std::string Description)
+{
+  SL = SM.getSpellingLoc(SL);
+
+  assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
+
+  unsigned LineNumber = SM.getSpellingLineNumber(SL);
+  unsigned ColumnNumber = SM.getSpellingColumnNumber(SL);
+
+  std::string FileNameString = SM.getFilename(SL).str();
+
+  json RepJ;
+
+  RepJ["MisraDiag"]["Description"] = Description.c_str();
+  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["FileName"] = FileNameString.c_str();
+  RepJ["MisraDiag"]["SpellingLineNumber"] = LineNumber;
+  RepJ["MisraDiag"]["SpellingColumnNumber"] = ColumnNumber;
+
+  JSONRepFile << RepJ << std::endl;
+}
+
+void JSONReport::CloseReport(void)
+{
+  JSONRepFile.close();
+}
+/****************************************************End Of JSONReport************************************************/
 }
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
