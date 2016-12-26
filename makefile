@@ -11,7 +11,7 @@ ifneq ($(CXX), clang++)
 $(error This build mode is only useable with clang++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-instr-use=code.profdata
+ -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-instr-use=code.profdata -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-instr-use=code.profdata
 endif
 
@@ -20,7 +20,7 @@ ifneq ($(CXX), clang++)
 $(error This build mode is only useable with clang++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-instr-generate
+ -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-instr-generate -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-instr-generate
 endif
 
@@ -30,13 +30,13 @@ ifneq ($(CXX), clang++)
 $(error This build mode is only useable with clang++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-arcs -ftest-coverage
+ -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-arcs -ftest-coverage
 endif
 
 ifeq ($(BUILD_MODE), COV_NO_CLANG)
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG
+ -std=c++11 -stdlib=libstdc++ -UNDEBUG -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
@@ -45,7 +45,7 @@ ifeq ($(CXX), g++)
 $(error This build mode is only useable with clang++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++1z -stdlib=libstdc++ -UNDEBUG
+ -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
@@ -54,7 +54,7 @@ ifneq ($(CXX), g++)
 $(error This build mode is only useable with g++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG
+ -std=c++11 -stdlib=libstdc++ -UNDEBUG -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
@@ -83,6 +83,7 @@ all: $(TARGET) $(TARGET2) $(TARGET0)
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 	$(MAKE) -C tinyxml2 CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
+	$(MAKE) -C json CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
 $(TARGET): $(TARGET).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
@@ -96,6 +97,7 @@ $(TARGET0): $(TARGET0).o mutator_aux.o
 clean:
 	rm -f *.o *~ $(TARGET0) $(TARGET) $(TARGET2)
 	$(MAKE) -C tinyxml2 clean
+	$(MAKE) -C json clean
 
 help:
 	@echo '- There is help.'
