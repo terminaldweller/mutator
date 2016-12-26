@@ -8,6 +8,7 @@
 /*********************************************************************************************************************/
 /*inclusion directives*/
 #include <string>
+#include <fstream>
 #include "clang/AST/AST.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
@@ -36,6 +37,23 @@ public:
 private:
   XMLDocument XMLReportDoc;
   XMLNode* RootPointer;
+};
+
+class JSONReport
+{
+public:
+  JSONReport();
+
+  void JSONCreateReport(void);
+  void JSONAddElement(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description);
+  /*overload for checks that announce the result in onendoftranslation unit.*/
+  void JSONAddElement(FullSourceLoc FSL, SourceLocation SL, std::string MisraRule, std::string Description);
+  /*overload for PPCallbacks.*/
+  void JSONAddElement(const SourceManager &SM, SourceLocation SL, std::string MisraRule, std::string Description);
+  void CloseReport(void);
+
+private:
+  std::ofstream JSONRepFile;
 };
 
 }
