@@ -57,6 +57,8 @@ EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
+CXX_FLAGS+=$(EXTRA_CXX_FALGS)
+
 ###########################################################RULES##############################################################
 .DEFAULT: tinyxml2
 
