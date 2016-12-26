@@ -82,7 +82,7 @@ all: $(TARGET) $(TARGET2) $(TARGET0)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
-	$(MAKE) -C tinyxml2
+	$(MAKE) -C tinyxml2 CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
 $(TARGET): $(TARGET).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
@@ -94,7 +94,8 @@ $(TARGET0): $(TARGET0).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
-	rm -f *.o *~ $(TARGET0) $(TARGET) $(TARGET2) 
+	rm -f *.o *~ $(TARGET0) $(TARGET) $(TARGET2)
+	$(MAKE) -C tinyxml2 clean
 
 help:
 	@echo '- There is help.'
