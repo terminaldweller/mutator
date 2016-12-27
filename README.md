@@ -92,16 +92,16 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 
 So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
 ```bash
-<br/>
-`./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall"`<br/>
-<br/>
+
+./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall"<br/>
+
 ```
 
 Do note that if your file has included standard header libraries, you do need to tell it where to look for them, so for the above example on Fedora, you would need to run:<br/>
 ```bash
-<br/>
+
 ./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -I/lib/gcc/x86_64-redhat-linux/5.3.1/include/"<br/>
-<br/>
+
 ```
 <br/>
 **mutator-lvl0** will run the Misra-C:2004 checks.<br/>
