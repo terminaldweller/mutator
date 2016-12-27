@@ -9,7 +9,7 @@
 
 
 A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
-Reports are genrated in simple text, XML and JSON formats.<br/>
+Reports are genrated in simple text(AWK-friendly), XML and JSON formats.<br/>
 <br/>
 
 Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
@@ -91,10 +91,18 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation.`<br/>
 
 So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
+```bash
 <br/>
 `./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall"`<br/>
 <br/>
+```
 
+Do note that if your file has included standard header libraries, you do need to tell it where to look for them, so for the above example on Fedora, you would need to run:<br/>
+```bash
+<br/>
+./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -I/lib/gcc/x86_64-redhat-linux/5.3.1/include/"<br/>
+<br/>
+```
 <br/>
 **mutator-lvl0** will run the Misra-C:2004 checks.<br/>
 **mutator** will run the level-1 Misra-C:2004 implementers.<br/>
