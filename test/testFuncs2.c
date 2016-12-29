@@ -174,6 +174,9 @@ void testfunc1(void)
   c = 123;
   c = 'c';
   c = "c";
+  b = 'b';
+  b = "b";
+  a = 123;
   c = '\n';
 
   ;;;;
