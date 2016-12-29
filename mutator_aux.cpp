@@ -66,7 +66,7 @@ void XMLReport::XMLCreateReport()
 contains only the spelling location.*/
 void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description)
 {
-  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(1) of XMLAddNode is not valid.");
+  //assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(1) of XMLAddNode is not valid.");
 
   FullSourceLoc FSL = ASTC->getFullLoc(SL);
 
@@ -87,7 +87,7 @@ void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string Misr
 
 void XMLReport::XMLAddNode(FullSourceLoc FullSrcLoc, SourceLocation SL, std::string MisraRule, std::string Description)
 {
-  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(2) of XMLAddNode is not valid.");
+  //assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(2) of XMLAddNode is not valid.");
 
   unsigned LineNumber = FullSrcLoc.getSpellingLineNumber();
   unsigned ColumnNumber = FullSrcLoc.getSpellingColumnNumber();
@@ -108,7 +108,7 @@ void XMLReport::XMLAddNode(const SourceManager &SM, SourceLocation SL, std::stri
 {
   SL = SM.getSpellingLoc(SL);
 
-  assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
+  //assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
 
   unsigned LineNumber = SM.getSpellingLineNumber(SL);
   unsigned ColumnNumber = SM.getSpellingColumnNumber(SL);
@@ -136,10 +136,7 @@ void XMLReport::SaveReport(void)
 /***************************************************End of XMLReport**************************************************/
 
 /*****************************************************JSONReport******************************************************/
-JSONReport::JSONReport()
-{
-
-}
+JSONReport::JSONReport() {}
 
 void JSONReport::JSONCreateReport(void)
 {
@@ -148,7 +145,7 @@ void JSONReport::JSONCreateReport(void)
 
 void JSONReport::JSONAddElement(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description)
 {
-  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(1) of JSONAddElement is not valid.");
+  //assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(1) of JSONAddElement is not valid.");
 
   FullSourceLoc FSL = ASTC->getFullLoc(SL);
 
@@ -171,7 +168,7 @@ void JSONReport::JSONAddElement(ASTContext* ASTC, SourceLocation SL, std::string
 
 void JSONReport::JSONAddElement(FullSourceLoc FullSrcLoc, SourceLocation SL, std::string MisraRule, std::string Description)
 {
-  assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(2) of XMLAddNode is not valid.");
+  //assert(SL.isValid() && "SourceLocation passed as function parameter in an overload(2) of XMLAddNode is not valid.");
 
   unsigned LineNumber = FullSrcLoc.getSpellingLineNumber();
   unsigned ColumnNumber = FullSrcLoc.getSpellingColumnNumber();
@@ -194,7 +191,7 @@ void JSONReport::JSONAddElement(const SourceManager &SM, SourceLocation SL, std:
 {
   SL = SM.getSpellingLoc(SL);
 
-  assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
+  //assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
 
   unsigned LineNumber = SM.getSpellingLineNumber(SL);
   unsigned ColumnNumber = SM.getSpellingColumnNumber(SL);
