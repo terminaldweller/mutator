@@ -2890,7 +2890,8 @@ public:
     {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy");
 
-      if ((ICE->getCastKind() == CK_IntegralCast) || (ICE->getCastKind() == CK_FloatingCast))
+      if ((ICE->getCastKind() == CK_IntegralCast) || (ICE->getCastKind() == CK_FloatingCast) || \
+          (ICE->getCastKind() == CK_FloatingComplexCast) || (ICE->getCastKind() == CK_IntegralComplexCast))
       {
         SourceLocation SL = ICE->getLocStart();
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -2957,13 +2958,63 @@ public:
           }
         }
 
-        if (ICETypeSize < ChildTypeSize)
+        if (ICETypeSize < ChildTypeSize && !(CanonTypeChild->isComplexIntegerType() || CanonTypeChild->isComplexType()))
         {
           std::cout << "10.1/2 : " << "ImplicitCastExpr is narrowing: " << std::endl;
           std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
+        }
+
+        if (CanonTypeChild->isComplexIntegerType())
+        {
+          if (ICETypeSize > ChildTypeSize)
+          {
+            std::cout << "10.3 : " << "ImplicitCastExpr is widening for complex integer type: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
+          }
+
+          const ComplexType* ChildCPXType = CanonTypeChild->getAsComplexIntegerType();
+          const ComplexType* DaddyCPXType = CanonTypeDaddy->getAsComplexIntegerType();
+
+          QualType DaddyCPXQT = DaddyCPXType->getElementType();
+          QualType ChildCPXQT = ChildCPXType->getElementType();
+
+          const clang::Type* DaddyCPXElementType = DaddyCPXQT.getTypePtr();
+          const clang::Type * ChildCPXElementType = ChildCPXQT.getTypePtr();
+
+          bool IsSignedCPXDaddy = DaddyCPXElementType->getAsPlaceholderType()->isSignedInteger();
+          bool IsSignedCPXChild = ChildCPXElementType->getAsPlaceholderType()->isSignedInteger();
+          bool IsUnsignedCPXDaddy = DaddyCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
+          bool IsUnsignedCPXChild = ChildCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
+
+          //std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << iscpxsigned << iscpxsigned2 << std::endl;
+
+          if ((IsSignedCPXDaddy && IsUnsignedCPXChild) || (IsUnsignedCPXDaddy && IsSignedCPXChild))
+          {
+            std::cout << "10.3 : " << "ImplicitCastExpr changes the signedness of the complex integer type: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type type: ");
+          }
+        }
+
+        /*clang::Type::iSComplexIntegerType will not return true for the gnu extension of complex integers.*/
+        if (!CanonTypeChild->isComplexIntegerType() && CanonTypeChild->isComplexType())
+        {
+          if (ICETypeSize > ChildTypeSize)
+          {
+            std::cout << "10.4 : " << "ImplicitCastExpr is widening for complex float type: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
+          }
         }
       }
     }
