@@ -2693,7 +2693,6 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    /*underdev*/
     if ((MR.Nodes.getNodeAs<clang::Expr>("mctypes6rhs") != nullptr) \
         && (MR.Nodes.getNodeAs<clang::VarDecl>("mctypes6origin") != nullptr) \
         && (MR.Nodes.getNodeAs<clang::BinaryOperator>("mctypes6dous") != nullptr))
@@ -2992,8 +2991,6 @@ public:
           bool IsUnsignedCPXDaddy = DaddyCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
           bool IsUnsignedCPXChild = ChildCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
 
-          //std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << iscpxsigned << iscpxsigned2 << std::endl;
-
           if ((IsSignedCPXDaddy && IsUnsignedCPXChild) || (IsUnsignedCPXDaddy && IsSignedCPXChild))
           {
             std::cout << "10.3 : " << "ImplicitCastExpr changes the signedness of the complex integer type: " << std::endl;
@@ -3027,17 +3024,13 @@ private:
 class MCIdent5 : public MatchFinder::MatchCallback
 {
 public:
-  MCIdent5 (Rewriter &Rewrite) : Rewrite(Rewrite)
-  {
-    IdenMatchCounter = 0U;
-  }
+  MCIdent5 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
     IsTypedefIdent = false;
     IsNamedDecl = false;
     IsRecordDecl = false;
-    IdenMatchCounter = 0U;
 
     IdentifierInfo *II;
 
@@ -3080,6 +3073,7 @@ public:
     }
 
     ASTContext *const ASTC = MR.Context;
+    const SourceManager &SM = ASTC->getSourceManager();
 
     const IdentifierTable &IT = ASTC->Idents;
 
@@ -3099,52 +3093,103 @@ public:
             std::cout << "5.1 : " << "Identifier relies on the signifacance of more than 31 charcaters: " << std::endl;
             std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the signifacance of more than 31 charcaters: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "5.1", "Identifier relies on the signifacance of more than 31 charcaters: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+          }
+        }
+      }
+
+      if (SM.isInMainFile(SL))
+      {
+        IdentInfo Temp = {II->getName().str(), SL, SL.printToString(*MR.SourceManager), ASTC->getFullLoc(SL), IsRecordDecl, IsTypedefIdent};
+        IdentInfoProto.push_back(Temp);
+      }
+    }
+  }
+
+  void onEndOfTranslationUnit(void)
+  {
+    unsigned TagCounter = 0U;
+    unsigned TypedefCounter = 0U;
+
+    /*@DEVI-3 is the magical number because it will find itself twice, because typedef and tag
+    identifiers are matched twice, once by nameddecl  and once by tag or typedef. the third time
+    we find a match is where we have found something to tag.*/
+    /*@DEVI-has false positives-incomplete record types that later become complete fit the criteria.*/
+    for (auto &iter : IdentInfoProto)
+    {
+      if (iter.IsTagIdentifier)
+      {
+        for (auto &yaiter : IdentInfoProto)
+        {
+          if ((iter.Name == yaiter.Name))
+          {
+            TagCounter++;
           }
         }
 
-        if (iter.getValue()->getName().str() == IdentStringRef.str())
+        if (TagCounter >= 3U)
         {
-          IdenMatchCounter++;
+          std::cout << "5.4 : " << "tag identifier is not unique: " << std::endl;
+          std::cout << iter.SLString << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
+          JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
         }
+
+        TagCounter = 0U;
       }
 
-      if ((IdenMatchCounter >= 2U))
+      if (iter.IsTypeDefIdentifier)
       {
-        std::cout << "5.7 : " << "identifier is reused: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        for (auto &yaiter : IdentInfoProto)
+        {
+          if ((iter.Name == yaiter.Name))
+          {
+            TypedefCounter++;
+          }
+        }
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "5.7", "identifier is reused: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "5.7", "identifier is reused: ");
-      }
+        if (TypedefCounter >= 3U)
+        {
+          std::cout << "5.3 : " << "typedef identifier is not unique: " << std::endl;
+          std::cout << iter.SLString << "\n" << std::endl;
 
-      if ((IdenMatchCounter >= 2U) && IsRecordDecl)
-      {
-        std::cout << "5.4 : " << "tag name is not unique: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
+          JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
+        }
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "5.4", "tag name is not unique: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "5.4", "tag name is not unique: ");
-      }
-
-      /*@DEVI-clang wont let it through.*/
-      if ((IdenMatchCounter >= 2U) && IsTypedefIdent)
-      {
-        std::cout << "5.3 : " << "typedef identifier is not unique: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
-
-        XMLDocOut.XMLAddNode(MR.Context, SL, "5.3", "typedef identifier is not unique: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "5.3", "typedef identifier is not unique: ");
+        TypedefCounter = 0U;
       }
     }
-
   }
 
 private:
   bool IsTypedefIdent = false;
   bool IsNamedDecl = false;
   bool IsRecordDecl = false;
+
+  struct IdentInfo
+  {
+    IdentInfo(std::string iName, SourceLocation iSL, std::string iSLString, FullSourceLoc iFSL, bool iIsTagIdentifier = false, bool iIsTypeDefIdentifier = false)
+    {
+      Name = iName;
+      SL = iSL;
+      SLString = iSLString;
+      FSL = iFSL;
+      IsTagIdentifier = iIsTagIdentifier;
+      IsTypeDefIdentifier = iIsTypeDefIdentifier;
+    }
+
+    std::string Name;
+    SourceLocation SL;
+    std::string SLString;
+    FullSourceLoc FSL;
+    bool IsTagIdentifier = false;
+    bool IsTypeDefIdentifier = false;
+  };
+
+  std::vector<IdentInfo> IdentInfoProto;
 
   unsigned IdenMatchCounter;
 
