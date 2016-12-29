@@ -2676,6 +2676,16 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/*@DEVI-the simple char type can be singed or unsigned. its implementation-defined. the values appear
+folded on AST and currently i dont know of a method to differentiate between singed/unsigned char and simple char.
+sure, we can get the text of the vardecl and do string search in there but that still does not solve our problem.
+we could do string search for the RHS expression but thats limited and then there is flagging cases that are of char
+type because of a macro expansion(the macro adding signed or unsinged to the char type). we could flag those macros
+in a PPCallback::MacroDefined but that leaves us with the problem of CStyleCasts. for example when a
+simple char type is assigned a numeric values cast explicitly cast to simple char, misra-c says it does not
+break rule 6.1(see https://www.misra.org.uk/forum/viewtopic.php?t=1020 for reference). the bottom line is,
+there is a way to implement this but the implementation will be janky and its too much trouble for a janky
+implementation that later on will not be modifiable much.*/
 class MCTypes61 : public MatchFinder::MatchCallback
 {
 public:
@@ -2691,10 +2701,68 @@ public:
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mctypes6rhs");
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mctypes6origin");
 
+      QualType QT = VD->getType();
+      const clang::Type* TP = QT.getTypePtr();
+
+      QualType QTEXP = EXP->getType();
+      const clang::Type* TPEXP = QTEXP.getTypePtr();
+
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SourceLocation SLE = EXP->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
 
+      SourceRange SR;
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
 
+#if 0
+      std::string RHSString = Rewrite.getRewrittenText(SR);
+
+      //std::cout << RHSString << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
+
+      size_t singleQuoteLoc = RHSString.find("'", 0U);
+      size_t doubleQuoteLoc = RHSString.find("\"", 0U);
+      size_t singleQuoteLocE = RHSString.rfind("'", 0U);
+      size_t doubleQuoteLocE = RHSString.rfind("\"", 0U);
+#endif
+
+      /*@DEVI-the logic here is that we know we have matched a chartype. if its not either a singedinteger or
+      unsingedinteger, then it is a simple char. otherwise it is signed or unsigned char.*/
+#if 0
+      if (TP->isSignedIntegerType() || TP->isUnsignedIntegerType())
+      {
+        //std::cout << RHSString << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << SL.printToString(*MR.SourceManager) << std::endl;
+
+        if (!TPEXP->isSignedIntegerType() && !TPEXP->isUnsignedIntegerType())
+        {
+          std::cout << "6.2 : " << "Sgined or unsigned char type holds characterLiterals : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
+
+        }
+      }
+      else
+      {
+
+      }
+
+      if (!TP->isSignedIntegerType() && !TP->isUnsignedIntegerType())
+      {
+        //std::cout << RHSString << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << SL.printToString(*MR.SourceManager) << std::endl;
+
+        if (TPEXP->isSignedIntegerType() || TPEXP->isUnsignedIntegerType())
+        {
+          std::cout << "6.1 : " << "Simple char type holds numeric values : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
+        }
+      }
+#endif
     }
   }
 
@@ -3354,115 +3422,117 @@ public:
                                    bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
                                    StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported)
   {
+    if (File->isValid())
+    {
 #if 0
-    assert(HashLoc.isValid() && "The SourceLocation for InclusionDirective is invalid.");
+      assert(HashLoc.isValid() && "The SourceLocation for InclusionDirective is invalid.");
 #endif
 
-    if (IsAngled)
-    {
-      size_t singleQPos = FileName.find("\'", 0);
-      size_t doubleQPos = FileName.find("\"", 0);
-      size_t whateverSlashPos = FileName.find("\\", 0);
-      size_t commentPos = FileName.find("\\*", 0);
-
-      if (singleQPos != std::string::npos || doubleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
+      if (IsAngled)
       {
-        std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
-        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+        size_t singleQPos = FileName.find("\'", 0);
+        size_t doubleQPos = FileName.find("\"", 0);
+        size_t whateverSlashPos = FileName.find("\\", 0);
+        size_t commentPos = FileName.find("\\*", 0);
 
-        XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
-        JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
-      }
-
-      if (FileName == "errno.h")
-      {
-        std::cout << "20.5 : " << "errno shall not be used : " << std::endl;
-        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
-
-        XMLDocOut.XMLAddNode(SM, HashLoc, "20.5", "errno shall not be used : ");
-        JSONDocOUT.JSONAddElement(SM, HashLoc, "20.5", "errno shall not be used : ");
-      }
-
-      if (FileName == "time.h")
-      {
-        std::cout << "20.12 : " << "stdlib time.h is included in the project. use is forbidden : " << std::endl;
-        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
-
-        XMLDocOut.XMLAddNode(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
-        JSONDocOUT.JSONAddElement(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
-      }
-
-      if (FileName == "stdio.h")
-      {
-        std::cout << "20.9 : " << "stdlib stdio.h is included in the project. use is forbidden : " << std::endl;
-        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
-
-        XMLDocOut.XMLAddNode(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
-        JSONDocOUT.JSONAddElement(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
-      }
-
-      if (FileName == "signal.h")
-      {
-        std::cout << "20.8 : " << "stdlib signal.h is included in the project. use is forbidden : " << std::endl;
-        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
-
-        XMLDocOut.XMLAddNode(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
-        JSONDocOUT.JSONAddElement(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
-      }
-    }
-    else
-    {
-      size_t singleQPos = FileName.find("\'", 0);
-      size_t whateverSlashPos = FileName.find("\\", 0);
-      size_t commentPos = FileName.find("\\*", 0);
-
-      if (singleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
-      {
-        std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
-        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
-
-        XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
-        JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
-      }
-
-      bool IsNewIncludeFile = true;
-
-      for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
-      {
-        if (SearchPath.str() + "/" + FileName.str() == IncludeFileArr[x])
+        if (singleQPos != std::string::npos || doubleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
         {
-          IsNewIncludeFile = false;
-          break;
+          std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
+          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+          JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+        }
+
+        if (FileName == "errno.h")
+        {
+          std::cout << "20.5 : " << "errno shall not be used : " << std::endl;
+          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(SM, HashLoc, "20.5", "errno shall not be used : ");
+          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.5", "errno shall not be used : ");
+        }
+
+        if (FileName == "time.h")
+        {
+          std::cout << "20.12 : " << "stdlib time.h is included in the project. use is forbidden : " << std::endl;
+          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
+          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
+        }
+
+        if (FileName == "stdio.h")
+        {
+          std::cout << "20.9 : " << "stdlib stdio.h is included in the project. use is forbidden : " << std::endl;
+          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
+          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
+        }
+
+        if (FileName == "signal.h")
+        {
+          std::cout << "20.8 : " << "stdlib signal.h is included in the project. use is forbidden : " << std::endl;
+          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
+          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
+        }
+      }
+      else
+      {
+        size_t singleQPos = FileName.find("\'", 0);
+        size_t whateverSlashPos = FileName.find("\\", 0);
+        size_t commentPos = FileName.find("\\*", 0);
+
+        if (singleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
+        {
+          std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
+          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+          XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+          JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+        }
+
+        bool IsNewIncludeFile = true;
+
+        for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
+        {
+          if (SearchPath.str() + "/" + FileName.str() == IncludeFileArr[x])
+          {
+            IsNewIncludeFile = false;
+            break;
+          }
+        }
+
+        /*its supposed to supprt linux and cygwin,mingw and mac builds.*/
+        if (IsNewIncludeFile)
+        {
+#if defined(__linux__)
+          IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
+#elif defined(__MACH__) && defined(__APPLE__)
+          IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
+#elif defined(__CYGWIN__) || defined(_WIN32) || defined(_WIN64)
+          IncludeFileArr.push_back(SearchPath.str() + "\\" + FileName.str());
+#else
+          IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
+#endif
         }
       }
 
-      /*its supposed to supprt linux and cygwin,mingw and mac builds.*/
-      if (IsNewIncludeFile)
+      size_t whateverSlashPos = FileName.find("\\", 0);
+      size_t theotherSlashPos = FileName.find(" / ", 0);
+
+      if (whateverSlashPos != std::string::npos || theotherSlashPos != std::string::npos)
       {
-#if defined(__linux__)
-        IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
-#elif defined(__MACH__) && defined(__APPLE__)
-        IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
-#elif defined(__CYGWIN__) || defined(_WIN32) || defined(_WIN64)
-        IncludeFileArr.push_back(SearchPath.str() + "\\" + FileName.str());
-#else
-        IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
-#endif
+        std::cout << "19.3 : " << "Include directive contains file address, not just name : " << std::endl;
+        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+
+        XMLDocOut.XMLAddNode(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
+        JSONDocOUT.JSONAddElement(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
       }
     }
-
-    size_t whateverSlashPos = FileName.find("\\", 0);
-    size_t theotherSlashPos = FileName.find(" / ", 0);
-
-    if (whateverSlashPos != std::string::npos || theotherSlashPos != std::string::npos)
-    {
-      std::cout << "19.3 : " << "Include directive contains file address, not just name : " << std::endl;
-      std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
-
-      XMLDocOut.XMLAddNode(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
-      JSONDocOUT.JSONAddElement(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
-    }
-
   }
 
   /*@DEVI-if the macro is not checked for being defined before almost any kind of use, the code will break in seemingly random ways.*/
@@ -3470,6 +3540,7 @@ public:
   basically i dont know how to just get the tokens after defined.*/
   virtual void Defined(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range)
   {
+#if 1
     SourceLocation SL [[maybe_unused]] = Range.getBegin();
 
 #if 0
@@ -3524,69 +3595,79 @@ public:
 #endif
       }
     }
-
+#endif
   }
 
   virtual void MacroUndefined(const Token &MacroNameTok, const MacroDefinition &MD)
   {
+#if 1
     const MacroInfo* MI = MD.getMacroInfo();
 
     DefMacroDirective* DMD = MD.getLocalDirective();
 
-    SourceLocation SL = MacroNameTok.getLocation();
+    if (MI != nullptr && DMD != nullptr)
+    {
+      SourceLocation SL = MacroNameTok.getLocation();
 
 #if 0
-    assert(SL.isValid(), "the SourceLocation for MacroUndefined is not valid.");
+      assert(SL.isValid(), "the SourceLocation for MacroUndefined is not valid.");
 #endif
 
-    /*start of 20.1*/
-    /*inline and restrict are C99*/
-    if (MacroNameTok.isOneOf(tok::kw_auto, tok::kw_break, tok::kw_case, tok::kw_char, tok::kw_const, tok::kw_continue, \
-                             tok::kw_default, tok::kw_do, tok::kw_double, tok::kw_else, tok::kw_enum, tok::kw_extern, \
-                             tok::kw_float, tok::kw_for, tok::kw_goto, tok::kw_if, tok::kw_inline, tok::kw_int, tok::kw_long, \
-                             tok::kw_register, tok::kw_restrict, tok::kw_return, tok::kw_short, tok::kw_signed, tok::kw_sizeof, \
-                             tok::kw_static, tok::kw_struct, tok::kw_switch, \
-                             tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
-    {
-      std::cout << "20.1 : " << "C keyword undefined : " << std::endl;
-      std::cout << SL.printToString(SM) << "\n" << std::endl;
-
-      XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword undefined : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword undefined : ");
-    }
-
-    if (DMD->getPrevious() != nullptr)
-    {
-      const MacroDirective* PMD = DMD->getPrevious();
-      SourceLocation PSL = PMD->getLocation();
-
-      if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
+      /*start of 20.1*/
+      /*inline and restrict are C99*/
+      if (MacroNameTok.isOneOf(tok::kw_auto, tok::kw_break, tok::kw_case, tok::kw_char, tok::kw_const, tok::kw_continue, \
+                               tok::kw_default, tok::kw_do, tok::kw_double, tok::kw_else, tok::kw_enum, tok::kw_extern, \
+                               tok::kw_float, tok::kw_for, tok::kw_goto, tok::kw_if, tok::kw_inline, tok::kw_int, tok::kw_long, \
+                               tok::kw_register, tok::kw_restrict, tok::kw_return, tok::kw_short, tok::kw_signed, tok::kw_sizeof, \
+                               tok::kw_static, tok::kw_struct, tok::kw_switch, \
+                               tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
       {
-        std::cout << "20.1 : " << "C standard library macro undefined : " << std::endl;
+        std::cout << "20.1 : " << "C keyword undefined : " << std::endl;
         std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro undefined : ");
-        JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro undefined : ");
+        XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword undefined : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword undefined : ");
       }
+
+      if (DMD->getPrevious() != nullptr)
+      {
+        const MacroDirective* PMD = DMD->getPrevious();
+
+        if (PMD != nullptr)
+        {
+          SourceLocation PSL = PMD->getLocation();
+
+          if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
+          {
+            std::cout << "20.1 : " << "C standard library macro undefined : " << std::endl;
+            std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+            XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro undefined : ");
+            JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro undefined : ");
+          }
+        }
+      }
+      /*end of 20.1*/
+
+      /*start of 19.5*/
+      if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL))
+      {
+        MacroUndefSourceLocation.push_back(SL);
+      }
+      /*end of 19.5*/
+
+      std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
+      std::cout << SL.printToString(SM) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(SM, SL, "19.6", "Use of #undef is illegal : ");
+      JSONDocOUT.JSONAddElement(SM, SL, "19.6", "Use of #undef is illegal : ");
     }
-    /*end of 20.1*/
-
-    /*start of 19.5*/
-    if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL))
-    {
-      MacroUndefSourceLocation.push_back(SL);
-    }
-    /*end of 19.5*/
-
-    std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
-    std::cout << SL.printToString(SM) << "\n" << std::endl;
-
-    XMLDocOut.XMLAddNode(SM, SL, "19.6", "Use of #undef is illegal : ");
-    JSONDocOUT.JSONAddElement(SM, SL, "19.6", "Use of #undef is illegal : ");
+#endif
   }
 
   virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD)
   {
+#if 1
     const MacroInfo* MI = MD->getMacroInfo();
 
     SourceLocation SL = MacroNameTok.getLocation();
@@ -3647,6 +3728,7 @@ public:
 
     for (unsigned x = 0; x < NumOfTokens; ++x)
     {
+#if 1
       if (TokenArrayRef[x].getKind() == tok::hash)
       {
         hasSingleHash = true;
@@ -3668,6 +3750,7 @@ public:
         XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has ## token : ");
         JSONDocOUT.JSONAddElement(SM, SL, "19.13", "Macro has ## token : ");
       }
+#endif
     }
 
     if (hasSingleHash && hasDoubleHash)
@@ -3687,54 +3770,62 @@ public:
 
       for (unsigned x = 0U; x < NumOfTokens; ++x)
       {
-        if (TokenArrayRef[x].getKind() == tok::identifier)
+#if 1
+        /*@DEVI-for macro defs that dont have more than two token NumOfTokens will wrap around since its
+        unsigned if subtracted by two,hence the check. it does not hurt the logic since if there are less
+        than two token in a macro definition, then it cannot possibly have a hash or a double hash.*/
+        if (NumOfTokens >= 2U)
         {
-          for (unsigned  xx = 0; xx < MacroNumArgs; ++xx)
+          if (TokenArrayRef[x].getKind() == tok::identifier)
           {
-            if (TokenArrayRef[x].getIdentifierInfo()->getName().str() == MacroArgsArrRef[xx]->getName().str())
+            for (unsigned  xx = 0; xx < MacroNumArgs; ++xx)
             {
-              IsIdentifierMacroArg = true;
+              if (TokenArrayRef[x].getIdentifierInfo()->getName().str() == MacroArgsArrRef[xx]->getName().str())
+              {
+                IsIdentifierMacroArg = true;
+              }
+            }
+
+            if (IsIdentifierMacroArg)
+            {
+              if (x <= NumOfTokens - 2U)
+              {
+                if (TokenArrayRef[x + 1U].getKind() == tok::hashhash)
+                {
+                  HasHash = true;
+                }
+              }
+
+              if (x >= 1U)
+              {
+                if (TokenArrayRef[x - 1U].getKind() == tok::hash || TokenArrayRef[x - 1U].getKind() == tok::hashhash)
+                {
+                  HasHash = true;
+                }
+              }
+
+              if (x <= NumOfTokens - 2U)
+              {
+                if (!(TokenArrayRef[x + 1U].getKind() == tok::r_paren) && !HasHash)
+                {
+                  ShouldBeTagged = true;
+                }
+              }
+
+              if (x >= 1U)
+              {
+                if (!(TokenArrayRef[x - 1U].getKind() == tok::l_paren) && !HasHash)
+                {
+                  ShouldBeTagged = true;
+                }
+              }
             }
           }
 
-          if (IsIdentifierMacroArg)
-          {
-            if (x <= NumOfTokens - 2U)
-            {
-              if (TokenArrayRef[x + 1U].getKind() == tok::hashhash)
-              {
-                HasHash = true;
-              }
-            }
-
-            if (x >= 1U)
-            {
-              if (TokenArrayRef[x - 1U].getKind() == tok::hash || TokenArrayRef[x - 1U].getKind() == tok::hashhash)
-              {
-                HasHash = true;
-              }
-            }
-
-            if (x <= NumOfTokens - 2U)
-            {
-              if (!(TokenArrayRef[x + 1U].getKind() == tok::r_paren) && !HasHash)
-              {
-                ShouldBeTagged = true;
-              }
-            }
-
-            if (x >= 1U)
-            {
-              if (!(TokenArrayRef[x - 1U].getKind() == tok::l_paren) && !HasHash)
-              {
-                ShouldBeTagged = true;
-              }
-            }
-          }
+          IsIdentifierMacroArg = false;
+          HasHash = false;
         }
-
-        IsIdentifierMacroArg = false;
-        HasHash = false;
+#endif
       }
 
       if (ShouldBeTagged)
@@ -3769,10 +3860,12 @@ public:
         }
       }
     }
+#endif
   }
 
   virtual void MacroExpands(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range, const MacroArgs *Args)
   {
+#if 1
     SourceLocation SL = MacroNameTok.getLocation();
 
 #if 0
@@ -3811,10 +3904,12 @@ public:
       XMLDocOut.XMLAddNode(SM, SL, "19.11", "Use of undefined macro : ");
       JSONDocOUT.JSONAddElement(SM, SL, "19.11", "Use of undefined macro : ");
     }
+#endif
   }
 
   virtual void Elif(SourceLocation Loc, SourceRange ConditionRange, ConditionValueKind ConditionValue, SourceLocation IfLoc)
   {
+#if 1
     SourceLocation SLoc = SM.getSpellingLoc(Loc);
     SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
 
@@ -3826,10 +3921,12 @@ public:
       XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
       JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
     }
+#endif
   }
 
   virtual void Else(SourceLocation Loc, SourceLocation IfLoc)
   {
+#if 1
     SourceLocation SLoc = SM.getSpellingLoc(Loc);
     SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
 
@@ -3841,10 +3938,12 @@ public:
       XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
       JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
     }
+#endif
   }
 
   virtual void Endif (SourceLocation Loc, SourceLocation IfLoc)
   {
+#if 1
     SourceLocation SLoc = SM.getSpellingLoc(Loc);
     SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
 
@@ -3856,6 +3955,7 @@ public:
       XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
       JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
     }
+#endif
   }
 
 private:
@@ -3881,6 +3981,7 @@ public:
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
     HandlerForFunction167(R) {
 
+#if 1
     /*forstmts whithout a compound statement.*/
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
 
@@ -4075,6 +4176,7 @@ public:
     Matcher.addMatcher(parmVarDecl(unless(allOf(hasAncestor(functionDecl(hasDescendant(binaryOperator(allOf(hasOperatorName("="), \
                                           hasLHS(hasDescendant(declRefExpr(allOf(hasAncestor(unaryOperator(hasOperatorName("*"))), \
                                               to(parmVarDecl(hasType(pointerType())).bind("zulu"))))))))))), equalsBoundNode("zulu")))).bind("mcfunction167"), &HandlerForFunction167);
+#endif
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -4140,7 +4242,9 @@ private:
   MCATC101 HandlerForATC101;
   MCIdent5 HandlerForIdent5;
   MCDCDF87 HandlerForDCDF87;
-  //MCDCDF88 HandlerForDCDF88;
+#if 0
+  MCDCDF88 HandlerForDCDF88;
+#endif
   MCLangX23 HandlerForLangX23;
   MCFunction167 HandlerForFunction167;
   MatchFinder Matcher;
