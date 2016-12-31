@@ -88,12 +88,16 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-v, --version` prints out the version.<br/>
 * `-i, --input, -input` lets you choose the input file(or a white-space-separated list of files) that is going to be passed to the mutator executable(s).<br/>
 * `-o, --output, -output` lets you choose where to put the mutant.<br/>
-* `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation.`<br/>
+* `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
+
+`mutator-lvl0` options:
+* SysHeader, will let the executable know that you wish the checks to run through system headers as well. Off by default.<br/>
+* MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. currently only supports MisraC2004 or C2.<br/>
 
 So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
 ```bash
 
-./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall"
+./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -std=c90 SysHeader=false C2"
 
 ```
 
