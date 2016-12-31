@@ -10,6 +10,7 @@
 #include <string>
 #include <fstream>
 #include "clang/AST/AST.h"
+#include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "tinyxml2/tinyxml2.h"
@@ -20,6 +21,24 @@ using namespace tinyxml2;
 namespace Devi {
 SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std::string Kind);
 
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
+
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, const SourceManager &SM, SourceLocation SL);
+
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader, SourceLocation SL);
+
+bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
+
+bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLocation SL);
+
+bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL);
+
+/*@DEVI- for both report classes, if the program gets terminated, since the destructor does not close
+the report files, what happens to them is implementation-defined in case of let's say an exit, but since
+we erase the files everytime a new instance of mutator-lvl0 is called, we are fine. or so i think.*/
+/*@DEVI- in case of a crash, the XML report will only hold the base node, while the JSON report will
+contain all the reports up until the crash. tinyxml2 writes the nodes to file on SaveFile which is
+called in SaveReport so that's why.*/
 class XMLReport
 {
 public:
