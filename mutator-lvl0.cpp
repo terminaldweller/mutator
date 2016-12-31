@@ -11,7 +11,7 @@
 #include <iostream>
 #include <cassert>
 #include <vector>
-/*LLVM headers*/
+/*Clang headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTTypeTraits.h"
@@ -28,6 +28,8 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
+/*LLVM headers*/
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
 /**********************************************************************************************************************/
@@ -47,7 +49,17 @@ std::vector<SourceLocation> MacroUndefSourceLocation;
 std::vector<std::string> MacroNameString;
 std::vector<std::string> IncludeFileArr;
 
-static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
+/*mutator-lvl0 executable options*/
+enum MisraC
+{
+  MisraC2004, MisraC2012, C2, C3
+};
+
+static llvm::cl::OptionCategory MutatorLVL0Cat("mutator-lvl0 options category");
+cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("mutator-lvl0 will run through System Headers"));
+cl::opt<MisraC> MisraCVersion(cl::desc("choose the MisraC version to check against"), \
+                              cl::values(clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
+                                  clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")));
 /**********************************************************************************************************************/
 class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCmpless : public MatchFinder::MatchCallback {
 public:
@@ -117,6 +129,11 @@ public:
 
       SourceLocation SL = IS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       std::cout << "14.9 : " << "\"Else\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
@@ -1820,6 +1837,20 @@ public:
       const Expr* FSInc = FS->getInc();
       const Expr* FSCond [[maybe_unused]] = FS->getCond();
 
+      if (FSCond != nullptr)
+      {
+        SourceLocation CSL = FSCond->getLocStart();
+        SourceLocation CSLE = FSCond->getLocEnd();
+        SourceRange CSR;
+        CSR.setBegin(CSL);
+        CSR.setEnd(CSLE);
+
+        std::string outstring = Rewrite.getRewrittenText(CSR);
+
+        std::cout << "XXXXXXXXXXXXXXXXXXXXXX" << outstring << std::endl;
+      }
+
+
       SourceLocation SLD = FS->getLocStart();
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
       SourceLocation SL = DRE->getLocStart();
@@ -3031,6 +3062,7 @@ public:
     IsTypedefIdent = false;
     IsNamedDecl = false;
     IsRecordDecl = false;
+    HasHiddenVisibility = false;
 
     IdentifierInfo *II;
 
@@ -3044,6 +3076,11 @@ public:
 
       SL = ND->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (ND->isHidden())
+      {
+        HasHiddenVisibility = true;
+      }
 
       IsNamedDecl = true;
     }
@@ -3074,6 +3111,15 @@ public:
 
     ASTContext *const ASTC = MR.Context;
     const SourceManager &SM = ASTC->getSourceManager();
+
+    if (HasHiddenVisibility)
+    {
+      std::cout << "5.2 : " << "Object or function has hidden visibility: " << std::endl;
+      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
+      JSONDocOUT.JSONAddElement(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
+    }
 
     const IdentifierTable &IT = ASTC->Idents;
 
@@ -3168,6 +3214,7 @@ private:
   bool IsTypedefIdent = false;
   bool IsNamedDecl = false;
   bool IsRecordDecl = false;
+  bool HasHiddenVisibility = false;
 
   struct IdentInfo
   {
@@ -4376,7 +4423,10 @@ private:
 /*Main*/
 int main(int argc, const char **argv)
 {
-  CommonOptionsParser op(argc, argv, MatcherSampleCategory);
+  /*@DEVI-we should parse the common options before parsing the custom options.*/
+  CommonOptionsParser op(argc, argv, MutatorLVL0Cat);
+  cl::ParseCommandLineOptions(argc, argv);
+
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
   XMLDocOut.XMLCreateReport();
