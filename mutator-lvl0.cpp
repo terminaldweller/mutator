@@ -164,6 +164,11 @@ public:
       SourceLocation SL = IS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       std::cout << "14.9 : " << "\"If\" statement has no braces {}: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -193,6 +198,11 @@ public:
 
       SourceLocation IFESL = ElseIf->getLocStart();
       IFESL = Devi::SourceLocationHasMacro(IFESL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, IFESL))
+      {
+        return void();
+      }
 
       std::cout << "14.10 : " << "\"If-Else If\" statement has no ending Else: " << std::endl;
       std::cout << IFESL.printToString(*MR.SourceManager) << "\n" << std::endl;
@@ -225,6 +235,11 @@ public:
       SourceLocation SL = SS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       std::cout << "15.2 : " << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -254,6 +269,11 @@ public:
 
       SourceLocation SL = SS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       std::cout << "15.3 : " << "\"SwitchStmt\" does not have a defaultStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
@@ -286,6 +306,11 @@ public:
 
       SourceLocation SL = SS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       ASTContext *const ASTC = MR.Context;
 
@@ -331,6 +356,11 @@ public:
       SourceLocation SL = SS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       std::cout << "15.5 : " << "\"SwitchStmt\" does not have a CaseStmt: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -363,6 +393,11 @@ public:
         SourceLocation SL = FD->getLocStart();
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
         std::cout << "16.1 : " << "\"FunctionDecl\" is variadic: " << std::endl;
         std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -394,6 +429,11 @@ public:
 
       SourceLocation SL = FD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       std::string FuncNameStr = FD->getNameInfo().getAsString();
 
@@ -447,6 +487,11 @@ public:
       {
         SourceLocation SL = FD->getLocStart();
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
 
         SourceLocation SLDcl = FDcl->getLocStart();
         SLDcl = Devi::SourceLocationHasMacro(SLDcl, Rewrite, "start");
@@ -521,54 +566,89 @@ public:
       /*start of 20.4*/
       if ((FuncNameString == "malloc" || FuncNameString == "calloc" || FuncNameString == "free" || FuncNameString == "realloc") && SM.isInSystemHeader(FD->getLocStart()))
       {
-        std::cout << "20.4 : " << "Dynamic heap memory allocation used: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "20.4 : " << "Dynamic heap memory allocation used: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
+        }
       }
       /*end of 20.4*/
 
       /*start of 20.7*/
       if ((FuncNameString == "longjmp") && SM.isInSystemHeader(FD->getLocStart()))
       {
-        std::cout << "20.7 : " << "Use of lonjmp is illegal: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "20.7 : " << "Use of lonjmp is illegal: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
+        }
       }
       /*end of 20.7*/
 
       /*start of 20.10*/
       if ((FuncNameString == "atof" || FuncNameString == "atoi" || FuncNameString == "atol") && SM.isInSystemHeader(FD->getLocStart()))
       {
-        std::cout << "20.10 : " << "Use of atof,atoi and atol is illegal: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "20.10 : " << "Use of atof,atoi and atol is illegal: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
+        }
       }
       /*end of 20.10*/
 
       /*start of 20.11*/
       if ((FuncNameString == "abort" || FuncNameString == "exit" || FuncNameString == "getenv" || FuncNameString == "system") && SM.isInSystemHeader(FD->getLocStart()))
       {
-        std::cout << "20.11 : " << "Use of abort,exit,getenv and system is illegal : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "20.11 : " << "Use of abort,exit,getenv and system is illegal : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
+        }
       }
       /*end of 20.11*/
 
       if (CE->getNumArgs() != FD->getNumParams())
       {
-        std::cout << "16.6 : " << "CallExpr number of arguments does not equal the number of parameters in the declaration: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "16.6 : " << "CallExpr number of arguments does not equal the number of parameters in the declaration: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
+        }
       }
     }
     else
@@ -597,6 +677,11 @@ public:
 
       SourceLocation SL = RT->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       SourceLocation SLE = RT->getLocEnd();
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
@@ -635,6 +720,11 @@ public:
       SourceLocation SL = ICE->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       CastKind CK = ICE->getCastKind();
 
       if (CK == CK_FunctionToPointerDecay)
@@ -654,7 +744,7 @@ private:
 /**********************************************************************************************************************/
 /*@DEVI-what is correct: match a pointer then run matcher for implicitcastexpressions of type arraytopointerdecay
 that have unary(--,++) and binary(-,+) operators as parents*/
-class [[maybe_unused]] MCPA171 : public MatchFinder::MatchCallback
+class [[deprecated("replaced by something that actually works"), maybe_unused]] MCPA171 : public MatchFinder::MatchCallback
 {
 public:
   MCPA171 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -707,11 +797,18 @@ public:
       ASTContext* const ASTC = MR.Context;
       FullSourceLoc FSL = ASTC->getFullLoc(SL);
 
-      std::cout << "18.4 : " << "Union declared: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "18.4 : " << "Union declared: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "18.4", "Union declared: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "18.4", "Union declared: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "18.4", "Union declared: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "18.4", "Union declared: ");
+      }
 
       std::string MatchedName = RD->getNameAsString();
 
@@ -797,11 +894,18 @@ public:
     {
       if (StructInfoProto[x].IsIncompleteType)
       {
-        std::cout << "18.1 : " << "Incomplete struct declared: " << std::endl;
-        std::cout << StructInfoProto[x].StructSL << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, StructInfoProto[x].FSL.isInSystemHeader(), StructInfoProto[x].SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "18.1 : " << "Incomplete struct declared: " << std::endl;
+          std::cout << StructInfoProto[x].StructSL << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
-        JSONDocOUT.JSONAddElement(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
+          XMLDocOut.XMLAddNode(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
+          JSONDocOUT.JSONAddElement(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
+        }
       }
     }
 
@@ -809,11 +913,18 @@ public:
     {
       if (UnionInfoProto[x].IsIncompleteType)
       {
-        std::cout << "18.1 : " << "Incomplete union declared: " << std::endl;
-        std::cout << UnionInfoProto[x].UnionSL << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, UnionInfoProto[x].FSL.isInSystemHeader(), UnionInfoProto[x].SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "18.1 : " << "Incomplete union declared: " << std::endl;
+          std::cout << UnionInfoProto[x].UnionSL << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(UnionInfoProto[x].FSL, UnionInfoProto[x].SL, "18.1", "Incomplete union declared: ");
-        JSONDocOUT.JSONAddElement(UnionInfoProto[x].FSL, UnionInfoProto[x].SL, "18.1", "Incomplete union declared: ");
+          XMLDocOut.XMLAddNode(UnionInfoProto[x].FSL, UnionInfoProto[x].SL, "18.1", "Incomplete union declared: ");
+          JSONDocOUT.JSONAddElement(UnionInfoProto[x].FSL, UnionInfoProto[x].SL, "18.1", "Incomplete union declared: ");
+        }
       }
     }
   }
@@ -870,12 +981,19 @@ public:
 
       if ( !(TP->hasUnsignedIntegerRepresentation() || TP->hasSignedIntegerRepresentation()))
       {
-        /*this part is ueless since the clang parser wont let such a bitfield through.*/
-        std::cout << "6.4 : " << "BitField has a type other than int or unsigned int: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          /*this part is ueless since the clang parser wont let such a bitfield through.*/
+          std::cout << "6.4 : " << "BitField has a type other than int or unsigned int: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
+        }
       }
 
       ASTContext *const ASTC = MR.Context;
@@ -885,11 +1003,18 @@ public:
       {
         if (BitWidth < 2U)
         {
-          std::cout << "6.5 : " << "BitField of type signed integer has a length of less than 2 in bits : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "6.5 : " << "BitField of type signed integer has a length of less than 2 in bits : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
+          }
         }
       }
     }
@@ -947,11 +1072,18 @@ public:
 
       if (FunctionDeclaredInsideHeader)
       {
-        std::cout << "8.5 : " << "Function definition inside a header file : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "8.5 : " << "Function definition inside a header file : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Function definition inside a header file : ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "8.5", "Function definition inside a header file : ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Function definition inside a header file : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "8.5", "Function definition inside a header file : ");
+        }
       }
       /*end of 8.5*/
 
@@ -966,14 +1098,21 @@ public:
               !FSLE.isBeforeInTranslationUnitThan(MacroDefSourceLocation[x]) && \
               SM.isInMainFile(MacroDefSourceLocation[x]) && !SM.isInSystemHeader(MacroDefSourceLocation[x]))
           {
-            std::cout << "19.5 : " << "Macro defined inside a block : " << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "19.5 : " << "Macro defined inside a block : " << std::endl;
 #if 0
-            std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << " " << MacroNameString[x] << "\n" << std::endl;
+              std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << " " << MacroNameString[x] << "\n" << std::endl;
 #endif
-            std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
-            JSONDocOUT.JSONAddElement(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
+              XMLDocOut.XMLAddNode(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
+              JSONDocOUT.JSONAddElement(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
+            }
           }
         }
 
@@ -983,11 +1122,18 @@ public:
               !FSLE.isBeforeInTranslationUnitThan(MacroUndefSourceLocation[x]) && \
               SM.isInMainFile(MacroUndefSourceLocation[x]) && !SM.isInSystemHeader(MacroUndefSourceLocation[x]))
           {
-            std::cout << "19.5 : " << "Macro undefined inside a block : " << std::endl;
-            std::cout << MacroUndefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "19.5 : " << "Macro undefined inside a block : " << std::endl;
+              std::cout << MacroUndefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, MacroUndefSourceLocation[x], "19.5", "Macro undefined inside a block : ");
-            JSONDocOUT.JSONAddElement(MR.Context, MacroUndefSourceLocation[x], "19.5", "Macro undefined inside a block : ");
+              XMLDocOut.XMLAddNode(MR.Context, MacroUndefSourceLocation[x], "19.5", "Macro undefined inside a block : ");
+              JSONDocOUT.JSONAddElement(MR.Context, MacroUndefSourceLocation[x], "19.5", "Macro undefined inside a block : ");
+            }
           }
         }
       }
@@ -1037,11 +1183,18 @@ public:
     {
       if (FuncInfoProto[x].HasDecThatisNotDef == false)
       {
-        std::cout << "8.1 : " << "Function does not have a FunctionDecl that is not a definition : " << std::endl;
-        std::cout << FuncInfoProto[x].StrcSL << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, FuncInfoProto[x].FuncFSL.isInSystemHeader(), FuncInfoProto[x].FuncSL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "8.1 : " << "Function does not have a FunctionDecl that is not a definition : " << std::endl;
+          std::cout << FuncInfoProto[x].StrcSL << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(FuncInfoProto[x].FuncFSL, FuncInfoProto[x].FuncSL, "8.1", "Function does not have a FunctionDecl that is not a definition : ");
-        JSONDocOUT.JSONAddElement(FuncInfoProto[x].FuncFSL, FuncInfoProto[x].FuncSL, "8.1", "Function does not have a FunctionDecl that is not a definition : ");
+          XMLDocOut.XMLAddNode(FuncInfoProto[x].FuncFSL, FuncInfoProto[x].FuncSL, "8.1", "Function does not have a FunctionDecl that is not a definition : ");
+          JSONDocOUT.JSONAddElement(FuncInfoProto[x].FuncFSL, FuncInfoProto[x].FuncSL, "8.1", "Function does not have a FunctionDecl that is not a definition : ");
+        }
       }
     }
 
@@ -1137,11 +1290,18 @@ public:
 
       if (VarDeclaredInsideHeader)
       {
-        std::cout << "8.5 : " << "Variable definition inside a header file : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "8.5 : " << "Variable definition inside a header file : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Variable definition inside a header file : ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "8.5", "Variable definition inside a header file : ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Variable definition inside a header file : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "8.5", "Variable definition inside a header file : ");
+        }
       }
       /*end of 8.5*/
 
@@ -1152,12 +1312,19 @@ public:
         {
           if (TP->isIncompleteArrayType())
           {
-            /*end of 8.12*/
-            std::cout << "8.12 : " << "External array type is incomplete and has no initialization : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              /*end of 8.12*/
+              std::cout << "8.12 : " << "External array type is incomplete and has no initialization : " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
+            }
           }
         }
       }
@@ -1178,11 +1345,18 @@ public:
 
           if (openingcbraces == std::string::npos || closingcbraces == std::string::npos)
           {
-            std::cout << "9.2 : " << "Curly braces not used : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "9.2 : " << "Curly braces not used : " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "9.2", "Curly braces not used : ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "9.2", "Curly braces not used : ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "9.2", "Curly braces not used : ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "9.2", "Curly braces not used : ");
+            }
           }
         }
       }
@@ -1193,11 +1367,18 @@ public:
       {
         if (!VD->hasInit())
         {
-          std::cout << "9.1 : " << "staic local variable does not have initialization : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "9.1 : " << "staic local variable does not have initialization : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "9.1", "staic local variable does not have initialization : ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "9.1", "staic local variable does not have initialization : ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "9.1", "staic local variable does not have initialization : ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "9.1", "staic local variable does not have initialization : ");
+          }
         }
       }
     }
@@ -1222,6 +1403,11 @@ public:
 
       SourceLocation SL = VD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       unsigned int NumInits [[maybe_unused]] = ILE->getNumInits();
 
@@ -1289,12 +1475,19 @@ public:
         {
           if (!everyoneHasInit && someoneHasInit)
           {
-            /*in breach of misrac*/
-            std::cout << "9.3 : " << "first enumeration has integerliteral initialization but not all enumerations do : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              /*in breach of misrac*/
+              std::cout << "9.3 : " << "first enumeration has integerliteral initialization but not all enumerations do : " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
+            }
           }
           else
           {
@@ -1305,12 +1498,19 @@ public:
         {
           if (IL != nullptr)
           {
-            /*in breach of misrac*/
-            std::cout << "9.3 : " << "first enumeration does not have integerliteral initialization but at least one other enumeration does : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              /*in breach of misrac*/
+              std::cout << "9.3 : " << "first enumeration does not have integerliteral initialization but at least one other enumeration does : " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
+            }
           }
           else
           {
@@ -1352,6 +1552,11 @@ public:
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       ASTContext *const ASTC = MR.Context;
 
       if (EXP->HasSideEffects(*ASTC, true))
@@ -1382,6 +1587,11 @@ public:
 
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       ASTContext *const ASTC = MR.Context;
 
@@ -1442,11 +1652,18 @@ public:
       }
       else
       {
-        std::cout << "12.5 : " << "RHS and/or LHS operands are not primary expressions : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "12.5 : " << "RHS and/or LHS operands are not primary expressions : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
+        }
       }
     }
   }
@@ -1470,6 +1687,11 @@ public:
 
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       if (!EXP->isKnownToHaveBooleanValue())
       {
@@ -1499,6 +1721,11 @@ public:
 
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       QualType QT = EXP->getType();
 
@@ -1533,6 +1760,11 @@ public:
 
       SourceLocation SL = RHS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       QualType RQT = RHS->getType();
       QualType LQT = LHS->getType();
@@ -1581,6 +1813,11 @@ public:
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       QualType QT = EXP->getType();
 
       const clang::Type* TP = QT.getTypePtr();
@@ -1614,6 +1851,11 @@ public:
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       std::cout << "12.10 : " << "Comma used: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -1640,6 +1882,11 @@ public:
       SourceLocation SL = UO->getOperatorLoc();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       std::cout << "12.13 : " << "Unary ++ or -- have been used in an expr with other operators: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -1665,6 +1912,11 @@ public:
 
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       if (EXP->isKnownToHaveBooleanValue())
       {
@@ -1694,6 +1946,11 @@ public:
 
       SourceLocation SL = EXP->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       if (!EXP->isKnownToHaveBooleanValue())
       {
@@ -1737,11 +1994,18 @@ public:
       {
         if (TP->hasFloatingRepresentation())
         {
-          std::cout << "13.3 : " << "Float type expression checked for equality/inequality: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "13.3 : " << "Float type expression checked for equality/inequality: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
+          }
         }
       }
 
@@ -1783,12 +2047,19 @@ public:
 
         if (TPCond->hasFloatingRepresentation())
         {
-          std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
-          AlreadyHaveAHit = true;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            AlreadyHaveAHit = true;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+          }
         }
       }
 
@@ -1800,12 +2071,19 @@ public:
 
         if (TPInc->hasFloatingRepresentation())
         {
-          std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
-          AlreadyHaveAHit = true;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            AlreadyHaveAHit = true;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+          }
         }
       }
     }
@@ -1837,6 +2115,7 @@ public:
       const Expr* FSInc = FS->getInc();
       const Expr* FSCond [[maybe_unused]] = FS->getCond();
 
+      /*underdev*/
       if (FSCond != nullptr)
       {
         SourceLocation CSL = FSCond->getLocStart();
@@ -1847,7 +2126,9 @@ public:
 
         std::string outstring = Rewrite.getRewrittenText(CSR);
 
+#if 1
         std::cout << "XXXXXXXXXXXXXXXXXXXXXX" << outstring << std::endl;
+#endif
       }
 
 
@@ -1877,11 +2158,18 @@ public:
         {
           if (ControlVarName == NameString)
           {
-            std::cout << "13.6 : " << "ForStmt controlling variable modified in the body of the loop: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "13.6 : " << "ForStmt controlling variable modified in the body of the loop: " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
+            }
           }
         }
 
@@ -1909,6 +2197,11 @@ public:
       SourceLocation SL = GS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       std::cout << "14.4 : " << "GotoStmt used: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -1934,6 +2227,11 @@ public:
 
       SourceLocation SL = CS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       std::cout << "14.5 : " << "ContinueStmt used: " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
@@ -1993,12 +2291,19 @@ public:
 
     if (BreakCounter >= 2U && !AlreadyTagged)
     {
-      std::cout << "14.6 : " << "More than one BreakStmt used in the loop counter: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
-      AlreadyTagged = true;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "14.6 : " << "More than one BreakStmt used in the loop counter: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        AlreadyTagged = true;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "14.6", "More than one BreakStmt used in the loop counter: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "14.6", "More than one BreakStmt used in the loop counter: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "14.6", "More than one BreakStmt used in the loop counter: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "14.6", "More than one BreakStmt used in the loop counter: ");
+      }
     }
 
     OldSL = NewSL;
@@ -2043,12 +2348,19 @@ public:
 
       if (ReturnCounter >= 2U && !AlreadyTagged)
       {
-        std::cout << "14.7 : " << "More than one ReturnStmt used in the body of FunctionDecl: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
-        AlreadyTagged = true;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "14.7 : " << "More than one ReturnStmt used in the body of FunctionDecl: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          AlreadyTagged = true;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "14.7", "More than one ReturnStmt used in the body of FunctionDecl: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "14.7", "More than one ReturnStmt used in the body of FunctionDecl: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "14.7", "More than one ReturnStmt used in the body of FunctionDecl: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "14.7", "More than one ReturnStmt used in the body of FunctionDecl: ");
+        }
       }
 
       OldSL = NewSL;
@@ -2079,11 +2391,18 @@ public:
       SL = FS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "14.8 : " << "ForStmt does not have a child CompoundStmt: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "14.8 : " << "ForStmt does not have a child CompoundStmt: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "ForStmt does not have a child CompoundStmt: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "ForStmt does not have a child CompoundStmt: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "ForStmt does not have a child CompoundStmt: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "ForStmt does not have a child CompoundStmt: ");
+      }
     }
 
     if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while") != nullptr)
@@ -2093,11 +2412,18 @@ public:
       SL = WS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "14.8 : " << "WhileStmt does not have a child CompoundStmt: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "14.8 : " << "WhileStmt does not have a child CompoundStmt: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "WhileStmt does not have a child CompoundStmt: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "WhileStmt does not have a child CompoundStmt: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "WhileStmt does not have a child CompoundStmt: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "WhileStmt does not have a child CompoundStmt: ");
+      }
     }
 
     if (MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do") != nullptr)
@@ -2107,11 +2433,18 @@ public:
       SL = DS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "14.8 : " << "DoStmt does not have a child CompoundStmt: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "14.8 : " << "DoStmt does not have a child CompoundStmt: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "DoStmt does not have a child CompoundStmt: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "DoStmt does not have a child CompoundStmt: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "DoStmt does not have a child CompoundStmt: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "DoStmt does not have a child CompoundStmt: ");
+      }
     }
 
     if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch") != nullptr)
@@ -2121,11 +2454,18 @@ public:
       SL = SS->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "14.8 : " << "SwitchStmt does not have a child CompoundStmt: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "14.8 : " << "SwitchStmt does not have a child CompoundStmt: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "SwitchStmt does not have a child CompoundStmt: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "SwitchStmt does not have a child CompoundStmt: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "SwitchStmt does not have a child CompoundStmt: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "SwitchStmt does not have a child CompoundStmt: ");
+      }
     }
   }
 
@@ -2146,6 +2486,11 @@ public:
 
     SourceLocation SL = EXP->getLocStart();
     SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+    {
+      return void();
+    }
 
     if (EXP->isKnownToHaveBooleanValue())
     {
@@ -2215,39 +2560,67 @@ public:
 
         if (ShouldBeTagged111)
         {
-          std::cout << "11.1 : " << "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "11.1 : " << "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+          }
         }
       }
 
       if (CK == CK_IntegralToFloating || CK == CK_FloatingToIntegral)
       {
-        std::cout << "10.1/2 : " << "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "10.1/2 : " << "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: ");
+        }
       }
 
       if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
       {
-        std::cout << "11.3 : " << "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "11.3 : " << "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+        }
       }
 
       if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast)
       {
-        std::cout << "11.x : " << "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "11.x : " << "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+        }
       }
     }
   }
@@ -2276,11 +2649,18 @@ public:
       {
         if (EXP->isEvaluatable(*ASTC, Expr::SE_NoSideEffects))
         {
-          std::cout << "13.7 : " << "EffectivelyBooleanExpr's result is known at compile-time: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "13.7 : " << "EffectivelyBooleanExpr's result is known at compile-time: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
+          }
         }
       }
 
@@ -2399,11 +2779,18 @@ public:
     {
       if (FuncScopeProto[x].hasExternalCall == false)
       {
-        std::cout << "8.11 : " << "Function does not have any external calls but is not declared as static : " << std::endl;
-        std::cout << FuncScopeProto[x].DefinitionSL << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, FuncScopeProto[x].FuncScopeFSL.isInSystemHeader(), FuncScopeProto[x].FuncScopeSL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "8.11 : " << "Function does not have any external calls but is not declared as static : " << std::endl;
+          std::cout << FuncScopeProto[x].DefinitionSL << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(FuncScopeProto[x].FuncScopeFSL, FuncScopeProto[x].FuncScopeSL, "8.11", "Function does not have any external calls but is not declared as static : ");
-        JSONDocOUT.JSONAddElement(FuncScopeProto[x].FuncScopeFSL, FuncScopeProto[x].FuncScopeSL, "8.11", "Function does not have any external calls but is not declared as static : ");
+          XMLDocOut.XMLAddNode(FuncScopeProto[x].FuncScopeFSL, FuncScopeProto[x].FuncScopeSL, "8.11", "Function does not have any external calls but is not declared as static : ");
+          JSONDocOUT.JSONAddElement(FuncScopeProto[x].FuncScopeFSL, FuncScopeProto[x].FuncScopeSL, "8.11", "Function does not have any external calls but is not declared as static : ");
+        }
       }
     }
   }
@@ -2441,6 +2828,11 @@ public:
       SourceLocation SL = FD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       std::cout << "16.5 : " << "Function does not return anything but is missing the void keyword for the return type : " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
@@ -2468,6 +2860,11 @@ public:
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       SourceLocation SLE = FD->getBody()->getLocStart();
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       SourceRange SR;
       SR.setBegin(SL);
@@ -2513,6 +2910,11 @@ public:
       SourceLocation SL = DRE->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       QualType QT = DRE->getType();
 
       const clang::Type* TP = QT.getTypePtr();
@@ -2549,6 +2951,11 @@ public:
       SourceLocation SL = BO->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       QualType QTR = DRER->getType();
       QualType QTL = DREL->getType();
 
@@ -2584,11 +2991,18 @@ public:
       SourceLocation SL = CE->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+      }
     }
 
     if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742") != nullptr)
@@ -2598,11 +3012,18 @@ public:
       SourceLocation SL = DRE->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+      }
     }
   }
 
@@ -2691,11 +3112,18 @@ public:
 
       if (starCounter >= 3U)
       {
-        std::cout << "17.5 : " << "Pointer has more than 2 levels of indirection : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "17.5 : " << "Pointer has more than 2 levels of indirection : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "17.5", "Pointer has more than 2 levels on indirection : ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "17.5", "Pointer has more than 2 levels on indirection : ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "17.5", "Pointer has more than 2 levels on indirection : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "17.5", "Pointer has more than 2 levels on indirection : ");
+        }
 
         break;
       }
@@ -2766,12 +3194,18 @@ public:
 
         if (!TPEXP->isSignedIntegerType() && !TPEXP->isUnsignedIntegerType())
         {
-          std::cout << "6.2 : " << "Sgined or unsigned char type holds characterLiterals : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "6.2 : " << "Sgined or unsigned char type holds characterLiterals : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
-
+            XMLDocOut.XMLAddNode(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
+          }
         }
       }
       else
@@ -2785,11 +3219,18 @@ public:
 
         if (TPEXP->isSignedIntegerType() || TPEXP->isUnsignedIntegerType())
         {
-          std::cout << "6.1 : " << "Simple char type holds numeric values : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "6.1 : " << "Simple char type holds numeric values : " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
+          }
         }
       }
 #endif
@@ -2813,6 +3254,11 @@ public:
 
       SourceLocation SL = VD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
 
       std::cout << "18.1 : " << "ArrayType incomplete at the end of the translation unit : " << std::endl;
       std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
@@ -2877,30 +3323,51 @@ public:
 
         if (ShouldBeTagged11)
         {
-          std::cout << "11.1 : " << "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "11.1 : " << "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+          }
         }
       }
 
       if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
       {
-        std::cout << "11.3 : " << "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "11.3 : " << "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+        }
       }
 
       if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast)
       {
-        std::cout << "11.x : " << "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "11.x : " << "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+        }
       }
     }
   }
@@ -2980,32 +3447,53 @@ public:
         {
           if ((ICETypeIsSignedInt && ChildTypeIsUSignedInt) || (ICETypeIsUSignedInt && ChildTypeIsSignedInt))
           {
-            std::cout << "10.1/2 : " << "ImplicitCastExpr changes the signedness of the type: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "10.1/2 : " << "ImplicitCastExpr changes the signedness of the type: " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr changes the signedness of the type: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr changes the signedness of the type: ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr changes the signedness of the type: ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr changes the signedness of the type: ");
+            }
           }
         }
 
         if (ICETypeSize < ChildTypeSize && !(CanonTypeChild->isComplexIntegerType() || CanonTypeChild->isComplexType()))
         {
-          std::cout << "10.1/2 : " << "ImplicitCastExpr is narrowing: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "10.1/2 : " << "ImplicitCastExpr is narrowing: " << std::endl;
+            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
+          }
         }
 
         if (CanonTypeChild->isComplexIntegerType())
         {
           if (ICETypeSize > ChildTypeSize)
           {
-            std::cout << "10.3 : " << "ImplicitCastExpr is widening for complex integer type: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "10.3 : " << "ImplicitCastExpr is widening for complex integer type: " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
+            }
           }
 
           const ComplexType* ChildCPXType = CanonTypeChild->getAsComplexIntegerType();
@@ -3024,11 +3512,18 @@ public:
 
           if ((IsSignedCPXDaddy && IsUnsignedCPXChild) || (IsUnsignedCPXDaddy && IsSignedCPXChild))
           {
-            std::cout << "10.3 : " << "ImplicitCastExpr changes the signedness of the complex integer type: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "10.3 : " << "ImplicitCastExpr changes the signedness of the complex integer type: " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type type: ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type: ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type type: ");
+            }
           }
         }
 
@@ -3037,11 +3532,18 @@ public:
         {
           if (ICETypeSize > ChildTypeSize)
           {
-            std::cout << "10.4 : " << "ImplicitCastExpr is widening for complex float type: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "10.4 : " << "ImplicitCastExpr is widening for complex float type: " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
+            }
           }
         }
       }
@@ -3114,11 +3616,18 @@ public:
 
     if (HasHiddenVisibility)
     {
-      std::cout << "5.2 : " << "Object or function has hidden visibility: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "5.2 : " << "Object or function has hidden visibility: " << std::endl;
+        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
+      }
     }
 
     const IdentifierTable &IT = ASTC->Idents;
@@ -3136,11 +3645,18 @@ public:
         {
           if ((iter.getValue()->getName().str().substr(0U, 32U) == IdentStringRef.str().substr(0U, 32U)) && (iter.getValue()->getName().str() != IdentStringRef.str()))
           {
-            std::cout << "5.1 : " << "Identifier relies on the signifacance of more than 31 charcaters: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "5.1 : " << "Identifier relies on the signifacance of more than 31 charcaters: " << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+              XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+              JSONDocOUT.JSONAddElement(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+            }
           }
         }
       }
@@ -3176,11 +3692,18 @@ public:
 
         if (TagCounter >= 3U)
         {
-          std::cout << "5.4 : " << "tag identifier is not unique: " << std::endl;
-          std::cout << iter.SLString << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.FSL.isInSystemHeader(), iter.SL))
+          {
+            /*intentionally elft blank*/
+          }
+          else
+          {
+            std::cout << "5.4 : " << "tag identifier is not unique: " << std::endl;
+            std::cout << iter.SLString << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
-          JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
+            XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
+            JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
+          }
         }
 
         TagCounter = 0U;
@@ -3198,11 +3721,18 @@ public:
 
         if (TypedefCounter >= 3U)
         {
-          std::cout << "5.3 : " << "typedef identifier is not unique: " << std::endl;
-          std::cout << iter.SLString << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.FSL.isInSystemHeader(), iter.SL))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "5.3 : " << "typedef identifier is not unique: " << std::endl;
+            std::cout << iter.SLString << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
-          JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
+            XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
+            JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
+          }
         }
 
         TypedefCounter = 0U;
@@ -3293,13 +3823,20 @@ public:
     {
       if (!iter.HasMoreThanOneDaddy)
       {
-        std::cout << "8.7 : " << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: " << std::endl;
-        std::cout << iter.ObjSLStr << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.ObjFSL.isInSystemHeader(), iter.ObjSL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "8.7 : " << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: " << std::endl;
+          std::cout << iter.ObjSLStr << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(iter.ObjFSL, iter.ObjSL, "8.7", \
-                             "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
-        JSONDocOUT.JSONAddElement(iter.ObjFSL, iter.ObjSL, "8.7", \
-                                  "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
+          XMLDocOut.XMLAddNode(iter.ObjFSL, iter.ObjSL, "8.7", \
+                               "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
+          JSONDocOUT.JSONAddElement(iter.ObjFSL, iter.ObjSL, "8.7", \
+                                    "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
+        }
       }
     }
   }
@@ -3385,11 +3922,18 @@ public:
       if (iter.HasMoreThanOneDefinition)
       {
 #if 1
-        std::cout << "8.8 : " << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: " << std::endl;
-        std::cout << iter.XObjSLStr << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.XObjFSL.isInSystemHeader(), iter.XObjSL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "8.8 : " << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: " << std::endl;
+          std::cout << iter.XObjSLStr << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
-        JSONDocOUT.JSONAddElement(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
+          XMLDocOut.XMLAddNode(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
+          JSONDocOUT.JSONAddElement(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
+        }
 #endif
       }
     }
@@ -3479,12 +4023,18 @@ public:
         {
           if (MatchCounter >= 1U)
           {
-            /*flag and tag*/
-            std::cout << "2.3 : " << "character sequence \"/*\" used inside the comment : " << " " << RawText << std::endl;
-            std::cout << RCSL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, RCSL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "2.3 : " << "character sequence \"/*\" used inside the comment : " << " " << RawText << std::endl;
+              std::cout << RCSL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
-            JSONDocOUT.JSONAddElement(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+              XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+              JSONDocOUT.JSONAddElement(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+            }
           }
         }
 
@@ -3516,15 +4066,27 @@ public:
 
       SourceLocation SL = PVD->getLocStart();
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       QualType QT = PVD->getOriginalType();
 
       if (!QT.isConstQualified())
       {
-        std::cout << "16.7 : " << "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "16.7 : " << "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : " << std::endl;
+          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
-        JSONDocOUT.JSONAddElement(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
+        }
       }
     }
   }
@@ -3580,47 +4142,82 @@ public:
 
         if (singleQPos != std::string::npos || doubleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
         {
-          std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
-          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
+            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
-          JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+            XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+            JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+          }
         }
 
         if (FileName == "errno.h")
         {
-          std::cout << "20.5 : " << "errno shall not be used : " << std::endl;
-          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "20.5 : " << "errno shall not be used : " << std::endl;
+            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(SM, HashLoc, "20.5", "errno shall not be used : ");
-          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.5", "errno shall not be used : ");
+            XMLDocOut.XMLAddNode(SM, HashLoc, "20.5", "errno shall not be used : ");
+            JSONDocOUT.JSONAddElement(SM, HashLoc, "20.5", "errno shall not be used : ");
+          }
         }
 
         if (FileName == "time.h")
         {
-          std::cout << "20.12 : " << "stdlib time.h is included in the project. use is forbidden : " << std::endl;
-          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "20.12 : " << "stdlib time.h is included in the project. use is forbidden : " << std::endl;
+            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
-          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
+            XMLDocOut.XMLAddNode(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
+            JSONDocOUT.JSONAddElement(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
+          }
         }
 
         if (FileName == "stdio.h")
         {
-          std::cout << "20.9 : " << "stdlib stdio.h is included in the project. use is forbidden : " << std::endl;
-          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "20.9 : " << "stdlib stdio.h is included in the project. use is forbidden : " << std::endl;
+            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
-          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
+            XMLDocOut.XMLAddNode(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
+            JSONDocOUT.JSONAddElement(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
+          }
         }
 
         if (FileName == "signal.h")
         {
-          std::cout << "20.8 : " << "stdlib signal.h is included in the project. use is forbidden : " << std::endl;
-          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "20.8 : " << "stdlib signal.h is included in the project. use is forbidden : " << std::endl;
+            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
-          JSONDocOUT.JSONAddElement(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
+            XMLDocOut.XMLAddNode(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
+            JSONDocOUT.JSONAddElement(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
+          }
         }
       }
       else
@@ -3631,11 +4228,18 @@ public:
 
         if (singleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
         {
-          std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
-          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
+            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
-          XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
-          JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+            XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+            JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
+          }
         }
 
         bool IsNewIncludeFile = true;
@@ -3669,11 +4273,18 @@ public:
 
       if (whateverSlashPos != std::string::npos || theotherSlashPos != std::string::npos)
       {
-        std::cout << "19.3 : " << "Include directive contains file address, not just name : " << std::endl;
-        std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "19.3 : " << "Include directive contains file address, not just name : " << std::endl;
+          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
-        JSONDocOUT.JSONAddElement(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
+          XMLDocOut.XMLAddNode(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
+          JSONDocOUT.JSONAddElement(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
+        }
       }
     }
   }
@@ -3765,11 +4376,18 @@ public:
                                tok::kw_static, tok::kw_struct, tok::kw_switch, \
                                tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
       {
-        std::cout << "20.1 : " << "C keyword undefined : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "20.1 : " << "C keyword undefined : " << std::endl;
+          std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword undefined : ");
-        JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword undefined : ");
+          XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword undefined : ");
+          JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword undefined : ");
+        }
       }
 
       if (DMD->getPrevious() != nullptr)
@@ -3782,11 +4400,18 @@ public:
 
           if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
           {
-            std::cout << "20.1 : " << "C standard library macro undefined : " << std::endl;
-            std::cout << SL.printToString(SM) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "20.1 : " << "C standard library macro undefined : " << std::endl;
+              std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro undefined : ");
-            JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro undefined : ");
+              XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro undefined : ");
+              JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro undefined : ");
+            }
           }
         }
       }
@@ -3799,11 +4424,18 @@ public:
       }
       /*end of 19.5*/
 
-      std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
-      std::cout << SL.printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SL, "19.6", "Use of #undef is illegal : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "19.6", "Use of #undef is illegal : ");
+        XMLDocOut.XMLAddNode(SM, SL, "19.6", "Use of #undef is illegal : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "19.6", "Use of #undef is illegal : ");
+      }
     }
 #endif
   }
@@ -3838,11 +4470,18 @@ public:
                              tok::kw_static, tok::kw_struct, tok::kw_switch, \
                              tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
     {
-      std::cout << "20.1 : " << "C keyword defined : " << std::endl;
-      std::cout << SL.printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "20.1 : " << "C keyword defined : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword defined : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword defined : ");
+        XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword defined : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword defined : ");
+      }
     }
 
     if (MD->getPrevious() != nullptr)
@@ -3852,11 +4491,18 @@ public:
 
       if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
       {
-        std::cout << "20.1 : " << "C standard library macro redefined : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "20.1 : " << "C standard library macro redefined : " << std::endl;
+          std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro redefined : ");
-        JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro redefined : ");
+          XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro redefined : ");
+          JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro redefined : ");
+        }
       }
     }
     /*end of 20.1*/
@@ -3876,33 +4522,54 @@ public:
       {
         hasSingleHash = true;
 
-        std::cout << "19.13 : " << "Macro has # token : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "19.13 : " << "Macro has # token : " << std::endl;
+          std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has # token : ");
-        JSONDocOUT.JSONAddElement(SM, SL, "19.13", "Macro has # token : ");
+          XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has # token : ");
+          JSONDocOUT.JSONAddElement(SM, SL, "19.13", "Macro has # token : ");
+        }
       }
 
       if (TokenArrayRef[x].getKind() == tok::hashhash)
       {
         hasDoubleHash = true;
 
-        std::cout << "19.13 : " << "Macro has ## token : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "19.13 : " << "Macro has ## token : " << std::endl;
+          std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has ## token : ");
-        JSONDocOUT.JSONAddElement(SM, SL, "19.13", "Macro has ## token : ");
+          XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has ## token : ");
+          JSONDocOUT.JSONAddElement(SM, SL, "19.13", "Macro has ## token : ");
+        }
       }
 #endif
     }
 
     if (hasSingleHash && hasDoubleHash)
     {
-      std::cout << "19.12 : " << "Macro has # and ## tokens : " << std::endl;
-      std::cout << SL.printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "19.12 : " << "Macro has # and ## tokens : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SL, "19.12", "Macro has # and ## tokens : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "19.12", "Macro has # and ## tokens : ");
+        XMLDocOut.XMLAddNode(SM, SL, "19.12", "Macro has # and ## tokens : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "19.12", "Macro has # and ## tokens : ");
+      }
     }
 
     if (MI->isFunctionLike())
@@ -3973,18 +4640,32 @@ public:
 
       if (ShouldBeTagged)
       {
-        std::cout << "19.10 : " << "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          std::cout << "19.10 : " << "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : " << std::endl;
+          std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "19.10", "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : ");
-        JSONDocOUT.JSONAddElement(SM, SL, "19.10", "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : ");
+          XMLDocOut.XMLAddNode(SM, SL, "19.10", "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : ");
+          JSONDocOUT.JSONAddElement(SM, SL, "19.10", "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : ");
+        }
       }
 
-      std::cout << "19.7 : " << "Function-like macro used : " << std::endl;
-      std::cout << SL.printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "19.7 : " << "Function-like macro used : " << std::endl;
+        std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SL, "19.7", "Function-like macro used : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "19.7", "Function-like macro used : ");
+        XMLDocOut.XMLAddNode(SM, SL, "19.7", "Function-like macro used : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "19.7", "Function-like macro used : ");
+      }
 
       if (MacroNumArgs != 0)
       {
@@ -3992,11 +4673,18 @@ public:
         {
           if (MacroArgsArrRef[0]->hasMacroDefinition())
           {
-            std::cout << "19.9 : " << "Function-like macro's argument contains macros : " << std::endl;
-            std::cout << SL.printToString(SM) << "\n" << std::endl;
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+            {
+              /*intentionally left blank*/
+            }
+            else
+            {
+              std::cout << "19.9 : " << "Function-like macro's argument contains macros : " << std::endl;
+              std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-            XMLDocOut.XMLAddNode(SM, SL, "19.9", "Function-like macro's argument contains macros : ");
-            JSONDocOUT.JSONAddElement(SM, SL, "19.9", "Function-like macro's argument contains macros : ");
+              XMLDocOut.XMLAddNode(SM, SL, "19.9", "Function-like macro's argument contains macros : ");
+              JSONDocOUT.JSONAddElement(SM, SL, "19.9", "Function-like macro's argument contains macros : ");
+            }
 
             break;
           }
@@ -4023,29 +4711,50 @@ public:
 
     if (MacroNameString == "offsetof" && SM.isInSystemHeader(DMD->getLocation()))
     {
-      std::cout << "20.6 : " << "use of offsetof is illegal : " << std::endl;
-      std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "20.6 : " << "use of offsetof is illegal : " << std::endl;
+        std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SL, "20.6", "use of offsetof is illegal : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "20.6", "use of offsetof is illegal : ");
+        XMLDocOut.XMLAddNode(SM, SL, "20.6", "use of offsetof is illegal : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "20.6", "use of offsetof is illegal : ");
+      }
     }
 
     if (MacroNameString == "setjmp" && SM.isInSystemHeader(DMD->getLocation()))
     {
-      std::cout << "20.7 : " << "use of setjmp is illegal : " << std::endl;
-      std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "20.7 : " << "use of setjmp is illegal : " << std::endl;
+        std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SL, "20.7", "use of setjmp is illegal : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "20.7", "use of setjmp is illegal : ");
+        XMLDocOut.XMLAddNode(SM, SL, "20.7", "use of setjmp is illegal : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "20.7", "use of setjmp is illegal : ");
+      }
     }
 
     if (!DMD->isDefined())
     {
-      std::cout << "19.11 : " << "Use of undefined macro : " << std::endl;
-      std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "19.11 : " << "Use of undefined macro : " << std::endl;
+        std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SL, "19.11", "Use of undefined macro : ");
-      JSONDocOUT.JSONAddElement(SM, SL, "19.11", "Use of undefined macro : ");
+        XMLDocOut.XMLAddNode(SM, SL, "19.11", "Use of undefined macro : ");
+        JSONDocOUT.JSONAddElement(SM, SL, "19.11", "Use of undefined macro : ");
+      }
     }
 #endif
   }
@@ -4058,11 +4767,18 @@ public:
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
     {
-      std::cout << "19.17 : " << "elif directive is not in the same file as its if directive : " << std::endl;
-      std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "19.17 : " << "elif directive is not in the same file as its if directive : " << std::endl;
+        std::cout << SLoc.printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
-      JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
+        XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
+        JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
+      }
     }
 #endif
   }
@@ -4075,11 +4791,18 @@ public:
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
     {
-      std::cout << "19.17 : " << "else directive is not in the same file as its if directive : " << std::endl;
-      std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "19.17 : " << "else directive is not in the same file as its if directive : " << std::endl;
+        std::cout << SLoc.printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
-      JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
+        XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
+        JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
+      }
     }
 #endif
   }
@@ -4092,11 +4815,18 @@ public:
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
     {
-      std::cout << "19.17 : " << "endif directive is not in the same file as its if directive : " << std::endl;
-      std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        std::cout << "19.17 : " << "endif directive is not in the same file as its if directive : " << std::endl;
+        std::cout << SLoc.printToString(SM) << "\n" << std::endl;
 
-      XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
-      JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
+        XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
+        JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
+      }
     }
 #endif
   }
