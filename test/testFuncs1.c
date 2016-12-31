@@ -1040,6 +1040,8 @@ void test28(void)
   int i;
   int j;
   int k;
+  int flag = 0;
+  int counter = 0;
 
   for (i = 0; i < 10; i++)
   {
@@ -1056,6 +1058,22 @@ void test28(void)
     k = i + j;
     --j;
     i = j - k;
+  }
+
+  for (i = 0; flag == 1; i++)
+  {
+    if (i > 10)
+    {
+      flag = 1;
+    }
+  }
+
+  for (i = 0; flag == 1, counter++; i++)
+  {
+    if (i > 10)
+    {
+      flag = 1;
+    }
   }
 
   for (k = 0, i = 0; i < 10, k < 10; ++i, k++)

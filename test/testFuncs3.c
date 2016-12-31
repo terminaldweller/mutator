@@ -27,3 +27,14 @@ void tddfunc1 (void)
 
 	n1 = n2;
 }
+
+void tddfunc2(void)
+{
+	static int staticint1;
+
+	unsigned short int port = 0x5aU;
+	unsigned short int result_8;
+	//uint16_t result_16;
+	//uint16_t mode;
+	result_8 = (~port) >> 4;
+}

@@ -102,6 +102,8 @@ int bubu;
 int fufu;
 double badboy = 0.0;
 
+int hiddenvisibility;
+
 int incompletearr1[10];
 
 union u3;
@@ -144,6 +146,8 @@ static void test33(void)
   short int a;
   long int b;
   int sum;
+
+  int hiddenvisibility;
 
   sum = dudu + bubu + fufu;
 
