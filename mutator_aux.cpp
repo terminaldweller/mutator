@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include "clang/AST/AST.h"
+#include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "tinyxml2/tinyxml2.h"
@@ -50,6 +51,91 @@ SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std
 
   return (SL);
 }
+/*********************************************************************************************************************/
+/*********************************************************************************************************************/
+/*********************************************************************************************************************/
+/*the first argument is the option SysHeader from the mutator-lvl0 cl.*/
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL)
+{
+  ASTContext *const ASTC = MR.Context;
+  const SourceManager &SM = ASTC->getSourceManager();
+
+  if (SM.isInSystemHeader(SL) && !SysHeaderFlag)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, const SourceManager &SM, SourceLocation SL)
+{
+  if (SM.isInSystemHeader(SL) && !SysHeaderFlag)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader, SourceLocation SL)
+{
+  if (SysHeader && !SysHeaderFlag)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+/*********************************************************************************************************************/
+/*********************************************************************************************************************/
+/*********************************************************************************************************************/
+bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL)
+{
+  ASTContext *const ASTC = MR.Context;
+  const SourceManager &SM = ASTC->getSourceManager();
+
+  if (SM.isInMainFile(SL) && !MainFileFlag)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLocation SL)
+{
+  if (SM.isInMainFile(SL) && !MainFileFlag)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL)
+{
+  if (MainFile && !MainFileFlag)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+/*********************************************************************************************************************/
+/*********************************************************************************************************************/
 /******************************************************XMLReport******************************************************/
 XMLReport::XMLReport()
 {
@@ -134,7 +220,7 @@ void XMLReport::SaveReport(void)
   }
 }
 /***************************************************End of XMLReport**************************************************/
-
+/*********************************************************************************************************************/
 /*****************************************************JSONReport******************************************************/
 JSONReport::JSONReport() {}
 
@@ -213,7 +299,10 @@ void JSONReport::CloseReport(void)
 {
   JSONRepFile.close();
 }
+/*********************************************************************************************************************/
 /****************************************************End Of JSONReport************************************************/
+/*********************************************************************************************************************/
+/*End of namespace Devi*/
 }
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
