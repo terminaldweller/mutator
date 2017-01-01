@@ -135,8 +135,8 @@ public:
         return void();
       }
 
-      std::cout << "14.9 : " << "\"Else\" statement has no braces {}: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "14.9:" << "\"Else\" statement has no braces {}:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"Else\" statement has no braces {}: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "14.9", "\"Else\" statement has no braces {}: ");
@@ -169,8 +169,8 @@ public:
         return void();
       }
 
-      std::cout << "14.9 : " << "\"If\" statement has no braces {}: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "14.9:" << "\"If\" statement has no braces {}:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"If\" statement has no braces {}: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "14.9", "\"If\" statement has no braces {}: ");
@@ -204,8 +204,8 @@ public:
         return void();
       }
 
-      std::cout << "14.10 : " << "\"If-Else If\" statement has no ending Else: " << std::endl;
-      std::cout << IFESL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "14.10:" << "\"If-Else If\" statement has no ending Else:";
+      std::cout << IFESL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, IFESL, "14.10", "\"If-Else If\" statement has no ending Else: ");
       JSONDocOUT.JSONAddElement(MR.Context, IFESL, "14.10", "\"If-Else If\" statement has no ending Else: ");
@@ -240,8 +240,8 @@ public:
         return void();
       }
 
-      std::cout << "15.2 : " << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "15.2:" << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
@@ -275,8 +275,8 @@ public:
         return void();
       }
 
-      std::cout << "15.3 : " << "\"SwitchStmt\" does not have a defaultStmt: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "15.3:" << "\"SwitchStmt\" does not have a defaultStmt:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "15.3", "\"SwitchStmt\" does not have a defaultStmt: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "15.3", "\"SwitchStmt\" does not have a defaultStmt: ");
@@ -325,8 +325,8 @@ public:
 
       if (StringKind != "SwitchStmt")
       {
-        std::cout << "15.1 : " << "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "15.1:" << "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "15.1", "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "15.1", "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: ");
@@ -361,8 +361,8 @@ public:
         return void();
       }
 
-      std::cout << "15.5 : " << "\"SwitchStmt\" does not have a CaseStmt: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "15.5:" << "\"SwitchStmt\" does not have a CaseStmt:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "15.5", "\"SwitchStmt\" does not have a CaseStmt: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "15.5", "\"SwitchStmt\" does not have a CaseStmt: ");
@@ -398,8 +398,8 @@ public:
           return void();
         }
 
-        std::cout << "16.1 : " << "\"FunctionDecl\" is variadic: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "16.1:" << "\"FunctionDecl\" is variadic:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "16.1", "\"FunctionDecl\" is variadic: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "16.1", "\"FunctionDecl\" is variadic: ");
@@ -444,8 +444,8 @@ public:
 
         if (FuncNameStr == CalledFuncNameStr)
         {
-          std::cout << "16.2 : " << "\"FunctionDecl\" is recursive: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "16.2:" << "\"FunctionDecl\" is recursive:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "16.2", "\"FunctionDecl\" is recursive: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "16.2", "\"FunctionDecl\" is recursive: ");
@@ -512,8 +512,8 @@ public:
             {
               if (FDParmList[x]->getNameAsString() != FDclParmList[x]->getNameAsString())
               {
-                std::cout << "16.4 : " << "FunctionDecl parameter names are not the same as function definition parameter names: " << std::endl;
-                std::cout << SL.printToString(*MR.SourceManager) << "  &  " << SLDcl.printToString(*MR.SourceManager) << "\n" << std::endl;
+                std::cout << "16.4:" << "FunctionDecl parameter names are not the same as function definition parameter names:";
+                std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
                 XMLDocOut.XMLAddNode(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
@@ -572,8 +572,8 @@ public:
         }
         else
         {
-          std::cout << "20.4 : " << "Dynamic heap memory allocation used: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "20.4:" << "Dynamic heap memory allocation used:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
@@ -590,8 +590,8 @@ public:
         }
         else
         {
-          std::cout << "20.7 : " << "Use of lonjmp is illegal: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "20.7:" << "Use of lonjmp is illegal:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
@@ -608,8 +608,8 @@ public:
         }
         else
         {
-          std::cout << "20.10 : " << "Use of atof,atoi and atol is illegal: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "20.10:" << "Use of atof,atoi and atol is illegal:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
@@ -626,8 +626,8 @@ public:
         }
         else
         {
-          std::cout << "20.11 : " << "Use of abort,exit,getenv and system is illegal : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "20.11:" << "Use of abort,exit,getenv and system is illegal:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
@@ -643,8 +643,8 @@ public:
         }
         else
         {
-          std::cout << "16.6 : " << "CallExpr number of arguments does not equal the number of parameters in the declaration: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "16.6:" << "CallExpr number of arguments does not equal the number of parameters in the declaration:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
@@ -729,8 +729,8 @@ public:
 
       if (CK == CK_FunctionToPointerDecay)
       {
-        std::cout << "16.9 : " << "FunctionToPointerDecay: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "16.9:" << "FunctionToPointerDecay:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "16.9", "FunctionToPointerDecay: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "16.9", "FunctionToPointerDecay: ");
@@ -803,8 +803,8 @@ public:
       }
       else
       {
-        std::cout << "18.4 : " << "Union declared: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "18.4:" << "Union declared:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "18.4", "Union declared: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "18.4", "Union declared: ");
@@ -900,8 +900,8 @@ public:
         }
         else
         {
-          std::cout << "18.1 : " << "Incomplete struct declared: " << std::endl;
-          std::cout << StructInfoProto[x].StructSL << "\n" << std::endl;
+          std::cout << "18.1:" << "Incomplete struct declared:";
+          std::cout << StructInfoProto[x].StructSL << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
           JSONDocOUT.JSONAddElement(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
@@ -919,8 +919,8 @@ public:
         }
         else
         {
-          std::cout << "18.1 : " << "Incomplete union declared: " << std::endl;
-          std::cout << UnionInfoProto[x].UnionSL << "\n" << std::endl;
+          std::cout << "18.1:" << "Incomplete union declared:";
+          std::cout << UnionInfoProto[x].UnionSL << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(UnionInfoProto[x].FSL, UnionInfoProto[x].SL, "18.1", "Incomplete union declared: ");
           JSONDocOUT.JSONAddElement(UnionInfoProto[x].FSL, UnionInfoProto[x].SL, "18.1", "Incomplete union declared: ");
@@ -988,8 +988,8 @@ public:
         else
         {
           /*this part is ueless since the clang parser wont let such a bitfield through.*/
-          std::cout << "6.4 : " << "BitField has a type other than int or unsigned int: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "6.4:" << "BitField has a type other than int or unsigned int:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
@@ -1009,8 +1009,8 @@ public:
           }
           else
           {
-            std::cout << "6.5 : " << "BitField of type signed integer has a length of less than 2 in bits : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "6.5:" << "BitField of type signed integer has a length of less than 2 in bits:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
@@ -1078,8 +1078,8 @@ public:
         }
         else
         {
-          std::cout << "8.5 : " << "Function definition inside a header file : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "8.5:" << "Function definition inside a header file:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Function definition inside a header file : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "8.5", "Function definition inside a header file : ");
@@ -1104,11 +1104,11 @@ public:
             }
             else
             {
-              std::cout << "19.5 : " << "Macro defined inside a block : " << std::endl;
+              std::cout << "19.5:" << "Macro defined inside a block:";
 #if 0
               std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << " " << MacroNameString[x] << "\n" << std::endl;
 #endif
-              std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
               JSONDocOUT.JSONAddElement(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
@@ -1128,8 +1128,8 @@ public:
             }
             else
             {
-              std::cout << "19.5 : " << "Macro undefined inside a block : " << std::endl;
-              std::cout << MacroUndefSourceLocation[x].printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "19.5:" << "Macro undefined inside a block:";
+              std::cout << MacroUndefSourceLocation[x].printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, MacroUndefSourceLocation[x], "19.5", "Macro undefined inside a block : ");
               JSONDocOUT.JSONAddElement(MR.Context, MacroUndefSourceLocation[x], "19.5", "Macro undefined inside a block : ");
@@ -1189,8 +1189,8 @@ public:
         }
         else
         {
-          std::cout << "8.1 : " << "Function does not have a FunctionDecl that is not a definition : " << std::endl;
-          std::cout << FuncInfoProto[x].StrcSL << "\n" << std::endl;
+          std::cout << "8.1:" << "Function does not have a FunctionDecl that is not a definition:";
+          std::cout << FuncInfoProto[x].StrcSL << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(FuncInfoProto[x].FuncFSL, FuncInfoProto[x].FuncSL, "8.1", "Function does not have a FunctionDecl that is not a definition : ");
           JSONDocOUT.JSONAddElement(FuncInfoProto[x].FuncFSL, FuncInfoProto[x].FuncSL, "8.1", "Function does not have a FunctionDecl that is not a definition : ");
@@ -1296,8 +1296,8 @@ public:
         }
         else
         {
-          std::cout << "8.5 : " << "Variable definition inside a header file : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "8.5:" << "Variable definition inside a header file:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "8.5", "Variable definition inside a header file : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "8.5", "Variable definition inside a header file : ");
@@ -1319,8 +1319,8 @@ public:
             else
             {
               /*end of 8.12*/
-              std::cout << "8.12 : " << "External array type is incomplete and has no initialization : " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "8.12:" << "External array type is incomplete and has no initialization:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
@@ -1351,8 +1351,8 @@ public:
             }
             else
             {
-              std::cout << "9.2 : " << "Curly braces not used : " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "9.2:" << "Curly braces not used:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "9.2", "Curly braces not used : ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "9.2", "Curly braces not used : ");
@@ -1373,8 +1373,8 @@ public:
           }
           else
           {
-            std::cout << "9.1 : " << "staic local variable does not have initialization : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "9.1:" << "staic local variable does not have initialization:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "9.1", "staic local variable does not have initialization : ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "9.1", "staic local variable does not have initialization : ");
@@ -1482,8 +1482,8 @@ public:
             else
             {
               /*in breach of misrac*/
-              std::cout << "9.3 : " << "first enumeration has integerliteral initialization but not all enumerations do : " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "9.3:" << "first enumeration has integerliteral initialization but not all enumerations do:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
@@ -1505,8 +1505,8 @@ public:
             else
             {
               /*in breach of misrac*/
-              std::cout << "9.3 : " << "first enumeration does not have integerliteral initialization but at least one other enumeration does : " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "9.3:" << "first enumeration does not have integerliteral initialization but at least one other enumeration does:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
@@ -1561,8 +1561,8 @@ public:
 
       if (EXP->HasSideEffects(*ASTC, true))
       {
-        std::cout << "12.3 : " << "sizeof working on an expr with a side-effect : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "12.3:" << "sizeof working on an expr with a side-effect:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.3", "sizeof working on an expr with a side-effect : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.3", "sizeof working on an expr with a side-effect : ");
@@ -1597,8 +1597,8 @@ public:
 
       if (EXP->HasSideEffects(*ASTC, true))
       {
-        std::cout << "12.4 : " << "Righ-hand expr has side-effect : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "12.4:" << "Righ-hand expr has side-effect:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
@@ -1658,8 +1658,8 @@ public:
         }
         else
         {
-          std::cout << "12.5 : " << "RHS and/or LHS operands are not primary expressions : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "12.5:" << "RHS and/or LHS operands are not primary expressions:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
@@ -1695,8 +1695,8 @@ public:
 
       if (!EXP->isKnownToHaveBooleanValue())
       {
-        std::cout << "12.6 : " << "RHS and/or LHS operands are not effectively-boolean values : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "12.6:" << "RHS and/or LHS operands are not effectively-boolean values:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.6", "RHS and/or LHS operands are not effectively-boolean values : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.6", "RHS and/or LHS operands are not effectively-boolean values : ");
@@ -1733,8 +1733,8 @@ public:
 
       if (TP->hasSignedIntegerRepresentation() && TP->isIntegerType())
       {
-        std::cout << "12.7 : " << "Bitwise operator has signed RHS and/or LHS operands: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "12.7:" << "Bitwise operator has signed RHS and/or LHS operands:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.7", "Bitwise operator has signed RHS and/or LHS operands: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.7", "Bitwise operator has signed RHS and/or LHS operands: ");
@@ -1784,8 +1784,8 @@ public:
       {
         if ((Result >= (LHSSize - 1U)) || (Result <= 0))
         {
-          std::cout << "12.8 : " << "shift size should be between zero and one less than the size of the LHS operand: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "12.8:" << "shift size should be between zero and one less than the size of the LHS operand:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "12.8", "shift size should be between zero and one less than the size of the LHS operand: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "12.8", "shift size should be between zero and one less than the size of the LHS operand: ");
@@ -1824,8 +1824,8 @@ public:
 
       if (TP->isIntegerType() && TP->hasUnsignedIntegerRepresentation())
       {
-        std::cout << "12.9 : " << "UnaryOperator - has an expr with an unsigned underlying type: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "12.9:" << "UnaryOperator - has an expr with an unsigned underlying type:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.9", "UnaryOperator - has an expr with an unsigned underlying type: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.9", "UnaryOperator - has an expr with an unsigned underlying type: ");
@@ -1856,8 +1856,8 @@ public:
         return void();
       }
 
-      std::cout << "12.10 : " << "Comma used: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "12.10:" << "Comma used:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "12.10", "Comma used: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "12.10", "Comma used: ");
@@ -1887,8 +1887,8 @@ public:
         return void();
       }
 
-      std::cout << "12.13 : " << "Unary ++ or -- have been used in an expr with other operators: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "12.13:" << "Unary ++ or -- have been used in an expr with other operators:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "12.13", "Unary ++ or -- have been used in an expr with other operators: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "12.13", "Unary ++ or -- have been used in an expr with other operators: ");
@@ -1920,8 +1920,8 @@ public:
 
       if (EXP->isKnownToHaveBooleanValue())
       {
-        std::cout << "13.1 : " << "assignment operator used in an expr that is known to return boolean: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "13.1:" << "assignment operator used in an expr that is known to return boolean:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "13.1", "assignment operator used in an expr that is known to return boolean: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "13.1", "assignment operator used in an expr that is known to return boolean: ");
@@ -1954,8 +1954,8 @@ public:
 
       if (!EXP->isKnownToHaveBooleanValue())
       {
-        std::cout << "13.2 : " << "Implicit test of an expr against zero which is not known to return a boolean result: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "13.2:" << "Implicit test of an expr against zero which is not known to return a boolean result:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "13.2", "Implicit test of an expr against zero which is not known to return a boolean result: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "13.2", "Implicit test of an expr against zero which is not known to return a boolean result: ");
@@ -2000,8 +2000,8 @@ public:
           }
           else
           {
-            std::cout << "13.3 : " << "Float type expression checked for equality/inequality: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "13.3:" << "Float type expression checked for equality/inequality:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
@@ -2053,8 +2053,8 @@ public:
           }
           else
           {
-            std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "13.4:" << "Float type used in the controlling expression of a forstmt:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
             AlreadyHaveAHit = true;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
@@ -2077,8 +2077,8 @@ public:
           }
           else
           {
-            std::cout << "13.4 : " << "Float type used in the controlling expression of a forstmt: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "13.4:" << "Float type used in the controlling expression of a forstmt:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
             AlreadyHaveAHit = true;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
@@ -2126,7 +2126,7 @@ public:
 
         std::string outstring = Rewrite.getRewrittenText(CSR);
 
-#if 1
+#if 0
         std::cout << "XXXXXXXXXXXXXXXXXXXXXX" << outstring << std::endl;
 #endif
       }
@@ -2164,8 +2164,8 @@ public:
             }
             else
             {
-              std::cout << "13.6 : " << "ForStmt controlling variable modified in the body of the loop: " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "13.6:" << "ForStmt controlling variable modified in the body of the loop:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
@@ -2202,8 +2202,8 @@ public:
         return void();
       }
 
-      std::cout << "14.4 : " << "GotoStmt used: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "14.4:" << "GotoStmt used:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "14.4", "GotoStmt used: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "14.4", "GotoStmt used: ");
@@ -2233,8 +2233,8 @@ public:
         return void();
       }
 
-      std::cout << "14.5 : " << "ContinueStmt used: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "14.5:" << "ContinueStmt used:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "14.5", "ContinueStmt used: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "14.5", "ContinueStmt used: ");
@@ -2297,8 +2297,8 @@ public:
       }
       else
       {
-        std::cout << "14.6 : " << "More than one BreakStmt used in the loop counter: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "14.6:" << "More than one BreakStmt used in the loop counter:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
         AlreadyTagged = true;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.6", "More than one BreakStmt used in the loop counter: ");
@@ -2354,8 +2354,8 @@ public:
         }
         else
         {
-          std::cout << "14.7 : " << "More than one ReturnStmt used in the body of FunctionDecl: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "14.7:" << "More than one ReturnStmt used in the body of FunctionDecl:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
           AlreadyTagged = true;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "14.7", "More than one ReturnStmt used in the body of FunctionDecl: ");
@@ -2397,8 +2397,8 @@ public:
       }
       else
       {
-        std::cout << "14.8 : " << "ForStmt does not have a child CompoundStmt: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "14.8:" << "ForStmt does not have a child CompoundStmt:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "ForStmt does not have a child CompoundStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "ForStmt does not have a child CompoundStmt: ");
@@ -2418,8 +2418,8 @@ public:
       }
       else
       {
-        std::cout << "14.8 : " << "WhileStmt does not have a child CompoundStmt: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "14.8:" << "WhileStmt does not have a child CompoundStmt:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "WhileStmt does not have a child CompoundStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "WhileStmt does not have a child CompoundStmt: ");
@@ -2439,8 +2439,8 @@ public:
       }
       else
       {
-        std::cout << "14.8 : " << "DoStmt does not have a child CompoundStmt: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "14.8:" << "DoStmt does not have a child CompoundStmt:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "DoStmt does not have a child CompoundStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "DoStmt does not have a child CompoundStmt: ");
@@ -2460,8 +2460,8 @@ public:
       }
       else
       {
-        std::cout << "14.8 : " << "SwitchStmt does not have a child CompoundStmt: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "14.8:" << "SwitchStmt does not have a child CompoundStmt:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.8", "SwitchStmt does not have a child CompoundStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.8", "SwitchStmt does not have a child CompoundStmt: ");
@@ -2494,8 +2494,8 @@ public:
 
     if (EXP->isKnownToHaveBooleanValue())
     {
-      std::cout << "15.4 : " << "Switch expression is effectively boolean: " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "15.4:" << "Switch expression is effectively boolean:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "15.4", "Switch expression is effectively boolean: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "15.4", "Switch expression is effectively boolean: ");
@@ -2566,11 +2566,11 @@ public:
           }
           else
           {
-            std::cout << "11.1 : " << "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "11.1:" << "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "ImplicitCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
           }
         }
       }
@@ -2583,11 +2583,11 @@ public:
         }
         else
         {
-          std::cout << "10.1/2 : " << "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "10.1/2:" << "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr : Conversion of FloatingType to or from IntegralType is recommended against: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against: ");
         }
       }
 
@@ -2599,11 +2599,11 @@ public:
         }
         else
         {
-          std::cout << "11.3 : " << "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "11.3:" << "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "ImplicitCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
         }
       }
 
@@ -2615,11 +2615,11 @@ public:
         }
         else
         {
-          std::cout << "11.x : " << "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "11.x:" << "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "ImplicitCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
         }
       }
     }
@@ -2655,8 +2655,8 @@ public:
           }
           else
           {
-            std::cout << "13.7 : " << "EffectivelyBooleanExpr's result is known at compile-time: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "13.7:" << "EffectivelyBooleanExpr's result is known at compile-time:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
@@ -2785,8 +2785,8 @@ public:
         }
         else
         {
-          std::cout << "8.11 : " << "Function does not have any external calls but is not declared as static : " << std::endl;
-          std::cout << FuncScopeProto[x].DefinitionSL << "\n" << std::endl;
+          std::cout << "8.11:" << "Function does not have any external calls but is not declared as static:";
+          std::cout << FuncScopeProto[x].DefinitionSL << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(FuncScopeProto[x].FuncScopeFSL, FuncScopeProto[x].FuncScopeSL, "8.11", "Function does not have any external calls but is not declared as static : ");
           JSONDocOUT.JSONAddElement(FuncScopeProto[x].FuncScopeFSL, FuncScopeProto[x].FuncScopeSL, "8.11", "Function does not have any external calls but is not declared as static : ");
@@ -2833,8 +2833,8 @@ public:
         return void();
       }
 
-      std::cout << "16.5 : " << "Function does not return anything but is missing the void keyword for the return type : " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "16.5:" << "Function does not return anything but is missing the void keyword for the return type:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "16.5", "Function does not return anything but is missing the void keyword for the return type : ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "16.5", "Function does not return anything but is missing the void keyword for the return type : ");
@@ -2882,8 +2882,8 @@ public:
 
       if (voidposition2 == std::string::npos)
       {
-        std::cout << "16.5 : " << "Function does not take any parameters but is not using the void keyword : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "16.5:" << "Function does not take any parameters but is not using the void keyword:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "16.5", "Function does not take any parameters but is not using the void keyword : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "16.5", "Function does not take any parameters but is not using the void keyword : ");
@@ -2921,8 +2921,8 @@ public:
 
       if (TP->isAnyPointerType())
       {
-        std::cout << "17.1 : " << "Pointer arithmatic for non-array pointers : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "17.1:" << "Pointer arithmatic for non-array pointers:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "17.1", "Pointer arithmatic for non-array pointers : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.1", "Pointer arithmatic for non-array pointers : ");
@@ -2964,8 +2964,8 @@ public:
 
       if (TPR->getPointeeType() != TPL->getPointeeType())
       {
-        std::cout << "17.2 | 17.3 : " << "Pointer-type operands to BinaryOperator dont point to the same array : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "17.2 | 17.3:" << "Pointer-type operands to BinaryOperator dont point to the same array:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "17.2 | 17.3", "Pointer-type operands to BinaryOperator dont point to the same array : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.2 | 17.3", "Pointer-type operands to BinaryOperator dont point to the same array : ");
@@ -2997,8 +2997,8 @@ public:
       }
       else
       {
-        std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "17.4:" << "The only allowed form of pointer arithmetic is array indexing:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
@@ -3018,8 +3018,8 @@ public:
       }
       else
       {
-        std::cout << "17.4 : " << "The only allowed form of pointer arithmetic is array indexing : " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "17.4:" << "The only allowed form of pointer arithmetic is array indexing:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
@@ -3118,8 +3118,8 @@ public:
         }
         else
         {
-          std::cout << "17.5 : " << "Pointer has more than 2 levels of indirection : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "17.5:" << "Pointer has more than 2 levels of indirection:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "17.5", "Pointer has more than 2 levels on indirection : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "17.5", "Pointer has more than 2 levels on indirection : ");
@@ -3200,8 +3200,8 @@ public:
           }
           else
           {
-            std::cout << "6.2 : " << "Sgined or unsigned char type holds characterLiterals : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "6.2:" << "Sgined or unsigned char type holds characterLiterals:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "6.2", "Sgined or unsigned char type holds characterLiterals : ");
@@ -3225,8 +3225,8 @@ public:
           }
           else
           {
-            std::cout << "6.1 : " << "Simple char type holds numeric values : " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "6.1:" << "Simple char type holds numeric values:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "6.1", "Simple char type holds numeric values : ");
@@ -3260,8 +3260,8 @@ public:
         return void();
       }
 
-      std::cout << "18.1 : " << "ArrayType incomplete at the end of the translation unit : " << std::endl;
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+      std::cout << "18.1:" << "ArrayType incomplete at the end of the translation unit:";
+      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "18.1", "ArrayType incomplete at the end of the translation unit : ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "18.1", "ArrayType incomplete at the end of the translation unit : ");
@@ -3329,11 +3329,11 @@ public:
           }
           else
           {
-            std::cout << "11.1 : " << "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "11.1:" << "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-            XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
-            JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "CStyleCastExpr : FunctionPointerType converted to or from a type other than IntegralType: ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
           }
         }
       }
@@ -3346,11 +3346,11 @@ public:
         }
         else
         {
-          std::cout << "11.3 : " << "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "11.3:" << "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "CStyleCastExpr : Conversion of PointerType to or from IntegralType is recommended against: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
         }
       }
 
@@ -3362,11 +3362,11 @@ public:
         }
         else
         {
-          std::cout << "11.x : " << "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "11.x:" << "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "CStyleCastExpr : PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
         }
       }
     }
@@ -3453,8 +3453,8 @@ public:
             }
             else
             {
-              std::cout << "10.1/2 : " << "ImplicitCastExpr changes the signedness of the type: " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "10.1/2:" << "ImplicitCastExpr changes the signedness of the type:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr changes the signedness of the type: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr changes the signedness of the type: ");
@@ -3470,8 +3470,8 @@ public:
           }
           else
           {
-            std::cout << "10.1/2 : " << "ImplicitCastExpr is narrowing: " << std::endl;
-            std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+            std::cout << "10.1/2:" << "ImplicitCastExpr is narrowing:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
@@ -3488,8 +3488,8 @@ public:
             }
             else
             {
-              std::cout << "10.3 : " << "ImplicitCastExpr is widening for complex integer type: " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "10.3:" << "ImplicitCastExpr is widening for complex integer type:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr is widening for complex integer type: ");
@@ -3518,8 +3518,8 @@ public:
             }
             else
             {
-              std::cout << "10.3 : " << "ImplicitCastExpr changes the signedness of the complex integer type: " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "10.3:" << "ImplicitCastExpr changes the signedness of the complex integer type:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "10.3", "ImplicitCastExpr changes the signedness of the complex integer type type: ");
@@ -3538,8 +3538,8 @@ public:
             }
             else
             {
-              std::cout << "10.4 : " << "ImplicitCastExpr is widening for complex float type: " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "10.4:" << "ImplicitCastExpr is widening for complex float type:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "10.4", "ImplicitCastExpr is widening for complex float type: ");
@@ -3622,8 +3622,8 @@ public:
       }
       else
       {
-        std::cout << "5.2 : " << "Object or function has hidden visibility: " << std::endl;
-        std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+        std::cout << "5.2:" << "Object or function has hidden visibility:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
@@ -3651,8 +3651,8 @@ public:
             }
             else
             {
-              std::cout << "5.1 : " << "Identifier relies on the signifacance of more than 31 charcaters: " << std::endl;
-              std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "5.1:" << "Identifier relies on the signifacance of more than 31 charcaters:";
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
@@ -3698,8 +3698,8 @@ public:
           }
           else
           {
-            std::cout << "5.4 : " << "tag identifier is not unique: " << std::endl;
-            std::cout << iter.SLString << "\n" << std::endl;
+            std::cout << "5.4:" << "tag identifier is not unique:";
+            std::cout << iter.SLString << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
             JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
@@ -3727,8 +3727,8 @@ public:
           }
           else
           {
-            std::cout << "5.3 : " << "typedef identifier is not unique: " << std::endl;
-            std::cout << iter.SLString << "\n" << std::endl;
+            std::cout << "5.3:" << "typedef identifier is not unique:";
+            std::cout << iter.SLString << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
             JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
@@ -3829,8 +3829,8 @@ public:
         }
         else
         {
-          std::cout << "8.7 : " << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: " << std::endl;
-          std::cout << iter.ObjSLStr << "\n" << std::endl;
+          std::cout << "8.7:" << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block:";
+          std::cout << iter.ObjSLStr << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(iter.ObjFSL, iter.ObjSL, "8.7", \
                                "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block: ");
@@ -3928,8 +3928,8 @@ public:
         }
         else
         {
-          std::cout << "8.8 : " << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: " << std::endl;
-          std::cout << iter.XObjSLStr << "\n" << std::endl;
+          std::cout << "8.8:" << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file:";
+          std::cout << iter.XObjSLStr << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
           JSONDocOUT.JSONAddElement(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
@@ -4029,8 +4029,8 @@ public:
             }
             else
             {
-              std::cout << "2.3 : " << "character sequence \"/*\" used inside the comment : " << " " << RawText << std::endl;
-              std::cout << RCSL.printToString(*MR.SourceManager) << "\n" << std::endl;
+              std::cout << "2.3:" << "character sequence \"/*\" used inside the comment:";
+              std::cout << RCSL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
               JSONDocOUT.JSONAddElement(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
@@ -4065,6 +4065,7 @@ public:
       const ParmVarDecl* PVD = MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167");
 
       SourceLocation SL = PVD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
       {
@@ -4081,8 +4082,8 @@ public:
         }
         else
         {
-          std::cout << "16.7 : " << "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : " << std::endl;
-          std::cout << SL.printToString(*MR.SourceManager) << "\n" << std::endl;
+          std::cout << "16.7:" << "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
@@ -4148,8 +4149,8 @@ public:
           }
           else
           {
-            std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
-            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+            std::cout << "19.2:" << "illegal characters in inclusion directive:";
+            std::cout << HashLoc.printToString(SM) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
             JSONDocOUT.JSONAddElement(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
@@ -4164,8 +4165,8 @@ public:
           }
           else
           {
-            std::cout << "20.5 : " << "errno shall not be used : " << std::endl;
-            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+            std::cout << "20.5:" << "errno shall not be used:";
+            std::cout << HashLoc.printToString(SM) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(SM, HashLoc, "20.5", "errno shall not be used : ");
             JSONDocOUT.JSONAddElement(SM, HashLoc, "20.5", "errno shall not be used : ");
@@ -4180,8 +4181,8 @@ public:
           }
           else
           {
-            std::cout << "20.12 : " << "stdlib time.h is included in the project. use is forbidden : " << std::endl;
-            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+            std::cout << "20.12:" << "stdlib time.h is included in the project. use is forbidden:";
+            std::cout << HashLoc.printToString(SM) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
             JSONDocOUT.JSONAddElement(SM, HashLoc, "20.12", "stdlib time.h is included in the project. use is forbidden : ");
@@ -4196,8 +4197,8 @@ public:
           }
           else
           {
-            std::cout << "20.9 : " << "stdlib stdio.h is included in the project. use is forbidden : " << std::endl;
-            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+            std::cout << "20.9:" << "stdlib stdio.h is included in the project. use is forbidden:";
+            std::cout << HashLoc.printToString(SM) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
             JSONDocOUT.JSONAddElement(SM, HashLoc, "20.9", "stdlib stdio.h is included in the project. use is forbidden : ");
@@ -4212,8 +4213,8 @@ public:
           }
           else
           {
-            std::cout << "20.8 : " << "stdlib signal.h is included in the project. use is forbidden : " << std::endl;
-            std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+            std::cout << "20.8:" << "stdlib signal.h is included in the project. use is forbidden:";
+            std::cout << HashLoc.printToString(SM) << ":" << std::endl;
 
             XMLDocOut.XMLAddNode(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
             JSONDocOUT.JSONAddElement(SM, HashLoc, "20.8", "stdlib signal.h is included in the project. use is forbidden : ");
@@ -4234,7 +4235,7 @@ public:
           }
           else
           {
-            std::cout << "19.2 : " << "illegal characters in inclusion directive : " << std::endl;
+            std::cout << "19.2:" << "illegal characters in inclusion directive:";
             std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
 
             XMLDocOut.XMLAddNode(SM, HashLoc, "19.2", "illegal characters in inclusion directive : ");
@@ -4279,8 +4280,8 @@ public:
         }
         else
         {
-          std::cout << "19.3 : " << "Include directive contains file address, not just name : " << std::endl;
-          std::cout << HashLoc.printToString(SM) << "\n" << std::endl;
+          std::cout << "19.3:" << "Include directive contains file address, not just name:";
+          std::cout << HashLoc.printToString(SM) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
           JSONDocOUT.JSONAddElement(SM, HashLoc, "19.3", "Include directive contains file address, not just name : ");
@@ -4382,8 +4383,8 @@ public:
         }
         else
         {
-          std::cout << "20.1 : " << "C keyword undefined : " << std::endl;
-          std::cout << SL.printToString(SM) << "\n" << std::endl;
+          std::cout << "20.1:" << "C keyword undefined:";
+          std::cout << SL.printToString(SM) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword undefined : ");
           JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword undefined : ");
@@ -4406,8 +4407,8 @@ public:
             }
             else
             {
-              std::cout << "20.1 : " << "C standard library macro undefined : " << std::endl;
-              std::cout << SL.printToString(SM) << "\n" << std::endl;
+              std::cout << "20.1:" << "C standard library macro undefined:";
+              std::cout << SL.printToString(SM) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro undefined : ");
               JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro undefined : ");
@@ -4430,8 +4431,8 @@ public:
       }
       else
       {
-        std::cout << "19.6 : " << "Use of #undef is illegal : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        std::cout << "19.6:" << "Use of #undef is illegal:";
+        std::cout << SL.printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SL, "19.6", "Use of #undef is illegal : ");
         JSONDocOUT.JSONAddElement(SM, SL, "19.6", "Use of #undef is illegal : ");
@@ -4476,8 +4477,8 @@ public:
       }
       else
       {
-        std::cout << "20.1 : " << "C keyword defined : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        std::cout << "20.1:" << "C keyword defined:";
+        std::cout << SL.printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SL, "20.1", "C keyword defined : ");
         JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C keyword defined : ");
@@ -4497,8 +4498,8 @@ public:
         }
         else
         {
-          std::cout << "20.1 : " << "C standard library macro redefined : " << std::endl;
-          std::cout << SL.printToString(SM) << "\n" << std::endl;
+          std::cout << "20.1:" << "C standard library macro redefined:";
+          std::cout << SL.printToString(SM) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(SM, SL, "20.1", "C standard library macro redefined : ");
           JSONDocOUT.JSONAddElement(SM, SL, "20.1", "C standard library macro redefined : ");
@@ -4528,8 +4529,8 @@ public:
         }
         else
         {
-          std::cout << "19.13 : " << "Macro has # token : " << std::endl;
-          std::cout << SL.printToString(SM) << "\n" << std::endl;
+          std::cout << "19.13:" << "Macro has # token:";
+          std::cout << SL.printToString(SM) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has # token : ");
           JSONDocOUT.JSONAddElement(SM, SL, "19.13", "Macro has # token : ");
@@ -4546,8 +4547,8 @@ public:
         }
         else
         {
-          std::cout << "19.13 : " << "Macro has ## token : " << std::endl;
-          std::cout << SL.printToString(SM) << "\n" << std::endl;
+          std::cout << "19.13:" << "Macro has ## token:";
+          std::cout << SL.printToString(SM) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(SM, SL, "19.13", "Macro has ## token : ");
           JSONDocOUT.JSONAddElement(SM, SL, "19.13", "Macro has ## token : ");
@@ -4564,8 +4565,8 @@ public:
       }
       else
       {
-        std::cout << "19.12 : " << "Macro has # and ## tokens : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        std::cout << "19.12:" << "Macro has # and ## tokens:";
+        std::cout << SL.printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SL, "19.12", "Macro has # and ## tokens : ");
         JSONDocOUT.JSONAddElement(SM, SL, "19.12", "Macro has # and ## tokens : ");
@@ -4646,8 +4647,8 @@ public:
         }
         else
         {
-          std::cout << "19.10 : " << "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : " << std::endl;
-          std::cout << SL.printToString(SM) << "\n" << std::endl;
+          std::cout << "19.10:" << "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash:";
+          std::cout << SL.printToString(SM) << ":" << std::endl;
 
           XMLDocOut.XMLAddNode(SM, SL, "19.10", "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : ");
           JSONDocOUT.JSONAddElement(SM, SL, "19.10", "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash : ");
@@ -4660,8 +4661,8 @@ public:
       }
       else
       {
-        std::cout << "19.7 : " << "Function-like macro used : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+        std::cout << "19.7:" << "Function-like macro used:";
+        std::cout << SL.printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SL, "19.7", "Function-like macro used : ");
         JSONDocOUT.JSONAddElement(SM, SL, "19.7", "Function-like macro used : ");
@@ -4679,8 +4680,8 @@ public:
             }
             else
             {
-              std::cout << "19.9 : " << "Function-like macro's argument contains macros : " << std::endl;
-              std::cout << SL.printToString(SM) << "\n" << std::endl;
+              std::cout << "19.9:" << "Function-like macro's argument contains macros:";
+              std::cout << SL.printToString(SM) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(SM, SL, "19.9", "Function-like macro's argument contains macros : ");
               JSONDocOUT.JSONAddElement(SM, SL, "19.9", "Function-like macro's argument contains macros : ");
@@ -4717,8 +4718,8 @@ public:
       }
       else
       {
-        std::cout << "20.6 : " << "use of offsetof is illegal : " << std::endl;
-        std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+        std::cout << "20.6:" << "use of offsetof is illegal:";
+        std::cout << Range.getBegin().printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SL, "20.6", "use of offsetof is illegal : ");
         JSONDocOUT.JSONAddElement(SM, SL, "20.6", "use of offsetof is illegal : ");
@@ -4733,8 +4734,8 @@ public:
       }
       else
       {
-        std::cout << "20.7 : " << "use of setjmp is illegal : " << std::endl;
-        std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+        std::cout << "20.7:" << "use of setjmp is illegal:";
+        std::cout << Range.getBegin().printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SL, "20.7", "use of setjmp is illegal : ");
         JSONDocOUT.JSONAddElement(SM, SL, "20.7", "use of setjmp is illegal : ");
@@ -4749,8 +4750,8 @@ public:
       }
       else
       {
-        std::cout << "19.11 : " << "Use of undefined macro : " << std::endl;
-        std::cout << Range.getBegin().printToString(SM) << "\n" << std::endl;
+        std::cout << "19.11:" << "Use of undefined macro:";
+        std::cout << Range.getBegin().printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SL, "19.11", "Use of undefined macro : ");
         JSONDocOUT.JSONAddElement(SM, SL, "19.11", "Use of undefined macro : ");
@@ -4773,8 +4774,8 @@ public:
       }
       else
       {
-        std::cout << "19.17 : " << "elif directive is not in the same file as its if directive : " << std::endl;
-        std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+        std::cout << "19.17:" << "elif directive is not in the same file as its if directive:";
+        std::cout << SLoc.printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
         JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "elif directive is not in the same file as its if directive : ");
@@ -4797,8 +4798,8 @@ public:
       }
       else
       {
-        std::cout << "19.17 : " << "else directive is not in the same file as its if directive : " << std::endl;
-        std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+        std::cout << "19.17:" << "else directive is not in the same file as its if directive:";
+        std::cout << SLoc.printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
         JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "else directive is not in the same file as its if directive : ");
@@ -4821,8 +4822,8 @@ public:
       }
       else
       {
-        std::cout << "19.17 : " << "endif directive is not in the same file as its if directive : " << std::endl;
-        std::cout << SLoc.printToString(SM) << "\n" << std::endl;
+        std::cout << "19.17:" << "endif directive is not in the same file as its if directive:";
+        std::cout << SLoc.printToString(SM) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
         JSONDocOUT.JSONAddElement(SM, SLoc, "19.17", "endif directive is not in the same file as its if directive : ");
