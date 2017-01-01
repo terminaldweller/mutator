@@ -135,7 +135,7 @@ Here's a quick look into the project files and directories:<br/>
 * The **test** folder holds the **TDD** tests.<br/>
 * The **docs** folder contains the documents related to the project. Currently the doc for the current status of the Misra-C:2004 implementation is there.<br/>
 * The folder named **tinyxml2** holds the tinyxml2 source files.<br/>
-* The folder named **extra-tools** holds some tool that help the dev process. Right now it only holds a little script that has some limited argument parsing abilities to dump AST.<br/>
+* The folder named **extra-tools** holds some tool that help the dev process.<br/>
 * The folder named **samples** holds the output samples for the project. Currently, you can find the text and XML output of the Misra-C rule checker run over the TDD tests.<br/>
 
 #### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
