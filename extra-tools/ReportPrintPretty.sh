@@ -1,6 +1,7 @@
 #!/bin/bash
 #the first input should be the raw report output
 #the second output should be the file name for the pretty output
+#function red(string) { printf ("%s%s%s", "\033[1;31m", string, "\033[0m "); }
 "cat" "$1" | gawk '
 BEGIN{RS = "\n";FS = ":"}
 function red(s) {printf "\033[1;31m" s "\033[0m "}
