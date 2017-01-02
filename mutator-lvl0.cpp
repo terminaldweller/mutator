@@ -56,7 +56,9 @@ enum MisraC
 };
 
 static llvm::cl::OptionCategory MutatorLVL0Cat("mutator-lvl0 options category");
+/*@DEVI-the option has been added since gcc does it.its as simple as that.*/
 cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("mutator-lvl0 will run through System Headers"));
+cl::opt<bool> MainFileOnly("MainOnly", cl::desc("mutator-lvl0 will only report the results that reside in the main file"));
 cl::opt<MisraC> MisraCVersion(cl::desc("choose the MisraC version to check against"), \
                               cl::values(clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
                                   clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")));
@@ -240,11 +242,14 @@ public:
         return void();
       }
 
-      std::cout << "15.2:" << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt:";
-      std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        std::cout << "15.2:" << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-      XMLDocOut.XMLAddNode(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
-      JSONDocOUT.JSONAddElement(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
+        XMLDocOut.XMLAddNode(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
+      }
     }
     else
     {
@@ -2149,7 +2154,7 @@ public:
         std::string NameString = DNI.getAsString();
 
         /*JANKY*/
-        /*the third condition is put in place to accomodate the prefix unary increment or decrement operator.*/
+        /*@DEVI-the third condition is put in place to accomodate the prefix unary increment or decrement operator.*/
         if (SLFSInit == SL || SLFSInc == SL || SLFSInc.getLocWithOffset(2) == SL)
         {
           ControlVarName = NameString;
@@ -4074,6 +4079,8 @@ public:
 
       QualType QT = PVD->getOriginalType();
 
+      ASTContext *const ASTC = MR.Context;
+
       if (!QT.isConstQualified())
       {
         if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -4082,11 +4089,14 @@ public:
         }
         else
         {
-          std::cout << "16.7:" << "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const:";
-          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+          {
+            std::cout << "16.7:" << "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const:";
+            std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-          XMLDocOut.XMLAddNode(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
+            XMLDocOut.XMLAddNode(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "16.7", "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const : ");
+          }
         }
       }
     }
