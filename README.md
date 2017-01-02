@@ -6,12 +6,13 @@
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
 </a>
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
-<a href="https://twitter.com/intent/tweet?screen_name=TwitterDev" class="twitter-mention-button" data-show-count="false">Tweet to @TwitterDev</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+<br/>
+<a href="https://twitter.com/xashmith" class="twitter-follow-button" data-show-count="false">Follow @xashmith</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 
 A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
 Reports are genrated in simple text(AWK-friendly:`RS="\n";FS=":"`), XML and JSON formats.<br/>
-You can Join the Maillist here:[mutator maillist](https://www.freelists.org/list/mutator). The maillist is moderated.<br/>
+You can Join the Maillist here, mutator maillist](https://www.freelists.org/list/mutator). The maillist is moderated.<br/>
 You can follow Project `mutator` on twitter, @xashmith.
 <br/>
 
@@ -176,3 +177,6 @@ If you run into an issue please raise one here or just contact me with proper in
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>
 If the company/organization you represent wants to sponsor mutator, let me know.<br/>
 #### Testers are always welcome. If you are interested, let me know. Testing mutator is as important, if not more, than implementing it.<br/>
+
+###Contact
+You can email me at thabogre@gmail.com, there is also the twitter account for the mutator project, @xashmith and there is the mutator maillist, mutator-repost@freelists.org, you need to be a member though.<br/>
