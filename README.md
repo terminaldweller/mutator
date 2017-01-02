@@ -10,6 +10,7 @@
 
 A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
 Reports are genrated in simple text(AWK-friendly:`RS="\n";FS=":"`), XML and JSON formats.<br/>
+You can Join the Maillist here:[mutator maillist](https://www.freelists.org/list/mutator). The maillist is moderated.<br/>
 <br/>
 
 Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
@@ -38,7 +39,7 @@ Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
 
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase.<br/>
-* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 102 out of the 143 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
+* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 121 out of the 143 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
 * **`mutator`** and **`mutator-lvl2`** are collectively the code muatation and code transformation executables. Currently the automatic code transformation implemented is only limited to adding braces to blocks that are missing it and adding `else` if an if-else if is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
@@ -92,6 +93,7 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 
 `mutator-lvl0` options:
 * SysHeader, will let the executable know that you wish the checks to run through system headers as well. Off by default.<br/>
+* MainOnly, will only pusblish check results for matches residing in the main file,i.e. the current TU(Translation Unit).<br/>
 * MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. currently only supports MisraC2004 or C2.<br/>
 
 So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
@@ -109,8 +111,9 @@ Do note that if your file has included standard header libraries, you do need to
 ```
 <br/>
 **mutator-lvl0** will run the Misra-C:2004 checks.<br/>
-**mutator** will run the level-1 Misra-C:2004 implementers.<br/>
-**mutator-lvl2** will run the level-2 Misra-C:2004 implementers.<br/>
+**mutator** will run the level-1 implementers.<br/>
+**mutator-lvl2** will run the level-2 implementers.<br/>
+The levels have nothing to do with mutation orders.<br/>
 <br/>
 Currently, the mutation-only features(mutation for the sake of mutation, technically implementing Misra-C is also a form of mutation) are turned off in **mutator** and **mutator-lvl2** though some automatic code refactoring features work in both executables. Just run a sample code through **mutator** and then **mutator-lvl2** for a demo.<br/>
 <br/>
