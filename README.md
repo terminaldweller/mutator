@@ -11,7 +11,7 @@
 A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
 Reports are genrated in simple text(AWK-friendly:`RS="\n";FS=":"`), XML and JSON formats.<br/>
 You can Join the Maillist here:[mutator maillist](https://www.freelists.org/list/mutator). The maillist is moderated.<br/>
-You can follow Project `mutator` on twitter, @xashmith.
+You can follow Project `mutator` on twitter, [@xashmith](<a href="https://twitter.com/intent/tweet?screen_name=TwitterDev" class="twitter-mention-button" data-show-count="false">Tweet to @TwitterDev</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>).
 <br/>
 
 Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
