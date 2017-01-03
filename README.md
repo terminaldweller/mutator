@@ -93,11 +93,20 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-i, --input, -input` lets you choose the input file(or a white-space-separated list of files) that is going to be passed to the mutator executable(s).<br/>
 * `-o, --output, -output` lets you choose where to put the mutant.<br/>
 * `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
+* `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. it is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`
 
 `mutator-lvl0` options:
 * SysHeader, will let the executable know that you wish the checks to run through system headers as well. Off by default.<br/>
 * MainOnly, will only pusblish check results for matches residing in the main file,i.e. the current TU(Translation Unit).<br/>
 * MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. currently only supports MisraC2004 or C2.<br/>
+####Note
+If you are running the executables using `mutator.sh` you don't need to read this note through. if you are running the executable directly however, then you have to pass groups of arguments in a specific order otherwise the executable won't be able to recognize the options and will throw errors. For example this is the right way to run `mutator-lvl0`:<br/>
+
+```bash
+
+./mutator-lvl0 -SysHeader=false -MainOnly=true  ./test/testFuncs3.c -- -std=c90 -Wall C2 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include
+
+```
 
 So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
 ```bash
