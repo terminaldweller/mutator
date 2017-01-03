@@ -9,6 +9,7 @@ OUTPUT="./mutant.c"
 OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
 OPTIONS=""
+COPTIONS=""
 
 while [[ $# -gt 0 ]]
 do
@@ -34,6 +35,7 @@ do
 		echo "-o, 	--output, -output lets you choose where to put the mutant."
 		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation."
 		echo "	for example: -opts \"-Wall std=c89\""
+		echo "-copts 	--customoptions, same as opts, but only used for custom options defined for the executable. for example: -copts \"-SysHeader=false -MainOnly=true\""
 		exit 0
 		;;
 		-NDEBUG)
@@ -54,6 +56,10 @@ do
 		;;
 		-opts|--options)
 		OPTIONS="$2"
+		shift
+		;;
+		-copts|--customoptions)
+		COPTIONS="$2"
 		shift
 		;;
 		-o|--output|-output)
@@ -97,8 +103,9 @@ elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Removing previous JSON report..."
 	"rm" ./test/misrareport.json
 	echo "checking input file(s) against Misra-C 2004..."
-	echo "Options to pass to executable: "${OPTIONS:0:$((${#OPTIONS}))}
-	"./mutator-lvl0" $INPUT -- ${OPTIONS:0:$((${#OPTIONS}))} > ./test/misra-log
+	echo "Command to run:"
+	echo "./mutator-lvl0 ${COPTIONS:0:$((${#COPTIONS}))} $INPUT -- ${OPTIONS:0:$((${#OPTIONS}))} > ./test/misra-log"
+	"./mutator-lvl0" ${COPTIONS:0:$((${#COPTIONS}))} $INPUT -- ${OPTIONS:0:$((${#OPTIONS}))} > ./test/misra-log
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
