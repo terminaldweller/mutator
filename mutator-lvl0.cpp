@@ -5271,15 +5271,15 @@ public:
     }
     /*end of 19.4*/
 
-    if (MacroNameString == "offsetof" && SM.isInSystemHeader(DMD->getLocation()))
+    if (MacroNameString == "offsetof")
     {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
       {
         /*intentionally left blank*/
       }
       else
       {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
         {
           std::cout << "20.6:" << "use of offsetof is illegal:";
           std::cout << Range.getBegin().printToString(SM) << ":" << std::endl;
@@ -5290,15 +5290,15 @@ public:
       }
     }
 
-    if (MacroNameString == "setjmp" && SM.isInSystemHeader(DMD->getLocation()))
+    if (MacroNameString == "setjmp")
     {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
       {
         /*intentionally left blank*/
       }
       else
       {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
         {
           std::cout << "20.7:" << "use of setjmp is illegal:";
           std::cout << Range.getBegin().printToString(SM) << ":" << std::endl;
@@ -5311,14 +5311,14 @@ public:
 
     if (!DMD->isDefined())
     {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
       {
         /*intentionally left blank*/
       }
       else
       {
         /*@DEVI-by the time we get a callback on our callback, the macri is assigned a default vlaue even if it is undefined in the TU.*/
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
         {
           std::cout << "19.11:" << "Use of undefined macro:";
           std::cout << Range.getBegin().printToString(SM) << ":" << std::endl;
