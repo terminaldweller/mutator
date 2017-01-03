@@ -1356,9 +1356,23 @@ public:
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91");
 
       SourceLocation SL = VD->getLocStart();
+      SourceLocation SLMID;
+
+      if (SL.isMacroID())
+      {
+        SLMID = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      }
+
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       SourceLocation SLE = VD->getLocEnd();
-      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
+      SourceLocation SLEMID;
+
+      if (SLE.isMacroID())
+      {
+        SLEMID = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+      }
+
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
 
       QualType QT = VD->getType();
 
@@ -1439,8 +1453,12 @@ public:
           /*JANKY*/
           const Expr* InitExpr [[maybe_unused]] = VD->getInit();
           SourceRange InitExprSR;
-          InitExprSR.setBegin(SL);
-          InitExprSR.setEnd(SLE);
+          SourceLocation IESL = InitExpr->getLocStart();
+          IESL = Devi::SourceLocationHasMacro(IESL, Rewrite, "start");
+          SourceLocation IESLE = InitExpr->getLocEnd();
+          IESLE = Devi::SourceLocationHasMacro(IESLE, Rewrite, "end");
+          InitExprSR.setBegin(IESL);
+          InitExprSR.setEnd(IESLE);
 
           std::string InitExprString = Rewrite.getRewrittenText(InitExprSR);
           size_t openingcbraces = InitExprString.find("{", 0);
@@ -1456,11 +1474,13 @@ public:
             {
               if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
               {
+#if 0
                 std::cout << "9.2:" << "Curly braces not used:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
                 XMLDocOut.XMLAddNode(MR.Context, SL, "9.2", "Curly braces not used : ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "9.2", "Curly braces not used : ");
+#endif
               }
             }
           }
