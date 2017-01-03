@@ -57,8 +57,8 @@ enum MisraC
 
 static llvm::cl::OptionCategory MutatorLVL0Cat("mutator-lvl0 options category");
 /*@DEVI-the option has been added since gcc does it.its as simple as that.*/
-cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("mutator-lvl0 will run through System Headers"));
-cl::opt<bool> MainFileOnly("MainOnly", cl::desc("mutator-lvl0 will only report the results that reside in the main file"));
+cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("mutator-lvl0 will run through System Headers"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::ZeroOrMore);
+cl::opt<bool> MainFileOnly("MainOnly", cl::desc("mutator-lvl0 will only report the results that reside in the main file"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::ZeroOrMore);
 cl::opt<MisraC> MisraCVersion(cl::desc("choose the MisraC version to check against"), \
                               cl::values(clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
                                   clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")));
@@ -4671,11 +4671,14 @@ public:
       }
       else
       {
-        std::cout << "19.7:" << "Function-like macro used:";
-        std::cout << SL.printToString(SM) << ":" << std::endl;
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
+        {
+          std::cout << "19.7:" << "Function-like macro used:";
+          std::cout << SL.printToString(SM) << ":" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "19.7", "Function-like macro used : ");
-        JSONDocOUT.JSONAddElement(SM, SL, "19.7", "Function-like macro used : ");
+          XMLDocOut.XMLAddNode(SM, SL, "19.7", "Function-like macro used : ");
+          JSONDocOUT.JSONAddElement(SM, SL, "19.7", "Function-like macro used : ");
+        }
       }
 
       if (MacroNumArgs != 0)
