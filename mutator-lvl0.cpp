@@ -5096,6 +5096,181 @@ public:
 
     DefMacroDirective* DMD = MD.getLocalDirective();
 
+    SourceLocation MDSL = DMD->getLocation();
+
+    MacroInfo* MI = MD.getMacroInfo();
+
+    /*underdev2*/
+    /*start of 19.4*/
+    ArrayRef<Token> TokenArrayRef = MI->tokens();
+
+    /*@DEVI-guard against macro defs that just define the macro without a value.*/
+    if (TokenArrayRef.size() != 0U)
+    {
+      bool MacroExpansionIsTypeQualifier = true;
+      bool MacroExpansionIsStorageSpecifier = true;
+      bool MacroExpansionStringLiteral = false;
+      bool MacroExpansionConstant = false;
+      bool MacroExpansionBracedInitializer = true;
+      bool MacroExpansionParenExpr = true;
+      bool MacroExpansionDoWhileZero = true;
+
+      if (TokenArrayRef.front().getKind() == tok::l_paren && TokenArrayRef.back().getKind() == tok::r_paren)
+      {
+        /*currently we do not care what's inside the parens.*/
+      }
+      else
+      {
+        MacroExpansionParenExpr = false;
+      }
+
+      if (TokenArrayRef.front().getKind() == tok::l_brace && TokenArrayRef.back().getKind() == tok::r_brace)
+      {
+        /*currently we don't care what's inside the curly braces.*/
+      }
+      else
+      {
+        MacroExpansionBracedInitializer = false;
+      }
+
+      //std::vector<tok::TokenKind> TokenPattern = {tok::kw_while, tok::l_paren, tok::numeric_constant, tok::r_paren};
+      std::vector<tok::TokenKind> TokenPattern;
+      TokenPattern.push_back(tok::kw_while);
+      TokenPattern.push_back(tok::l_paren);
+      TokenPattern.push_back(tok::numeric_constant);
+      TokenPattern.push_back(tok::r_paren);
+
+      if (TokenArrayRef.front().getKind() == tok::kw_do)
+      {
+        unsigned marker = 0U;
+
+        for (ArrayRef<Token>::iterator iter = TokenArrayRef.begin(); iter != TokenArrayRef.end(); ++iter)
+        {
+          if (iter->getKind() == tok::kw_while)
+          {
+            marker = 0U;
+          }
+
+          if (marker == 3U && iter->getKind() == TokenPattern[3])
+          {
+            marker = 4U;
+          }
+          else if (marker == 3U && iter->getKind() != TokenPattern[3])
+          {
+            marker = 0U;
+          }
+          else
+          {
+            /*empty*/
+          }
+
+          if (marker == 2U && iter->getKind() == TokenPattern[2])
+          {
+            marker = 3U;
+          }
+          else if (marker == 2U && iter->getKind() != TokenPattern[2])
+          {
+            marker = 0U;
+          }
+          else
+          {
+            /*empty*/
+          }
+
+          if (marker == 1U && iter->getKind() == TokenPattern[1])
+          {
+            marker = 2U;
+          }
+          else if (marker == 1U && iter->getKind() != TokenPattern[1])
+          {
+
+          }
+          else
+          {
+            /*empty*/
+          }
+
+          if (marker == 0U && iter->getKind() == TokenPattern[0])
+          {
+            marker = 1U;
+          }
+        }
+
+        if (marker != 4U)
+        {
+          MacroExpansionDoWhileZero = false;
+        }
+      }
+      else
+      {
+        MacroExpansionDoWhileZero = false;
+      }
+
+      if (TokenArrayRef.size() == 1U)
+      {
+        if (TokenArrayRef[0].getKind() == tok::string_literal || TokenArrayRef[0].getKind() == tok::wide_string_literal \
+            || TokenArrayRef[0].getKind() == tok::utf8_string_literal || TokenArrayRef[0].getKind() == tok::utf16_string_literal \
+            || TokenArrayRef[0].getKind() == tok::utf32_string_literal)
+        {
+          MacroExpansionStringLiteral = true;
+        }
+
+        if (TokenArrayRef[0].getKind() == tok::numeric_constant || TokenArrayRef[0].getKind() == tok::char_constant \
+            || TokenArrayRef[0].getKind() == tok::wide_char_constant || TokenArrayRef[0].getKind() == tok::utf8_char_constant \
+            || TokenArrayRef[0].getKind() == tok::utf16_char_constant || TokenArrayRef[0].getKind() == tok::utf32_char_constant)
+        {
+          MacroExpansionConstant = true;
+        }
+      }
+
+      for (auto &iter : TokenArrayRef)
+      {
+        if (iter.getKind() == tok::kw_const || iter.getKind() == tok::kw_restrict || iter.getKind() == tok::kw_volatile \
+            || iter.getKind() == tok::l_paren || iter.getKind() == tok::r_paren)
+        {
+          /*has no significance*/
+        }
+        else
+        {
+          MacroExpansionIsTypeQualifier = false;
+        }
+
+        if (iter.getKind() == tok::kw_auto || iter.getKind() == tok::kw_extern || iter.getKind() == tok::kw_register \
+            || iter.getKind() == tok::kw_static || iter.getKind() == tok::kw_typedef \
+            || iter.getKind() == tok::l_paren || iter.getKind() == tok::r_paren)
+        {
+          /*has no significance*/
+        }
+        else
+        {
+          MacroExpansionIsStorageSpecifier = false;
+        }
+      }
+
+      if (!MacroExpansionIsTypeQualifier && !MacroExpansionIsStorageSpecifier \
+          && !MacroExpansionStringLiteral && !MacroExpansionConstant \
+          && !MacroExpansionBracedInitializer && !MacroExpansionParenExpr \
+          && !MacroExpansionDoWhileZero)
+      {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
+          {
+            std::cout << "19.4:" << "Macro does not expand to braced initializer,panthesizes expression,string literal,constant,do-while-zero,storage class specifier or type qualifier:";
+            std::cout << Range.getBegin().printToString(SM) << ":" << std::endl;
+
+            XMLDocOut.XMLAddNode(SM, SL, "19.4", "Macro does not expand to braced initializer,panthesizes expression,string literal,constant,do-while-zero,storage class specifier or type qualifier : ");
+            JSONDocOUT.JSONAddElement(SM, SL, "19.4", "Macro does not expand to braced initializer,panthesizes expression,string literal,constant,do-while-zero,storage class specifier or type qualifier : ");
+          }
+        }
+      }
+    }
+    /*end of 19.4*/
+
     if (MacroNameString == "offsetof" && SM.isInSystemHeader(DMD->getLocation()))
     {
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
@@ -5142,6 +5317,7 @@ public:
       }
       else
       {
+        /*@DEVI-by the time we get a callback on our callback, the macri is assigned a default vlaue even if it is undefined in the TU.*/
         if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
         {
           std::cout << "19.11:" << "Use of undefined macro:";
