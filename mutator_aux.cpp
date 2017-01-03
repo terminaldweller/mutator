@@ -101,7 +101,7 @@ bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::Ma
   ASTContext *const ASTC = MR.Context;
   const SourceManager &SM = ASTC->getSourceManager();
 
-  if (SM.isInMainFile(SL) && !MainFileFlag)
+  if (SM.isInMainFile(SL) || (!SM.isInMainFile(SL) && !MainFileFlag))
   {
     return true;
   }
@@ -113,7 +113,7 @@ bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::Ma
 
 bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLocation SL)
 {
-  if (SM.isInMainFile(SL) && !MainFileFlag)
+  if (SM.isInMainFile(SL) || (!SM.isInMainFile(SL) && !MainFileFlag))
   {
     return true;
   }
@@ -125,7 +125,7 @@ bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLoca
 
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL)
 {
-  if (MainFile && !MainFileFlag)
+  if (MainFile || (!MainFile && !MainFileFlag))
   {
     return true;
   }
