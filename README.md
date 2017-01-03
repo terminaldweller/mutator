@@ -99,6 +99,7 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * SysHeader, will let the executable know that you wish the checks to run through system headers as well. Off by default.<br/>
 * MainOnly, will only pusblish check results for matches residing in the main file,i.e. the current TU(Translation Unit).<br/>
 * MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. currently only supports MisraC2004 or C2.<br/>
+
 ####Note
 If you are running the executables using `mutator.sh` you don't need to read this note through. if you are running the executable directly however, then you have to pass groups of arguments in a specific order otherwise the executable won't be able to recognize the options and will throw errors. For example this is the right way to run `mutator-lvl0`:<br/>
 
