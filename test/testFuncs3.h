@@ -31,6 +31,7 @@
 #endif
 
 #define MACRO1 {{1,2},{3,4},{5,6}}
+#define MACRO2 {1,2,3,4,5,6}
 
 #define READ_TIME_32() \
 do { \
@@ -49,3 +50,4 @@ do { \
 } while (a < 10)
 
 #define ANSWER (17U)
+#define STRINGLIT "dodo"

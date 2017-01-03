@@ -3,7 +3,8 @@
 #include <complex.h>
 
 
-int intarray3[2][3] = MACRO1;
+int intarray3[3][2] = MACRO1;
+int intarray4[3][2] = MACRO2;
 int answer = ANSWER;
 
 void tddfunc1 (void)
