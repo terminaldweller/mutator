@@ -29,3 +29,23 @@
 #include <wchar.h>
 #include <wctype.h>
 #endif
+
+#define MACRO1 {{1,2},{3,4},{5,6}}
+
+#define READ_TIME_32() \
+do { \
+} while (0)
+
+#define READ_TIME_33() \
+do { \
+	while(a<10)\
+		{}\
+} while (0)
+
+#define READ_TIME_34() \
+do { \
+	while(a>10)\
+		{}\
+} while (a < 10)
+
+#define ANSWER (17U)

@@ -2,6 +2,10 @@
 #include "testFuncs3.h"
 #include <complex.h>
 
+
+int intarray3[2][3] = MACRO1;
+int answer = ANSWER;
+
 void tddfunc1 (void)
 {
 	double complex z1 = 10.0 + 10.0 * I;
@@ -37,4 +41,13 @@ void tddfunc2(void)
 	//uint16_t result_16;
 	//uint16_t mode;
 	result_8 = (~port) >> 4;
+}
+
+void tddfunc3(void)
+{
+	int a = 1;
+
+	READ_TIME_32();
+	READ_TIME_33();
+	READ_TIME_34();
 }
