@@ -31,7 +31,6 @@ SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std
 
     if (Kind == "start")
     {
-      /*get the startloc.*/
       return (expansionRange.first);
     }
     else if (Kind == "end")
