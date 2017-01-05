@@ -1,4 +1,7 @@
 
+int crappyint;
+
+
 #include "testFuncs3.h"
 #include <complex.h>
 
