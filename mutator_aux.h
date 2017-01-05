@@ -51,6 +51,9 @@ public:
   void XMLAddNode(FullSourceLoc FSL, SourceLocation SL, std::string MisraRule, std::string Description);
   /*another overload to support the xml output for PPCallbacks.*/
   void XMLAddNode(const SourceManager &SM, SourceLocation SL, std::string MisraRule, std::string Description);
+
+  void XMLAddNode(std::string FilePath, std::string MisraRule, std::string Description);
+
   void SaveReport(void);
 
 private:
@@ -69,6 +72,9 @@ public:
   void JSONAddElement(FullSourceLoc FSL, SourceLocation SL, std::string MisraRule, std::string Description);
   /*overload for PPCallbacks.*/
   void JSONAddElement(const SourceManager &SM, SourceLocation SL, std::string MisraRule, std::string Description);
+
+  void JSONAddElement(std::string FilePath, std::string MisraRule, std::string Description);
+
   void CloseReport(void);
 
 private:
