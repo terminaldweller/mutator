@@ -7,9 +7,10 @@
 #include "mutator_aux.h"
 #include "tinyxml2/tinyxml2.h"
 /*standard headers*/
-#include <string>
-#include <iostream>
 #include <cassert>
+#include <fstream>
+#include <iostream>
+#include <string>
 #include <vector>
 /*Clang headers*/
 #include "clang/AST/AST.h"
@@ -5436,6 +5437,125 @@ private:
   const SourceManager &SM;
 };
 /**********************************************************************************************************************/
+class IsThereJunkPreInclusion
+{
+public:
+  IsThereJunkPreInclusion() {}
+
+  void Check(std::vector<std::string> SourcePathList)
+  {
+    bool HaveWeMatchedInclusionDirYet = false;
+    bool HaveWeMatchIllegal191Yet = false;
+
+    for (auto &iter : SourcePathList)
+    {
+      //std::cout << iter << std::endl;
+      std::ifstream InputFile(iter);
+
+      HaveWeMatchIllegal191Yet = false;
+      HaveWeMatchedInclusionDirYet = false;
+
+      for (std::string line; getline(InputFile, line);)
+      {
+        //std::cout << iter << ":" << line << ":" << HaveWeMatchedInclusionDirYet << " " << HaveWeMatchIllegal191Yet << std::endl;
+
+        if (line.empty())
+        {
+          continue;
+        }
+
+        if (line.front() == '#')
+        {
+          size_t st = line.find("#include", 0U);
+
+          if (st == 0U)
+          {
+            /*we've found a header include*/
+            HaveWeMatchedInclusionDirYet = true;
+
+            if (HaveWeMatchIllegal191Yet)
+            {
+              /*print diag out*/
+              std::cout << "19.1" << ":" << "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments" << ":" << iter << std::endl;
+
+              XMLDocOut.XMLAddNode(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
+              JSONDocOUT.JSONAddElement(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
+              break;
+            }
+            else
+            {
+              break;
+            }
+          }
+
+          continue;
+        }
+
+        if (line.front() == '/')
+        {
+          /*has to be a comment*/
+          continue;
+        }
+
+        if (line.front() == '\n' || line.front() == '\t' || line.front() == ' ' || line.front() == '\r')
+        {
+          HaveWeMatchIllegal191Yet = false;
+
+          for (auto &iterchar : line)
+          {
+            if (iterchar == '\n' || iterchar == '\t' || iterchar == ' ' || line.front() == '\r')
+            {
+              continue;
+            }
+
+            if (iterchar == '/')
+            {
+              break;
+            }
+
+            if (iterchar == '#')
+            {
+              size_t st = line.find("#include", 0U);
+
+              if (st == 0U)
+              {
+                /*we've found a header include*/
+                HaveWeMatchedInclusionDirYet = true;
+
+                if (HaveWeMatchIllegal191Yet)
+                {
+                  /*print diag out*/
+                  std::cout << "19.1" << ":" << "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments" << ":" << iter << std::endl;
+
+                  XMLDocOut.XMLAddNode(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
+                  JSONDocOUT.JSONAddElement(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
+                  break;
+                }
+                else
+                {
+                  break;
+                }
+
+                continue;
+              }
+            }
+
+            HaveWeMatchIllegal191Yet = true;
+          }
+
+          continue;
+        }
+
+        HaveWeMatchIllegal191Yet = true;
+      }
+
+      InputFile.close();
+    }
+  }
+
+private:
+
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -5756,15 +5876,18 @@ int main(int argc, const char **argv)
 {
   /*@DEVI-we should parse the common options before parsing the custom options.*/
   CommonOptionsParser op(argc, argv, MutatorLVL0Cat);
-#if 0
-  cl::ParseCommandLineOptions(argc, argv);
-#endif
+
+  const std::vector<std::string> &SourcePathList = op.getSourcePathList();
 
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
   XMLDocOut.XMLCreateReport();
 
   JSONDocOUT.JSONCreateReport();
+
+  IsThereJunkPreInclusion ITJPIInstance;
+
+  ITJPIInstance.Check(SourcePathList);
 
   int RunResult = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
 
