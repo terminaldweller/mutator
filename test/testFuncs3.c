@@ -1,4 +1,5 @@
 
+/*first line intentionally left blank.*/
 int crappyint;
 
 
@@ -55,3 +56,9 @@ void tddfunc3(void)
 	READ_TIME_33();
 	READ_TIME_34();
 }
+
+void tddfunc4(void)
+{
+
+}
+/*last line intnetionally left blank.*/

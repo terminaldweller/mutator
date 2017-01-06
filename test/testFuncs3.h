@@ -1,4 +1,5 @@
 
+/*first line intentionally left blank.*/
 #if 1
 #include <assert.h>
 #include <complex.h>
@@ -51,3 +52,9 @@ do { \
 
 #define ANSWER (17U)
 #define STRINGLIT "dodo"
+
+void tddfunc1(void);
+void tddfunc2(void);
+void tddfunc3(void);
+void tddfunc4(void);
+/*last line intenitonally left blank.*/
