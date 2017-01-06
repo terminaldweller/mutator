@@ -21,17 +21,23 @@ using namespace tinyxml2;
 namespace Devi {
 SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std::string Kind);
 
+/*********************************************************************************************************************/
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
 
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, const SourceManager &SM, SourceLocation SL);
 
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader, SourceLocation SL);
 
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader);
+/*********************************************************************************************************************/
 bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
 
 bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLocation SL);
 
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL);
+
+bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile);
+/*********************************************************************************************************************/
 
 /*@DEVI- for both report classes, if the program gets terminated, since the destructor does not close
 the report files, what happens to them is implementation-defined in case of let's say an exit, but since
@@ -54,6 +60,8 @@ public:
 
   void XMLAddNode(std::string FilePath, std::string MisraRule, std::string Description);
 
+  void XMLAddNode(unsigned Line, unsigned Column, std::string FileName, std::string MisraRule, std::string Description);
+
   void SaveReport(void);
 
 private:
@@ -74,6 +82,8 @@ public:
   void JSONAddElement(const SourceManager &SM, SourceLocation SL, std::string MisraRule, std::string Description);
 
   void JSONAddElement(std::string FilePath, std::string MisraRule, std::string Description);
+
+  void JSONAddElement(unsigned Line, unsigned Column, std::string FileName, std::string MisraRule, std::string Description);
 
   void CloseReport(void);
 
