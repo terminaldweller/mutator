@@ -50,6 +50,26 @@ std::vector<SourceLocation> MacroUndefSourceLocation;
 std::vector<std::string> MacroNameString;
 std::vector<std::string> IncludeFileArr;
 
+struct NullStmtInfo
+{
+  NullStmtInfo (unsigned iColumn, unsigned iLine, std::string iFileName, bool iIsInMainFile, bool iIsInSysHeader)
+  {
+    Column = iColumn;
+    Line = iLine;
+    FileName = iFileName;
+    IsInMainFile = iIsInMainFile;
+    IsInSysHeader = iIsInSysHeader;
+  }
+
+  unsigned Column;
+  unsigned Line;
+  std::string FileName;
+  bool IsInMainFile;
+  bool IsInSysHeader;
+};
+
+std::vector<NullStmtInfo> NullStmtProto;
+
 /*mutator-lvl0 executable options*/
 enum MisraC
 {
@@ -4156,13 +4176,13 @@ public:
     {
       if (!iter.HasMoreThanOneDaddy)
       {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.ObjFSL.isInSystemHeader(), iter.ObjSL))
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.ObjFSL.isInSystemHeader()))
         {
           /*intentionally left blank*/
         }
         else
         {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.ObjFSL.getManager().isInMainFile(iter.ObjSL), iter.ObjSL))
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.ObjFSL.getManager().isInMainFile(iter.ObjSL)))
           {
             std::cout << "8.7:" << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block:";
             std::cout << iter.ObjSLStr << ":" << std::endl;
@@ -4258,13 +4278,13 @@ public:
       if (iter.HasMoreThanOneDefinition)
       {
 #if 1
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.XObjFSL.isInSystemHeader(), iter.XObjSL))
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.XObjFSL.isInSystemHeader()))
         {
           /*intentionally left blank*/
         }
         else
         {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.XObjFSL.getManager().isInMainFile(iter.XObjSL), iter.XObjSL))
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.XObjFSL.getManager().isInMainFile(iter.XObjSL)))
           {
             std::cout << "8.8:" << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file:";
             std::cout << iter.XObjSLStr << ":" << std::endl;
@@ -4460,6 +4480,37 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCCF143 : public MatchFinder::MatchCallback
+{
+public:
+  MCCF143 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::NullStmt>("mccf143nullstmt") != nullptr)
+    {
+      const NullStmt* NS = MR.Nodes.getNodeAs<clang::NullStmt>("mccf143nullstmt");
+
+      SourceLocation SL = NS->getSemiLoc();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext *const ASTC = MR.Context;
+
+      FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
+      const SourceManager &SM = FSL.getManager();
+
+      StringRef FileNameString = SM.getFilename(SL);
+
+      NullStmtInfo Temp = {FSL.getSpellingColumnNumber(), FSL.getSpellingLineNumber(), FileNameString, SM.isInMainFile(SL), SM.isInSystemHeader(SL)};
+
+      NullStmtProto.push_back(Temp);
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -5554,9 +5605,147 @@ public:
   }
 
 private:
-
 };
 /**********************************************************************************************************************/
+class CheckForNullStatements
+{
+public:
+  CheckForNullStatements() {}
+
+  void Check(void)
+  {
+    bool HaveWeMatchedASemi = false;
+    bool ShouldBeTagged = false;
+    bool HaveWeSeenAComment = false;
+    bool WhiteSpacePostSemi = false;
+    std::string NullSnippet = "";
+
+    for (auto &iter : NullStmtProto)
+    {
+#if 1
+      std::cout << iter.Line << ":" << iter.Column << ":" << iter.FileName << std::endl;
+#endif
+
+      ShouldBeTagged = false;
+      HaveWeMatchedASemi = false;
+      HaveWeSeenAComment = false;
+      WhiteSpacePostSemi = false;
+
+      std::ifstream InputFile(iter.FileName);
+
+      unsigned counter = 0U;
+
+      for (std::string line; getline(InputFile, line);)
+      {
+        counter++;
+        if (counter == iter.Line)
+        {
+          for (auto &iterchar : line)
+          {
+            if (iterchar == ';')
+            {
+              if (HaveWeMatchedASemi)
+              {
+                ShouldBeTagged = true;
+                break;
+              }
+
+              HaveWeMatchedASemi = true;
+              NullSnippet = NullSnippet + ";";
+              continue;
+            }
+
+            if (iterchar == ' ')
+            {
+              if (HaveWeMatchedASemi)
+              {
+                WhiteSpacePostSemi = true;
+                continue;
+              }
+
+              if (WhiteSpacePostSemi)
+              {
+                ShouldBeTagged = true;
+                break;
+              }
+              NullSnippet = NullSnippet + " ";
+
+              continue;
+            }
+
+            if (iterchar == '\t')
+            {
+              NullSnippet = NullSnippet + "\t";
+
+              if (HaveWeMatchedASemi)
+              {
+                ShouldBeTagged = true;
+                break;
+              }
+              else
+              {
+                continue;
+              }
+            }
+
+            if (iterchar == '/')
+            {
+              NullSnippet = NullSnippet + "/**/";
+              HaveWeSeenAComment = true;
+
+              if (HaveWeMatchedASemi)
+              {
+                if (WhiteSpacePostSemi)
+                {
+                  break;
+                }
+                else
+                {
+                  ShouldBeTagged = true;
+                  break;
+                }
+              }
+              else
+              {
+                ShouldBeTagged = true;
+                break;
+              }
+
+              break;
+            }
+
+            ShouldBeTagged = true;
+            break;
+          }
+        }
+
+        if (ShouldBeTagged)
+        {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
+            {
+              std::cout << "14.3" << ":" << "Illegal NullStmt form:" << iter.FileName << ":" << iter.Line << ":" << iter.Column << ":" << std::endl;
+
+              XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "14.3", "Illegal NullStmt form:");
+              JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "14.3", "Illegal NullStmt form:");
+            }
+          }
+
+          break;
+        }
+      }
+
+      InputFile.close();
+    }
+  }
+
+private:
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -5573,7 +5762,7 @@ public:
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
-    HandlerForFunction167(R) {
+    HandlerForFunction167(R), HandlerForCF143(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -5770,6 +5959,8 @@ public:
     Matcher.addMatcher(parmVarDecl(unless(allOf(hasAncestor(functionDecl(hasDescendant(binaryOperator(allOf(hasOperatorName("="), \
                                           hasLHS(hasDescendant(declRefExpr(allOf(hasAncestor(unaryOperator(hasOperatorName("*"))), \
                                               to(parmVarDecl(hasType(pointerType())).bind("zulu"))))))))))), equalsBoundNode("zulu")))).bind("mcfunction167"), &HandlerForFunction167);
+
+    Matcher.addMatcher(nullStmt().bind("mccf143nullstmt"), &HandlerForCF143);
 #endif
   }
 
@@ -5841,6 +6032,7 @@ private:
 #endif
   MCLangX23 HandlerForLangX23;
   MCFunction167 HandlerForFunction167;
+  MCCF143 HandlerForCF143;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
@@ -5890,6 +6082,10 @@ int main(int argc, const char **argv)
   ITJPIInstance.Check(SourcePathList);
 
   int RunResult = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+
+  CheckForNullStatements CheckForNull;
+
+  CheckForNull.Check();
 
   XMLDocOut.SaveReport();
 
