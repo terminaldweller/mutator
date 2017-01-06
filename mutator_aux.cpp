@@ -92,6 +92,18 @@ bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader, SourceLocation SL
     return false;
   }
 }
+
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader)
+{
+  if (SysHeader && !SysHeaderFlag)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
@@ -123,6 +135,18 @@ bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLoca
 }
 
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL)
+{
+  if (MainFile || (!MainFile && !MainFileFlag))
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile)
 {
   if (MainFile || (!MainFile && !MainFileFlag))
   {
@@ -217,6 +241,19 @@ void XMLReport::XMLAddNode(std::string FilePath, std::string MisraRule, std::str
   MisraElement->SetText(Description.c_str());
   MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
   MisraElement->SetAttribute("FileName", FilePath.c_str());
+  RootPointer->InsertEndChild(MisraElement);
+}
+
+void XMLReport::XMLAddNode(unsigned Line, unsigned Column, std::string FileName, std::string MisraRule, std::string Description)
+{
+  //assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
+
+  XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
+  MisraElement->SetText(Description.c_str());
+  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("FileName", FileName.c_str());
+  MisraElement->SetAttribute("SpellingLineNumber", Line);
+  MisraElement->SetAttribute("SpellingColumnNumber", Column);
   RootPointer->InsertEndChild(MisraElement);
 }
 
@@ -315,6 +352,21 @@ void JSONReport::JSONAddElement(std::string FilePath, std::string MisraRule, std
   RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
   RepJ["MisraDiag"]["FileName"] = FilePath.c_str();
 
+
+  JSONRepFile << RepJ << std::endl;
+}
+
+void JSONReport::JSONAddElement(unsigned Line, unsigned Column, std::string FileName, std::string MisraRule, std::string Description)
+{
+  //assert(SL.isValid() && "SourceLocation Acquired by SourceManager in an overload(3) of XMLAddNode is not valid.");
+
+  json RepJ;
+
+  RepJ["MisraDiag"]["Description"] = Description.c_str();
+  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["FileName"] = FileName.c_str();
+  RepJ["MisraDiag"]["SpellingLineNumber"] = Line;
+  RepJ["MisraDiag"]["SpellingColumnNumber"] = Column;
 
   JSONRepFile << RepJ << std::endl;
 }
