@@ -3802,7 +3802,7 @@ public:
             if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
             {
               std::cout << "10.1/2:" << "ImplicitCastExpr is narrowing:";
-              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << ICETypeSize << " " << ChildTypeSize << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
@@ -4176,13 +4176,13 @@ public:
     {
       if (!iter.HasMoreThanOneDaddy)
       {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.ObjFSL.isInSystemHeader()))
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.ObjFSL.isInSystemHeader(), iter.ObjSL))
         {
           /*intentionally left blank*/
         }
         else
         {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.ObjFSL.getManager().isInMainFile(iter.ObjSL)))
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.ObjFSL.getManager().isInMainFile(iter.ObjSL), iter.ObjSL))
           {
             std::cout << "8.7:" << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block:";
             std::cout << iter.ObjSLStr << ":" << std::endl;
@@ -4278,13 +4278,13 @@ public:
       if (iter.HasMoreThanOneDefinition)
       {
 #if 1
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.XObjFSL.isInSystemHeader()))
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.XObjFSL.isInSystemHeader(), iter.XObjSL))
         {
           /*intentionally left blank*/
         }
         else
         {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.XObjFSL.getManager().isInMainFile(iter.XObjSL)))
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.XObjFSL.getManager().isInMainFile(iter.XObjSL), iter.XObjSL))
           {
             std::cout << "8.8:" << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file:";
             std::cout << iter.XObjSLStr << ":" << std::endl;
@@ -4512,6 +4512,39 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCExpr1212 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr1212 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcexpr1212") != nullptr)
+    {
+      const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcexpr1212");
+
+      SourceLocation SL = RD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        std::cout << "12.12:" << "Possible violation of 12.12-access to the underlying bit representation of a floating type:";
+        std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "12.12", "Possible violation of 12.12-access to the underlying bit representation of a floating type:");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "12.12", "Possible violation of 12.12-access to the underlying bit representation of a floating type:");
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -5618,7 +5651,6 @@ public:
     bool ShouldBeTagged = false;
     bool HaveWeSeenAComment = false;
     bool WhiteSpacePostSemi = false;
-    std::string NullSnippet = "";
 
     for (auto &iter : NullStmtProto)
     {
@@ -5651,7 +5683,6 @@ public:
               }
 
               HaveWeMatchedASemi = true;
-              NullSnippet = NullSnippet + ";";
               continue;
             }
 
@@ -5668,14 +5699,12 @@ public:
                 ShouldBeTagged = true;
                 break;
               }
-              NullSnippet = NullSnippet + " ";
 
               continue;
             }
 
             if (iterchar == '\t')
             {
-              NullSnippet = NullSnippet + "\t";
 
               if (HaveWeMatchedASemi)
               {
@@ -5690,7 +5719,6 @@ public:
 
             if (iterchar == '/')
             {
-              NullSnippet = NullSnippet + "/**/";
               HaveWeSeenAComment = true;
 
               if (HaveWeMatchedASemi)
@@ -5762,7 +5790,7 @@ public:
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
-    HandlerForFunction167(R), HandlerForCF143(R) {
+    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -5961,6 +5989,8 @@ public:
                                               to(parmVarDecl(hasType(pointerType())).bind("zulu"))))))))))), equalsBoundNode("zulu")))).bind("mcfunction167"), &HandlerForFunction167);
 
     Matcher.addMatcher(nullStmt().bind("mccf143nullstmt"), &HandlerForCF143);
+
+    Matcher.addMatcher(recordDecl(allOf(has(fieldDecl(hasType(realFloatingPointType()))), isUnion())).bind("mcexpr1212"), &HandlerForExpr1212);
 #endif
   }
 
@@ -6033,6 +6063,7 @@ private:
   MCLangX23 HandlerForLangX23;
   MCFunction167 HandlerForFunction167;
   MCCF143 HandlerForCF143;
+  MCExpr1212 HandlerForExpr1212;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
@@ -6051,6 +6082,10 @@ public:
   {
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
 
+    DiagnosticsEngine &DiagEngine = CI.getPreprocessor().getDiagnostics();
+
+    const DiagnosticConsumer* DiagConsumer = DiagEngine.getClient();
+
 #if 0
     const IdentifierTable &IT [[maybe_unused]] = CI.getPreprocessor().getIdentifierTable();
 #endif
@@ -6066,7 +6101,6 @@ private:
 /*Main*/
 int main(int argc, const char **argv)
 {
-  /*@DEVI-we should parse the common options before parsing the custom options.*/
   CommonOptionsParser op(argc, argv, MutatorLVL0Cat);
 
   const std::vector<std::string> &SourcePathList = op.getSourcePathList();
