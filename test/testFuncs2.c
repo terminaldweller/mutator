@@ -77,9 +77,9 @@ typedef gaga incompletearr1;
 #undef LOCOLUPO
 #endif
 
-#define START 0x8000
-#define END 0xFFFF
-#define LEN 0x8000
+#define START 0x80000000
+#define END 0xFFFFFFFF
+#define LEN 0x80000000
 #if ((START + LEN) > END)
 #if 0
 #error Buffer Overrun
@@ -313,11 +313,13 @@ void testfunc11(void)
   short unsigned int b;
   short int* p1;
   long int* p2;
+  int normalint;
 
   p2 = (long int*)p1;
   p1 = (short int*)p2;
   b = a;
   dd = b;
+  normalint = a;
 }
 
 void testfunc12(void)

@@ -56,5 +56,7 @@ do { \
 void tddfunc1(void);
 void tddfunc2(void);
 void tddfunc3(void);
-void tddfunc4(void);
+int* tddfunc4(void);
+void tddfunc5(void);
+void tddfunc6(void);
 /*last line intenitonally left blank.*/
