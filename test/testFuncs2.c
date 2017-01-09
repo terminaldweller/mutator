@@ -138,6 +138,8 @@ struct s10
   int sc;
 };
 
+const unsigned int cint = 0xFFFFFFFF;
+
 /*********************************************************************************************************************/
 /*functions go here.*/
 static void test33(void)
