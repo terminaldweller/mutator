@@ -17,8 +17,10 @@
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTTypeTraits.h"
 #include "clang/AST/ASTContext.h"
+#include "clang/AST/Expr.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/IdentifierTable.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -2258,6 +2260,15 @@ public:
 
       if (FSCond != nullptr)
       {
+        std::string multix = Rewrite.getRewrittenText(FSCond->getSourceRange());
+        std::cout << "diagnostic" << ":" << multix << std::endl;
+
+
+
+      }
+
+      if (FSCond != nullptr)
+      {
         QualType QTCond = FSCond->getType();
 
         const clang::Type* TPCond = QTCond.getTypePtr();
@@ -3802,7 +3813,7 @@ public:
             if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
             {
               std::cout << "10.1/2:" << "ImplicitCastExpr is narrowing:";
-              std::cout << SL.printToString(*MR.SourceManager) << ":" << ICETypeSize << " " << ChildTypeSize << std::endl;
+              std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr is narrowing: ");
@@ -4546,6 +4557,152 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCExpr1211 : public MatchFinder::MatchCallback
+{
+public:
+  MCExpr1211 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr1211") != nullptr)
+    {
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr1211");
+
+      SourceLocation SL = EXP->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      SourceLocation SLE = EXP->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        /*intentionally left blank*/
+      }
+      else
+      {
+        return void();
+      }
+
+      SourceRange SR;
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
+
+      std::string targetExpr = Rewrite.getRewrittenText(SR);
+
+      ASTContext *const ASTC = MR.Context;
+
+      QualType QT = EXP->getType();
+
+      const clang::Type* TP = QT.getTypePtr();
+
+      const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
+
+      bool TypeIsUSignedInt = CanonTP->getAsPlaceholderType()->isUnsignedInteger();
+
+      if (TypeIsUSignedInt)
+      {
+        int64_t UnoFinal = 0;
+        int64_t DousFinal = 0;
+        bool MatchedUno = false;
+        bool MatchedDous = false;
+
+        /*@DEVI-compilers that actually treat post and pre inc or dec need more. this doesnt support that.*/
+        if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1211uno") != nullptr)
+        {
+          MatchedUno = true;
+
+          const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1211uno");
+
+          clang::UnaryOperator::Opcode UnoOpKind = UO->getOpcode();
+
+          const Expr* UnoSubEXP = UO->getSubExpr();
+
+          llvm::APSInt UnoResult;
+
+          UnoFinal = UnoResult.getExtValue();
+
+          if (UnoSubEXP->EvaluateAsInt(UnoResult, *ASTC))
+          {
+            if (UnoOpKind == UO_PostInc || UnoOpKind == UO_PreInc)
+            {
+              UnoFinal++;
+            }
+            else if (UnoOpKind == UO_PostDec || UnoOpKind == UO_PreDec)
+            {
+              UnoFinal--;
+            }
+            else
+            {
+              /*intentionally left blank. we cant get anything else. were only matching for these two unaryoperators.*/
+            }
+          }
+        }
+
+        if (MR.Nodes.getNodeAs<clang::BinaryOperator>("mcexpr1211dous") != nullptr)
+        {
+          MatchedDous = true;
+
+          const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcexpr1211dous");
+
+          clang::BinaryOperator::Opcode DousOpKind = BO->getOpcode();
+
+          const Expr* DousLHS = BO->getLHS();
+          const Expr* DousRHS = BO->getRHS();
+
+          llvm::APSInt DousLHSAPS;
+          llvm::APSInt DousRHSAPS;
+
+          if (DousLHS->EvaluateAsInt(DousLHSAPS, *ASTC) && DousRHS->EvaluateAsInt(DousRHSAPS, *ASTC))
+          {
+            int64_t DousLHSInt64 = DousLHSAPS.getExtValue();
+            int64_t DousRHSInt64 = DousRHSAPS.getExtValue();
+
+            switch (DousOpKind)
+            {
+            case BO_Add:
+              DousFinal = DousRHSInt64 + DousLHSInt64;
+              break;
+            case BO_Sub:
+              DousFinal = DousRHSInt64 - DousLHSInt64;
+              break;
+            case BO_Div:
+              DousFinal = DousRHSInt64 / DousLHSInt64;
+              break;
+            case BO_Mul:
+              DousFinal = DousRHSInt64 * DousLHSInt64;
+              break;
+            default:
+              /*cant really happen, were not matching anything else.*/
+              break;
+            }
+          }
+        }
+
+        llvm::APSInt OverflowCondidate;
+
+        EXP->EvaluateAsInt(OverflowCondidate, *ASTC);
+
+        int64_t IntExprValue = OverflowCondidate.getExtValue();
+
+        if ((MatchedDous && (DousFinal != IntExprValue)) || (MatchedUno && (UnoFinal != IntExprValue)))
+        {
+          std::cout << "12.11" << ":" << "Constant Unsinged Expr evaluation resuslts in an overflow:" << ":" << SL.printToString(*MR.SourceManager) << ":" << IntExprValue << " " << DousFinal << " " << ":" << targetExpr << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
+        }
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -5790,7 +5947,7 @@ public:
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
-    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R) {
+    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -5991,6 +6148,8 @@ public:
     Matcher.addMatcher(nullStmt().bind("mccf143nullstmt"), &HandlerForCF143);
 
     Matcher.addMatcher(recordDecl(allOf(has(fieldDecl(hasType(realFloatingPointType()))), isUnion())).bind("mcexpr1212"), &HandlerForExpr1212);
+
+    Matcher.addMatcher(expr(hasDescendant(expr(anyOf(unaryOperator(hasOperatorName("--"), hasOperatorName("++")).bind("mcexpr1211uno"), binaryOperator(anyOf(hasOperatorName("*"), hasOperatorName("/"), hasOperatorName("-"), hasOperatorName("+"))).bind("mcexpr1211dous"))))).bind("mcexpr1211"), &HandlerForExpr1211);
 #endif
   }
 
@@ -6064,6 +6223,7 @@ private:
   MCFunction167 HandlerForFunction167;
   MCCF143 HandlerForCF143;
   MCExpr1212 HandlerForExpr1212;
+  MCExpr1211 HandlerForExpr1211;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
