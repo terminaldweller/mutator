@@ -328,17 +328,26 @@ void testfunc12(void)
 {
   const char* stringlit = "date should be in the form ??-??-??";
 
-  short int port = 0x5aU;
-  short int resultshort;
-  int resultlong;
-  int mode;
-  resultshort = (~port) >> 4;
-  resultshort = ((short int)(~port)) >> 4;
+  short unsigned int port = 0x005aU;
+  unsigned char portchar = 0x005aU;
+  short unsigned int resultshort;
+  const unsigned char charconst = 4U;
+  unsigned int resultlong;
+  unsigned int mode;
+  resultshort = (~port) >> 4U;
+  resultshort = port << 4U;
+  resultshort = (short unsigned int)(port << 4U);
+  resultshort = (short signed int)(port << 4U);
+  resultshort = portchar << 4U;
+  resultshort = (unsigned char)(portchar << charconst);
+  resultshort = ((short unsigned int)(~port)) >> 4U;
   /*should not be tagged by 10.1\2*/
-  resultlong = ((int)(~(int)port)) >> 4;
+  resultlong = ((int)(~(int)port)) >> 4U;
 
-  resultlong = ((port << 4) & mode) >> 6;
-  resultlong = ((int)((int)port << 4) & mode) >> 6;
+  /*not comliant*/
+  resultlong = ((port << 4U) & mode) >> 6U;
+  /*compliant*/
+  resultlong = ((unsigned int)((unsigned int)port << 4U) & mode) >> 6U;
 }
 
 /*the test are from the misrac doc for 11.5*/
