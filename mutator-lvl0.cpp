@@ -22,6 +22,7 @@
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Basic/TargetInfo.h"
 #include "clang/Basic/IdentifierTable.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
@@ -29,6 +30,7 @@
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Core/QualTypeNames.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 /*LLVM headers*/
@@ -4579,11 +4581,7 @@ public:
         return void();
       }
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        /*intentionally left blank*/
-      }
-      else
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
       {
         return void();
       }
@@ -4691,7 +4689,7 @@ public:
 
         if ((MatchedDous && (DousFinal != IntExprValue)) || (MatchedUno && (UnoFinal != IntExprValue)))
         {
-          std::cout << "12.11" << ":" << "Constant Unsinged Expr evaluation resuslts in an overflow:" << ":" << SL.printToString(*MR.SourceManager) << ":" << IntExprValue << " " << DousFinal << " " << ":" << targetExpr << std::endl;
+          std::cout << "12.11" << ":" << "Constant Unsinged Expr evaluation resuslts in an overflow:" << SL.printToString(*MR.SourceManager) << ":" << IntExprValue << " " << DousFinal << " " << ":" << targetExpr << std::endl;
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
@@ -4703,6 +4701,133 @@ public:
 private:
   Rewriter &Rewrite;
 };
+/**********************************************************************************************************************/
+class MCATC105 : public MatchFinder::MatchCallback
+{
+public:
+  MCATC105 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs") != nullptr)
+    {
+      bool ShouldBeTagged = false;
+      SourceLocation SL;
+      const Expr* IgnoreImplicitEXP;
+      ast_type_traits::DynTypedNode DynOpNode;
+
+      if (MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105") != nullptr)
+      {
+        const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105");
+        const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs");
+        IgnoreImplicitEXP = EXP->IgnoreImpCasts();
+        DynOpNode = ast_type_traits::DynTypedNode::create<clang::BinaryOperator>(*BO);
+
+        SL = BO->getLocStart();
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      }
+
+      if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno") != nullptr)
+      {
+        const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno");
+        const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs");
+        IgnoreImplicitEXP = EXP->IgnoreImpCasts();
+        DynOpNode = ast_type_traits::DynTypedNode::create<clang::UnaryOperator>(*UO);
+
+        SL = UO->getLocStart();
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      }
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
+
+      ASTContext *const ASTC = MR.Context;
+
+      const TargetInfo &TI = ASTC->getTargetInfo();
+
+      unsigned int ShortSize = TI.getShortWidth();
+
+      QualType QT = IgnoreImplicitEXP->getType();
+      const clang::Type* TP = QT.getTypePtr();
+
+      const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
+
+      if (CanonTP->isUnsignedIntegerType() || CanonTP->isSignedIntegerType() || CanonTP->isAnyCharacterType())
+      {
+
+        /*@DEVI-assumptions:nothing has more than one parent in C.*/
+        if (ShortSize == ASTC->getTypeSize(QT) || 8U == ASTC->getTypeSize(QT))
+        {
+          ASTContext::DynTypedNodeList NodeList = ASTC->getParents(DynOpNode);
+
+          const ast_type_traits::DynTypedNode &ParentNode = NodeList[0U];
+
+          ASTContext::DynTypedNodeList AncestorNodeList = ASTC->getParents(ParentNode);
+
+          const ast_type_traits::DynTypedNode AncestorNode = AncestorNodeList[0U];
+
+          ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
+          ast_type_traits::ASTNodeKind AncestorNodeKind = AncestorNode.getNodeKind();
+
+          std::string ParentStringKind = ParentNodeKind.asStringRef().str();
+          std::string AncestorStringKind = AncestorNodeKind.asStringRef().str();
+
+          if (ParentStringKind == "CStyleCastExpr")
+          {
+            const CStyleCastExpr* CSCE = ParentNode.get<clang::CStyleCastExpr>();
+
+            if (CSCE->getType() != QT)
+            {
+              ShouldBeTagged = true;
+            }
+          }
+          else if (ParentStringKind == "ParenExpr" && AncestorStringKind == "CStyleCastExpr")
+          {
+            const CStyleCastExpr* CSCE = AncestorNode.get<clang::CStyleCastExpr>();
+
+            if (CSCE->getType() != QT)
+            {
+              ShouldBeTagged = true;
+            }
+          }
+          else
+          {
+            ShouldBeTagged = true;
+          }
+
+          if (ShouldBeTagged)
+          {
+            std::cout << "10.5" << ":" << "Result of operands << or ~ must be explicitly cast to the type of the expression:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+            XMLDocOut.XMLAddNode(MR.Context, SL, "10.5", "Result of operands << or ~ must be explicitly cast to the type of the expression:");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "10.5", "Result of operands << or ~ must be explicitly cast to the type of the expression:");
+          }
+        }
+      }
+
+#if 0
+      const BuiltinType* BT = CanonTP->getAsPlaceholderType();
+      const LangOptions &LO = ASTC->getLangOpts();
+      std::string something = TypeName::getFullyQualifiedName(QT, *ASTC, true);
+      StringRef BTName = BT->getName(PrintingPolicy(LO));
+#endif
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -5947,7 +6072,7 @@ public:
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
-    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R) {
+    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -6149,7 +6274,13 @@ public:
 
     Matcher.addMatcher(recordDecl(allOf(has(fieldDecl(hasType(realFloatingPointType()))), isUnion())).bind("mcexpr1212"), &HandlerForExpr1212);
 
-    Matcher.addMatcher(expr(hasDescendant(expr(anyOf(unaryOperator(hasOperatorName("--"), hasOperatorName("++")).bind("mcexpr1211uno"), binaryOperator(anyOf(hasOperatorName("*"), hasOperatorName("/"), hasOperatorName("-"), hasOperatorName("+"))).bind("mcexpr1211dous"))))).bind("mcexpr1211"), &HandlerForExpr1211);
+    Matcher.addMatcher(expr(hasDescendant(expr(anyOf(unaryOperator(hasOperatorName("--"), hasOperatorName("++")).bind("mcexpr1211uno"), \
+                                          binaryOperator(anyOf(hasOperatorName("*"), hasOperatorName("/"), \
+                                              hasOperatorName("-"), hasOperatorName("+"))).bind("mcexpr1211dous"))))).bind("mcexpr1211"), &HandlerForExpr1211);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasLHS(expr(hasType(isInteger())).bind("mcatc105lhs")), hasOperatorName("<<"))).bind("mcatc105"), &HandlerForAtc105);
+
+    Matcher.addMatcher(unaryOperator(allOf(hasOperatorName("~") , hasUnaryOperand(expr(hasType(isInteger())).bind("mcatc105lhs")))).bind("mcatc105uno"), &HandlerForAtc105);
 #endif
   }
 
@@ -6224,6 +6355,7 @@ private:
   MCCF143 HandlerForCF143;
   MCExpr1212 HandlerForExpr1212;
   MCExpr1211 HandlerForExpr1211;
+  MCATC105 HandlerForAtc105;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
