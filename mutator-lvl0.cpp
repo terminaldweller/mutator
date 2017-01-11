@@ -2264,9 +2264,6 @@ public:
       {
         std::string multix = Rewrite.getRewrittenText(FSCond->getSourceRange());
         std::cout << "diagnostic" << ":" << multix << std::endl;
-
-
-
       }
 
       if (FSCond != nullptr)
@@ -4825,6 +4822,84 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCCSE135 : public MatchFinder::MatchCallback
+{
+public:
+  MCCSE135 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccse135") != nullptr)
+    {
+      const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse135");
+
+      SourceLocation SL = FS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
+
+      ASTContext *const ASTC = MR.Context;
+
+      const Expr* FSCond = FS->getCond();
+      const Expr* FSInc = FS->getInc();
+      const Stmt* FSInit = FS->getInit();
+
+      bool CondPresent = (FSCond != nullptr);
+      bool DIncPresent = (FSInc != nullptr);
+      bool InitPresent = (FSInit != nullptr);
+
+      /*@DEVI-for the third one we are not checking to see whether the loop counter has been previously initialized.*/
+      if (!((CondPresent && DIncPresent && InitPresent) || (!CondPresent && !DIncPresent && !InitPresent) || (CondPresent && DIncPresent && !InitPresent)))
+      {
+        std::cout << "13.5" << ":" << "The three expressions of a ForStmt shall either all exist or not exist at all or only the initialization can be missing:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The three expressions of a ForStmt shall either all exist or not exist at all or only the initialization can be missing:");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "13.5", "The three expressions of a ForStmt shall either all exist or not exist at all or only the initialization can be missing:");
+      }
+
+      if (FSInc != nullptr)
+      {
+        if (!FSInc->HasSideEffects(*ASTC, true))
+        {
+          std::cout << "13.5" << ":" << "The increment expression in the ForStmt has no side-effects:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The increment expression in the ForStmt has no side-effects:");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "13.5", "The increment expression in the ForStmt has no side-effects:");
+        }
+      }
+
+      if (FSCond != nullptr)
+      {
+        if (FSCond->HasSideEffects(*ASTC, true))
+        {
+          std::cout << "13.5" << ":" << "The condition expression in the ForStmt has side-effect:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The condition expression in the ForStmt has side-effect:");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "13.5", "The condition expression in the ForStmt has side-effect:");
+        }
+
+        if (!FSCond->isKnownToHaveBooleanValue())
+        {
+          std::cout << "13.5" << ":" << "The expression in the ForStmt condition does not return a boolean:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The expression in the ForStmt condition does not return a boolean:");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "13.5", "The expression in the ForStmt condition does not return a boolean:");
+        }
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -6072,7 +6147,7 @@ public:
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
-    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R) {
+    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -6281,6 +6356,8 @@ public:
     Matcher.addMatcher(binaryOperator(allOf(hasLHS(expr(hasType(isInteger())).bind("mcatc105lhs")), hasOperatorName("<<"))).bind("mcatc105"), &HandlerForAtc105);
 
     Matcher.addMatcher(unaryOperator(allOf(hasOperatorName("~") , hasUnaryOperand(expr(hasType(isInteger())).bind("mcatc105lhs")))).bind("mcatc105uno"), &HandlerForAtc105);
+
+    Matcher.addMatcher(forStmt().bind("mccse135"), &HandlerForCSE135);
 #endif
   }
 
@@ -6356,6 +6433,7 @@ private:
   MCExpr1212 HandlerForExpr1212;
   MCExpr1211 HandlerForExpr1211;
   MCATC105 HandlerForAtc105;
+  MCCSE135 HandlerForCSE135;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
