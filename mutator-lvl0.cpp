@@ -18,6 +18,7 @@
 #include "clang/AST/ASTTypeTraits.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Expr.h"
+#include "clang/AST/Type.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/OperatorKinds.h"
@@ -4482,14 +4483,73 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /**********************************************************************************************************************/
-class MCTYpes612 : public MatchFinder::MatchCallback
+/*@DEVI-the match is quite simplistic. we could match for chartypes appearing as the LHS and then check the type of
+the RHS expr but that leaves pointers changing the value.*/
+class MCTypes612 : public MatchFinder::MatchCallback
 {
 public:
-  MCTYpes612 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  MCTypes612 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mc612exp") != nullptr)
+    {
+      bool RHSIsCharLit = false;
+      bool RHSIsIntLit = false;
 
+      const Expr* LHS = MR.Nodes.getNodeAs<clang::Expr>("mc612exp");
+
+      if (MR.Nodes.getNodeAs<clang::CharacterLiteral>("mc612charlit") != nullptr)
+      {
+        RHSIsCharLit = true;
+      }
+
+      if (MR.Nodes.getNodeAs<clang::IntegerLiteral>("mc612intlit") != nullptr)
+      {
+        RHSIsIntLit = true;
+      }
+
+      SourceLocation SL = LHS->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
+
+      QualType QT = LHS->getType();
+      const clang::Type* TP = QT.getTypePtr();
+
+      /*checking whether the unqualified type is simple char*/
+      if (TP->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || TP->isSpecificBuiltinType(BuiltinType::Kind::Char_S))
+      {
+        if (RHSIsIntLit)
+        {
+          std::cout << "6.1:" << "Simple char type should only hold character values:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "6.1", "Simple char type should only hold character values:");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.1", "Simple char type should only hold character values:");
+        }
+      }
+
+      if (TP->isSpecificBuiltinType(BuiltinType::Kind::UChar) || TP->isSpecificBuiltinType(BuiltinType::Kind::SChar))
+      {
+        if (RHSIsCharLit)
+        {
+          std::cout << "6.2:" << "Signed or unsigned char type should only hold numeric values:";
+          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+          XMLDocOut.XMLAddNode(MR.Context, SL, "6.2", "Signed or unsigned char type should only hold numeric values:");
+          JSONDocOUT.JSONAddElement(MR.Context, SL, "6.2", "Signed or unsigned char type should only hold numeric values:");
+        }
+      }
+    }
   }
 
 private:
@@ -6152,7 +6212,8 @@ public:
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
-    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R) {
+    HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
+    HandlerForTypes612(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -6363,6 +6424,10 @@ public:
     Matcher.addMatcher(unaryOperator(allOf(hasOperatorName("~") , hasUnaryOperand(expr(hasType(isInteger())).bind("mcatc105lhs")))).bind("mcatc105uno"), &HandlerForAtc105);
 
     Matcher.addMatcher(forStmt().bind("mccse135"), &HandlerForCSE135);
+
+    Matcher.addMatcher(binaryOperator(allOf(hasRHS(expr(has(expr(anyOf(integerLiteral().bind("mc612intlit"), \
+                                            characterLiteral().bind("mc612charlit")))))), hasLHS(expr(hasType(isAnyCharacter())).bind("mc612exp")), \
+                                            hasOperatorName("="))), &HandlerForTypes612);
 #endif
   }
 
@@ -6439,6 +6504,7 @@ private:
   MCExpr1211 HandlerForExpr1211;
   MCATC105 HandlerForAtc105;
   MCCSE135 HandlerForCSE135;
+  MCTypes612 HandlerForTypes612;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
