@@ -16,7 +16,7 @@ matrix:
         notification_email: thabogre@gmail.com
         build_command_prepend: "./configure; make clean"
         build_command:   "make CXX=clang-3.9 LLVM_CONF=llvm-config-3.9 BUILD_MODE=COV_NO_CLANG"
-        branch_pattern: Master
+        branch_pattern: master
 
 before_install:
       - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
