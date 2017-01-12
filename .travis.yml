@@ -14,7 +14,7 @@ matrix:
           name: "bloodstalker/mutator"
           description: "Build submitted via Travis CI"
         notification_email: thabogre@gmail.com
-        build_command_prepend: "./configure; make clean"
+        build_command_prepend: ""
         build_command:   "make CXX=clang-3.9 LLVM_CONF=llvm-config-3.9 BUILD_MODE=COV_NO_CLANG"
         branch_pattern: master
 
