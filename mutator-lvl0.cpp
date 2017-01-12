@@ -4131,7 +4131,7 @@ private:
 
   std::vector<IdentInfo> IdentInfoProto;
 
-  unsigned IdenMatchCounter;
+
 
   Rewriter &Rewrite;
 };
@@ -4139,7 +4139,10 @@ private:
 class MCDCDF87 : public MatchFinder::MatchCallback
 {
 public:
-  MCDCDF87 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  MCDCDF87 (Rewriter &Rewrite) : Rewrite(Rewrite)
+  {
+    IsNewEntry = true;
+  }
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
@@ -4241,7 +4244,10 @@ private:
 class [[maybe_unused]] MCDCDF88 : public MatchFinder::MatchCallback
 {
 public:
-  MCDCDF88 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  MCDCDF88 (Rewriter &Rewrite) : Rewrite(Rewrite)
+  {
+    IsNewEntry = true;
+  }
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
@@ -4716,8 +4722,6 @@ public:
       if (MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105") != nullptr)
       {
         const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105");
-        const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs");
-        IgnoreImplicitEXP = EXP->IgnoreImpCasts();
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::BinaryOperator>(*BO);
 
         SL = BO->getLocStart();
@@ -4727,13 +4731,14 @@ public:
       if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno") != nullptr)
       {
         const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno");
-        const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs");
-        IgnoreImplicitEXP = EXP->IgnoreImpCasts();
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::UnaryOperator>(*UO);
 
         SL = UO->getLocStart();
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       }
+
+      const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs");
+      IgnoreImplicitEXP = EXP->IgnoreImpCasts();
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
       {
@@ -5977,7 +5982,7 @@ public:
                   break;
                 }
 
-                continue;
+
               }
             }
 
