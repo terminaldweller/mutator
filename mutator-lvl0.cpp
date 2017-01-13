@@ -4525,8 +4525,12 @@ public:
       QualType QT = LHS->getType();
       const clang::Type* TP = QT.getTypePtr();
 
+      ASTContext *const ASTC = MR.Context;
+
+      const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
+
       /*checking whether the unqualified type is simple char*/
-      if (TP->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || TP->isSpecificBuiltinType(BuiltinType::Kind::Char_S))
+      if (CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_S))
       {
         if (RHSIsIntLit)
         {
@@ -4538,7 +4542,7 @@ public:
         }
       }
 
-      if (TP->isSpecificBuiltinType(BuiltinType::Kind::UChar) || TP->isSpecificBuiltinType(BuiltinType::Kind::SChar))
+      if (CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UChar) || CanonTP->isSpecificBuiltinType(BuiltinType::Kind::SChar))
       {
         if (RHSIsCharLit)
         {
