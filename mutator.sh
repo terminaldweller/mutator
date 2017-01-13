@@ -10,6 +10,7 @@ OUTPUT_FORMAT="./mutant_format.c"
 COMMAND="jack"
 OPTIONS=""
 COPTIONS=""
+INPUT_FILE=""
 
 while [[ $# -gt 0 ]]
 do
@@ -21,7 +22,8 @@ do
 		shift
 		;;
 		-h|--help|-help)
-		echo "-h, 	--help prints out the help.obviously..."
+		echo "-h, 	--help prints out the help.Obviously..."
+		echo "-f,	--file tells mutator to run the commands from the file."
 		echo "-c, 	--command you can specify the command you want to pass to mutator."
 		echo "			clean runs make clean."
 		echo "			build-all runs make all."
@@ -33,19 +35,39 @@ do
 		echo "-v, 	--version prints out the version."
 		echo "-i, 	--input, -input lets you choose the input file(or white-space-separated list of files) that is going to be passed to the mutator executable(s)."
 		echo "-o, 	--output, -output lets you choose where to put the mutant."
-		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation."
-		echo "	for example: -opts \"-Wall std=c89\""
-		echo "-copts 	--customoptions, same as opts, but only used for custom options defined for the executable. for example: -copts \"-SysHeader=false -MainOnly=true\""
+		echo "-t,	--test, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind."
+		echo "	For example: -test mutator-lvl0 valgrind"
+		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. Please enclose all the options in double quatation."
+		echo "	For example: -opts \"-Wall std=c89\""
+		echo "-copts 	--customoptions, same as opts, but only used for custom options defined for the executable. For example: -copts \"-SysHeader=false -MainOnly=true\""
+		echo "	For a list of available options for each executable run them with -help to see a list."
 		exit 0
 		;;
-		-NDEBUG)
-		echo "you are still deciding between passing the arg to make as a make arg or just writing into the makefile with the script."
-		echo "btw youre running in NDEBUG dumbdumb! asserts are not gonna work like this."
+		-t|--test)
+		if [[ "$2" == mutator-lvl0 && "$3" == valgrind ]]; then
+			echo "Running command:"
+			echo "valgrind ./"$2" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log"
+			"valgrind" ./"$2" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log
+		elif [[ "$2" == mutator-lvl0 && "$3" == tdd ]]; then
+			echo "Running command:"
+			echo "./mutator-lvl0 -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log"
+			"./mutator-lvl0" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log
+		else
+			echo "unknown combination of options: $2 and $3"
+			exit 127
+		fi
 		exit 0
+		;;
+		-f|--file)
+		INPUT_FILE="$2"
+		echo "not implemented yet..."
+		exit 0
+		shift
 		;;
 		-v|--version)
-		echo "Version 1.0.0-Pre-release"
-		break
+		echo "mutator-lvl0 1.0.0 Pre-release"
+		echo "mutator 1.0.0. Demo"
+		exit 0
 		;;
 		-i|--input|-input)
 		while [[ ! "$2" == -* ]] && [[ $# -gt 0 ]]; do
@@ -68,8 +90,8 @@ do
 		;;
 		*)
 		#not a valid argument
-		echo  "$1 $2 is not a valid argument..."
-		break
+		echo  "$1 is not a valid argument..."
+		exit 127
 		;;
 	esac
 	shift
