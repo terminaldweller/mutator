@@ -50,6 +50,13 @@ All the as-of-yet implemented features of the project are very much buildable an
 * Start the unit tests for `mutator-lvl0`.
 * start implementing `mutator` and `mutator-lvl2`.
 
+### Test Plans
+* The Dev method is TDD so of course, we currently have TDD tests.
+* For static analysis tools, mutator uses [Coverity](https://scan.coverity.com/projects/bloodstalker-mutator) which is integrated with [Travic CI](https://travis-ci.org/bloodstalker/mutator) so it runs everytime on every commit.<br/>
+* For dynamic analysis tools, currently mutator is using [Valgrind](http://valgrind.org). You can run it using `./mutator.sh -test mutator-lvl0 valgrind`. You do need to have `valgrind` installed.<br/>
+* The code will be reviewed after the first pre-release version. I'm hoping to find some reviewers but if not, I'll have to do it myself.<br/>
+* There will be unit tests after a first pre-release version.<br/>
+
 ##Building and Running
 
 ###Building
@@ -81,6 +88,7 @@ As a general rule, if you have Clang and LLVM libraries 3.9 or up on your platfo
 To run any of the tree executables, just give a filename or a whitespace-separated list of files. The executables will print out the results to stdout.<br/>
 To run the executables with the mutator UI, you can use `mutator.sh`. For a list of available options, you can type `./mutator.sh -h`.<br/>
 * `-h, --help` prints out the help.<br/>
+* `-f,	--file` tells mutator to run the commands from the file.<br/>
 * `-c, --command` specifies the command you want to use.<br/>
 	* `clean` runs make clean.<br/>
 	* `build-all` runs make all.<br/>
@@ -92,6 +100,7 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-v, --version` prints out the version.<br/>
 * `-i, --input, -input` lets you choose the input file(or a white-space-separated list of files) that is going to be passed to the mutator executable(s).<br/>
 * `-o, --output, -output` lets you choose where to put the mutant.<br/>
+* `-t,	--test`, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind. For example: `-test mutator-lvl0 valgrind`.<br/>
 * `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
 * `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. it is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
 
