@@ -37,6 +37,7 @@ typedef gaga incompletearr1;
 #define DEFINEVAR(X,Y) int X##Y
 #define PI 3.14
 #define PI2 (a)
+#define charchar char
 
 #define __FILE__
 #define __DATE__
@@ -173,11 +174,13 @@ void testfunc1(void)
   unsigned char b;
   char c;
   int sum;
+  charchar d;
 
   sum = sum + dudu + fufu;
 
   b =  a;
   c = 123;
+  d = 123;
   c = 'c';
   c = "c";
   b = 'b';
