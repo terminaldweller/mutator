@@ -40,6 +40,17 @@ Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
 
 ```
 
+##mutator
+
+`mutator` is a C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++. It consists of three(well so far) executables and a UI written in bash. You can run executables like any other CLI tool or just run them through the UI which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
+
+<br/>
+**mutator-lvl0** will run the Misra-C checks.<br/>
+**mutator** will run the level-1 implementers and mutators.<br/>
+**mutator-lvl2** will run the level-2 implementers and mutators.<br/>
+Mutation levels have nothing to do with the order of mutants.<br/>
+<br/>
+
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase.<br/>
 * **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 130 out of the 141 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
@@ -100,6 +111,7 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-v, --version` prints out the version.<br/>
 * `-i, --input, -input` lets you choose the input file(or a white-space-separated list of files) that is going to be passed to the mutator executable(s).<br/>
 * `-o, --output, -output` lets you choose where to put the mutant.<br/>
+* `-pp,	--print-pretty`, prints the output in a pretty format in a new file. The new file has the same name with a "-pretty" added to the name in the same directory.<br/>
 * `-t,	--test`, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind. For example: `-test mutator-lvl0 valgrind`.<br/>
 * `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
 * `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. it is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
@@ -131,12 +143,56 @@ Do note that if your file has included standard header libraries, you do need to
 ./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -I/lib/gcc/x86_64-redhat-linux/5.3.1/include/"
 
 ```
-<br/>
-**mutator-lvl0** will run the Misra-C:2004 checks.<br/>
-**mutator** will run the level-1 implementers.<br/>
-**mutator-lvl2** will run the level-2 implementers.<br/>
-The levels have nothing to do with mutation orders.<br/>
-<br/>
+
+Here's the command I use to run the TDD tests:<br/>
+```bash
+
+/mutator.sh -c misrac -i ./test/testFuncs1.c ./test/testFuncs2.c -pp -opts "-std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include" -copts "-SysHeader=false -MainOnly=true" 2> /dev/null
+
+```
+
+####The Action File
+`mutator` can accept a file which tells it what to do. Currently this feature is only supporte for `mutator-lvl0`. You can find a sample under `./samples` named `action_file.mutator`.
+
+```bash
+
+action_name:my_action1
+executable_name:mutator-lvl0
+#these are the options specific to the executable
+exec_opts:-SysHeader=false -MainOnly=true
+in_files:./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c
+#clang options
+libtooling_options:-std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include
+#the output file
+out_files:./test/misra-log
+#the log file
+log_files:
+print_pretty:true
+end_action:run
+
+```
+Here's the explanation for the fields:
+* `action_name` lets you specify a name for the action to run. Marks the start of an action.<br/>
+* `executable_name` is used for detemining which executable to run.<br/>
+* `exec_opts` is the field used for passing the executable-specific options.<br/>
+* `in_files` is a list of the input files to pass to the executable.<br/>
+* `libtooling_options` is used for passin the clang options.<br/>
+* `out_files` is used to pass the result file to mutator. For `mutator-lvl0`, this field detemines the Misra-C check results.<br/>
+* `log_files` is used to pass the file to hold the log. Mostly meant to be used with `mutator` and `mutator-lvl2`.<br/>
+* `print_pretty` is a boolean switch. Used for running `ReportPrintPretty.sh`.<br/>
+* `end_action` is used to tell `mutator.sh` what action to do. Currently the only supported options are "run" and "stop". "run" will run the action and "stop" will not run it.<br/>
+* Lines starting with a hash(`#`) are considered comments.<br/>
+Field names shall not have preceeding whitespace or tab. The `:` character shall immeidately follow the field name with options appearing after it.<br/>
+
+You can run the sample action file with this:<br/>
+
+```bash
+
+./mutator.sh --file samples/action_file.mutator
+
+
+```
+
 Currently, the mutation-only features(mutation for the sake of mutation, technically implementing Misra-C is also a form of mutation) are turned off in **mutator** and **mutator-lvl2** though some automatic code refactoring features work in both executables. Just run a sample code through **mutator** and then **mutator-lvl2** for a demo.<br/>
 <br/>
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile. So run `make clean` before invoking `bear make target`.<br/>
