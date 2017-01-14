@@ -11,11 +11,11 @@ COMMAND="jack"
 OPTIONS=""
 COPTIONS=""
 INPUT_FILE=""
+PRINT_PRETTY=false
 
 while [[ $# -gt 0 ]]
 do
 	passarg="$1"
-
 	case $passarg in
 		-c|--command)
 		COMMAND="$2"
@@ -35,6 +35,7 @@ do
 		echo "-v, 	--version prints out the version."
 		echo "-i, 	--input, -input lets you choose the input file(or white-space-separated list of files) that is going to be passed to the mutator executable(s)."
 		echo "-o, 	--output, -output lets you choose where to put the mutant."
+		echo "-pp,	--print-pretty, prints the output in a pretty format in a new file. The new file has the same name with a \"-pretty\" added to the name in the same directory."
 		echo "-t,	--test, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind."
 		echo "	For example: -test mutator-lvl0 valgrind"
 		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. Please enclose all the options in double quatation."
@@ -42,6 +43,9 @@ do
 		echo "-copts 	--customoptions, same as opts, but only used for custom options defined for the executable. For example: -copts \"-SysHeader=false -MainOnly=true\""
 		echo "	For a list of available options for each executable run them with -help to see a list."
 		exit 0
+		;;
+		-pp|--print-pretty)
+		PRINT_PRETTY=true
 		;;
 		-t|--test)
 		if [[ "$2" == mutator-lvl0 && "$3" == valgrind ]]; then
@@ -60,7 +64,55 @@ do
 		;;
 		-f|--file)
 		INPUT_FILE="$2"
-		echo "not implemented yet..."
+		while read -r line
+		do
+			case $line in 
+				action_name:*)
+				F_ACTION_NAME=${line:12:$((${#line}))}
+				;;
+				executable_name:*)
+				F_EXEC_NAME=${line:16:$((${#line}))}
+				;;
+				exec_opts:*)
+				F_EXEC_COPTS=${line:10:$((${#line}))}
+				;;
+				in_files:*)
+				F_IN_FILES=${line:9:$((${#line}))}
+				;;
+				libtooling_options:*)
+				F_LIBTOOLING_OPTS=${line:19:$((${#line}))}
+				;;
+				out_files:*)
+				F_OUT_FILE=${line:10:$((${#line}))}
+				;;
+				log_files:*)
+				F_LOG_FILE=${line:10:$((${#line}))}
+				;;
+				\#*)
+				#ignore.its a comment.
+				;;
+				print_pretty:*)
+				F_PRINT_PRETTY=${line:13:$((${#line}))}
+				;;
+				end_action:*)
+				F_END_ACTION=${line:11:$((${#line}))}
+				if [[ "$F_END_ACTION" == run ]]; then
+					echo "running $F_ACTION_NAME ..."
+					echo "running ./$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE for $F_ACTION_NAME"
+					"./"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
+					if [[ "$F_PRINT_PRETTY" = true ]]; then
+						echo "running pretty print..."
+						source ./extra-tools/ReportPrintPretty.sh $F_OUT_FILE $F_OUT_FILE-pretty
+					fi
+				elif [[ "$F_END_ACTION" == stop ]]; then
+					#skip running ths action
+					echo "skipping $F_ACTION_NAME ..."
+				else
+					echo "unknown option $F_END_ACTION for end_action. only acceptable options are \"run\" and \"stop\"."
+				fi
+				;;
+			esac
+		done < "$INPUT_FILE"
 		exit 0
 		shift
 		;;
@@ -128,6 +180,10 @@ elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Command to run:"
 	echo "./mutator-lvl0 ${COPTIONS:0:$((${#COPTIONS}))} $INPUT -- ${OPTIONS:0:$((${#OPTIONS}))} > ./test/misra-log"
 	"./mutator-lvl0" ${COPTIONS:0:$((${#COPTIONS}))} $INPUT -- ${OPTIONS:0:$((${#OPTIONS}))} > ./test/misra-log
+	if [[ "$PRINT_PRETTY" = true ]]; then
+		echo "running pretty print..."
+		source ./extra-tools/ReportPrintPretty.sh ./test/misra-log ./test/misra-log-pretty
+	fi
 elif [[ "$COMMAND" == "default" ]]; then
 	echo "Building all target executables..."
 	"make" all
