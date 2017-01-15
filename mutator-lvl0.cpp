@@ -55,6 +55,8 @@ std::vector<SourceLocation> MacroUndefSourceLocation;
 std::vector<std::string> MacroNameString;
 std::vector<std::string> IncludeFileArr;
 
+/**********************************************************************************************************************/
+/*@DEVI-struct for nullstmt*/
 struct NullStmtInfo
 {
   NullStmtInfo (unsigned iColumn, unsigned iLine, std::string iFileName, bool iIsInMainFile, bool iIsInSysHeader)
@@ -74,6 +76,39 @@ struct NullStmtInfo
 };
 
 std::vector<NullStmtInfo> NullStmtProto;
+/**********************************************************************************************************************/
+/*@DEVI-struct used for 8.8*/
+struct ExternObjInfo
+{
+  ExternObjInfo(unsigned int iLineNumber, unsigned int iColumnNumber, std::string iFileName\
+                , std::string iXObjSLStr, std::string iXObjNameStr, FileID iXObjFID \
+                , bool iHasMoreThanOneDefinition, bool iIsDefinition, bool iIsDeclaration)
+  {
+    LineNumber = iLineNumber;
+    ColumnNumber = iColumnNumber;
+    FileName = iFileName;
+    XObjSLStr = iXObjSLStr;
+    XObjNameStr = iXObjNameStr;
+    XObjFID = iXObjFID;
+    HasMoreThanOneDefinition = iHasMoreThanOneDefinition;
+    IsDefinition = iIsDefinition;
+    IsDeclaration = iIsDeclaration;
+  }
+
+  unsigned int LineNumber;
+  unsigned int ColumnNumber;
+  std::string FileName;
+  std::string XObjSLStr;
+  std::string XObjNameStr;
+  FileID XObjFID;
+  bool HasMoreThanOneDefinition;
+  bool IsDefinition;
+  bool IsDeclaration;
+};
+
+std::vector<ExternObjInfo> ExternObjInfoProto;
+/*@DEVI-end*/
+/**********************************************************************************************************************/
 
 /*mutator-lvl0 executable options*/
 enum MisraC
@@ -4241,31 +4276,78 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-/*@DEVI-flags all external functions that have a declaration that is not a definition also.*/
+/*@DEVI-has false positives will tag incomplete types if they are later declared as complete types.*/
 class [[maybe_unused]] MCDCDF88 : public MatchFinder::MatchCallback
 {
 public:
-  MCDCDF88 (Rewriter &Rewrite) : Rewrite(Rewrite)
-  {
-    IsNewEntry = true;
-  }
+  MCDCDF88 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    if (MR.Nodes.getNodeAs<clang::NamedDecl>("mcdcdf88") != nullptr)
+    bool IsNewEntry = true;
+
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf88var") != nullptr)
     {
-      IsNewEntry = true;
+      const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf88var");
 
-      const NamedDecl* ND = MR.Nodes.getNodeAs<clang::NamedDecl>("mcdcdf88");
-
-      SourceLocation SL = ND->getLocStart();
+      SourceLocation SL = VD->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext* const ASTC = MR.Context;
 
-      std::string NDNameString = ND->getNameAsString();
+      FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
+      const SourceManager &SM = FSL.getManager();
+
+      if (!SM.isInMainFile(SL))
+      {
+        return void();
+      }
+
+      std::string NDNameString = VD->getNameAsString();
+
+      for (auto &iter : ExternObjInfoProto)
+      {
+        std::cout << "diagnostic2:" << "Variable:" << NDNameString << ":" << iter.XObjNameStr << std::endl;
+        if (iter.XObjNameStr == NDNameString)
+        {
+          IsNewEntry = false;
+
+          iter.HasMoreThanOneDefinition = true;
+        }
+      }
+
+      if (IsNewEntry)
+      {
+        const SourceManager &SM = FSL.getManager();
+
+        ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
+                              SM.getFilename(SL), SL.printToString(*MR.SourceManager), NDNameString, \
+                              FSL.getFileID(), false, false, false
+                             };
+        ExternObjInfoProto.push_back(Temp);
+      }
+    }
+
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf88function") != nullptr)
+    {
+      const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf88function");
+
+      SourceLocation SL = FD->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      ASTContext* const ASTC = MR.Context;
+
+      std::string NDNameString = FD->getNameAsString();
 
       FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
+      const SourceManager &SM = FSL.getManager();
+
+      if (!SM.isInMainFile(SL))
+      {
+        return void();
+      }
 
       for (auto &iter : ExternObjInfoProto)
       {
@@ -4273,72 +4355,37 @@ public:
         {
           IsNewEntry = false;
 
-          if (iter.XObjFID != FSL.getFileID())
+
+          if ((iter.IsDefinition == true && FD->isThisDeclarationADefinition()) || (iter.IsDeclaration == true && !FD->isThisDeclarationADefinition()))
           {
             iter.HasMoreThanOneDefinition = true;
+
+            if (FD->isThisDeclarationADefinition())
+            {
+              iter.IsDefinition = true;
+            }
+            else
+            {
+              iter.IsDeclaration = true;
+            }
           }
+
         }
       }
 
       if (IsNewEntry)
       {
-        ExternObjInfo Temp = {SL, SL.printToString(*MR.SourceManager), FSL, NDNameString, FSL.getFileID(), false};
+        ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
+                              SM.getFilename(SL), SL.printToString(*MR.SourceManager), NDNameString, \
+                              FSL.getFileID(), false, FD->isThisDeclarationADefinition(), !FD->isThisDeclarationADefinition()
+                             };
         ExternObjInfoProto.push_back(Temp);
       }
     }
   }
 
-  virtual void onEndOfTranslationUnit()
-  {
-    for (auto &iter : ExternObjInfoProto)
-    {
-      if (iter.HasMoreThanOneDefinition)
-      {
-#if 1
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.XObjFSL.isInSystemHeader(), iter.XObjSL))
-        {
-          /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.XObjFSL.getManager().isInMainFile(iter.XObjSL), iter.XObjSL))
-          {
-            std::cout << "8.8:" << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file:";
-            std::cout << iter.XObjSLStr << ":" << std::endl;
-
-            XMLDocOut.XMLAddNode(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
-            JSONDocOUT.JSONAddElement(iter.XObjFSL, iter.XObjSL, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
-          }
-        }
-#endif
-      }
-    }
-  }
-
 private:
-  struct ExternObjInfo
-  {
-    ExternObjInfo(SourceLocation iXObjSL, std::string iXObjSLStr, FullSourceLoc iXObjFSL, std::string iXObjNameStr, FileID iXObjFID , bool iHasMoreThanOneDefinition)
-    {
-      XObjSL = iXObjSL;
-      XObjSLStr = iXObjSLStr;
-      XObjFSL = iXObjFSL;
-      XObjNameStr = iXObjNameStr;
-      XObjFID = iXObjFID;
-      HasMoreThanOneDefinition = iHasMoreThanOneDefinition;
-    }
-
-    SourceLocation XObjSL;
-    std::string XObjSLStr;
-    FullSourceLoc XObjFSL;
-    std::string XObjNameStr;
-    FileID XObjFID;
-    bool HasMoreThanOneDefinition;
-  };
-
-  std::vector<ExternObjInfo> ExternObjInfoProto;
-
-  bool IsNewEntry;
+  /*@DEVI-the structure that holds the values is global since we need it to survive through all the TUs.*/
 
   Rewriter &Rewrite;
 };
@@ -6201,6 +6248,29 @@ public:
 private:
 };
 /**********************************************************************************************************************/
+class onEndOfAllTUs
+{
+public: onEndOfAllTUs() {}
+
+  static void run(void)
+  {
+    /*@DEVI-start of 8.8*/
+    for (auto &iter : ExternObjInfoProto)
+    {
+      if (iter.HasMoreThanOneDefinition)
+      {
+        std::cout << "8.8:" << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file:";
+        std::cout << iter.XObjSLStr << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(iter.LineNumber, iter.ColumnNumber, iter.FileName, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
+        JSONDocOUT.JSONAddElement(iter.LineNumber, iter.ColumnNumber, iter.FileName, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
+      }
+    }
+    /*end of 8.8*/
+  }
+
+private:
+};
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
@@ -6217,7 +6287,7 @@ public:
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
-    HandlerForTypes612(R) {
+    HandlerForTypes612(R), HandlerForDCDF88(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -6329,7 +6399,8 @@ public:
 
     Matcher.addMatcher(callExpr(hasAncestor(functionDecl().bind("mcdcdf810daddy"))).bind("mcdcdf810"), &HandlerForDCDF810);
 
-    Matcher.addMatcher(functionDecl(allOf(returns(anything()), unless(returns(asString("void"))), hasBody(compoundStmt()) , unless(hasDescendant(returnStmt())))).bind("mcfunction165"), &HandlerForFunction165);
+    Matcher.addMatcher(functionDecl(allOf(returns(anything()), unless(returns(asString("void"))), hasBody(compoundStmt()) \
+                                          , unless(hasDescendant(returnStmt())))).bind("mcfunction165"), &HandlerForFunction165);
 
     Matcher.addMatcher(functionDecl(allOf(parameterCountIs(0), hasBody(compoundStmt()))).bind("mcfunction1652"), &HandlerForFunction1652);
 
@@ -6407,7 +6478,9 @@ public:
     Matcher.addMatcher(declRefExpr(allOf(hasAncestor(functionDecl().bind("mcdcdf87daddy")), \
                                          to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
 
-    //Matcher.addMatcher(namedDecl(hasExternalFormalLinkage()).bind("mcdcdf88"), &HandlerForDCDF88);
+    Matcher.addMatcher(functionDecl(hasExternalFormalLinkage()).bind("mcdcdf88function"), &HandlerForDCDF88);
+
+    Matcher.addMatcher(varDecl(hasExternalFormalLinkage()).bind("mcdcdf88var"), &HandlerForDCDF88);
 
     Matcher.addMatcher(expr().bind("mclangx23"), &HandlerForLangX23);
 
@@ -6498,9 +6571,7 @@ private:
   MCATC101 HandlerForATC101;
   MCIdent5 HandlerForIdent5;
   MCDCDF87 HandlerForDCDF87;
-#if 0
   MCDCDF88 HandlerForDCDF88;
-#endif
   MCLangX23 HandlerForLangX23;
   MCFunction167 HandlerForFunction167;
   MCCF143 HandlerForCF143;
@@ -6565,6 +6636,8 @@ int main(int argc, const char **argv)
   CheckForNullStatements CheckForNull;
 
   CheckForNull.Check();
+
+  onEndOfAllTUs::run();
 
   XMLDocOut.SaveReport();
 
