@@ -184,7 +184,7 @@ Here's the explanation for the fields:
 * Lines starting with a hash(`#`) are considered comments.<br/>
 
 Field names shall not have preceeding whitespace or tab. The `:` character shall immeidately follow the field name with options appearing after it.<br/>
-`end_action` field should appear as the last filed of a action.<br/>
+`end_action` field should appear as the last field of a action.<br/>
 
 You can run the sample action file with this:<br/>
 
