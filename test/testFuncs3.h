@@ -53,6 +53,8 @@ do { \
 #define ANSWER (17U)
 #define STRINGLIT "dodo"
 
+extern int externint;
+
 void tddfunc1(void);
 void tddfunc2(void);
 void tddfunc3(void);

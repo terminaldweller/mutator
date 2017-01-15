@@ -106,5 +106,10 @@ void tddfunc6(void)
 	aunionproto.member1 = floatbitaccess;
 	apartoffloat = aunionproto.member22.member5 & 0x000000FF;
 }
+
+int externfunc(int arg)
+{
+	return arg;
+}
 /*********************************************************************************************************************/
 /*last line intnetionally left blank.*/

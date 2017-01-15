@@ -98,6 +98,8 @@ typedef gaga incompletearr1;
 int incompletearr1[];
 int incompletearr2[];
 
+extern int externint;
+
 int dudu;
 int bubu;
 int fufu;
@@ -430,6 +432,11 @@ void testfunc16(int* p1, int* p2, int* const p3, const int* p4, int* p5)
   {
     /*yet another task*/
   }
+}
+
+void externfunc (void)
+{
+
 }
 
 /*********************************************************************************************************************/
