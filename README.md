@@ -180,16 +180,17 @@ Here's the explanation for the fields:
 * `out_files` is used to pass the result file to mutator. For `mutator-lvl0`, this field detemines the Misra-C check results.<br/>
 * `log_files` is used to pass the file to hold the log. Mostly meant to be used with `mutator` and `mutator-lvl2`.<br/>
 * `print_pretty` is a boolean switch. Used for running `ReportPrintPretty.sh`.<br/>
-* `end_action` is used to tell `mutator.sh` what action to do. Currently the only supported options are "run" and "stop". "run" will run the action and "stop" will not run it.<br/>
+* `end_action` is used to tell `mutator.sh` what action to do. Currently the only supported options are "run" and "stop". "run" will run the action and "stop" will not run it. Also marks the end of an action.<br/>
 * Lines starting with a hash(`#`) are considered comments.<br/>
+
 Field names shall not have preceeding whitespace or tab. The `:` character shall immeidately follow the field name with options appearing after it.<br/>
+`end_action` field should appear as the last filed of a action.<br/>
 
 You can run the sample action file with this:<br/>
 
 ```bash
 
 ./mutator.sh --file samples/action_file.mutator
-
 
 ```
 
