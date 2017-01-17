@@ -53,7 +53,7 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase.<br/>
-* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 130 out of the 141 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
+* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 135 out of the 141 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
 * **`mutator`** and **`mutator-lvl2`** are collectively the code muatation and code transformation executables. Currently the automatic code transformation implemented is only limited to adding braces to blocks that are missing it and adding `else` if an if-else if is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
