@@ -61,4 +61,5 @@ void tddfunc3(void);
 int* tddfunc4(void);
 void tddfunc5(void);
 void tddfunc6(void);
+void tddfunc7(void);
 /*last line intenitonally left blank.*/

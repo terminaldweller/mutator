@@ -7,11 +7,14 @@ int crappyint;
 /*inclusion directives*/
 #include "testFuncs3.h"
 #include <complex.h>
+#include <string.h>
 /*********************************************************************************************************************/
 /*globals*/
 int intarray3[3][2] = MACRO1;
 int intarray4[3][2] = MACRO2;
 int answer = ANSWER;
+
+
 /*********************************************************************************************************************/
 void tddfunc1 (void)
 {
@@ -110,6 +113,18 @@ void tddfunc6(void)
 int externfunc(int arg)
 {
 	return arg;
+}
+
+void testfunc7(void)
+{
+	unsigned char chararroct[7U];
+
+	chararroct[0U] = '\100';
+	chararroct[1U] = '\109';
+	chararroct[2U] = 010;
+	chararroct[3U] = 055;
+	chararroct[4U] = 125;
+	chararroct[5U] = '\x12';
 }
 /*********************************************************************************************************************/
 /*last line intnetionally left blank.*/

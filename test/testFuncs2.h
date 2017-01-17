@@ -22,7 +22,7 @@ int headervar;
 double headervardouble;
 /*********************************************************************************************************************/
 /*funciton types go here.*/
-void test33(void);
+static void test33(void);
 
 void testFunc1(void);
 
