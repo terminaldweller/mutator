@@ -5,11 +5,11 @@
 /*included modules*/
 /*project headers*/
 #include "mutator_aux.h"
-#include "tinyxml2/tinyxml2.h"
 /*standard headers*/
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <vector>
 /*Clang headers*/
@@ -2296,11 +2296,13 @@ public:
       const Expr* FSCond = FS->getCond();
       const Expr* FSInc = FS->getInc();
 
+#if 0
       if (FSCond != nullptr)
       {
         std::string multix = Rewrite.getRewrittenText(FSCond->getSourceRange());
         std::cout << "diagnostic" << ":" << multix << std::endl;
       }
+#endif
 
       if (FSCond != nullptr)
       {
@@ -5017,6 +5019,106 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCConst71 : public MatchFinder::MatchCallback
+{
+public:
+  MCConst71 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    std::string TagCandidateString;
+    SourceLocation SL;
+
+    if (MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcconst71int") != nullptr)
+    {
+      const IntegerLiteral* IL = MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcconst71int");
+
+      SourceRange SR;
+      SL = IL->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      SR.setBegin(SL);
+      SourceLocation SLE = IL->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
+      SR.setEnd(SLE);
+
+      TagCandidateString = Rewrite.getRewrittenText(SR);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::StringLiteral>("mcconst71string") != nullptr)
+    {
+      const clang::StringLiteral* StringLit = MR.Nodes.getNodeAs<clang::StringLiteral>("mcconst71string");
+
+      SL = StringLit->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "strat");
+
+      TagCandidateString = StringLit->getString().str();
+    }
+
+    if (MR.Nodes.getNodeAs<clang::CharacterLiteral>("mcconst71char") != nullptr)
+    {
+      const CharacterLiteral* CL = MR.Nodes.getNodeAs<clang::CharacterLiteral>("mcconst71char");
+
+      SL = CL->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      SourceRange SR;
+      SourceLocation SLE = CL->getLocEnd();
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
+      SR.setBegin(SL);
+      SR.setEnd(SLE);
+
+      TagCandidateString = Rewrite.getRewrittenText(SR);
+    }
+
+    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+    {
+      return void();
+    }
+
+    if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+    {
+      return void();
+    }
+
+    std::regex octalconstant("\\\\[0-7]+");
+    std::regex octalconstantint("^0[0-9]+$");
+    std::regex hexescapesequence("\\\\x[0-9a-fA-F]+");
+    std::regex otherescapesequence("\\\\[^0-9abfnrtvx'\"\\?]");
+
+    std::smatch result;
+
+#if 0
+    std::cout << "diagnostic2:" << TagCandidateString << ":" << SL.printToString(*MR.SourceManager) << ":" << std::regex_search(TagCandidateString, result, octalconstant) << std::endl;
+#endif
+
+    if (std::regex_search(TagCandidateString, result, octalconstant) || std::regex_search(TagCandidateString, result, octalconstantint))
+    {
+      std::cout << "7.1" << ":" << "Octal escape sequence used:" << SL.printToString(*MR.SourceManager) << ":" << TagCandidateString << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "7.1", "Octal escape sequence used:");
+      JSONDocOUT.JSONAddElement(MR.Context, SL, "7.1", "Octal escape sequence used:");
+    }
+
+    if (std::regex_search(TagCandidateString, result, hexescapesequence))
+    {
+      std::cout << "4.1" << ":" << "Hexadecimal escape sequence used:" << SL.printToString(*MR.SourceManager) << ":" << TagCandidateString << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "4.1", "Hexadecimal escape sequence used:");
+      JSONDocOUT.JSONAddElement(MR.Context, SL, "4.1", "Hexadecimal escape sequence used:");
+    }
+
+    if (std::regex_search(TagCandidateString, result, otherescapesequence))
+    {
+      std::cout << "4.1" << ":" << "Non-standard escape sequence used:" << SL.printToString(*MR.SourceManager) << ":" << TagCandidateString << std::endl;
+
+      XMLDocOut.XMLAddNode(MR.Context, SL, "4.1", "Non-standard escape sequence used:");
+      JSONDocOUT.JSONAddElement(MR.Context, SL, "4.1", "Non-standard escape sequence used:");
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -6287,7 +6389,7 @@ public:
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
-    HandlerForTypes612(R), HandlerForDCDF88(R) {
+    HandlerForTypes612(R), HandlerForDCDF88(R), HandlerForConst71(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -6507,6 +6609,14 @@ public:
     Matcher.addMatcher(binaryOperator(allOf(hasRHS(expr(has(expr(anyOf(integerLiteral().bind("mc612intlit"), \
                                             characterLiteral().bind("mc612charlit")))))), hasLHS(expr(hasType(isAnyCharacter())).bind("mc612exp")), \
                                             hasOperatorName("="))), &HandlerForTypes612);
+
+    /*@DEVI-start of 7.1 matchers.*/
+    Matcher.addMatcher(stringLiteral().bind("mcconst71string"), &HandlerForConst71);
+
+    Matcher.addMatcher(characterLiteral().bind("mcconst71char"), &HandlerForConst71);
+
+    Matcher.addMatcher(integerLiteral().bind("mcconst71int"), &HandlerForConst71);
+    /*end of 7.1*/
 #endif
   }
 
@@ -6582,6 +6692,7 @@ private:
   MCATC105 HandlerForAtc105;
   MCCSE135 HandlerForCSE135;
   MCTypes612 HandlerForTypes612;
+  MCConst71 HandlerForConst71;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
