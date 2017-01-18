@@ -17,11 +17,11 @@ matrix:
         build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-4.0"
         build_command:   "make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG"
         branch_pattern: master
-    env: COMPILER=clang-4.0 LLVMCONFIG=llvm-config-4.0 BUILDMODE=COV_NO_CLANG
+    env: COMPILER=clang-4.0, LLVMCONFIG=llvm-config-4.0, BUILDMODE=COV_NO_CLANG
   - include:
     os: linux
     compiler: clang
-    env: COMPILER=clang-3.9 LLVMCONFIG=llvm-config-3.9 BUILDMODE=COV_NO_CLANG
+    env: COMPILER=clang-3.9, LLVMCONFIG=llvm-config-3.9, BUILDMODE=COV_NO_CLANG
 
 before_install:
       - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
