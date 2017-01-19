@@ -4310,7 +4310,9 @@ public:
 
       for (auto &iter : ExternObjInfoProto)
       {
+#if 0
         std::cout << "diagnostic2:" << "Variable:" << NDNameString << ":" << iter.XObjNameStr << std::endl;
+#endif
         if (iter.XObjNameStr == NDNameString)
         {
           IsNewEntry = false;
@@ -4502,7 +4504,7 @@ public:
 
       QualType QT = PVD->getOriginalType();
 
-      ASTContext *const ASTC = MR.Context;
+      ASTContext *const ASTC [[maybe_unused]] = MR.Context;
 
       if (!QT.isConstQualified())
       {
@@ -6229,7 +6231,7 @@ public:
 
     for (auto &iter : NullStmtProto)
     {
-#if 1
+#if 0
       std::cout << iter.Line << ":" << iter.Column << ":" << iter.FileName << std::endl;
 #endif
 
@@ -6361,11 +6363,11 @@ public: onEndOfAllTUs() {}
     {
       if (iter.HasMoreThanOneDefinition)
       {
-        std::cout << "8.8:" << "External function or object (" + iter.XObjNameStr + ") is defined in more than one file:";
-        std::cout << iter.XObjSLStr << ":" << std::endl;
+        std::cout << "8.8:" << "External function or object is defined in more than one file:";
+        std::cout << iter.XObjSLStr << ":" << iter.XObjNameStr << std::endl;
 
-        XMLDocOut.XMLAddNode(iter.LineNumber, iter.ColumnNumber, iter.FileName, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
-        JSONDocOUT.JSONAddElement(iter.LineNumber, iter.ColumnNumber, iter.FileName, "8.8", "External function or object (" + iter.XObjNameStr + ") is defined in more than one file: ");
+        XMLDocOut.XMLAddNode(iter.LineNumber, iter.ColumnNumber, iter.FileName, "8.8", "External function or object is defined in more than one file: ");
+        JSONDocOUT.JSONAddElement(iter.LineNumber, iter.ColumnNumber, iter.FileName, "8.8", "External function or object is defined in more than one file: ");
       }
     }
     /*end of 8.8*/
@@ -6387,9 +6389,9 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForLangX23(R), \
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
-    HandlerForTypes612(R), HandlerForDCDF88(R), HandlerForConst71(R) {
+    HandlerForTypes612(R), HandlerForConst71(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -6580,7 +6582,7 @@ public:
     Matcher.addMatcher(declRefExpr(allOf(hasAncestor(functionDecl().bind("mcdcdf87daddy")), \
                                          to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
 
-#if 0
+#if 1
     Matcher.addMatcher(functionDecl(hasExternalFormalLinkage()).bind("mcdcdf88function"), &HandlerForDCDF88);
 
     Matcher.addMatcher(varDecl(hasExternalFormalLinkage()).bind("mcdcdf88var"), &HandlerForDCDF88);
@@ -6711,9 +6713,9 @@ public:
   {
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
 
-    DiagnosticsEngine &DiagEngine = CI.getPreprocessor().getDiagnostics();
+    DiagnosticsEngine &DiagEngine [[maybe_unused]] = CI.getPreprocessor().getDiagnostics();
 
-    const DiagnosticConsumer* DiagConsumer = DiagEngine.getClient();
+    const DiagnosticConsumer* DiagConsumer [[maybe_unused]] = DiagEngine.getClient();
 
 #if 0
     const IdentifierTable &IT [[maybe_unused]] = CI.getPreprocessor().getIdentifierTable();
