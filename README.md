@@ -68,6 +68,11 @@ All the as-of-yet implemented features of the project are very much buildable an
 * The code will be reviewed after the first pre-release version. I'm hoping to find some reviewers but if not, I'll have to do it myself.<br/>
 * There will be unit tests after a first pre-release version.<br/>
 
+##Announcements
+LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order. The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9. There are no plans in regards to keeping or dropping LLVM 3.9 support but do keep in mind the libraries mutator uses are not guaranteed to keep backwards-compatibility by their developers as they are still under development.<br/>
+The 2 newly introduced defects are inside the new header mutator is using, `<regex>`.<br/>
+There are only 4 actual defects on mutator's Coverity scan that belong to mutator's source code and not the library. 3 are potential defects which are not really defects.<br/>
+
 ##Building and Running
 
 ###Building
@@ -248,6 +253,8 @@ If you run into an issue please raise one here or just contact me with proper in
 ### Future Features
 * Misra-c:2012 check support<br/>
 * Ability to turn off some rule checks<br/>
+* An XML schema for the XML report<br/>
+* using Appveyor to test windows builds<br/>
 
 ###Support
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>
