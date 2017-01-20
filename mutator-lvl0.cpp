@@ -114,7 +114,7 @@ struct IdentInfo
 {
   IdentInfo(unsigned int iLine, unsigned int iColumn, std::string iFileName, std::string iName, \
             std::string iSLString, Devi::NodeKind iNK, bool iIsIncomplete, Devi::FunctionDeclKind IFDKind, \
-            Devi::Scope iScope, std::string iScopeFuncitonName, bool iIsValid)
+            Devi::Scope iScope, std::string iScopeFuncitonName, bool iIsValid, bool iIsStatic)
   {
     Line = iLine;
     Column = iColumn;
@@ -127,6 +127,7 @@ struct IdentInfo
     Scope = iScope;
     ScopeFunctionName = iScopeFuncitonName;
     IsValid = iIsValid;
+    IsStatic = iIsStatic;
   }
 
   unsigned int Line;
@@ -140,6 +141,7 @@ struct IdentInfo
   Devi::Scope Scope;
   std::string ScopeFunctionName;
   bool IsValid;
+  bool IsStatic;
 };
 
 std::vector<IdentInfo> IdentInfoProto;
@@ -4998,6 +5000,16 @@ public:
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
+
       const IdentifierInfo* II = BN->getIdentifier();
 
       std::string Name = II->getName().str();
@@ -5006,7 +5018,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::TypedefDecl, \
-                        false, Devi::FunctionDeclKind::NoValue, Devi::Scope::TU, "", true
+                        false, Devi::FunctionDeclKind::NoValue, Devi::Scope::TU, "", true, false
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5018,6 +5030,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5048,7 +5070,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::RecordDecl, \
-                        BN->getTypeForDecl()->isIncompleteType(), Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                        BN->getTypeForDecl()->isIncompleteType(), Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true, false
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5060,6 +5082,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5090,7 +5122,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::FieldDecl, \
-                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true, false
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5103,6 +5135,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5133,7 +5175,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::ParmVarDecl, \
-                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true, BN->isStaticLocal()
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5145,6 +5187,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5170,7 +5222,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::FunctionDecl, \
-                        false, tempfkind, Devi::Scope::TU, "", true
+                        false, tempfkind, Devi::Scope::TU, "", true, false
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5182,6 +5234,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5212,7 +5274,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::VarDecl, \
-                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true, BN->isStaticLocal()
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5224,6 +5286,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5254,7 +5326,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::EnumDecl, \
-                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true, false
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5266,6 +5338,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5296,7 +5378,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::LabelDecl, \
-                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true, false
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -5308,6 +5390,16 @@ public:
 
       SourceLocation SL = BN->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+      {
+        return void();
+      }
 
       const IdentifierInfo* II = BN->getIdentifier();
 
@@ -5338,7 +5430,7 @@ public:
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
                         SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::EnumConstDecl, \
-                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true, false
                        };
 
       IdentInfoProto.push_back(Temp);
@@ -6599,15 +6691,21 @@ public: onEndOfAllTUs() {}
     /*end of 8.8*/
 
     /*@DEVI-start of 5.x*/
+    /*@DEVI-first we need to do some cleanup and mark some entries as invalid.*/
     for (auto &iter : IdentInfoProto)
     {
+      if (iter.Name == "")
+      {
+        iter.IsValid = false;
+      }
+
       if (iter.NK == Devi::NodeKind::RecordDecl)
       {
         for (auto &yaiter : IdentInfoProto)
         {
           if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
           {
-            if ((iter.IsIncomplete != yaiter.IsIncomplete) && iter.IsValid == true && yaiter.IsValid == true)
+            if ((iter.IsIncomplete != yaiter.IsIncomplete) && iter.IsValid && yaiter.IsValid)
             {
               iter.IsValid = false;
             }
@@ -6616,6 +6714,140 @@ public: onEndOfAllTUs() {}
           if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl)
           {
             yaiter.IsValid = false;
+          }
+        }
+      }
+
+      if (iter.NK == Devi::NodeKind::FieldDecl)
+      {
+        for (auto &yaiter : IdentInfoProto)
+        {
+          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl)
+          {
+            yaiter.IsValid = false;
+          }
+        }
+      }
+
+      if (iter.NK == Devi::NodeKind::ParmVarDecl)
+      {
+        for (auto &yaiter : IdentInfoProto)
+        {
+          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl)
+          {
+            yaiter.IsValid = false;
+          }
+        }
+      }
+
+      if (iter.NK == Devi::NodeKind::FunctionDecl)
+      {
+        for (auto &yaiter : IdentInfoProto)
+        {
+          if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
+          {
+            if (iter.FDKind != yaiter.FDKind && iter.IsValid && yaiter.IsValid)
+            {
+              iter.IsValid = false;
+            }
+          }
+        }
+      }
+    }
+
+    /*@DEVI-now we can start looking for things to tag*/
+    for (auto &iter : IdentInfoProto)
+    {
+      if (iter.IsValid == false)
+      {
+        continue;
+      }
+
+      for (auto &yaiter : IdentInfoProto)
+      {
+        if (yaiter.IsValid == false)
+        {
+          continue;
+        }
+
+        if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
+        {
+          /*tag 5.7*/
+          std::cout << "5.7:" << "Identifier re-used:";
+          std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+          XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier re-used:");
+          JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier re-used:");
+
+          if (iter.NK == Devi::NodeKind::TypedefDecl)
+          {
+            /*tag 5.3*/
+            std::cout << "5.3:" << "Typedef identifier is not unique:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.3", "Typedef identifier is not unique:");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.3", "Typedef identifier is not unique:");
+          }
+
+          if (iter.NK == Devi::NodeKind::RecordDecl)
+          {
+            /*tag 5.4*/
+            std::cout << "5.4:" << "Tag identifier is not unique:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.4", "Tag identifier is not unique:");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.4", "Tag identifier is not unique:");
+          }
+
+          if (iter.NK == Devi::NodeKind::RecordDecl && yaiter.NK != Devi::NodeKind::RecordDecl)
+          {
+            /*tag 5.6*/
+            std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
+          }
+
+          if (iter.NK == Devi::NodeKind::LabelDecl && yaiter.NK != Devi::NodeKind::LabelDecl)
+          {
+            /*tag 5.6*/
+            std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
+          }
+
+          if (((iter.NK != Devi::NodeKind::RecordDecl) && (iter.NK != Devi::NodeKind::LabelDecl)) && \
+              ((yaiter.NK == Devi::NodeKind::RecordDecl) || (yaiter.NK == Devi::NodeKind::LabelDecl)))
+          {
+            /*tag 5.6*/
+            std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
+          }
+
+          if (iter.FileName == yaiter.FileName && iter.Scope == Devi::Scope::Block && yaiter.Scope == Devi::Scope::TU)
+          {
+            /*tag 5.2*/
+            std::cout << "5.2:" << "This identifier is being hidden by an identifier of the same name in file scope:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.2", "This identifier is being hidden by an identifier of the same name in file scope:");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.2", "This identifier is being hidden by an identifier of the same name in file scope:");
+          }
+
+          if (iter.IsStatic)
+          {
+            /*tag 5.5*/
+            std::cout << "5.5:" << "Identifier with static storage duration is re-used:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.5", "Identifier with static storage duration is re-used:");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.5", "Identifier with static storage duration is re-used:");
           }
         }
       }
