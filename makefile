@@ -40,6 +40,13 @@ EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
+ifeq ($(BUILD_MODE), WIN_BUILD)
+$(error This build mode is not yet implemented.)
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
+ -std=c++11 -stdlib=libstdc++ -UNDEBUG -fexceptions
+EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
+endif
+
 ifeq ($(BUILD_MODE), COV_NO_CLANG_1Z)
 ifeq ($(CXX), g++)
 $(error This build mode is only useable with clang++.)
