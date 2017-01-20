@@ -13,6 +13,7 @@ int crappyint;
 int intarray3[3][2] = MACRO1;
 int intarray4[3][2] = MACRO2;
 int answer = ANSWER;
+float floatbitaccess;
 
 
 /*********************************************************************************************************************/
