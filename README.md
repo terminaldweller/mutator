@@ -53,7 +53,7 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase.<br/>
-* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 137 out of the 141 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
+* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 139 out of the 141 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
 * **`mutator`** and **`mutator-lvl2`** are collectively the code muatation and code transformation executables. Currently the automatic code transformation implemented is only limited to adding braces to blocks that are missing it and adding `else` if an if-else if is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
@@ -69,6 +69,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 * There will be unit tests after a first pre-release version.<br/>
 
 ##Announcements
+####* As Soon as the 2 remaining rules(2.1 and 2.3) are dealt with, mutator-lvl0 will have a release candidate, which is going to be forked and will start its testing phase.<br/>
 * LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order.<br/>
 * The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9.<br/> 
 * There are no plans in regards to keeping or dropping LLVM 3.9 support but do keep in mind the libraries mutator uses are not guaranteed to keep backwards-compatibility by their developers as they are still under development.<br/>
