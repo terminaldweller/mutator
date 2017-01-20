@@ -13,6 +13,6 @@ function cyan(s) {printf "\033[1;36m" s "\033[0m "}
 function unred(s) {printf "\033[1;41m" s "\033[0m "}
 function ungreen(s) {printf "\033[1;42m" s "\033[0m "}
 function unyellow(s) {printf "\033[1;43m" s "\033[0m "}
-	{print red($1)green($2)purple($3)blue($4)blue($5)yellow($6)cyan($7)}
+	{print red($1)green($2)purple($3)blue($4)blue($5)yellow($6)cyan($7)ungreen($8)ungreen($9)}
 END{}
 ' > "$2"
