@@ -78,7 +78,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 ##Building and Running
 
 ###Building
-To build the project, you need to have the LLVM libraries 3.9 and up. The project can not be built with LLVM 3.8 or lower.<br/>
+To build the project, you need to have the LLVM libraries 4.0 and up. The project can not be built with LLVM 3.8 or lower. The latest tested is LLVM trunk:292415.<br/>
 Here Are the build options:<br/>
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
 * Running `make target-name` will only build the target. So for example, if you are only interested in building the Misra-C rule checker you can run `make mutator-lvl0`.<br/>
