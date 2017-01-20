@@ -19,8 +19,13 @@ using namespace clang;
 using namespace tinyxml2;
 /*********************************************************************************************************************/
 namespace Devi {
-SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std::string Kind);
+enum class NodeKind {NoValue, VarDecl, FieldDecl, RecordDecl, LabelDecl, FunctionDecl, TypedefDecl, ParmVarDecl, EnumDecl, EnumConstDecl};
 
+enum class Scope {NoValue, TU, Block};
+
+enum class FunctionDeclKind {NoValue, Definition, Declaration};
+/*********************************************************************************************************************/
+SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std::string Kind);
 /*********************************************************************************************************************/
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
 
