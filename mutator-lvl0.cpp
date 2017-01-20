@@ -109,6 +109,38 @@ struct ExternObjInfo
 std::vector<ExternObjInfo> ExternObjInfoProto;
 /*@DEVI-end*/
 /**********************************************************************************************************************/
+/*@DEVI-struct used for rules 5.x*/
+struct IdentInfo
+{
+  IdentInfo(unsigned int iLine, unsigned int iColumn, std::string iFileName, std::string iName, \
+            std::string iSLString, bool iIsTagIdentifier = false, bool iIsTypeDefIdentifier = false, \
+            bool iIsInMainFile = true, bool iIsInSysHeader = false)
+  {
+    Line = iLine;
+    Column = iColumn;
+    FileName = iFileName;
+    Name = iName;
+    SLString = iSLString;
+    IsTagIdentifier = iIsTagIdentifier;
+    IsTypeDefIdentifier = iIsTypeDefIdentifier;
+    IsInMainFile = iIsInMainFile;
+    IsInSysHeader = iIsInSysHeader;
+  }
+
+  unsigned int Line;
+  unsigned int Column;
+  std::string FileName;
+  std::string Name;
+  std::string SLString;
+  bool IsTagIdentifier = false;
+  bool IsTypeDefIdentifier = false;
+  bool IsInMainFile;
+  bool IsInSysHeader;
+};
+
+std::vector<IdentInfo> IdentInfoProto;
+/*@DEVI-end*/
+/**********************************************************************************************************************/
 
 /*mutator-lvl0 executable options*/
 enum MisraC
@@ -4058,7 +4090,10 @@ public:
 
       if (SM.isInMainFile(SL))
       {
-        IdentInfo Temp = {II->getName().str(), SL, SL.printToString(*MR.SourceManager), ASTC->getFullLoc(SL), IsRecordDecl, IsTypedefIdent};
+        IdentInfo Temp = {SM.getSpellingLineNumber(SL), SM.getSpellingColumnNumber(SL), SM.getFilename(SL).str(), \
+                          II->getName().str(), SL.printToString(*MR.SourceManager), IsRecordDecl, IsTypedefIdent, \
+                          SM.isInMainFile(SL), SM.isInSystemHeader(SL)
+                         };
         IdentInfoProto.push_back(Temp);
       }
     }
@@ -4066,79 +4101,7 @@ public:
 
   void onEndOfTranslationUnit(void)
   {
-    unsigned TagCounter = 0U;
-    unsigned TypedefCounter = 0U;
 
-    /*@DEVI-3 is the magical number because it will find itself twice, because typedef and tag
-    identifiers are matched twice, once by nameddecl  and once by tag or typedef. the third time
-    we find a match is where we have found something to tag.*/
-    /*@DEVI-has false positives-incomplete record types that later become complete fit the criteria.*/
-    for (auto &iter : IdentInfoProto)
-    {
-      if (iter.IsTagIdentifier)
-      {
-        for (auto &yaiter : IdentInfoProto)
-        {
-          if ((iter.Name == yaiter.Name))
-          {
-            TagCounter++;
-          }
-        }
-
-        if (TagCounter >= 3U)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.FSL.isInSystemHeader(), iter.SL))
-          {
-            /*intentionally elft blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.FSL.getManager().isInMainFile(iter.SL), iter.SL))
-            {
-              std::cout << "5.4:" << "tag identifier is not unique:";
-              std::cout << iter.SLString << ":" << std::endl;
-
-              XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
-              JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.4", "tag identifier is not unique: ");
-            }
-          }
-        }
-
-        TagCounter = 0U;
-      }
-
-      if (iter.IsTypeDefIdentifier)
-      {
-        for (auto &yaiter : IdentInfoProto)
-        {
-          if ((iter.Name == yaiter.Name))
-          {
-            TypedefCounter++;
-          }
-        }
-
-        if (TypedefCounter >= 3U)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.FSL.isInSystemHeader(), iter.SL))
-          {
-            /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.FSL.getManager().isInMainFile(iter.SL), iter.SL))
-            {
-              std::cout << "5.3:" << "typedef identifier is not unique:";
-              std::cout << iter.SLString << ":" << std::endl;
-
-              XMLDocOut.XMLAddNode(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
-              JSONDocOUT.JSONAddElement(iter.FSL, iter.SL, "5.3", "typedef identifier is not unique: ");
-            }
-          }
-        }
-
-        TypedefCounter = 0U;
-      }
-    }
   }
 
 private:
@@ -4146,30 +4109,6 @@ private:
   bool IsNamedDecl = false;
   bool IsRecordDecl = false;
   bool HasHiddenVisibility = false;
-
-  struct IdentInfo
-  {
-    IdentInfo(std::string iName, SourceLocation iSL, std::string iSLString, FullSourceLoc iFSL, bool iIsTagIdentifier = false, bool iIsTypeDefIdentifier = false)
-    {
-      Name = iName;
-      SL = iSL;
-      SLString = iSLString;
-      FSL = iFSL;
-      IsTagIdentifier = iIsTagIdentifier;
-      IsTypeDefIdentifier = iIsTypeDefIdentifier;
-    }
-
-    std::string Name;
-    SourceLocation SL;
-    std::string SLString;
-    FullSourceLoc FSL;
-    bool IsTagIdentifier = false;
-    bool IsTypeDefIdentifier = false;
-  };
-
-  std::vector<IdentInfo> IdentInfoProto;
-
-
 
   Rewriter &Rewrite;
 };
@@ -6371,6 +6310,130 @@ public: onEndOfAllTUs() {}
       }
     }
     /*end of 8.8*/
+
+    /*@DEVI-start of 5.x*/
+    unsigned TagCounter = 0U;
+    unsigned TypedefCounter = 0U;
+    bool ShouldBeTagged57 = false;
+    bool ShouldBeTagged56 = false;
+
+    /*@DEVI-3 is the magical number because it will find itself twice, because typedef and tag
+    identifiers are matched twice, once by nameddecl  and once by tag or typedef. the third time
+    we find a match is where we have found something to tag.*/
+    /*@DEVI-has false positives-incomplete record types that later become complete fit the criteria.*/
+    for (auto &iter : IdentInfoProto)
+    {
+      if (iter.IsTagIdentifier)
+      {
+        for (auto &yaiter : IdentInfoProto)
+        {
+          if ((iter.Name == yaiter.Name))
+          {
+            TagCounter++;
+          }
+        }
+
+        if (TagCounter >= 3U)
+        {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
+          {
+            /*intentionally elft blank*/
+          }
+          else
+          {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
+            {
+              std::cout << "5.4/5.7:" << "tag identifier is not unique:";
+              std::cout << iter.SLString << ":" << std::endl;
+
+              XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.4/5.7", "tag identifier is not unique: ");
+              JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.4/5.7", "tag identifier is not unique: ");
+            }
+          }
+        }
+
+        TagCounter = 0U;
+      }
+
+      for (auto &yaiter : IdentInfoProto)
+      {
+        if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
+        {
+          ShouldBeTagged57 = true;
+        }
+
+        if ((iter.Name == yaiter.Name) && \
+            (iter.IsTagIdentifier != yaiter.IsTagIdentifier || iter.IsTypeDefIdentifier != yaiter.IsTypeDefIdentifier) && \
+            (iter.SLString != yaiter.SLString))
+        {
+          ShouldBeTagged56 = true;
+        }
+      }
+
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
+      {
+        /*intentionally elft blank*/
+      }
+      else
+      {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
+        {
+          if (ShouldBeTagged57)
+          {
+            std::cout << "5.7:" << "Identifier is not unique:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier is not unique: ");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier is not unique: ");
+          }
+
+          if (ShouldBeTagged56)
+          {
+            std::cout << "5.6:" << "Identifier is not unique:";
+            std::cout << iter.SLString << ":" << iter.Name << ":" << std::endl;
+
+            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "Identifier is not unique: ");
+            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "Identifier is not unique: ");
+          }
+        }
+      }
+
+      ShouldBeTagged57 = false;
+      ShouldBeTagged56 = false;
+
+      if (iter.IsTypeDefIdentifier)
+      {
+        for (auto &yaiter : IdentInfoProto)
+        {
+          if ((iter.Name == yaiter.Name))
+          {
+            TypedefCounter++;
+          }
+        }
+
+        if (TypedefCounter >= 3U)
+        {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
+          {
+            /*intentionally left blank*/
+          }
+          else
+          {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
+            {
+              std::cout << "5.3/5.7:" << "typedef identifier is not unique:";
+              std::cout << iter.SLString << ":" << std::endl;
+
+              XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.3/5.7", "typedef identifier is not unique: ");
+              JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.3/5.7", "typedef identifier is not unique: ");
+            }
+          }
+        }
+
+        TypedefCounter = 0U;
+      }
+    }
+    /*end of 5.x*/
   }
 
 private:
@@ -6573,11 +6636,13 @@ public:
                                             parenExpr().bind("atcparens"), implicitCastExpr().bind("atckidice"), \
                                             cStyleCastExpr().bind("atccstyle"))))).bind("atcdaddy"), &HandlerForATC101);
 
+    /*@DEVI-matchers for 5.x*/
     Matcher.addMatcher(namedDecl().bind("ident5var"), &HandlerForIdent5);
 
     Matcher.addMatcher(typedefDecl().bind("ident5typedef"), &HandlerForIdent5);
 
     Matcher.addMatcher(recordDecl().bind("ident5record"), &HandlerForIdent5);
+    /*end of matchers for 5.x*/
 
     Matcher.addMatcher(declRefExpr(allOf(hasAncestor(functionDecl().bind("mcdcdf87daddy")), \
                                          to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
