@@ -53,7 +53,7 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase.<br/>
-* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 135 out of the 141 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
+* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it can check for 137 out of the 141 Misra-C:2004 rules. For a more accurate list please check out `misrac.ods` under `docs` in project's root.<br/>
 * **`mutator`** and **`mutator-lvl2`** are collectively the code muatation and code transformation executables. Currently the automatic code transformation implemented is only limited to adding braces to blocks that are missing it and adding `else` if an if-else if is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
@@ -69,9 +69,11 @@ All the as-of-yet implemented features of the project are very much buildable an
 * There will be unit tests after a first pre-release version.<br/>
 
 ##Announcements
-LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order. The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9. There are no plans in regards to keeping or dropping LLVM 3.9 support but do keep in mind the libraries mutator uses are not guaranteed to keep backwards-compatibility by their developers as they are still under development.<br/>
-The 2 newly introduced defects are inside the new header mutator is using, `<regex>`.<br/>
-There are only 4 actual defects on mutator's Coverity scan that belong to mutator's source code and not the library. 3 are potential defects which are not really defects.<br/>
+* LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order.<br/>
+* The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9.<br/> 
+* There are no plans in regards to keeping or dropping LLVM 3.9 support but do keep in mind the libraries mutator uses are not guaranteed to keep backwards-compatibility by their developers as they are still under development.<br/>
+* The 2 newly introduced defects are inside the new header mutator is using, `<regex>`.<br/>
+* There are only 4 actual defects on mutator's Coverity scan that belong to mutator's source code and not the library. 4 are potential defects which are not really defects.<br/>
 
 ##Building and Running
 
@@ -131,14 +133,14 @@ If you are running the executables using `mutator.sh` you don't need to read thi
 
 ```bash
 
-./mutator-lvl0 -SysHeader=false -MainOnly=true  ./test/testFuncs3.c -- -std=c90 -Wall C2 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include
+./mutator-lvl0 -SysHeader=false -MainOnly=true  ./test/testFuncs3.c -- -std=c90 -Wall -I/lib/gcc/x86_64-redhat-linux/5.3.1/include
 
 ```
 
 So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
 ```bash
 
-./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -std=c90 SysHeader=false C2"
+./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -std=c90"
 
 ```
 
