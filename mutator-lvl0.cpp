@@ -113,18 +113,20 @@ std::vector<ExternObjInfo> ExternObjInfoProto;
 struct IdentInfo
 {
   IdentInfo(unsigned int iLine, unsigned int iColumn, std::string iFileName, std::string iName, \
-            std::string iSLString, bool iIsTagIdentifier = false, bool iIsTypeDefIdentifier = false, \
-            bool iIsInMainFile = true, bool iIsInSysHeader = false)
+            std::string iSLString, Devi::NodeKind iNK, bool iIsIncomplete, Devi::FunctionDeclKind IFDKind, \
+            Devi::Scope iScope, std::string iScopeFuncitonName, bool iIsValid)
   {
     Line = iLine;
     Column = iColumn;
     FileName = iFileName;
     Name = iName;
     SLString = iSLString;
-    IsTagIdentifier = iIsTagIdentifier;
-    IsTypeDefIdentifier = iIsTypeDefIdentifier;
-    IsInMainFile = iIsInMainFile;
-    IsInSysHeader = iIsInSysHeader;
+    NK = iNK;
+    IsIncomplete = iIsIncomplete;
+    FDKind = IFDKind;
+    Scope = iScope;
+    ScopeFunctionName = iScopeFuncitonName;
+    IsValid = iIsValid;
   }
 
   unsigned int Line;
@@ -132,10 +134,12 @@ struct IdentInfo
   std::string FileName;
   std::string Name;
   std::string SLString;
-  bool IsTagIdentifier = false;
-  bool IsTypeDefIdentifier = false;
-  bool IsInMainFile;
-  bool IsInSysHeader;
+  Devi::NodeKind NK;
+  bool IsIncomplete;
+  Devi::FunctionDeclKind FDKind;
+  Devi::Scope Scope;
+  std::string ScopeFunctionName;
+  bool IsValid;
 };
 
 std::vector<IdentInfo> IdentInfoProto;
@@ -3975,141 +3979,60 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCIdent5 : public MatchFinder::MatchCallback
+class MCIdent51 : public MatchFinder::MatchCallback
 {
 public:
-  MCIdent5 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  MCIdent51 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    IsTypedefIdent = false;
-    IsNamedDecl = false;
-    IsRecordDecl = false;
-    HasHiddenVisibility = false;
-
-    IdentifierInfo *II;
-
-    SourceLocation SL;
-
-    if (MR.Nodes.getNodeAs<clang::NamedDecl>("ident5var") != nullptr)
+    if (MR.Nodes.getNodeAs<clang::NamedDecl>("ident5nameddecl") != nullptr)
     {
-      const NamedDecl* ND = MR.Nodes.getNodeAs<clang::NamedDecl>("ident5var");
+      const NamedDecl* ND = MR.Nodes.getNodeAs<clang::NamedDecl>("ident5nameddecl");
 
-      II = ND->getIdentifier();
+      const IdentifierInfo *II = ND->getIdentifier();
 
-      SL = ND->getLocStart();
+      SourceLocation SL = ND->getLocStart();
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (ND->isHidden())
+      ASTContext *const ASTC = MR.Context;
+
+      const IdentifierTable &IT = ASTC->Idents;
+
+      if (II != nullptr)
       {
-        HasHiddenVisibility = true;
-      }
+        StringRef IdentStringRef = II->getName();
 
-      IsNamedDecl = true;
-    }
-
-    if (MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef") != nullptr)
-    {
-      const TypedefDecl* TDD = MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef");
-
-      II = TDD->getIdentifier();
-
-      SL = TDD->getLocStart();
-      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-      IsTypedefIdent = true;
-    }
-
-    if (MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record") != nullptr)
-    {
-      const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record");
-
-      II = RD->getCanonicalDecl()->getIdentifier();
-
-      SL = RD->getLocStart();
-      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-      IsRecordDecl = true;
-    }
-
-    ASTContext *const ASTC = MR.Context;
-    const SourceManager &SM = ASTC->getSourceManager();
-
-    if (HasHiddenVisibility)
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        for (auto &iter : IT)
         {
-          std::cout << "5.2:" << "Object or function has hidden visibility:";
-          std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
-
-          XMLDocOut.XMLAddNode(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "5.2", "Object or function has hidden visibility: ");
-        }
-      }
-    }
-
-    const IdentifierTable &IT = ASTC->Idents;
-
-    if (II != nullptr)
-    {
-      StringRef IdentStringRef = II->getName();
-
-      IdentifierInfoLookup* IILU [[maybe_unused]] = IT.getExternalIdentifierLookup();
-
-      for (auto &iter : IT)
-      {
-        /*@DEVI-only works for UTF-8. for larger sizes we need a multiple of 32. for UTF-16 we need to check against 64 and so on.*/
-        if (IdentStringRef.str().size() >= 32U && IsNamedDecl)
-        {
-          if ((iter.getValue()->getName().str().substr(0U, 32U) == IdentStringRef.str().substr(0U, 32U)) && (iter.getValue()->getName().str() != IdentStringRef.str()))
+          /*@DEVI-only works for UTF-8. for larger sizes we need a multiple of 32. for UTF-16 we need to check against 64 and so on.*/
+          if (IdentStringRef.str().size() >= 32U)
           {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+            if ((iter.getValue()->getName().str().substr(0U, 32U) == IdentStringRef.str().substr(0U, 32U)) && (iter.getValue()->getName().str() != IdentStringRef.str()))
             {
-              /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+              if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
               {
-                std::cout << "5.1:" << "Identifier relies on the signifacance of more than 31 charcaters:";
-                std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+                /*intentionally left blank*/
+              }
+              else
+              {
+                if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+                {
+                  std::cout << "5.1:" << "Identifier relies on the signifacance of more than 31 charcaters:";
+                  std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
-                XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
-                JSONDocOUT.JSONAddElement(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+                  XMLDocOut.XMLAddNode(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+                  JSONDocOUT.JSONAddElement(MR.Context, SL, "5.1", "Identifier relies on the significance of more than 31 charcaters: ");
+                }
               }
             }
           }
         }
       }
-
-      if (SM.isInMainFile(SL))
-      {
-        IdentInfo Temp = {SM.getSpellingLineNumber(SL), SM.getSpellingColumnNumber(SL), SM.getFilename(SL).str(), \
-                          II->getName().str(), SL.printToString(*MR.SourceManager), IsRecordDecl, IsTypedefIdent, \
-                          SM.isInMainFile(SL), SM.isInSystemHeader(SL)
-                         };
-        IdentInfoProto.push_back(Temp);
-      }
     }
   }
 
-  void onEndOfTranslationUnit(void)
-  {
-
-  }
-
 private:
-  bool IsTypedefIdent = false;
-  bool IsNamedDecl = false;
-  bool IsRecordDecl = false;
-  bool HasHiddenVisibility = false;
-
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
@@ -5061,6 +4984,370 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class MCIdent5x : public MatchFinder::MatchCallback
+{
+public:
+  MCIdent5x (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef") != nullptr)
+    {
+      const TypedefDecl* BN = MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name = II->getName().str();
+
+      SourceManager *const SM = MR.SourceManager;
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::TypedefDecl, \
+                        false, Devi::FunctionDeclKind::NoValue, Devi::Scope::TU, "", true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record") != nullptr)
+    {
+      const RecordDecl* BN = MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      std::string FunctionName;
+
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
+      {
+        const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
+
+        FunctionName = FD->getNameAsString();
+      }
+
+      Devi::Scope tempscope = Devi::Scope::TU;
+
+      if (FunctionName != "")
+      {
+        tempscope = Devi::Scope::Block;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::RecordDecl, \
+                        BN->getTypeForDecl()->isIncompleteType(), Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::FieldDecl>("ident5field") != nullptr)
+    {
+      const FieldDecl* BN = MR.Nodes.getNodeAs<clang::FieldDecl>("ident5field");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      std::string FunctionName;
+
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
+      {
+        const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
+
+        FunctionName = FD->getNameAsString();
+      }
+
+      Devi::Scope tempscope = Devi::Scope::TU;
+
+      if (FunctionName != "")
+      {
+        tempscope = Devi::Scope::Block;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::FieldDecl, \
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    /*@DEVI-dunno how it will handle incomplete records passed as parmvars.*/
+    if (MR.Nodes.getNodeAs<clang::ParmVarDecl>("ident5parmvar") != nullptr)
+    {
+      const ParmVarDecl* BN = MR.Nodes.getNodeAs<clang::ParmVarDecl>("ident5parmvar");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      std::string FunctionName;
+
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
+      {
+        const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
+
+        FunctionName = FD->getNameAsString();
+      }
+
+      Devi::Scope tempscope = Devi::Scope::TU;
+
+      if (FunctionName != "")
+      {
+        tempscope = Devi::Scope::Block;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::ParmVarDecl, \
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("ident5func") != nullptr)
+    {
+      const FunctionDecl* BN = MR.Nodes.getNodeAs<clang::FunctionDecl>("ident5func");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      Devi::FunctionDeclKind tempfkind;
+
+      if (BN->isThisDeclarationADefinition())
+      {
+        tempfkind = Devi::FunctionDeclKind::Definition;
+      }
+      else
+      {
+        tempfkind = Devi::FunctionDeclKind::Declaration;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::FunctionDecl, \
+                        false, tempfkind, Devi::Scope::TU, "", true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("ident5var") != nullptr)
+    {
+      const VarDecl* BN = MR.Nodes.getNodeAs<clang::VarDecl>("ident5var");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      std::string FunctionName;
+
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
+      {
+        const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
+
+        FunctionName = FD->getNameAsString();
+      }
+
+      Devi::Scope tempscope = Devi::Scope::TU;
+
+      if (FunctionName != "")
+      {
+        tempscope = Devi::Scope::Block;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::VarDecl, \
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::EnumDecl>("ident5enum") != nullptr)
+    {
+      const EnumDecl* BN = MR.Nodes.getNodeAs<clang::EnumDecl>("ident5enum");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      std::string FunctionName;
+
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
+      {
+        const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
+
+        FunctionName = FD->getNameAsString();
+      }
+
+      Devi::Scope tempscope = Devi::Scope::TU;
+
+      if (FunctionName != "")
+      {
+        tempscope = Devi::Scope::Block;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::EnumDecl, \
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::LabelDecl>("ident5label") != nullptr)
+    {
+      const LabelDecl* BN = MR.Nodes.getNodeAs<clang::LabelDecl>("ident5label");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      std::string FunctionName;
+
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
+      {
+        const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
+
+        FunctionName = FD->getNameAsString();
+      }
+
+      Devi::Scope tempscope = Devi::Scope::TU;
+
+      if (FunctionName != "")
+      {
+        tempscope = Devi::Scope::Block;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::LabelDecl, \
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+
+    if (MR.Nodes.getNodeAs<clang::EnumConstantDecl>("ident5enumconst") != nullptr)
+    {
+      const EnumConstantDecl* BN = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("ident5enumconst");
+
+      SourceLocation SL = BN->getLocStart();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+      const IdentifierInfo* II = BN->getIdentifier();
+
+      std::string Name;
+
+      if (II != nullptr)
+      {
+        Name = II->getName().str();
+      }
+
+      SourceManager *const SM = MR.SourceManager;
+
+      std::string FunctionName;
+
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
+      {
+        const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
+
+        FunctionName = FD->getNameAsString();
+      }
+
+      Devi::Scope tempscope = Devi::Scope::TU;
+
+      if (FunctionName != "")
+      {
+        tempscope = Devi::Scope::Block;
+      }
+
+      IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
+                        SM->getFilename(SL).str(), Name, SL.printToString(*SM), Devi::NodeKind::EnumConstDecl, \
+                        false, Devi::FunctionDeclKind::NoValue, tempscope, FunctionName, true
+                       };
+
+      IdentInfoProto.push_back(Temp);
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -6312,125 +6599,25 @@ public: onEndOfAllTUs() {}
     /*end of 8.8*/
 
     /*@DEVI-start of 5.x*/
-    unsigned TagCounter = 0U;
-    unsigned TypedefCounter = 0U;
-    bool ShouldBeTagged57 = false;
-    bool ShouldBeTagged56 = false;
-
-    /*@DEVI-3 is the magical number because it will find itself twice, because typedef and tag
-    identifiers are matched twice, once by nameddecl  and once by tag or typedef. the third time
-    we find a match is where we have found something to tag.*/
-    /*@DEVI-has false positives-incomplete record types that later become complete fit the criteria.*/
     for (auto &iter : IdentInfoProto)
     {
-      if (iter.IsTagIdentifier)
+      if (iter.NK == Devi::NodeKind::RecordDecl)
       {
         for (auto &yaiter : IdentInfoProto)
         {
-          if ((iter.Name == yaiter.Name))
+          if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
           {
-            TagCounter++;
-          }
-        }
-
-        if (TagCounter >= 3U)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
-          {
-            /*intentionally elft blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
+            if ((iter.IsIncomplete != yaiter.IsIncomplete) && iter.IsValid == true && yaiter.IsValid == true)
             {
-              std::cout << "5.4/5.7:" << "tag identifier is not unique:";
-              std::cout << iter.SLString << ":" << std::endl;
-
-              XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.4/5.7", "tag identifier is not unique: ");
-              JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.4/5.7", "tag identifier is not unique: ");
+              iter.IsValid = false;
             }
           }
-        }
 
-        TagCounter = 0U;
-      }
-
-      for (auto &yaiter : IdentInfoProto)
-      {
-        if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
-        {
-          ShouldBeTagged57 = true;
-        }
-
-        if ((iter.Name == yaiter.Name) && \
-            (iter.IsTagIdentifier != yaiter.IsTagIdentifier || iter.IsTypeDefIdentifier != yaiter.IsTypeDefIdentifier) && \
-            (iter.SLString != yaiter.SLString))
-        {
-          ShouldBeTagged56 = true;
-        }
-      }
-
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
-      {
-        /*intentionally elft blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
-        {
-          if (ShouldBeTagged57)
+          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl)
           {
-            std::cout << "5.7:" << "Identifier is not unique:";
-            std::cout << iter.SLString << ":" << iter.Name << ":" << std::endl;
-
-            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier is not unique: ");
-            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier is not unique: ");
-          }
-
-          if (ShouldBeTagged56)
-          {
-            std::cout << "5.6:" << "Identifier is not unique:";
-            std::cout << iter.SLString << ":" << iter.Name << ":" << std::endl;
-
-            XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "Identifier is not unique: ");
-            JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "Identifier is not unique: ");
+            yaiter.IsValid = false;
           }
         }
-      }
-
-      ShouldBeTagged57 = false;
-      ShouldBeTagged56 = false;
-
-      if (iter.IsTypeDefIdentifier)
-      {
-        for (auto &yaiter : IdentInfoProto)
-        {
-          if ((iter.Name == yaiter.Name))
-          {
-            TypedefCounter++;
-          }
-        }
-
-        if (TypedefCounter >= 3U)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
-          {
-            /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
-            {
-              std::cout << "5.3/5.7:" << "typedef identifier is not unique:";
-              std::cout << iter.SLString << ":" << std::endl;
-
-              XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.3/5.7", "typedef identifier is not unique: ");
-              JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.3/5.7", "typedef identifier is not unique: ");
-            }
-          }
-        }
-
-        TypedefCounter = 0U;
       }
     }
     /*end of 5.x*/
@@ -6452,9 +6639,9 @@ public:
     HandlerForCF145(R), HandlerForCF146(R), HandlerForCF147(R), HandlerForCF148(R), HandlerForSwitch154(R), HandlerForPTC111(R), \
     HandlerForCSE137(R), HandlerForDCDF810(R), HandlerForFunction165(R), HandlerForFunction1652(R), HandlerForPointer171(R), \
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
-    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent5(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
+    HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent51(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
-    HandlerForTypes612(R), HandlerForConst71(R) {
+    HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -6636,13 +6823,7 @@ public:
                                             parenExpr().bind("atcparens"), implicitCastExpr().bind("atckidice"), \
                                             cStyleCastExpr().bind("atccstyle"))))).bind("atcdaddy"), &HandlerForATC101);
 
-    /*@DEVI-matchers for 5.x*/
-    Matcher.addMatcher(namedDecl().bind("ident5var"), &HandlerForIdent5);
-
-    Matcher.addMatcher(typedefDecl().bind("ident5typedef"), &HandlerForIdent5);
-
-    Matcher.addMatcher(recordDecl().bind("ident5record"), &HandlerForIdent5);
-    /*end of matchers for 5.x*/
+    Matcher.addMatcher(namedDecl().bind("ident5nameddecl"), &HandlerForIdent51);
 
     Matcher.addMatcher(declRefExpr(allOf(hasAncestor(functionDecl().bind("mcdcdf87daddy")), \
                                          to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
@@ -6684,6 +6865,44 @@ public:
 
     Matcher.addMatcher(integerLiteral().bind("mcconst71int"), &HandlerForConst71);
     /*end of 7.1*/
+
+    /*@DEVI-matchers for 5.x*/
+    /*@DEVI-typedefs always have file scope.*/
+    Matcher.addMatcher(typedefDecl().bind("ident5typedef"), &HandlerForIdent5X);
+
+#if 0
+    Matcher.addMatcher(typedefDecl(unless(hasAncestor(functionDecl()))).bind("ident5typedef"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(typedefDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5typedef"), &HandlerForIdent5X);
+#endif
+
+    Matcher.addMatcher(recordDecl(unless(hasAncestor(functionDecl()))).bind("ident5record"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(recordDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5record"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(fieldDecl(unless(hasAncestor(functionDecl()))).bind("ident5field"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(fieldDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5field"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(parmVarDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5parmvar"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(functionDecl().bind("ident5func"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(varDecl(unless(hasAncestor(functionDecl()))).bind("ident5var"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(varDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5var"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(enumDecl(unless(hasAncestor(functionDecl()))).bind("ident5enum") , &HandlerForIdent5X);
+
+    Matcher.addMatcher(enumDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5enum"), &HandlerForIdent5X);
+
+    /*@DEVI-labels always have function scope.*/
+    Matcher.addMatcher(labelDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5label"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(enumConstantDecl(unless(hasAncestor(functionDecl()))).bind("ident5enumconst"), &HandlerForIdent5X);
+
+    Matcher.addMatcher(enumConstantDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5enumconst"), &HandlerForIdent5X);
+    /*end of matchers for 5.x*/
 #endif
   }
 
@@ -6748,7 +6967,7 @@ private:
   MCSU181 HandlerForSU181;
   MCPTC11CSTYLE HandlerForMCPTCCSTYLE;
   MCATC101 HandlerForATC101;
-  MCIdent5 HandlerForIdent5;
+  MCIdent51 HandlerForIdent51;
   MCDCDF87 HandlerForDCDF87;
   MCDCDF88 HandlerForDCDF88;
   MCLangX23 HandlerForLangX23;
@@ -6760,6 +6979,7 @@ private:
   MCCSE135 HandlerForCSE135;
   MCTypes612 HandlerForTypes612;
   MCConst71 HandlerForConst71;
+  MCIdent5x HandlerForIdent5X;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
