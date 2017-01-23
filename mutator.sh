@@ -32,6 +32,7 @@ do
 		echo "			format calls clang-format to format the mutant. later to be used for the test command."
 		echo "			test runs the tests on the executables and checks the results."
 		echo "			misrac checks for misrac rules"
+		echo "			auto-refac runs the automatic-refactoring on the inputs. auto-refac will run "
 		echo "-v, 	--version prints out the version."
 		echo "-i, 	--input, -input lets you choose the input file(or white-space-separated list of files) that is going to be passed to the mutator executable(s)."
 		echo "-o, 	--output, -output lets you choose where to put the mutant."
@@ -124,7 +125,6 @@ do
 		-i|--input|-input)
 		while [[ ! "$2" == -* ]] && [[ $# -gt 0 ]]; do
 			INPUT="$INPUT"" ""$2"
-			#echo "INPUT = "$INPUT
 			shift
 		done
 		;;
@@ -185,18 +185,33 @@ elif [[ "$COMMAND" == "misrac" ]]; then
 		source ./extra-tools/ReportPrintPretty.sh ./test/misra-log ./test/misra-log-pretty
 	fi
 elif [[ "$COMMAND" == "default" ]]; then
+	echo "This option is deprecated..."
+	exit 0
 	echo "Building all target executables..."
-	"make" all
+	"make" all CXX=clang++ BUILD_MODE=COV_NO_CLANG_1Z
 	echo "Ruunning the input through clang-format..."
-	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	$INPUT -- > ./test/$OUTPUT_FORMAT
+	"clang-format"	$INPUT -- > ./test/$OUTPUT_FORMAT
 	"cp" ./test/$OUTPUT_FORMAT ./test/medium.c
 	echo "Running all exetubales on target input..."
 	echo "Level 1..."
 	"./mutator" ./test/medium.c -- > ./test/mutant-lvl1.c
 	echo "Level 2..."
 	"./mutator-lvl2" ./test/mutant-lvl1.c -- > ./test/$OUTPUT
-	echo 'Using clang-format to format the mutant...'
-	"/home/bloodstalker/llvm-clang/build/bin/clang-format"	./test/$OUTPUT -- > ./test/$OUTPUT_FORMAT
+	echo "Using clang-format to format the mutant..."
+	"clang-format"	./test/$OUTPUT -- > ./test/$OUTPUT_FORMAT
+elif [[ "$COMMAND" == "auto-refac" ]]; then
+	echo "Copying input file(s) to temp..."
+	CP_INPUT_ARR=$(echo "$INPUT" | awk 'BEGIN{RS=" "}{print $1}')
+	echo $CP_INPUT_ARR
+	"cp" $CP_INPUT_ARR ./temp
+	echo "Running clang-format on the copies of input(s)..."
+	RUN_INPUT_ARR=$(ls ./temp | gawk 'BEGIN{RS="\n"}{print $1}')
+	for loopinput in ${RUN_INPUT_ARR[@]}; do
+		echo mut1-$loopinput
+		"./mutator" ./temp/$loopinput -- > ./temp/mut1-$loopinput
+		echo "Running automatic-refactoring on copies of input(s)..."
+		"clang-format" -i $loopinput
+	done
 elif [[ "$COMMAND" == "jack" ]]; then
 	echo
 else 
