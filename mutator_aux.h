@@ -43,7 +43,6 @@ bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL);
 
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile);
 /*********************************************************************************************************************/
-
 /*@DEVI- for both report classes, if the program gets terminated, since the destructor does not close
 the report files, what happens to them is implementation-defined in case of let's say an exit, but since
 we erase the files everytime a new instance of mutator-lvl0 is called, we are fine. or so i think.*/
@@ -73,7 +72,7 @@ private:
   XMLDocument XMLReportDoc;
   XMLNode* RootPointer;
 };
-
+/*********************************************************************************************************************/
 class JSONReport
 {
 public:
@@ -98,7 +97,6 @@ private:
 /*********************************************************************************************************************/
 /*end of namespace Devi*/
 }
-
 #endif
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
