@@ -36,7 +36,7 @@ using namespace clang::tooling;
 /*the variable that holds the previously-matched SOC for class StmtTrap.*/
 std::string g_linenoold;
 
-static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
+static llvm::cl::OptionCategory MutatorLVL1Cat("mutator-lvl1 options category");
 /**********************************************************************************************************************/
 /*matcher callback for something.*/
 class FunctionHandler : public MatchFinder::MatchCallback {
@@ -221,15 +221,23 @@ public:
     {
       const ForStmt *MRFor = MR.Nodes.getNodeAs<clang::ForStmt>("mrfor");
 
+      Rewriter::RewriteOptions opts;
+
       SourceLocation MRForSL = MRFor->getBody()->getLocStart();
       MRForSL = Devi::SourceLocationHasMacro(MRForSL, Rewrite, "start");
       SourceLocation MRForSLE = MRFor->getBody()->getLocEnd();
       MRForSLE = Devi::SourceLocationHasMacro(MRForSLE, Rewrite, "end");
 
+      SourceRange SR;
+      SR.setBegin(MRForSL);
+      SR.setEnd(MRForSLE);
+
+      int RangeSize = Rewrite.getRangeSize(SR, opts);
+
       Rewrite.InsertText(MRForSL, "{\n", true, false);
       /*we're getting the endloc with an offset of 2 to accomodate unary operators like '++'.*/
       /*line-terminating semicolons are not included in the matches.*/
-      Rewrite.InsertTextAfterToken(MRForSLE.getLocWithOffset(2U), "\n}");
+      Rewrite.InsertTextAfterToken(MRForSL.getLocWithOffset(RangeSize), "\n}");
     }
     else
     {
@@ -450,12 +458,76 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class IfConstSwapper : public MatchFinder::MatchCallback
+{
+public:
+  IfConstSwapper (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::BinaryOperator>("ifconstswapbinop") != nullptr)
+    {
+      const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("ifconstswapbinop");
+
+      const Expr* LHS = BO->getLHS();
+      const Expr* RHS = BO->getRHS();
+
+      ASTContext *const ASTC = MR.Context;
+      SourceManager *const SM = MR.SourceManager;
+
+      if (RHS->isEvaluatable(*ASTC, Expr::SideEffectsKind::SE_NoSideEffects) && !LHS->isEvaluatable(*ASTC, Expr::SideEffectsKind::SE_NoSideEffects))
+      {
+        SourceLocation SLLHS = LHS->getLocStart();
+        SLLHS = Devi::SourceLocationHasMacro(SLLHS, Rewrite, "start");
+        SourceLocation SLELHS = LHS->getLocStart();
+        SLELHS = Devi::SourceLocationHasMacro(SLELHS, Rewrite, "start");
+        SourceRange SRLHS;
+        SRLHS.setBegin(SLLHS);
+        SRLHS.setEnd(SLELHS);
+
+        if (!SM->isInMainFile(SLLHS))
+        {
+          return void();
+        }
+
+        if (SM->isInSystemHeader(SLLHS))
+        {
+          return void();
+        }
+
+        SourceLocation SLRHS = RHS->getLocStart();
+        SLRHS = Devi::SourceLocationHasMacro(SLRHS, Rewrite, "start");
+        SourceLocation SLERHS = RHS->getLocEnd();
+        SLERHS = Devi::SourceLocationHasMacro(SLERHS, Rewrite, "start");
+        SourceRange SRRHS;
+        SRRHS.setBegin(SLRHS);
+        SRRHS.setEnd(SLERHS);
+
+        const std::string LHSString = Rewrite.getRewrittenText(SRLHS);
+        const std::string RHSString = Rewrite.getRewrittenText(SRRHS);
+
+        StringRef LHSRef = StringRef(LHSString);
+        StringRef RHSRef = StringRef(RHSString);
+
+        Rewriter::RewriteOptions opts;
+        int RangeSizeLHS = Rewrite.getRangeSize(SRLHS, opts);
+        int RangeSizeRHS = Rewrite.getRangeSize(SRRHS, opts);
+
+        Rewrite.ReplaceText(SRLHS.getBegin(), RangeSizeLHS, RHSRef);
+        Rewrite.ReplaceText(SRRHS.getBegin(), RangeSizeRHS, LHSRef);
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite;
+};
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
   MyASTConsumer(Rewriter &R) : HandlerForFunction(R), HandlerForIfTrap(R), HandlerForStmtTrap(R), HandlerForStmtRet(R), HandlerForFixer(R), \
-    HandlerForWhile(R), HandlerForIfElse(R), HandlerForIfFixer(R), HandlerForSwitchFixer(R), HandlerForSwitchDf(R)
+    HandlerForWhile(R), HandlerForIfElse(R), HandlerForIfFixer(R), HandlerForSwitchFixer(R), HandlerForSwitchDf(R), HandlerForIfConstSwap(R)
   {
     Matcher.addMatcher(binaryOperator(hasOperatorName("==")).bind("binopeq"), &HandlerForFunction);
 
@@ -476,9 +548,11 @@ public:
     Matcher.addMatcher(switchStmt(forEachDescendant(caseStmt(unless(hasDescendant(compoundStmt()))).bind("bubba-hotep"))), &HandlerForSwitchFixer);
 
     Matcher.addMatcher(switchStmt(hasDescendant(defaultStmt(unless(hasDescendant(compoundStmt()))).bind("mumma-hotep"))), &HandlerForSwitchDf);
+
+    Matcher.addMatcher(ifStmt(hasDescendant(binaryOperator(anyOf(hasOperatorName("=="), hasOperatorName("="))).bind("ifconstswapbinop"))).bind("ifconstswapper"), &HandlerForIfConstSwap);
   }
 
-  void HandleTranslationUnit(ASTContext &Context) override {
+  void HandleTranslationUnit(ASTContext & Context) override {
     Matcher.matchAST(Context);
   }
 
@@ -493,17 +567,21 @@ private:
   IfFixer HandlerForIfFixer;
   SwitchFixer HandlerForSwitchFixer;
   SwitchDfFixer HandlerForSwitchDf;
+  IfConstSwapper HandlerForIfConstSwap;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
-class MyFrontendAction : public ASTFrontendAction {
+class MyFrontendAction : public ASTFrontendAction
+{
 public:
   MyFrontendAction() {}
-  void EndSourceFileAction() override {
+  void EndSourceFileAction() override
+  {
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
   }
 
-  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
+  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+  {
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
   }
@@ -513,8 +591,9 @@ private:
 };
 /**********************************************************************************************************************/
 /*Main*/
-int main(int argc, const char **argv) {
-  CommonOptionsParser op(argc, argv, MatcherSampleCategory);
+int main(int argc, const char **argv)
+{
+  CommonOptionsParser op(argc, argv, MutatorLVL1Cat);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
   return Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
