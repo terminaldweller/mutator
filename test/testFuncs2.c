@@ -4,15 +4,15 @@
 /*inclusion directives*/
 #include "testFuncs2.h"
 #if 0
-#include <stdlib.h>
-#include <stdio.h>
-#include <stddef.h>
 #include <signal.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #endif
 /*********************************************************************************************************************/
 /*macro and definitions*/
-typedef const* INTPTR;
+typedef const *INTPTR;
 /*clang wont let it through*/
 #if 0
 typedef int dummytypedef;
@@ -29,12 +29,12 @@ typedef gaga incompletearr1;
 #define ABSOLUTE(X) (((X) >= 0) ? (X) : -(X))
 #define ABSOLUTE2(X) ((X >= 0) ? X : -X)
 #define ABSOLUTE3(XMACRO) (((XMACRO) <= 0) ? (XMACRO) : -(XMACRO))
-#define MINUS(X,Y) ((X) - (Y))
+#define MINUS(X, Y) ((X) - (Y))
 #define PRINT(bubba) printf(#bubba "%d\n", bubba)
 #define LOCO i##nt
 #define LOCO2 #LOCO2
 #define LOCO3(bubba) printf(#bubba "%d\n", bu##bba)
-#define DEFINEVAR(X,Y) int X##Y
+#define DEFINEVAR(X, Y) int X##Y
 #define PI 3.14
 #define PI2 (a)
 #define charchar char
@@ -71,7 +71,6 @@ typedef gaga incompletearr1;
 
 #if defined LOCOLUPO || LOCO
 #endif
-
 
 #define LOCOLUPO
 #if 1
@@ -112,14 +111,12 @@ int incompletearr1[10];
 union u3;
 union u4;
 
-union u3
-{
+union u3 {
   int ua;
   char ub;
 };
 
-union yizzy
-{
+union yizzy {
   int ua;
   char ub;
 };
@@ -134,8 +131,7 @@ int s10;
 struct s10;
 struct s11;
 
-struct s10
-{
+struct s10 {
   int sa[10];
   char sb;
   int sc;
@@ -145,8 +141,7 @@ const unsigned int cint = 0xFFFFFFFF;
 
 /*********************************************************************************************************************/
 /*functions go here.*/
-static void test33(void)
-{
+static void test33(void) {
 
   short int a;
   long int b;
@@ -157,21 +152,19 @@ static void test33(void)
   sum = dudu + bubu + fufu;
 
   MINUS(a, b);
-  //MINUS(a);
+  // MINUS(a);
 
   b = (int)a;
 
   /* contrast the above START + LEN with the following */
-  if ((START + LEN) > END)
-  {
-    //error ("Buffer overrun");
+  if ((START + LEN) > END) {
+    // error ("Buffer overrun");
     /* Not OK: START + LEN wraps around to 0x0000
     due to unsigned int arithmetic */
   }
 }
 
-void testfunc1(void)
-{
+void testfunc1(void) {
   unsigned char a;
   unsigned char b;
   char c;
@@ -180,7 +173,7 @@ void testfunc1(void)
 
   sum = sum + dudu + fufu;
 
-  b =  a;
+  b = a;
   c = 123;
   d = 123;
   c = 'c';
@@ -190,8 +183,11 @@ void testfunc1(void)
   a = 123;
   c = '\n';
 
-  ;;;;
-  ;/*comment*/
+  ;
+  ;
+  ;
+  ;
+  ; /*comment*/
   ; /*comment*/
 
   c = '5';
@@ -200,8 +196,7 @@ void testfunc1(void)
 #if CRAZYMACRO < 0
 #endif
 
-testfunc2(void)
-{
+testfunc2(void) {
   int a;
   int b;
   int sum;
@@ -209,8 +204,7 @@ testfunc2(void)
   sum = a + b + dudu;
 }
 
-void testfunc3()
-{
+void testfunc3() {
   int a;
   int b;
   int c;
@@ -225,26 +219,23 @@ void testfunc3()
   /*do stuff*/
 }
 
-int testfunc6(void)
-{
+int testfunc6(void) {
   int a;
   int b;
-  //return ();
+  // return ();
 }
 
-int testfunc7(void)
-{
+int testfunc7(void) {
   int a;
   int b;
-  //return;
+  // return;
 }
 
-int testfunc8(void)
-{
+int testfunc8(void) {
   int a[10];
   int b[10];
 
-  int* p;
+  int *p;
 
   p = &a[0];
 
@@ -256,82 +247,74 @@ int testfunc8(void)
   int garbage;
   int garbage2;
 
-  for (i = 0; i < 10; ++i)
-  {
+  for (i = 0; i < 10; ++i) {
     sum += *(a + i);
     sum2 += *(p + i);
-    //garbage = *(a - b);
+    // garbage = *(a - b);
   }
 
-  for (i = 10; i < 1; i++)
-  {
+  for (i = 10; i < 1; i++) {
     sum += *(a - i);
     sum2 += *(p - i);
-    //garbage2 = *(p - a);
+    // garbage2 = *(p - a);
   }
 }
 
-void testfunc9(void)
-{
-  int** p1;
-  int*** p2;
+void testfunc9(void) {
+  int **p1;
+  int ***p2;
 
-  int* pointer1;
+  int *pointer1;
   double d2;
 
   pointer1 = &d2;
 
-  struct
-  {
-    int* sp1;
-    int** sp2;
-    int*** sp3;
+  struct {
+    int *sp1;
+    int **sp2;
+    int ***sp3;
   };
 
-  struct s* ps1;
-  /*these two should not be tagged by 18.1 since they are pointers(to pointers) to an incomplete type. the pointer itself is a complete type.*/
-  struct s** ps2;
-  struct s*** ps3;
+  struct s *ps1;
+  /*these two should not be tagged by 18.1 since they are pointers(to pointers)
+   * to an incomplete type. the pointer itself is a complete type.*/
+  struct s **ps2;
+  struct s ***ps3;
 
-  INTPTR *const* const fedupp1;
+  INTPTR *const *const fedupp1;
 
-  int ** (*pfunc1)();
+  int **(*pfunc1)();
   int crazycast1 = (int)pfunc1;
   int crazycast2;
-  pfunc1 = (int ** (*)())crazycast2;
-  int ** (**pfunc2)();
+  pfunc1 = (int **(*)())crazycast2;
+  int **(**pfunc2)();
   pfunc2 = pfunc1;
-  pfunc2 = (int ** (*)())pfunc1;
-  int ** (***pfunc3)();
-  int *** (**pfunc4)();
-  int ** (**pfunc5)(int**, int**);
-  int ** (**pfunc6)(int**, int***);
+  pfunc2 = (int **(*)())pfunc1;
+  int **(***pfunc3)();
+  int ***(**pfunc4)();
+  int **(**pfunc5)(int **, int **);
+  int **(**pfunc6)(int **, int ***);
 }
 
-void testfunc10 (int ** (**p5)(int**, int**), int ** (**p6)(int**, int***))
-{
+void testfunc10(int **(**p5)(int **, int **), int **(**p6)(int **, int ***)) {}
 
-}
-
-void testfunc11(void)
-{
+void testfunc11(void) {
   long int a;
   double dd;
   short unsigned int b;
-  short int* p1;
-  long int* p2;
+  short int *p1;
+  long int *p2;
   int normalint;
 
-  p2 = (long int*)p1;
-  p1 = (short int*)p2;
+  p2 = (long int *)p1;
+  p1 = (short int *)p2;
   b = a;
   dd = b;
   normalint = a;
 }
 
-void testfunc12(void)
-{
-  const char* stringlit = "date should be in the form ??-??-??";
+void testfunc12(void) {
+  const char *stringlit = "date should be in the form ??-??-??";
 
   short unsigned int port = 0x005aU;
   unsigned char portchar = 0x005aU;
@@ -356,26 +339,24 @@ void testfunc12(void)
 }
 
 /*the test are from the misrac doc for 11.5*/
-void testfunc13(void)
-{
+void testfunc13(void) {
   int x;
-  int * const cpi = &x; /* const pointer */
-  int * const * pcpi; /* pointer to const pointer */
-  const int * * ppci; /* pointer to pointer to const */
-  int * * ppi;
-  const int * pci; /* pointer to const */
-  volatile int * pvi; /* pointer to volatile */
-  int * pi;
-  pi = cpi; /* Compliant - no conversion
-no cast required */
-  pi = (int *)pci; /* Not compliant */
-  pi = (int *)pvi; /* Not compliant */
-  ppi = (int * *)pcpi; /* Not compliant */
-  ppi = (int * *)ppci; /* Not compliant */
+  int *const cpi = &x; /* const pointer */
+  int *const *pcpi;    /* pointer to const pointer */
+  const int **ppci;    /* pointer to pointer to const */
+  int **ppi;
+  const int *pci;    /* pointer to const */
+  volatile int *pvi; /* pointer to volatile */
+  int *pi;
+  pi = cpi;           /* Compliant - no conversion
+          no cast required */
+  pi = (int *)pci;    /* Not compliant */
+  pi = (int *)pvi;    /* Not compliant */
+  ppi = (int **)pcpi; /* Not compliant */
+  ppi = (int **)ppci; /* Not compliant */
 }
 
-void testfunc14(void)
-{
+void testfunc14(void) {
   char a;
   long int b;
   long int b2;
@@ -386,8 +367,7 @@ void testfunc14(void)
   a = (int)(b + b2);
   a = b + b2;
   a = b++;
-  if ((int)(b + b2))
-  {
+  if ((int)(b + b2)) {
     /*somethi/*ng*/
   }
 
@@ -397,23 +377,19 @@ void testfunc14(void)
   d = e;
 }
 
-void testfunc15 (void)
-{
+void testfunc15(void) {
   int a[10];
 
   a[1] = 041;
   a[2] = 052;
 }
 
-void testfunc16(int* p1, int* p2, int* const p3, const int* p4, int* p5)
-{
-  if (*p1 > 100)
-  {
+void testfunc16(int *p1, int *p2, int *const p3, const int *p4, int *p5) {
+  if (*p1 > 100) {
     /*do something*/
   }
 
-  if (*p5 > 100)
-  {
+  if (*p5 > 100) {
     /*do something*/
   }
 
@@ -423,21 +399,18 @@ void testfunc16(int* p1, int* p2, int* const p3, const int* p4, int* p5)
   *p2++;
   *p2 = *p2 + 100;
 
-  if (*p3 > 1000)
-  {
+  if (*p3 > 1000) {
     /*do something else*/
   }
 
-  if (*p4 < 100)
-  {
+  if (*p4 < 100) {
     /*yet another task*/
   }
+
+  asm("add %al, (%rax)");
 }
 
-void externfunc (void)
-{
-
-}
+void externfunc(void) {}
 
 /*********************************************************************************************************************/
 /*last line intentionally left blank.*/
