@@ -401,7 +401,7 @@ public:
       Rewriter::RewriteOptions opts;
       int RangeSize [[maybe_unused]] = Rewrite.getRangeSize(SR, opts);
 
-#if 0
+#if 1
       Rewrite.InsertText(SBSL, "{\n", "true", "true");
       Rewrite.InsertTextAfterToken(SL.getLocWithOffset(RangeSize), "\n}");
 #endif
@@ -443,7 +443,7 @@ public:
       Rewriter::RewriteOptions opts;
       int RangeSize [[maybe_unused]] = Rewrite.getRangeSize(SR, opts);
 
-#if 0
+#if 1
       Rewrite.InsertText(CSL, "{\n", "true", "true");
       Rewrite.InsertTextAfterToken(SL.getLocWithOffset(RangeSize), "\n}");
 #endif
