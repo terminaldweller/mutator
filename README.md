@@ -62,10 +62,12 @@ All the as-of-yet implemented features of the project are very much buildable an
 * Upgrading the UI to be able to handle the new automatic-refactoring features.
 
 ### Test Plans
+
+#### For a detailed list, you can view `tests.md` under `docs`.<br/>
+
 * The Dev method is TDD so of course, we currently have TDD tests.
 * For static analysis tools, mutator uses [Coverity](https://scan.coverity.com/projects/bloodstalker-mutator) which is integrated with [Travic CI](https://travis-ci.org/bloodstalker/mutator) so it runs everytime on every commit.<br/>
 * For dynamic analysis tools, currently mutator is using [Valgrind](http://valgrind.org). You can run it using `./mutator.sh -test mutator-lvl0 valgrind`. You do need to have `valgrind` installed.<br/>
-* Looking at Google's `OSS Fuzzy`, though I'm not entirely sure if we can use that.<br/>
 * The code will be reviewed after the first pre-release version. I'm hoping to find some reviewers but if not, I'll have to do it myself.<br/>
 * There will be unit tests after a first pre-release version.<br/>
 
