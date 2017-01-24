@@ -78,6 +78,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 * The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9.<br/> 
 * There are no plans in regards to keeping or dropping LLVM 3.9 support but do keep in mind the libraries mutator uses are not guaranteed to keep backwards-compatibility by their developers as they are still under development.<br/>
 * There are only 4 actual defects on mutator's Coverity scan that belong to mutator's source code and not the library. 4 are potential defects which are not really defects.<br/>
+* I will be taking a break of sorts for the next two weeks (probably less but still) starting from 1.25.2017.<br/>
 
 ##Building and Running
 
