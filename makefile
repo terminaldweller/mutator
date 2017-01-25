@@ -26,9 +26,9 @@ endif
 
 #for gcov compatibility
 ifeq ($(BUILD_MODE), COV_GNU)
-ifneq ($(CXX), clang++)
-$(error This build mode is only useable with clang++.)
-endif
+#ifneq ($(CXX), clang++)
+#$(error This build mode is only useable with clang++.)
+#endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
  -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-arcs -ftest-coverage
@@ -120,5 +120,5 @@ help:
 	@echo '		COV_NO_CLANG: this build mode will not support any coverage format and is meant to be used with clang++(clang++ only mode).'
 	@echo '		COV_NO_CLANG_1Z: does not instrument the code for any coverage and uses -std=c++1z (clang++ only mode).'
 	@echo '		GNU_MODE: meant to be used for builds with g++. supports no coverage(g++ only mode).'
-	@echo '		WIN_MODE: to support windows builds and the apparent lack of llvm-config.'
+	@echo '		WIN_MODE: to support windows builds and the apparent lack of llvm-config'
 	@echo '- Press tab for more targets if you have zsh!'
