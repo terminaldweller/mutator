@@ -20,6 +20,7 @@ matrix:
 
 before_install:
       - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+      - pip install --user cpp-coveralls
 
 before_script: 
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -30,3 +31,10 @@ before_script:
   - travis_retry sudo apt-get install clang-4.0 libclang-4.0-dev libclang-common-4.0-dev libllvm4.0 llvm-4.0-dev llvm-4.0 -y
 
 script: make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG
+
+after_success:
+  - make clean
+  - make mutator-lvl0 CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_GNU
+  - chmod +x mutator.sh
+  - ./mutator.sh -f ./sample/action_file.mutator
+  - coveralls --exclude ./json --exclude ./tinyxml2
