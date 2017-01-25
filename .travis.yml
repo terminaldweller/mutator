@@ -36,5 +36,5 @@ after_success:
   - make clean
   - make mutator-lvl0 CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_GNU
   - chmod +x mutator.sh
-  - ./mutator.sh -f ./sample/action_file.mutator
+  - ./mutator.sh -f ./samples/action_file.mutator
   - coveralls --exclude ./json --exclude ./tinyxml2
