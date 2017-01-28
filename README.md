@@ -72,6 +72,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 * There will be unit tests after a first pre-release version.<br/>
 
 ##Announcements
+####* project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
 ####* `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
 * The Implementation of the automatic refactoring facilities of `mutator` has begun. The UI is not yet capable of accomodating the current features so I'll try to add them as soon as possible.<br/>
 * LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order.<br/>
