@@ -167,7 +167,6 @@ XMLReport::XMLReport()
 
 void XMLReport::XMLCreateReport()
 {
-
   XMLReportDoc.InsertFirstChild(RootPointer);
 }
 
@@ -187,7 +186,7 @@ void XMLReport::XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string Misr
 
   XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
   MisraElement->SetText(Description.c_str());
-  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("Misra-C-2004Rule", MisraRule.c_str());
   MisraElement->SetAttribute("FileName", FileNameString.c_str());
   MisraElement->SetAttribute("SpellingLineNumber", LineNumber);
   MisraElement->SetAttribute("SpellingColumnNumber", ColumnNumber);
@@ -206,7 +205,7 @@ void XMLReport::XMLAddNode(FullSourceLoc FullSrcLoc, SourceLocation SL, std::str
 
   XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
   MisraElement->SetText(Description.c_str());
-  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("Misra-C-2004Rule", MisraRule.c_str());
   MisraElement->SetAttribute("FileName", FileNameString.c_str());
   MisraElement->SetAttribute("SpellingLineNumber", LineNumber);
   MisraElement->SetAttribute("SpellingColumnNumber", ColumnNumber);
@@ -226,7 +225,7 @@ void XMLReport::XMLAddNode(const SourceManager &SM, SourceLocation SL, std::stri
 
   XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
   MisraElement->SetText(Description.c_str());
-  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("Misra-C-2004Rule", MisraRule.c_str());
   MisraElement->SetAttribute("FileName", FileNameString.c_str());
   MisraElement->SetAttribute("SpellingLineNumber", LineNumber);
   MisraElement->SetAttribute("SpellingColumnNumber", ColumnNumber);
@@ -239,7 +238,7 @@ void XMLReport::XMLAddNode(std::string FilePath, std::string MisraRule, std::str
 
   XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
   MisraElement->SetText(Description.c_str());
-  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("Misra-C-2004Rule", MisraRule.c_str());
   MisraElement->SetAttribute("FileName", FilePath.c_str());
   RootPointer->InsertEndChild(MisraElement);
 }
@@ -250,7 +249,7 @@ void XMLReport::XMLAddNode(unsigned Line, unsigned Column, std::string FileName,
 
   XMLElement* MisraElement = XMLReportDoc.NewElement("MisraDiag");
   MisraElement->SetText(Description.c_str());
-  MisraElement->SetAttribute("Misra-C:2004Rule", MisraRule.c_str());
+  MisraElement->SetAttribute("Misra-C-2004Rule", MisraRule.c_str());
   MisraElement->SetAttribute("FileName", FileName.c_str());
   MisraElement->SetAttribute("SpellingLineNumber", Line);
   MisraElement->SetAttribute("SpellingColumnNumber", Column);
@@ -291,7 +290,7 @@ void JSONReport::JSONAddElement(ASTContext* ASTC, SourceLocation SL, std::string
   json RepJ;
 
   RepJ["MisraDiag"]["Description"] = Description.c_str();
-  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["Misra-C-2004Rule"] = MisraRule.c_str();
   RepJ["MisraDiag"]["FileName"] = FileNameString.c_str();
   RepJ["MisraDiag"]["SpellingLineNumber"] = LineNumber;
   RepJ["MisraDiag"]["SpellingColumnNumber"] = ColumnNumber;
@@ -312,7 +311,7 @@ void JSONReport::JSONAddElement(FullSourceLoc FullSrcLoc, SourceLocation SL, std
   json RepJ;
 
   RepJ["MisraDiag"]["Description"] = Description.c_str();
-  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["Misra-C-2004Rule"] = MisraRule.c_str();
   RepJ["MisraDiag"]["FileName"] = FileNameString.c_str();
   RepJ["MisraDiag"]["SpellingLineNumber"] = LineNumber;
   RepJ["MisraDiag"]["SpellingColumnNumber"] = ColumnNumber;
@@ -334,7 +333,7 @@ void JSONReport::JSONAddElement(const SourceManager &SM, SourceLocation SL, std:
   json RepJ;
 
   RepJ["MisraDiag"]["Description"] = Description.c_str();
-  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["Misra-C-2004Rule"] = MisraRule.c_str();
   RepJ["MisraDiag"]["FileName"] = FileNameString.c_str();
   RepJ["MisraDiag"]["SpellingLineNumber"] = LineNumber;
   RepJ["MisraDiag"]["SpellingColumnNumber"] = ColumnNumber;
@@ -349,7 +348,7 @@ void JSONReport::JSONAddElement(std::string FilePath, std::string MisraRule, std
   json RepJ;
 
   RepJ["MisraDiag"]["Description"] = Description.c_str();
-  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["Misra-C-2004Rule"] = MisraRule.c_str();
   RepJ["MisraDiag"]["FileName"] = FilePath.c_str();
 
 
@@ -363,7 +362,7 @@ void JSONReport::JSONAddElement(unsigned Line, unsigned Column, std::string File
   json RepJ;
 
   RepJ["MisraDiag"]["Description"] = Description.c_str();
-  RepJ["MisraDiag"]["Misra-C:2004Rule"] = MisraRule.c_str();
+  RepJ["MisraDiag"]["Misra-C-2004Rule"] = MisraRule.c_str();
   RepJ["MisraDiag"]["FileName"] = FileName.c_str();
   RepJ["MisraDiag"]["SpellingLineNumber"] = Line;
   RepJ["MisraDiag"]["SpellingColumnNumber"] = Column;
