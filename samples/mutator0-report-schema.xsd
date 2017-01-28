@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--this schema is used to validate the report generated and is only meant as a dev test-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/2001/XMLSchema">
+
+<xs:element name="Report">
+	<xs:complexType>
+		<xs:sequence>
+			<xs:element name="MisraDiag">
+				<xs:complexType>
+						<xs:attribute name="Misra-C-2004Rule" use="required"></xs:attribute>
+						<xs:attribute name="FileName" use="required"></xs:attribute>
+						<xs:attribute name="SpellingLineNumber" use="required"></xs:attribute>
+						<xs:attribute name="SpellingColumnNumber" use="required"></xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:element>
+
+</xs:schema>
