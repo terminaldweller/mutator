@@ -37,8 +37,8 @@ do
 		echo "-i, 	--input, -input lets you choose the input file(or white-space-separated list of files) that is going to be passed to the mutator executable(s)."
 		echo "-o, 	--output, -output lets you choose where to put the mutant."
 		echo "-pp,	--print-pretty, prints the output in a pretty format in a new file. The new file has the same name with a \"-pretty\" added to the name in the same directory."
-		echo "-t,	--test, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind."
-		echo "	For example: -test mutator-lvl0 valgrind"
+		echo "-t,	--test, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind,xsd."
+		echo "	For example: ./mutator.sh --test mutator-lvl0 valgrind"
 		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. Please enclose all the options in double quatation."
 		echo "	For example: -opts \"-Wall std=c89\""
 		echo "-copts 	--customoptions, same as opts, but only used for custom options defined for the executable. For example: -copts \"-SysHeader=false -MainOnly=true\""
@@ -57,6 +57,8 @@ do
 			echo "Running command:"
 			echo "./mutator-lvl0 -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log"
 			"./mutator-lvl0" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log
+		elif [[ "$2" == mutator-lvl0 && "$3" == xsd ]]; then
+			"xmllint" --noout --schema ./samples/mutator0-report-schema.xsd ./test/misrareport.xml
 		else
 			echo "unknown combination of options: $2 and $3"
 			exit 127
@@ -109,7 +111,7 @@ do
 					#skip running ths action
 					echo "skipping $F_ACTION_NAME ..."
 				else
-					echo "unknown option $F_END_ACTION for end_action. only acceptable options are \"run\" and \"stop\"."
+					echo "unknown option $F_END_ACTION for end_action. currently the only acceptable options are \"run\" and \"stop\"."
 				fi
 				;;
 			esac
