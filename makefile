@@ -109,6 +109,7 @@ clean:
 install:
 	chmod +x ./mutator.sh
 	chmod +x ./extra-tools/ReportPrintPretty.sh
+	if [[ ! -d "./temp" ]]; then mkdir temp; fi
 
 help:
 	@echo '- There is help.'
