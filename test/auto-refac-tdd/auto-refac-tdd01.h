@@ -14,9 +14,11 @@ void tdd_forfixer(void);
 
 void tdd_whilefixer(void);
 
-void ifelsefixer(void);
+void tdd_ifelsefixer(void);
 
-void iffixer(void);
+void tdd_iffixer(void);
+
+void tdd_switchfixer_switchdffixer(void);
 
 void tdd_ifconstswapper(void);
 

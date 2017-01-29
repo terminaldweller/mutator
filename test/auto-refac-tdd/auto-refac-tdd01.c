@@ -125,6 +125,84 @@ void tdd_iffixer(void)
 
 }
 
+void tdd_switchfixer_switchdffixer(void)
+{
+  int level = 10U;
+
+  switch (level) {
+  case 10U: {
+    level++;
+    level--;
+    break;
+  }
+  case 20U: {
+    level = 10000U;
+    break;
+  }
+  case 30U: {
+    level++;
+    break;
+  }
+  case 40U: {
+    level++;
+    break;
+  }
+  case 50U: {
+    level++;
+    break;
+  }
+  case 60U: {
+    level = 1000U;
+    break;
+  }
+  case 70U: {
+    level++;
+    break;
+  }
+  case 80U: {
+    level++;
+    break;
+  }
+  case 90U: {
+    level++;
+    break;
+  }
+  default: {
+    level++;
+    break;
+  }
+  }
+
+  switch (level) {
+  case 1: {
+    level++;
+    break;
+  }
+  case 2:
+    level = 10;
+    level--;
+    {
+    case 3:
+      level = 10U;
+      level++;
+      break;
+    }
+  }
+
+  switch (level) {
+  case 1:
+    level++;
+  case 2:
+    level = 1;
+  case 3:
+    level = 2;
+  default:
+    level++;
+  }
+
+  switch (level) {}
+}
+
 void tdd_ifconstswapper(void)
 {
   int a;
