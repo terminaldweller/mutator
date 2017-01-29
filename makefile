@@ -77,22 +77,22 @@ CXX_FLAGS+=$(EXTRA_CXX_FALGS)
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 TARGET0=mutator-lvl0
-TARGET=mutator
+TARGET1=mutator-lvl1
 TARGET2=mutator-lvl2
 
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY:all clean help $(TARGET) $(TARGET0) $(TARGET2)
+.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2)
 
-all: $(TARGET) $(TARGET2) $(TARGET0)
+all: $(TARGET0) $(TARGET1) $(TARGET2)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 	$(MAKE) -C tinyxml2 CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 	$(MAKE) -C json CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
-$(TARGET): $(TARGET).o mutator_aux.o
+$(TARGET1): $(TARGET1).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 $(TARGET2): $(TARGET2).o mutator_aux.o
@@ -102,13 +102,18 @@ $(TARGET0): $(TARGET0).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
-	rm -f *.o *~ $(TARGET0) $(TARGET) $(TARGET2)
+	rm -f *.o *~ $(TARGET0) $(TARGET1) $(TARGET2)
 	$(MAKE) -C tinyxml2 clean
 	$(MAKE) -C json clean
+
+install:
+	chmod +x ./mutator.sh
+	chmod +x ./extra-tools/ReportPrintPretty.sh
 
 help:
 	@echo '- There is help.'
 	@echo '- All is the default.'
+	@echo '- install makes the scripts executable. Currently this is all it does.'
 	@echo '- Clean.'
 	@echo '- You can use the target names as build targets to just build one executable.'
 	@echo '- LLVM_CONF will tell the makefile the name of llvm-config. llvm-config is the default.'
