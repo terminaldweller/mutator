@@ -22,7 +22,7 @@ void tdd_forfixer(void)
     counter;
 
   for (loopcounter = 0; loopcounter < 10; ++loopcounter)
-    counter--       ;
+    counter--;
 
   for (loopcounter = 0; loopcounter < 10; ++loopcounter)
   {
@@ -33,14 +33,15 @@ void tdd_forfixer(void)
 void tdd_whilefixer(void)
 {
   int whilecounter;
+  int counter;
 
-  while (true)
-    whilecounter;
+  while (1)
+    whilecounter--;
 
-  while (true)
-    whilecounter++     ;
+  while (1)
+    whilecounter++;
 
-  while (true)
+  while (1)
   {
     counter++;
   }
@@ -63,7 +64,7 @@ void tdd_ifelsefixer(void)
     /*something*/
   }
   else
-    a0++     ;
+    a0++;
 
   if (0 == a0)
   {
@@ -97,9 +98,9 @@ void tdd_iffixer(void)
     a1++;
 
   if (b1 < 10)
-    a1++  ;
+    a1++;
   else if (a1 == 0)
-    b1--      ;
+    b1--;
   else
   {
 
@@ -109,10 +110,10 @@ void tdd_iffixer(void)
     a1++;
 
   if (b1 < 10)
-    a1++  ;
+    a1++;
   else if (a1 == 0)
   {
-    b1--      ;
+    b1--;
     if (a1 < 10)
       a1--;
     else if (b1 > 10)
@@ -128,6 +129,8 @@ void tdd_iffixer(void)
 void tdd_switchfixer_switchdffixer(void)
 {
   int level = 10U;
+  int a;
+  int b;
 
   switch (level) {
   case 10U: {
@@ -205,19 +208,19 @@ void tdd_switchfixer_switchdffixer(void)
 
 void tdd_ifconstswapper(void)
 {
-  int a;
+  int a10;
 
-  if (a = 10)
+  if (a10 = 10)
   {
     /*blah blah*/
   }
 
-  if (a == MACRO1)
+  if (a10 == MACRO1)
   {
 
   }
 
-  if (MACRO1 == a)
+  if (MACRO1 == a10)
   {
 
   }
