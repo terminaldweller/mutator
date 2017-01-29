@@ -203,6 +203,7 @@ elif [[ "$COMMAND" == "default" ]]; then
 	echo "Using clang-format to format the mutant..."
 	"clang-format"	./test/$OUTPUT -- > ./test/$OUTPUT_FORMAT
 elif [[ "$COMMAND" == "auto-refac" ]]; then
+	echo "Warning! This option is not yet completely implemented."
 	echo "Copying input file(s) to temp..."
 	CP_INPUT_ARR=$(echo "$INPUT" | awk 'BEGIN{RS=" "}{print $1}')
 	echo $CP_INPUT_ARR
@@ -211,7 +212,7 @@ elif [[ "$COMMAND" == "auto-refac" ]]; then
 	RUN_INPUT_ARR=$(ls ./temp | gawk 'BEGIN{RS="\n"}{print $1}')
 	for loopinput in ${RUN_INPUT_ARR[@]}; do
 		echo mut1-$loopinput
-		"./mutator" ./temp/$loopinput -- > ./temp/mut1-$loopinput
+		"./mutator-lvl1" ./temp/$loopinput -- > ./temp/mut1-$loopinput
 		echo "Running automatic-refactoring on copies of input(s)..."
 		"clang-format" -i $loopinput
 	done
