@@ -40,7 +40,7 @@ Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
 
 ```
 
-##mutator
+## mutator
 
 `mutator` is a C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++. It consists of three(well so far) executables and a UI written in bash. You can run executables like any other CLI tool or just run them through the UI which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
 
@@ -71,9 +71,9 @@ All the as-of-yet implemented features of the project are very much buildable an
 * The code will be reviewed after the first pre-release version. I'm hoping to find some reviewers but if not, I'll have to do it myself.<br/>
 * There will be unit tests after a first pre-release version.<br/>
 
-##Announcements
-####* project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
-####* `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
+## Announcements
+#### * project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
+#### * `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
 * The Implementation of the automatic refactoring facilities of `mutator` has begun. The UI is not yet capable of accomodating the current features so I'll try to add them as soon as possible.<br/>
 * LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order.<br/>
 * The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9.<br/> 
@@ -81,9 +81,9 @@ All the as-of-yet implemented features of the project are very much buildable an
 * There are only 4 actual defects on mutator's Coverity scan that belong to mutator's source code and not the library. 4 are potential defects which are not really defects.<br/>
 * I will be taking a break of sorts for the next two weeks (probably less but still) starting from 1.25.2017.<br/>
 
-##Building and Running
+## Building and Running
 
-###Building
+### Building
 To build the project, you need to have the LLVM libraries 4.0 and up. The project can not be built with LLVM 3.8 or lower. The latest tested is LLVM trunk:292415.<br/>
 Here Are the build options:<br/>
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
@@ -108,7 +108,15 @@ Also do note that building the llvm libraries from source in Debug mode will req
 Finally if you are having problems with the build, you could take a look at `.travis.yml` or under `CITPreBuildDep.sh` under `extra-tools` for some hints or help apart from asking for help, of course.<br/>
 As a general rule, if you have Clang and LLVM libraries 3.9 or up on your platform, you can build `mutator`. If there are any problems with builds on platforms other than the ones in `.travis.yml` let me know.<br/>
 
-###Running
+After building the executables, you need to run:<br/>
+
+```bash
+
+make install
+
+```
+
+### Running
 To run any of the tree executables, just give a filename or a whitespace-separated list of files. The executables will print out the results to stdout.<br/>
 To run the executables with the mutator UI, you can use `mutator.sh`. For a list of available options, you can type `./mutator.sh -h`.<br/>
 * `-h, --help` prints out the help.<br/>
@@ -134,7 +142,7 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * MainOnly, will only pusblish check results for matches residing in the main file,i.e. the current TU(Translation Unit).<br/>
 * MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. currently only supports MisraC2004 or C2.<br/>
 
-####Note
+#### Note
 If you are running the executables using `mutator.sh` you don't need to read this note through. if you are running the executable directly however, then you have to pass groups of arguments in a specific order otherwise the executable won't be able to recognize the options and will throw errors. For example this is the right way to run `mutator-lvl0`:<br/>
 
 ```bash
@@ -164,7 +172,7 @@ Here's the command I use to run the TDD tests:<br/>
 
 ```
 
-####The Action File
+#### The Action File
 `mutator` can accept a file which tells it what to do. Currently this feature is only supporte for `mutator-lvl0`. You can find a sample under `./samples` named `action_file.mutator`.
 
 ```bash
@@ -211,7 +219,7 @@ Currently, the mutation-only features(mutation for the sake of mutation, technic
 <br/>
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile. So run `make clean` before invoking `bear make target`.<br/>
 
-###Implementation Notes
+### Implementation Notes
 This parts contains notes regarding the implementation of the mutator executables.
 
 #### mutator-lvl0
@@ -221,7 +229,7 @@ This parts contains notes regarding the implementation of the mutator executable
 
 Here's a quick look into the project files and directories:<br/>
 * **mutator-lvl0.cpp** contains the Misra-C rules to check. The Executable named after it, will run the Misra-C rule checks.<br/>
-* **mutator.cpp** contains the mutators which are not copiled for the time being since im working on Misra-C only for the time being, along with some Misra-C implementers.<br/>
+* **mutator-lvl1.cpp** contains the mutators which are not copiled for the time being since im working on Misra-C only for the time being, along with some Misra-C implementers.<br/>
 * **mutator-lvl2.cpp** contains some other Misra-C implementers. Rewriting the code in multiple stages allows for more simplistic rewrites and is also a check to see whether the output is actually buildable.<br/>
 * **mutator.sh** is the UI, which is supposed to work like just any other nix UI(option-wise).<br/>
 * The **utility** folder holds the C source and headers that are necessary to run the instrumented code(currently unused).<br/>
@@ -242,8 +250,10 @@ Everytime there is a new commit, the code base is buildable and runnable. If you
 The code base uses Coverity for static analysis and CI Travis for checking the build matrix.<br/>
 
 ### Notes
-#### **The project will be updated everytime there is a major LLVM release and will use those libraries instead of the old ones.**
-#### **As soon as I manage to find a copy of the Misra-C:2012 document, I'll implement that. Currently the tool only supports Misra-C:2004.**
+
+#### **The project will be updated everytime there is a major LLVM release and will use those libraries instead of the old ones.**<br/>
+
+#### **As soon as I manage to find a copy of the Misra-C:2012 document, I'll implement that. Currently the tool only supports Misra-C:2004.**<br/>
 Misra-C rule checker outputs a simple text or xml report. JSON support will be implemented in the future.<br/>
 I'm using **TDD**. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.Those tests will be added later.<br/>
 The project has been tested to biuld on Fedora23(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
@@ -264,10 +274,10 @@ If you run into an issue please raise one here or just contact me with proper in
 * An XML schema for the XML report<br/>
 * using Appveyor to test windows builds<br/>
 
-###Support
+### Support
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>
 If the company/organization you represent wants to sponsor mutator, let me know.<br/>
 #### Testers are always welcome. If you are interested, let me know. Testing mutator is as important, if not more, than implementing it.<br/>
 
-###Contact
+### Contact
 You can email me at thabogre@gmail.com, there is also the twitter account for the mutator project, @xashmith and there is the mutator maillist, mutator-repost@freelists.org. You need to be a member though to be able to send mail on the maillist. The maillist is moderated.<br/>
