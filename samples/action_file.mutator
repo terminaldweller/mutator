@@ -4,7 +4,7 @@ executable_name:mutator-lvl0
 exec_opts:-SysHeader=false -MainOnly=true
 in_files:./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c
 #clang options
-libtooling_options:-std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include -w
+libtooling_options:-std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -w
 #the output file
 out_files:./test/misra-log
 #the log file
