@@ -74,6 +74,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ## Announcements
 
+* #### mutator's first website is up: project [mutator](https://bloodstalker.github.io/mutator/).<br/>
 * #### project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
 * #### `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
 * The Implementation of the automatic refactoring facilities of `mutator` has begun. The UI is not yet capable of accomodating the current features so I'll try to add them as soon as possible.<br/>
