@@ -53,8 +53,8 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase on the master branch. If something's not working properly let me know.<br/>
-* **`mutator-lvl0`** is the executable responsible for the Misra-C rule checks. Currently it has reached a release candidate, soon to be branched and have unit tests written for it.<br/>
-* **`mutator`** and **`mutator-lvl2`** are collectively the code muatation and code transformation(automatic-refactoring) executables. Currently the automatic code transformations implemented are only limited to adding braces to blocks that are missing it, fixing SwitchStmts with adding a default clause if missing and breaks, swapping the RHS and LHS when the RHS is a constant and adding `else` if an if-else is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
+* `mutator-lvl0` is the executable responsible for the Misra-C rule checks. Currently it has reached a release candidate, soon to be branched and have unit tests written for it.<br/>
+* `mutator-lvl1` and **`mutator-lvl2`** are collectively the code muatation and code transformation(automatic-refactoring) executables. Currently the automatic code transformations implemented are only limited to adding braces to blocks that are missing it, fixing SwitchStmts with adding a default clause if missing and breaks, swapping the RHS and LHS when the RHS is a constant and adding `else` if an if-else is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
 * Branch a release candidate for `mutator-lvl0`, then start writing the unit tests. This might take a while, since I will try to find testers and code reviewers. If you are willing to help with testing, Email me at `thabogre@gmail.com`. Please set the subject to `mutator-lvl0 test` so I wouldnt miss it. I'll do the unit tests and reviews myself if I dont manage to find volunteers for that. while it's far from ideal, it's better than nothing.
@@ -72,8 +72,9 @@ All the as-of-yet implemented features of the project are very much buildable an
 * There will be unit tests after a first pre-release version.<br/>
 
 ## Announcements
-#### * project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
-#### * `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
+
+* #### project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
+* #### `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
 * The Implementation of the automatic refactoring facilities of `mutator` has begun. The UI is not yet capable of accomodating the current features so I'll try to add them as soon as possible.<br/>
 * LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order.<br/>
 * The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9.<br/> 
@@ -84,8 +85,10 @@ All the as-of-yet implemented features of the project are very much buildable an
 ## Building and Running
 
 ### Building
+
 To build the project, you need to have the LLVM libraries 4.0 and up. The project can not be built with LLVM 3.8 or lower. The latest tested is LLVM trunk:292415.<br/>
 Here Are the build options:<br/>
+
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
 * Running `make target-name` will only build the target. So for example, if you are only interested in building the Misra-C rule checker you can run `make mutator-lvl0`.<br/>
 * The makefile option `CXX` tells the makefile which compiler to use. The default value is `clang++`. Currently the only two supported values are `clang++` and `g++`.<br/>
@@ -117,8 +120,10 @@ make install
 ```
 
 ### Running
+
 To run any of the tree executables, just give a filename or a whitespace-separated list of files. The executables will print out the results to stdout.<br/>
 To run the executables with the mutator UI, you can use `mutator.sh`. For a list of available options, you can type `./mutator.sh -h`.<br/>
+
 * `-h, --help` prints out the help.<br/>
 * `-f,	--file` tells mutator to run the commands from the file.<br/>
 * `-c, --command` specifies the command you want to use.<br/>
@@ -137,12 +142,14 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
 * `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. it is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
 
-`mutator-lvl0` options:
+`mutator-lvl0` options:<br/>
+
 * SysHeader, will let the executable know that you wish the checks to run through system headers as well. Off by default.<br/>
 * MainOnly, will only pusblish check results for matches residing in the main file,i.e. the current TU(Translation Unit).<br/>
 * MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. currently only supports MisraC2004 or C2.<br/>
 
 #### Note
+
 If you are running the executables using `mutator.sh` you don't need to read this note through. if you are running the executable directly however, then you have to pass groups of arguments in a specific order otherwise the executable won't be able to recognize the options and will throw errors. For example this is the right way to run `mutator-lvl0`:<br/>
 
 ```bash
@@ -152,6 +159,7 @@ If you are running the executables using `mutator.sh` you don't need to read thi
 ```
 
 So for example if you want to run the TDD tests for the Misra-C checker, you run:<br/>
+
 ```bash
 
 ./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -std=c90"
@@ -159,6 +167,7 @@ So for example if you want to run the TDD tests for the Misra-C checker, you run
 ```
 
 Do note that if your file has included standard header libraries, you do need to tell it where to look for them, so for the above example on Fedora, you would need to run:<br/>
+
 ```bash
 
 ./mutator.sh -c misrac -i ./test/testFuncs2.c ./test/testFuncs1.c -opts "-Wall -I/lib/gcc/x86_64-redhat-linux/5.3.1/include/"
@@ -166,6 +175,7 @@ Do note that if your file has included standard header libraries, you do need to
 ```
 
 Here's the command I use to run the TDD tests:<br/>
+
 ```bash
 
 /mutator.sh -c misrac -i ./test/testFuncs1.c ./test/testFuncs2.c -pp -opts "-std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include" -copts "-SysHeader=false -MainOnly=true" 2> /dev/null
@@ -173,6 +183,7 @@ Here's the command I use to run the TDD tests:<br/>
 ```
 
 #### The Action File
+
 `mutator` can accept a file which tells it what to do. Currently this feature is only supporte for `mutator-lvl0`. You can find a sample under `./samples` named `action_file.mutator`.
 
 ```bash
@@ -192,7 +203,8 @@ print_pretty:true
 end_action:run
 
 ```
-Here's the explanation for the fields:
+Here's the explanation for the fields:<br/>
+
 * `action_name` lets you specify a name for the action to run. Marks the start of an action.<br/>
 * `executable_name` is used for detemining which executable to run.<br/>
 * `exec_opts` is the field used for passing the executable-specific options.<br/>
