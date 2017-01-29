@@ -480,7 +480,7 @@ public:
         SourceLocation SLLHS = LHS->getLocStart();
         SLLHS = Devi::SourceLocationHasMacro(SLLHS, Rewrite, "start");
         SourceLocation SLELHS = LHS->getLocStart();
-        SLELHS = Devi::SourceLocationHasMacro(SLELHS, Rewrite, "start");
+        SLELHS = Devi::SourceLocationHasMacro(SLELHS, Rewrite, "end");
         SourceRange SRLHS;
         SRLHS.setBegin(SLLHS);
         SRLHS.setEnd(SLELHS);
@@ -498,13 +498,17 @@ public:
         SourceLocation SLRHS = RHS->getLocStart();
         SLRHS = Devi::SourceLocationHasMacro(SLRHS, Rewrite, "start");
         SourceLocation SLERHS = RHS->getLocEnd();
-        SLERHS = Devi::SourceLocationHasMacro(SLERHS, Rewrite, "start");
+        SLERHS = Devi::SourceLocationHasMacro(SLERHS, Rewrite, "end");
         SourceRange SRRHS;
         SRRHS.setBegin(SLRHS);
         SRRHS.setEnd(SLERHS);
 
         const std::string LHSString = Rewrite.getRewrittenText(SRLHS);
         const std::string RHSString = Rewrite.getRewrittenText(SRRHS);
+
+#if 0
+        std::cout << "lhs:" << LHSString << " " << "rhs:" << RHSString << " " << SLLHS.printToString(*SM) << std::endl;
+#endif
 
         StringRef LHSRef = StringRef(LHSString);
         StringRef RHSRef = StringRef(RHSString);
@@ -549,7 +553,7 @@ public:
 
     Matcher.addMatcher(switchStmt(hasDescendant(defaultStmt(unless(hasDescendant(compoundStmt()))).bind("mumma-hotep"))), &HandlerForSwitchDf);
 
-    Matcher.addMatcher(ifStmt(hasDescendant(binaryOperator(anyOf(hasOperatorName("=="), hasOperatorName("="))).bind("ifconstswapbinop"))).bind("ifconstswapper"), &HandlerForIfConstSwap);
+    Matcher.addMatcher(ifStmt(has(binaryOperator(anyOf(hasOperatorName("=="), hasOperatorName("="))).bind("ifconstswapbinop"))).bind("ifconstswapper"), &HandlerForIfConstSwap);
   }
 
   void HandleTranslationUnit(ASTContext & Context) override {
