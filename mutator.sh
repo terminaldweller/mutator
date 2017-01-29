@@ -42,7 +42,8 @@ do
 		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. Please enclose all the options in double quatation."
 		echo "	For example: -opts \"-Wall std=c89\""
 		echo "-copts 	--customoptions, same as opts, but only used for custom options defined for the executable. For example: -copts \"-SysHeader=false -MainOnly=true\""
-		echo "	For a list of available options for each executable run them with -help to see a list."
+		echo ""
+		echo "For a list of available options for each executable run them with -help to see a list."
 		exit 0
 		;;
 		-pp|--print-pretty)
@@ -171,7 +172,7 @@ elif [[ "$COMMAND" == "build-all" ]]; then
 	"make" all
 elif [[ "$COMMAND" == "run" ]];then
 	echo "Running executables on target file..."
-	"./mutator" $INPUT -- > mutant-lvl1.c
+	"./mutator-lvl1" $INPUT -- > mutant-lvl1.c
 	"./mutator-lvl2" mutant-lvl1.c -- > $OUTPUT
 elif [[ "$COMMAND" == "misrac" ]]; then
 	echo "Removing previous XML report..."
@@ -196,7 +197,7 @@ elif [[ "$COMMAND" == "default" ]]; then
 	"cp" ./test/$OUTPUT_FORMAT ./test/medium.c
 	echo "Running all exetubales on target input..."
 	echo "Level 1..."
-	"./mutator" ./test/medium.c -- > ./test/mutant-lvl1.c
+	"./mutator-lvl1" ./test/medium.c -- > ./test/mutant-lvl1.c
 	echo "Level 2..."
 	"./mutator-lvl2" ./test/mutant-lvl1.c -- > ./test/$OUTPUT
 	echo "Using clang-format to format the mutant..."
@@ -219,4 +220,5 @@ elif [[ "$COMMAND" == "jack" ]]; then
 else 
 	echo "$COMMAND is not a valid command..."
 	echo "Use --help for a list of valid commands..."
+	exit 1
 fi
