@@ -70,7 +70,7 @@ public:
 
 private:
   XMLDocument XMLReportDoc;
-  XMLNode* RootPointer;
+  XMLElement* RootPointer;
 };
 /*********************************************************************************************************************/
 class JSONReport
