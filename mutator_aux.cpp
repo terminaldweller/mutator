@@ -162,7 +162,10 @@ bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile)
 /******************************************************XMLReport******************************************************/
 XMLReport::XMLReport()
 {
-  RootPointer = XMLReportDoc.NewElement("Report");
+  RootPointer = XMLReportDoc.NewElement("mutator:Report");
+#if 1
+  RootPointer->SetAttribute("xmlns:mutator", "http://www.w3.org/2001/XMLSchema");
+#endif
 }
 
 void XMLReport::XMLCreateReport()
