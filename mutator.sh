@@ -212,10 +212,11 @@ elif [[ "$COMMAND" == "auto-refac" ]]; then
 	RUN_INPUT_ARR=$(ls ./temp | gawk 'BEGIN{RS="\n"}{print $1}')
 	for loopinput in ${RUN_INPUT_ARR[@]}; do
 		echo mut1-$loopinput
-		echo "Running automatic-refactoring on copies of input(s)..."
-		"./mutator-lvl1" ./temp/$loopinput -- > ./temp/mut1-$loopinput
+		echo "Running automatic-refactoring on input mut1-$loopinput..."
+		"./mutator-lvl1" ./temp/$loopinput -- -w > ./temp/mut1-$loopinput
 		"clang-format" -i $loopinput
-		"./mutator-lvl2" ./temp/mut1-$loopinput -- > ./temp/mut2-$loopinput
+		"./mutator-lvl2" ./temp/mut1-$loopinput -- -w > ./temp/mut2-$loopinput
+		"clang-format" -i ./temp/mut2-$loopinput
 	done
 elif [[ "$COMMAND" == "jack" ]]; then
 	echo
