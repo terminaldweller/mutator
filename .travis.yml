@@ -38,9 +38,9 @@ after_success:
   - make clean
   - make mutator-lvl0 CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_GNU
   - echo "deb http://old-releases.ubuntu.com/ubuntu/ hardy universe" | sudo tee -a /etc/apt/sources.list
-  - apt-get update -y
+  - sudo apt-get update -y
   - sudo apt-get install gcc-4.2 g++-4.2
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.2 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.2
-  - chmod +x mutator.sh
+  - make install
   - ./mutator.sh -f ./samples/action_file.mutator
   - coveralls --exclude ./json --exclude ./tinyxml2 --exclude-pattern 'clang' --exclude-pattern 'llvm'
