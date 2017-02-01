@@ -3,6 +3,7 @@
 CXX?=clang++
 LLVM_CONF?=llvm-config
 BUILD_MODE?=COV_NO_CLANG
+SHELL:=/bin/bash
 
 CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 
@@ -30,7 +31,7 @@ ifeq ($(BUILD_MODE), COV_GNU)
 #$(error This build mode is only useable with clang++.)
 #endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions
+ -std=c++11 -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-arcs -ftest-coverage
 endif
 
@@ -41,6 +42,7 @@ EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
 ifeq ($(BUILD_MODE), WIN_BUILD)
+@echo "This build mode is only meant to be used for mutator's appveyor build. for regular windows builds tou can use COV_NO_CLANG."
 $(error This build mode is not yet implemented.)
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
  -std=c++11 -stdlib=libstdc++ -UNDEBUG -fexceptions
