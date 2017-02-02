@@ -152,6 +152,8 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 
 #### Note
 
+Some of Misra-C rules are already implemented by Clang as warnings, so for those cases, mutator uses the built-in diagnostics instead of re-inventing the wheel. For those diagnostics to appear in the mutator report you should refrain from using the Clang `-w` flag as that silences the warnings.<br/>
+
 If you are running the executables using `mutator.sh` you don't need to read this note through. if you are running the executable directly however, then you have to pass groups of arguments in a specific order otherwise the executable won't be able to recognize the options and will throw errors. For example this is the right way to run `mutator-lvl0`:<br/>
 
 ```bash
