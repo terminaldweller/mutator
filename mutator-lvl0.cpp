@@ -39,6 +39,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/AST/Type.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/Basic/Diagnostic.h"
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/TargetInfo.h"
@@ -53,6 +54,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 /*LLVM headers*/
+#include "llvm/ADT/SmallString.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
@@ -7233,6 +7235,47 @@ private:
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
+class Mutator0DiagnosticConsumer : public clang::DiagnosticConsumer
+{
+public:
+
+  virtual void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel, const Diagnostic &Info) override
+  {
+    DiagnosticConsumer::HandleDiagnostic(DiagLevel, Info);
+
+    SourceLocation SL = Info.getLocation();
+
+    SourceManager &SM = Info.getSourceManager();
+
+    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
+    {
+      return void();
+    }
+
+    if (!Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
+    {
+      return void();
+    }
+
+    SL = SM.getSpellingLoc(SL);
+
+    unsigned SpellingLine = SM.getSpellingLineNumber(SL);
+    unsigned SpellingColumn = SM.getSpellingColumnNumber(SL);
+    std::string FileName = SM.getFilename(SL).str();
+
+    SmallString<100> DiagBuffer;
+
+    Info.FormatDiagnostic(DiagBuffer);
+
+    std::cout << "ClangDiag:" << DiagBuffer.str().str() << ":" << SL.printToString(SM) << ":" << std::endl;
+
+    XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());
+    JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());
+  }
+
+private:
+
+};
 /**********************************************************************************************************************/
 class MyFrontendAction : public ASTFrontendAction
 {
@@ -7248,9 +7291,15 @@ public:
   {
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
 
-    DiagnosticsEngine &DiagEngine [[maybe_unused]] = CI.getPreprocessor().getDiagnostics();
+    DiagnosticsEngine &DiagEngine = CI.getPreprocessor().getDiagnostics();
 
-    const DiagnosticConsumer* DiagConsumer [[maybe_unused]] = DiagEngine.getClient();
+#if 0
+    std::unique_ptr<Mutator0DiagnosticConsumer> M0DiagConsumer(new Mutator0DiagnosticConsumer);
+#endif
+
+    Mutator0DiagnosticConsumer* M0DiagConsumer = new Mutator0DiagnosticConsumer;
+
+    DiagEngine.setClient(M0DiagConsumer, true);
 
 #if 0
     const IdentifierTable &IT [[maybe_unused]] = CI.getPreprocessor().getIdentifierTable();
