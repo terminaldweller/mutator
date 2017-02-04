@@ -35,6 +35,7 @@ before_script:
 script: make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG
 
 after_success:
+  - llvm-config-4.0 --has-rtti
   - make clean
   - make mutator-lvl0 CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_GNU
   - echo "deb http://old-releases.ubuntu.com/ubuntu/ hardy universe" | sudo tee -a /etc/apt/sources.list
