@@ -5477,12 +5477,14 @@ public:
                                    bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
                                    StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported)
   {
+    /*@DEVI-not including the correct directory for headers inclusions will make the code crash. the below consition does not prevent that.*/
     if (File->isValid())
     {
 #if 0
       assert(HashLoc.isValid() && "The SourceLocation for InclusionDirective is invalid.");
 #endif
 
+#if 0
       if (IsAngled)
       {
         size_t singleQPos = FileName.find("\'", 0);
@@ -5657,6 +5659,7 @@ public:
           }
         }
       }
+#endif
     }
   }
 
@@ -7304,6 +7307,13 @@ public:
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "9.2", "Brace initialization has either not been correctly used or not used at all:");
     }
 
+    if (Info.getID() == 4872U)
+    {
+      std::cout << "14.2:" << "Expression result is unused:" << SL.printToString(SM) << ":" << std::endl;
+
+      XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "14.2", "Expression result is unused:");
+      JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "14.2", "Expression result is unused:");
+    }
 
   }
 
