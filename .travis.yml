@@ -45,5 +45,5 @@ after_success:
   - sudo apt-get install gcc-4.2 g++-4.2
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.2 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.2
   - make install
-  - ./mutator.sh -f ./test/cov_action.mutator
+  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c -- -std=c90 -I/usr/lib/gcc/i686-linux-gnu/4.9/include -Wall
   - coveralls --exclude ./json --exclude ./tinyxml2 --exclude-pattern 'clang' --exclude-pattern 'llvm'
