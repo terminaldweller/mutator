@@ -4,19 +4,12 @@
 <mutator:schema xmlns:mutator="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/2001/XMLSchema">
 
 <mutator:element name="Report">
-	<mutator:complexType>
-		<mutator:sequence>
 			<mutator:element name="MisraDiag">
-				<mutator:complexType>
 						<mutator:attribute name="Misra-C-2004Rule" use="required"></mutator:attribute>
 						<mutator:attribute name="FileName" use="required"></mutator:attribute>
-						<mutator:attribute name="SpellingLineNumber" use="required"></mutator:attribute>
-						<mutator:attribute name="SpellingColumnNumber" use="required"></mutator:attribute>
-				</mutator:complexType>
+						<mutator:attribute name="SpellingLineNumber" use="optional"></mutator:attribute>
+						<mutator:attribute name="SpellingColumnNumber" use="optional"></mutator:attribute>
 			</mutator:element>
-		</mutator:sequence>
-	</mutator:complexType>
-
 </mutator:element>
 
 </mutator:schema>
