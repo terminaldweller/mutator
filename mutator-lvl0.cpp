@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "mutator_aux.h"
 /*standard headers*/
 #include <cassert>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -75,6 +76,26 @@ std::vector<SourceLocation> MacroUndefSourceLocation;
 std::vector<std::string> MacroNameString;
 std::vector<std::string> IncludeFileArr;
 
+/**********************************************************************************************************************/
+struct MutExHeaderNotFound : public std::exception
+{
+public:
+  MutExHeaderNotFound(std::string FileName) : FName(FileName) {}
+
+  const char* what () const throw()
+  {
+    const char* OutString = "Header not Found";
+    return OutString;
+  }
+
+  std::string getFileName() const
+  {
+    return FName;
+  }
+
+private:
+  std::string FName;
+};
 /**********************************************************************************************************************/
 /*@DEVI-struct for nullstmt*/
 struct NullStmtInfo
@@ -5473,18 +5494,37 @@ class PPInclusion : public PPCallbacks
 public:
   explicit PPInclusion (SourceManager *SM) : SM(*SM) {}
 
+  /*@DEVI-if we dont throw an exception for a bad header inclusion, we wil crash later on since we have InclusionDirective PPCallback.*/
+  virtual bool FileNotFound(StringRef FileName, SmallVectorImpl<char> &RecoveryPath)
+  {
+    throw MutExHeaderNotFound(FileName.str());
+  }
+
   virtual void InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, StringRef FileName, \
                                    bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
                                    StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported)
   {
-    /*@DEVI-not including the correct directory for headers inclusions will make the code crash. the below consition does not prevent that.*/
-    if (File->isValid())
+#if defined(__linux__)
+    std::ifstream HeaderABS(SearchPath.str() + "/" + FileName.str());
+    std::ifstream HeaderRel(RelativePath.str() + "/" + FileName.str());
+#elif defined(__MACH__) && defined(__APPLE__)
+    std::ifstream HeaderABS(SearchPath.str() + "/" + FileName.str());
+    std::ifstream HeaderRel(RelativePath.str() + "/" + FileName.str());
+#elif defined(__CYGWIN__) || defined(_WIN32) || defined(_WIN64)
+    std::ifstream HeaderABS(SearchPath.str() + "\\" + FileName.str());
+    std::ifstream HeaderRel(RelativePath.str() + "\\" + FileName.str());
+#else
+    std::ifstream HeaderABS(SearchPath.str() + "/" + FileName.str());
+    std::ifstream HeaderRel(RelativePath.str() + "/" + FileName.str());
+#endif
+
+    if (File->isValid() && (HeaderABS.good() || HeaderRel.good()))
     {
 #if 0
       assert(HashLoc.isValid() && "The SourceLocation for InclusionDirective is invalid.");
 #endif
 
-#if 0
+#if 1
       if (IsAngled)
       {
         size_t singleQPos = FileName.find("\'", 0);
@@ -7385,6 +7425,12 @@ int main(int argc, const char **argv)
   XMLDocOut.SaveReport();
 
   JSONDocOUT.CloseReport();
+
+  try {}
+  catch (MutExHeaderNotFound &E1)
+  {
+    std::cerr << E1.what() << std::endl;
+  }
 
   return RunResult;
 }
