@@ -37,7 +37,7 @@ script: make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG
 after_success:
   - llvm-config-4.0 --has-rtti
   - gcc -v
-  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/i686-linux-gnu/4.9/include -Wall > /dev/null
+  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/i686-linux-gnu/4.9.4/include -Wall > /dev/null
   - make clean
   - make mutator-lvl0 CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_GNU
   - echo "deb http://old-releases.ubuntu.com/ubuntu/ hardy universe" | sudo tee -a /etc/apt/sources.list
@@ -45,5 +45,5 @@ after_success:
   #- sudo apt-get install gcc-4.2 g++-4.2
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.2 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.2
   - make install
-  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c -- -std=c90 -I/usr/lib/gcc/i686-linux-gnu/4.9/include -Wall > /dev/null
+  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs2.c -- -std=c90 -I/usr/lib/gcc/i686-linux-gnu/4.9.4/include -Wall > /dev/null
   - coveralls --exclude ./json --exclude ./tinyxml2 --exclude-pattern 'clang' --exclude-pattern 'llvm'
