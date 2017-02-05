@@ -42,10 +42,9 @@ EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
 ifeq ($(BUILD_MODE), WIN_BUILD)
-@echo "This build mode is only meant to be used for mutator's appveyor build. for regular windows builds tou can use COV_NO_CLANG."
 $(error This build mode is not yet implemented.)
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG -fexceptions
+ -std=c++11 -UNDEBUG -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
