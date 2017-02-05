@@ -1,8 +1,8 @@
-action_name:my_action1
+action_name:travis_coverage_ubuntu
 executable_name:mutator-lvl0
 exec_opts:-SysHeader=false -MainOnly=true
 in_files:./test/testFuncs1.c ./test/testFuncs2.c
-libtooling_options:c90 -I/usr/lib/gcc/i686-linux-gnu/4.9/include -w
+libtooling_options:-std=c90 -I/usr/lib/gcc/i686-linux-gnu/4.9/include -w
 out_files:./test/misra-log
 log_files:
 print_pretty:false
