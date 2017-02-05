@@ -7267,10 +7267,44 @@ public:
 
     Info.FormatDiagnostic(DiagBuffer);
 
-    std::cout << "ClangDiag:" << DiagBuffer.str().str() << ":" << SL.printToString(SM) << ":" << std::endl;
+    std::cout << "ClangDiag:" << DiagBuffer.str().str() << ":" << SL.printToString(SM) << ":" << Info.getID() << ":" << std::endl;
 
     XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());
     JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());
+
+    if (Info.getID() == 872U)
+    {
+      std::cout << "2.2:" << "Illegal comment format(/*...*/) used:" << SL.printToString(SM) << ":" << std::endl;
+
+      XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "2.2", "Illegal comment format(/*...*/) used:");
+      JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "2.2", "Illegal comment format(/*...*/) used:");
+    }
+
+    if (Info.getID() == 974U)
+    {
+      std::cout << "2.3:" << "Use of the character sequence /* inside a comment is illegal:" << SL.printToString(SM) << ":" << std::endl;
+
+      XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "2.3", "Use of the character sequence /* inside a comment is illegal:");
+      JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "2.3", "Use of the character sequence /* inside a comment is illegal:");
+    }
+
+    if (Info.getID() == 938U)
+    {
+      std::cout << "4.2:" << "Use of trigraphs is illegal:" << SL.printToString(SM) << ":" << std::endl;
+
+      XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "4.2", "Use of trigraphs is illegal:");
+      JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "4.2", "Use of trigraphs is illegal:");
+    }
+
+    if (Info.getID() == 4578U)
+    {
+      std::cout << "9.2:" << "Brace initialization has either not been correctly used or not used at all:" << SL.printToString(SM) << ":" << std::endl;
+
+      XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "9.2", "Brace initialization has either not been correctly used or not used at all:");
+      JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "9.2", "Brace initialization has either not been correctly used or not used at all:");
+    }
+
+
   }
 
 private:
