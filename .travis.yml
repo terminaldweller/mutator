@@ -54,4 +54,6 @@ after_success:
   - cd gcc
   - ls
   - cd x86_64-linux-gnu
-  - ls 
+  - ls
+  - cd 4.9
+  - ls
