@@ -57,3 +57,5 @@ after_success:
   - ls
   - cd 4.9
   - ls
+  - cd include
+  - ls
