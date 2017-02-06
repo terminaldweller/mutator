@@ -59,3 +59,4 @@ after_success:
   - ls
   - cd include
   - ls
+  - gcc -E - <<< '#include<stddef.h>'
