@@ -60,3 +60,4 @@ after_success:
   - cd include
   - ls
   - gcc -E - <<< '#include<stddef.h>'
+  - gcc -E - <<< '#include<assert.h>'
