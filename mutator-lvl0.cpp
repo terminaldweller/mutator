@@ -84,8 +84,7 @@ public:
 
   const char* what () const throw()
   {
-    const char* OutString = "Header not Found";
-    return OutString;
+    return "Header Not Found";
   }
 
   std::string getFileName() const
