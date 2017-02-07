@@ -31,8 +31,10 @@ ifeq ($(BUILD_MODE), COV_GNU)
 #$(error This build mode is only useable with clang++.)
 #endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions
-EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-arcs -ftest-coverage
+ -std=c++11 -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions -Xclang -coverage-version='408*' -Xclang -coverage-cfg-checksum\
+ -Xclang -coverage-no-function-names-in-data
+EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-arcs -ftest-coverage -fexceptions -Xclang -coverage-version='408*' -Xclang -coverage-cfg-checksum\
+ -Xclang -coverage-no-function-names-in-data
 endif
 
 ifeq ($(BUILD_MODE), COV_NO_CLANG)
