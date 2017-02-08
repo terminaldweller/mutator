@@ -7380,9 +7380,20 @@ public:
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "14.2", "Expression result is unused:");
     }
 
-    if (Info.getID() == 0U)
+    if (Info.getID() == 966U)
     {
+      std::cout << "19.14:" << "\"defined\" has undefined behaviour:" << SL.printToString(SM) << ":" << std::endl;
 
+      XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "19.14", "\"defined\" has undefined behaviour:");
+      JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "19.14", "\"defined\" has undefined behaviour:");
+    }
+
+    if (Info.getID() == 895U)
+    {
+      std::cout << "20.1:" << "Redefining built-in macro:" << SL.printToString(SM) << ":" << std::endl;
+
+      XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "20.1", "Redefining built-in macro:");
+      JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "20.1", "Redefining built-in macro:");
     }
 
   }
