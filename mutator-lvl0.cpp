@@ -48,6 +48,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/Lexer.h"
+#include "clang/Lex/MacroArgs.h"
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -6162,7 +6163,6 @@ public:
 
     MacroInfo* MI = MD.getMacroInfo();
 
-    /*underdev2*/
     /*start of 19.4*/
     ArrayRef<Token> TokenArrayRef = MI->tokens();
 
@@ -6332,6 +6332,32 @@ public:
       }
     }
     /*end of 19.4*/
+
+#if 1
+    if (Args != nullptr)
+    {
+      /*@DEVI-Macro args are passed twice. first they are expanded and then the whole macro,
+      including the args is checked again for expansion, so args are passed twice.*/
+      if (MI->getNumArgs() != Args->getNumArguments() - MI->getNumArgs())
+      {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
+          {
+            std::cout << "19.8:" << "Funciton-like macro invoked with wrong number of arguments:";
+            std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumArguments() << " " << MI->getNumArgs() << ":" << std::endl;
+
+            XMLDocOut.XMLAddNode(SM, SL, "19.8", "Funciton-like macro invoked with wrong number of arguments:");
+            JSONDocOUT.JSONAddElement(SM, SL, "19.8", "Funciton-like macro invoked with wrong number of arguments:");
+          }
+        }
+      }
+    }
+#endif
 
     if (MacroNameString == "offsetof")
     {
@@ -7352,6 +7378,11 @@ public:
 
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "14.2", "Expression result is unused:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "14.2", "Expression result is unused:");
+    }
+
+    if (Info.getID() == 0U)
+    {
+
     }
 
   }
