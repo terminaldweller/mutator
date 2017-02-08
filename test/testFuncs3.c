@@ -122,6 +122,10 @@ void testfunc7(void) {
 
 void tddfunc8(void) {
 	// asm("add %al, (%rax)");
+
+	/*for 20.2*/
+	int printf;
 }
+
 /*********************************************************************************************************************/
 /*last line intnetionally left blank.*/
