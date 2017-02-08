@@ -88,6 +88,8 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ### Building
 
+#### Linux
+
 To build the project, you need to have the LLVM libraries 4.0 and up. The project can not be built with LLVM 3.8 or lower. The latest tested is LLVM trunk:292415.<br/>
 Here Are the build options:<br/>
 
@@ -98,6 +100,8 @@ Here Are the build options:<br/>
 	* `COV_USE` and `COV_GEN` are for use with the `profdata` format. This option can only be used to build with `clang++`.<br/>
 	* `COV_GNU` will generate `gcov` compliant coverage data. This option can only be used to build with `clang++`.<br/>
 	* `COV_NO_CLANG` will build the executable with no source coverage instrumentation. This option can only be used to build with `clang++`.<br/>
+	* `COV_NO_CLANG_1Z` will build with support for C++1z support. I use this for dev builds.<br/>
+	* `WIN_BUILD` will later be used to support Windows builds. It assumes there is a llvm-config and it's in windows path.<br/>
 	* `GNU_MODE` will build the executable with no source code coverage instrumentation for `g++`. Can only be used to build with `g++`.<br/>
 * The `LLVM_CONF` option is used to tell the compiler which `llvm-config` to use. The default value is `llvm-config`.<br/>
 
@@ -120,6 +124,11 @@ After building the executables, you need to run:<br/>
 make install
 
 ```
+
+#### Windows
+
+Currently a Windows build is not officially supported but if you can build LLVM/Clang, then you can build mutator too. Currently the latest version of LLVM/Clang available on Cygwin is 3.8 and that does not include the dev-libraries so you can't use those. Just use the Guide on LLVM for building using Visual Studio. After you have the headers and libraries and llvm-config, just use `BUILD_MODE=WIN_BUILD` with Clang and you should be good to go.<br/>
+Let me know if you decide to try this and/or have any problems with it.<br/>
 
 ### Running
 
