@@ -31,6 +31,7 @@ typedef gaga incompletearr1;
 #define ABSOLUTE3(XMACRO) (((XMACRO) <= 0) ? (XMACRO) : -(XMACRO))
 #define MINUS(X, Y) ((X) - (Y))
 #define PRINT(bubba) printf(#bubba "%d\n", bubba)
+#define ALLARG(Z,W) int Z##W
 #define LOCO i##nt
 #define LOCO2 #LOCO2
 #define LOCO3(bubba) printf(#bubba "%d\n", bu##bba)
@@ -153,6 +154,9 @@ static void test33(void) {
 
   MINUS(a, b);
   // MINUS(a);
+
+  ALLARG(z, );
+  ABSOLUTE(z);
 
   b = (int)a;
 
