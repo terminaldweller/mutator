@@ -37,7 +37,7 @@ do
 		echo "-i, 	--input, -input lets you choose the input file(or white-space-separated list of files) that is going to be passed to the mutator executable(s)."
 		echo "-o, 	--output, -output lets you choose where to put the mutant."
 		echo "-pp,	--print-pretty, prints the output in a pretty format in a new file. The new file has the same name with a \"-pretty\" added to the name in the same directory."
-		echo "-t,	--test, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind,xsd."
+		echo "-t,	--test, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind,xsd,precommit."
 		echo "	For example: ./mutator.sh --test mutator-lvl0 valgrind"
 		echo "-opts 	--options, pass options to the executable(s). The executables support all the clang options. Please enclose all the options in double quatation."
 		echo "	For example: -opts \"-Wall std=c89\""
@@ -61,6 +61,9 @@ do
 		elif [[ "$2" == mutator-lvl0 && "$3" == xsd ]]; then
 			echo "xmllint --noout --schema ./samples/mutator0-report-schema.xsd ./test/misrareport.xml"
 			"xmllint" --noout --schema ./samples/mutator0-report-schema.xsd ./test/misrareport.xml
+    elif [[ "$2" == precommit ]]; then
+      cd ./extra-tools
+      "./precommitTests.sh"
 		else
 			echo "unknown combination of options: $2 and $3"
 			exit 127
