@@ -111,6 +111,7 @@ clean:
 install:
 	chmod +x ./mutator.sh
 	chmod +x ./extra-tools/ReportPrintPretty.sh
+	chmod +x ./extra-tools/precommitTests.sh
 	if [[ ! -d "./temp" ]]; then mkdir temp; fi
 
 help:
