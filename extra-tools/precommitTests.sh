@@ -25,10 +25,16 @@ fi
 "./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
-  echo "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}"
+  printf "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}"
 else
-  echo "${Red}mutator-lvl0 smoke test on the tdds failed.\n${NC}"
+  printf "${Red}mutator-lvl0 smoke test on the tdds failed.\n${NC}"
 fi
 
+"./mutator.sh" -t mutator-lvl0 xsd
 
+if [[ $? == 0 ]];then
+  printf "${Green}c++11 mutator-lvl0 xml report xsd passed.\n${NC}"
+else
+  printf "${Green}c++11 mutator-lvl0 xml report xsd passed.\n${NC}"
+fi
 
