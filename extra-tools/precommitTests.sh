@@ -7,6 +7,7 @@ Orange="\033[0;33m"
 NC="\033[0m"
 
 printf "${Lblue}switching to mutator root...\n${NC}"
+pwd
 cd ..
 
 printf "${Lblue}running make clean...\n${NC}" | tee ./test/precommit.rep
