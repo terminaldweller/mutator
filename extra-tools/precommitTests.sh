@@ -95,3 +95,7 @@ else
   printf "${Red}mutator-lvl0 C++1z smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
 
+printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ./test/precommit.rep
+"make" clean
+
+printf "${Lblue}finished running all tests...\n${NC}" | tee -a ./test/precommit.rep
