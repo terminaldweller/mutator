@@ -201,7 +201,11 @@ cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("mutator-lvl0 will run thr
 cl::opt<bool> MainFileOnly("MainOnly", cl::desc("mutator-lvl0 will only report the results that reside in the main file"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::ZeroOrMore);
 cl::opt<MisraC> MisraCVersion(cl::desc("choose the MisraC version to check against"), \
                               cl::values(clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
-                                  clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")));
+                                  clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")), cl::init(MisraC2004));
+cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rule checks"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 /**********************************************************************************************************************/
 class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCmpless : public MatchFinder::MatchCallback {
 public:
