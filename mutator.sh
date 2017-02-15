@@ -52,12 +52,12 @@ do
 		-t|--test)
 		if [[ "$2" == mutator-lvl0 && "$3" == valgrind ]]; then
 			echo "Running command:"
-			echo "valgrind ./"$2" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log"
-			"valgrind" ./"$2" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log
+			echo "valgrind ./"$2" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include > ./test/misra-log"
+			"valgrind" ./"$2" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include > ./test/misra-log
 		elif [[ "$2" == mutator-lvl0 && "$3" == tdd ]]; then
 			echo "Running command:"
-			echo "./mutator-lvl0 -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log"
-			"./mutator-lvl0" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/5.3.1/include > ./test/misra-log
+			echo "./mutator-lvl0 -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include > ./test/misra-log"
+			"./mutator-lvl0" -SysHeader=false -MainOnly=true  ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include > ./test/misra-log
 		elif [[ "$2" == mutator-lvl0 && "$3" == xsd ]]; then
 			echo "xmllint --noout --schema ./samples/mutator0-report-schema.xsd ./test/misrareport.xml"
 			"xmllint" --noout --schema ./samples/mutator0-report-schema.xsd ./test/misrareport.xml
