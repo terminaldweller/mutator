@@ -274,6 +274,7 @@ public:
       const IfStmt *IS = MR.Nodes.getNodeAs<clang::IfStmt>("mcelse");
 
       SourceLocation SL = IS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -311,6 +312,7 @@ public:
       const IfStmt *IS = MR.Nodes.getNodeAs<clang::IfStmt>("mcif");
 
       SourceLocation SL = IS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -349,8 +351,9 @@ public:
       const IfStmt *ElseIf = MR.Nodes.getNodeAs<clang::IfStmt>("mcifelse");
 
       SourceLocation IFESL = ElseIf->getLocStart();
+      CheckSLValidity(IFESL);
       IFESL = Devi::SourceLocationHasMacro(IFESL, Rewrite, "start");
-
+      
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, IFESL))
       {
         return void();
@@ -388,6 +391,7 @@ public:
       const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchbrk");
 
       SourceLocation SL = SS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -426,6 +430,7 @@ public:
       const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchdft");
 
       SourceLocation SL = SS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -466,6 +471,7 @@ public:
       const CaseStmt *SS = MR.Nodes.getNodeAs<clang::CaseStmt>("mccase151");
 
       SourceLocation SL = SS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -518,6 +524,7 @@ public:
       const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitch155");
 
       SourceLocation SL = SS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -557,7 +564,8 @@ public:
 
       if (FD->isVariadic())
       {
-        SourceLocation SL = FD->getLocStart();
+        SourceLocation SL = FD->getLocStart(); 
+        CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
         if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -597,7 +605,8 @@ public:
       const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mc162funcdec");
       const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("mc162callexpr");
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -665,7 +674,8 @@ public:
       /*to guard against function that have a declaration that is not a definition only.*/
       if (FDcl != nullptr)
       {
-        SourceLocation SL = FD->getLocStart();
+        SourceLocation SL = FD->getLocStart(); 
+        CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
         if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -739,7 +749,8 @@ public:
     {
       const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("mcfunc166");
 
-      SourceLocation SL = CE->getLocStart();
+      SourceLocation SL = CE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       const FunctionDecl *FD = CE->getDirectCallee();
@@ -879,7 +890,8 @@ public:
 
       const Expr *RE [[maybe_unused]] = RT->getRetValue();
 
-      SourceLocation SL = RT->getLocStart();
+      SourceLocation SL = RT->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -926,7 +938,8 @@ public:
     {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169");
 
-      SourceLocation SL = ICE->getLocStart();
+      SourceLocation SL = ICE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -1005,7 +1018,8 @@ public:
 
       const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184");
 
-      SourceLocation SL = RD->getLocStart();
+      SourceLocation SL = RD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext* const ASTC = MR.Context;
@@ -1066,7 +1080,8 @@ public:
 
       const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu181struct");
 
-      SourceLocation SL = RD->getLocStart();
+      SourceLocation SL = RD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext* const ASTC = MR.Context;
@@ -1196,7 +1211,8 @@ public:
     {
       const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465");
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       QualType QT = FD->getType();
@@ -1274,7 +1290,8 @@ public:
       DeclarationNameInfo DNI = FD->getNameInfo();
       std::string MatchedName = DNI.getAsString();
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       SourceLocation SLE = FD->getLocEnd();
@@ -1499,7 +1516,8 @@ public:
     {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91");
 
-      SourceLocation SL = VD->getLocStart();
+      SourceLocation SL = VD->getLocStart(); 
+      CheckSLValidity(SL);
       SourceLocation SLMID;
 
       if (SL.isMacroID())
@@ -1508,6 +1526,7 @@ public:
       }
 
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
       SourceLocation SLE = VD->getLocEnd();
       SourceLocation SLEMID;
 
@@ -1597,8 +1616,12 @@ public:
           /*JANKY*/
           const Expr* InitExpr [[maybe_unused]] = VD->getInit();
           SourceRange InitExprSR;
-          SourceLocation IESL = InitExpr->getLocStart();
+          SourceLocation IESL = InitExpr->getLocStart(); 
+          CheckSLValidity(IESL);
           IESL = Devi::SourceLocationHasMacro(IESL, Rewrite, "start");
+      
+          CheckSLValidity(IESL);
+
           SourceLocation IESLE = InitExpr->getLocEnd();
           IESLE = Devi::SourceLocationHasMacro(IESLE, Rewrite, "end");
           InitExprSR.setBegin(IESL);
@@ -1674,7 +1697,8 @@ public:
       const InitListExpr* ILE = MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92");
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit92daddy");
 
-      SourceLocation SL = VD->getLocStart();
+      SourceLocation SL = VD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -1714,7 +1738,8 @@ public:
       it tells us we could not match an integer initialization for this enumconstantdecl.*/
       const IntegerLiteral* IL = MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcinit93kiddy");
 
-      SourceLocation SL = ED->getLocStart();
+      SourceLocation SL = ED->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       newSourceLocation = SL;
 
@@ -1834,6 +1859,7 @@ public:
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr123kiddy");
 
       SourceLocation SL = EXP->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -1874,7 +1900,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr124");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -1916,7 +1943,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("lrhs");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext *const ASTC [[maybe_unused]] = MR.Context;
@@ -1982,7 +2010,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr126rl");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2021,7 +2050,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr127rl");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2065,7 +2095,8 @@ public:
       const Expr* RHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs");
       const Expr* LHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs");
 
-      SourceLocation SL = RHS->getLocStart();
+      SourceLocation SL = RHS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2122,7 +2153,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr129");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2165,7 +2197,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr1210");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2201,7 +2234,8 @@ public:
     {
       const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1213");
 
-      SourceLocation SL = UO->getOperatorLoc();
+      SourceLocation SL = UO->getOperatorLoc(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2237,7 +2271,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("cse131rlhs");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2276,7 +2311,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse132");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2316,11 +2352,13 @@ public:
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse1332rl");
       const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mccse1332daddy");
 
-      SourceLocation SLD = BO->getLocStart();
+      SourceLocation SLD = BO->getLocStart(); 
+      CheckSLValidity(SLD);
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
       NewSL = SLD;
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       QualType QT = EXP->getType();
@@ -2373,7 +2411,8 @@ public:
 
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse134");
 
-      SourceLocation SL = FS->getLocStart();
+      SourceLocation SL = FS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       const Expr* FSCond = FS->getCond();
@@ -2472,7 +2511,8 @@ public:
       /*underdev*/
       if (FSCond != nullptr)
       {
-        SourceLocation CSL = FSCond->getLocStart();
+        SourceLocation CSL = FSCond->getLocStart(); 
+        CheckSLValidity(CSL);
         SourceLocation CSLE = FSCond->getLocEnd();
         SourceRange CSR;
         CSR.setBegin(CSL);
@@ -2486,9 +2526,11 @@ public:
       }
 
 
-      SourceLocation SLD = FS->getLocStart();
+      SourceLocation SLD = FS->getLocStart(); 
+      CheckSLValidity(SLD);
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
-      SourceLocation SL = DRE->getLocStart();
+      SourceLocation SL = DRE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (FSInit != nullptr && FSInc != nullptr)
@@ -2551,7 +2593,8 @@ public:
     {
       const GotoStmt* GS = MR.Nodes.getNodeAs<clang::GotoStmt>("mccf144");
 
-      SourceLocation SL = GS->getLocStart();
+      SourceLocation SL = GS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2587,7 +2630,8 @@ public:
     {
       const ContinueStmt* CS = MR.Nodes.getNodeAs<clang::ContinueStmt>("mccf145");
 
-      SourceLocation SL = CS->getLocStart();
+      SourceLocation SL = CS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2623,7 +2667,8 @@ public:
     {
       const ForStmt* FS =  MR.Nodes.getNodeAs<clang::ForStmt>("mccffofo");
 
-      SL = FS->getLocStart();
+      SL = FS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
 
@@ -2631,7 +2676,8 @@ public:
     {
       const WhileStmt* WS =  MR.Nodes.getNodeAs<clang::WhileStmt>("mccfwuwu");
 
-      SL = WS->getLocStart();
+      SL = WS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
 
@@ -2639,7 +2685,8 @@ public:
     {
       const DoStmt* DS =  MR.Nodes.getNodeAs<clang::DoStmt>("mccfdodo");
 
-      SL = DS->getLocStart();
+      SL = DS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
 
@@ -2700,7 +2747,8 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mccf147");
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       NewSL = SL;
@@ -2761,7 +2809,8 @@ public:
     {
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccf148for");
 
-      SL = FS->getLocStart();
+      SL = FS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2785,7 +2834,8 @@ public:
     {
       const WhileStmt* WS = MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while");
 
-      SL = WS->getLocStart();
+      SL = WS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2809,7 +2859,8 @@ public:
     {
       const DoStmt* DS = MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do");
 
-      SL = DS->getLocStart();
+      SL = DS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2833,7 +2884,8 @@ public:
     {
       const SwitchStmt* SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch");
 
-      SL = SS->getLocStart();
+      SL = SS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2869,7 +2921,8 @@ public:
   {
     const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcswitch154");
 
-    SourceLocation SL = EXP->getLocStart();
+    SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
     SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
     if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -2908,7 +2961,8 @@ public:
     {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcptc111");
 
-      SourceLocation SL = ICE->getLocStart();
+      SourceLocation SL = ICE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       QualType QT = ICE->getType();
@@ -3042,7 +3096,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse137");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext *const ASTC = MR.Context;
@@ -3125,11 +3180,16 @@ public:
         FDDef = CE->getDirectCallee();
       }
 
-      SourceLocation CESL = CE->getLocStart();
+      SourceLocation CESL = CE->getLocStart(); 
+      CheckSLValidity(CESL);
       CESL = Devi::SourceLocationHasMacro(CESL, Rewrite, "start");
-      SourceLocation FDDadSL = FDDad->getLocStart();
+
+      SourceLocation FDDadSL = FDDad->getLocStart(); 
+      CheckSLValidity(FDDadSL);
       FDDadSL = Devi::SourceLocationHasMacro(FDDadSL, Rewrite, "start");
-      SourceLocation FDSL = FDDef->getLocStart();
+
+      SourceLocation FDSL = FDDef->getLocStart(); 
+      CheckSLValidity(FDSL);
       FDSL = Devi::SourceLocationHasMacro(FDSL, Rewrite, "start");
 
       ASTContext *const ASTC = MR.Context;
@@ -3233,7 +3293,8 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction165");
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -3269,9 +3330,11 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction1652");
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      SourceLocation SLE = FD->getBody()->getLocStart();
+      SourceLocation SLE = FD->getBody()->getLocStart(); 
+      CheckSLValidity(SLE);
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -3325,7 +3388,8 @@ public:
     {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer171") ;
 
-      SourceLocation SL = DRE->getLocStart();
+      SourceLocation SL = DRE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -3371,7 +3435,8 @@ public:
       const DeclRefExpr* DREL = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723lhs");
       const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcpointer1723daddy");
 
-      SourceLocation SL = BO->getLocStart();
+      SourceLocation SL = BO->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -3416,7 +3481,8 @@ public:
     {
       const CastExpr* CE = MR.Nodes.getNodeAs<clang::CastExpr>("mcpointer174");
 
-      SourceLocation SL = CE->getLocStart();
+      SourceLocation SL = CE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -3440,7 +3506,8 @@ public:
     {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742");
 
-      SourceLocation SL = DRE->getLocStart();
+      SourceLocation SL = DRE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -3483,7 +3550,8 @@ public:
     {
       VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpointer175");
 
-      SL = VD->getLocStart();
+      SL = VD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       QT = VD->getType();
@@ -3493,7 +3561,8 @@ public:
     {
       FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mcpointer175field");
 
-      SL = FD->getSourceRange().getBegin();
+      SL = FD->getSourceRange().getBegin(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       QT = FD->getType();
@@ -3602,7 +3671,8 @@ public:
       QualType QTEXP = EXP->getType();
       const clang::Type* TPEXP = QTEXP.getTypePtr();
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       SourceLocation SLE = EXP->getLocEnd();
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
@@ -3695,7 +3765,8 @@ public:
     {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcsu181arr");
 
-      SourceLocation SL = VD->getLocStart();
+      SourceLocation SL = VD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -3731,7 +3802,8 @@ public:
     {
       const CStyleCastExpr* CSCE = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcptc11cstyle");
 
-      SourceLocation SL = CSCE->getLocStart();
+      SourceLocation SL = CSCE->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       QualType QT = CSCE->getType();
@@ -3847,7 +3919,8 @@ public:
       if ((ICE->getCastKind() == CK_IntegralCast) || (ICE->getCastKind() == CK_FloatingCast) || \
           (ICE->getCastKind() == CK_FloatingComplexCast) || (ICE->getCastKind() == CK_IntegralComplexCast))
       {
-        SourceLocation SL = ICE->getLocStart();
+        SourceLocation SL = ICE->getLocStart(); 
+        CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
         ASTContext *const ASTC = MR.Context;
@@ -4039,7 +4112,8 @@ public:
 
       const IdentifierInfo *II = ND->getIdentifier();
 
-      SourceLocation SL = ND->getLocStart();
+      SourceLocation SL = ND->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext *const ASTC = MR.Context;
@@ -4104,7 +4178,8 @@ public:
 
       std::string VDName = VD->getIdentifier()->getName().str();
 
-      SourceLocation SL = VD->getLocStart();
+      SourceLocation SL = VD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext* const ASTC = MR.Context;
@@ -4201,7 +4276,8 @@ public:
     {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf88var");
 
-      SourceLocation SL = VD->getLocStart();
+      SourceLocation SL = VD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext* const ASTC = MR.Context;
@@ -4246,7 +4322,8 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf88function");
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext* const ASTC = MR.Context;
@@ -4335,7 +4412,9 @@ public:
 
         //std::cout << "ZZZZZZZZZZZZZZZZZZZZZ" << RawText << std::endl;
 
-        SourceLocation RCSL = iter->getLocStart();
+        SourceLocation RCSL = iter->getLocStart(); 
+        CheckSLValidity(RCSL);
+        RCSL = Devi::SourceLocationHasMacro(RCSL, Rewrite, "start");
 
         while (true)
         {
@@ -4403,7 +4482,8 @@ public:
     {
       const ParmVarDecl* PVD = MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167");
 
-      SourceLocation SL = PVD->getLocStart();
+      SourceLocation SL = PVD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -4469,7 +4549,8 @@ public:
         RHSIsIntLit = true;
       }
 
-      SourceLocation SL = LHS->getLocStart();
+      SourceLocation SL = LHS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -4531,7 +4612,8 @@ public:
     {
       const NullStmt* NS = MR.Nodes.getNodeAs<clang::NullStmt>("mccf143nullstmt");
 
-      SourceLocation SL = NS->getSemiLoc();
+      SourceLocation SL = NS->getSemiLoc(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext *const ASTC = MR.Context;
@@ -4563,7 +4645,8 @@ public:
     {
       const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcexpr1212");
 
-      SourceLocation SL = RD->getLocStart();
+      SourceLocation SL = RD->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -4597,7 +4680,8 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr1211");
 
-      SourceLocation SL = EXP->getLocStart();
+      SourceLocation SL = EXP->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       SourceLocation SLE = EXP->getLocEnd();
@@ -4748,7 +4832,8 @@ public:
         const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105");
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::BinaryOperator>(*BO);
 
-        SL = BO->getLocStart();
+        SL = BO->getLocStart(); 
+        CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       }
 
@@ -4757,7 +4842,8 @@ public:
         const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno");
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::UnaryOperator>(*UO);
 
-        SL = UO->getLocStart();
+        SL = UO->getLocStart(); 
+        CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       }
 
@@ -4862,7 +4948,8 @@ public:
     {
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse135");
 
-      SourceLocation SL = FS->getLocStart();
+      SourceLocation SL = FS->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -4945,7 +5032,8 @@ public:
       const IntegerLiteral* IL = MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcconst71int");
 
       SourceRange SR;
-      SL = IL->getLocStart();
+      SL = IL->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       SR.setBegin(SL);
       SourceLocation SLE = IL->getLocEnd();
@@ -4959,7 +5047,8 @@ public:
     {
       const clang::StringLiteral* StringLit = MR.Nodes.getNodeAs<clang::StringLiteral>("mcconst71string");
 
-      SL = StringLit->getLocStart();
+      SL = StringLit->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "strat");
 
       TagCandidateString = StringLit->getString().str();
@@ -4969,7 +5058,8 @@ public:
     {
       const CharacterLiteral* CL = MR.Nodes.getNodeAs<clang::CharacterLiteral>("mcconst71char");
 
-      SL = CL->getLocStart();
+      SL = CL->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       SourceRange SR;
@@ -5042,7 +5132,8 @@ public:
     {
       const TypedefDecl* BN = MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5073,7 +5164,8 @@ public:
     {
       const RecordDecl* BN = MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5125,7 +5217,8 @@ public:
     {
       const FieldDecl* BN = MR.Nodes.getNodeAs<clang::FieldDecl>("ident5field");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5178,7 +5271,8 @@ public:
     {
       const ParmVarDecl* BN = MR.Nodes.getNodeAs<clang::ParmVarDecl>("ident5parmvar");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5230,7 +5324,8 @@ public:
     {
       const FunctionDecl* BN = MR.Nodes.getNodeAs<clang::FunctionDecl>("ident5func");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5277,7 +5372,8 @@ public:
     {
       const VarDecl* BN = MR.Nodes.getNodeAs<clang::VarDecl>("ident5var");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5329,7 +5425,8 @@ public:
     {
       const EnumDecl* BN = MR.Nodes.getNodeAs<clang::EnumDecl>("ident5enum");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5381,7 +5478,8 @@ public:
     {
       const LabelDecl* BN = MR.Nodes.getNodeAs<clang::LabelDecl>("ident5label");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5433,7 +5531,8 @@ public:
     {
       const EnumConstantDecl* BN = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("ident5enumconst");
 
-      SourceLocation SL = BN->getLocStart();
+      SourceLocation SL = BN->getLocStart(); 
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
@@ -5508,6 +5607,9 @@ public:
                                    bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
                                    StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported)
   {
+ 
+    CheckSLValidity(HashLoc);
+
 #if defined(__linux__)
     std::ifstream HeaderABS(SearchPath.str() + "/" + FileName.str());
     std::ifstream HeaderRel(RelativePath.str() + "/" + FileName.str());
@@ -5713,7 +5815,8 @@ public:
   virtual void Defined(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range)
   {
 #if 1
-    SourceLocation SL [[maybe_unused]] = Range.getBegin();
+    SourceLocation SL [[maybe_unused]] = Range.getBegin(); 
+    CheckSLValidity(SL);
 
 #if 0
     assert(SL.isValid(), "the SourceLocation for macro Defined is not valid.");
@@ -5779,7 +5882,8 @@ public:
 
     if (MI != nullptr && DMD != nullptr)
     {
-      SourceLocation SL = MacroNameTok.getLocation();
+      SourceLocation SL = MacroNameTok.getLocation(); 
+      CheckSLValidity(SL);
 
 #if 0
       assert(SL.isValid(), "the SourceLocation for MacroUndefined is not valid.");
@@ -5872,7 +5976,8 @@ public:
 #if 1
     const MacroInfo* MI = MD->getMacroInfo();
 
-    SourceLocation SL = MacroNameTok.getLocation();
+    SourceLocation SL = MacroNameTok.getLocation(); 
+    CheckSLValidity(SL);
 
 #if 0
     assert(SL->isValid(), "the SourceLocation for MacroDefined is not valid.");
@@ -6152,6 +6257,7 @@ public:
   {
 #if 1
     SourceLocation SL = MacroNameTok.getLocation();
+    CheckSLValidity(SL);
 
 #if 0
     assert(SL.isValid(), "the SourceLocation for MacroExpands is not valid.");
@@ -6426,8 +6532,10 @@ public:
   virtual void Elif(SourceLocation Loc, SourceRange ConditionRange, ConditionValueKind ConditionValue, SourceLocation IfLoc)
   {
 #if 1
-    SourceLocation SLoc = SM.getSpellingLoc(Loc);
-    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
+    SourceLocation SLoc = SM.getSpellingLoc(Loc); 
+    CheckSLValidity(SLoc);
+    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc); 
+    CheckSLValidity(SIfLoc);
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
     {
@@ -6454,7 +6562,9 @@ public:
   {
 #if 1
     SourceLocation SLoc = SM.getSpellingLoc(Loc);
+    CheckSLValidity(SLoc);
     SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
+    CheckSLValidity(SIfLoc);
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
     {
@@ -6480,8 +6590,10 @@ public:
   virtual void Endif (SourceLocation Loc, SourceLocation IfLoc)
   {
 #if 1
-    SourceLocation SLoc = SM.getSpellingLoc(Loc);
-    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
+    SourceLocation SLoc = SM.getSpellingLoc(Loc); 
+    CheckSLValidity(SLoc);
+    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc); 
+    CheckSLValidity(SIfLoc);
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
     {
@@ -7315,7 +7427,8 @@ public:
   {
     DiagnosticConsumer::HandleDiagnostic(DiagLevel, Info);
 
-    SourceLocation SL = Info.getLocation();
+    SourceLocation SL = Info.getLocation(); 
+    CheckSLValidity(SL);
 
     SourceManager &SM = Info.getSourceManager();
 
