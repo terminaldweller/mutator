@@ -32,6 +32,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "tinyxml2/tinyxml2.h"
 /*********************************************************************************************************************/
+/*Mcros and Definitions*/
+#define CheckSLValidity(SL) \
+  if (!SL.isValid()) {return void();}
+/*********************************************************************************************************************/
 using namespace clang;
 using namespace tinyxml2;
 /*********************************************************************************************************************/
