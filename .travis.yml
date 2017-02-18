@@ -28,7 +28,7 @@ before_script:
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
   - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
-  - travis_retry sudo apt-get install clang-4.0 libclang-4.0-dev libclang-common-4.0-dev libllvm4.0 llvm-4.0-dev llvm-4.0 llvm-4.0-runtime -y
+  - travis_retry sudo apt-get install clang-4.0 libclang-4.0-dev libclang-common-4.0-dev libllvm4.0 llvm-4.0-dev llvm-4.0 llvm-4.0-runtime libclang1-4.0-dbg libllvm4.0-dbg -y
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
 
