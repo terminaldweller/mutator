@@ -19,7 +19,7 @@ ifneq ($(CXX), clang++)
 $(error This build mode is only useable with clang++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG -fprofile-instr-generate -fexceptions
+ -std=c++11 -UNDEBUG -fprofile-instr-generate -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o -fprofile-instr-generate
 endif
 
@@ -53,7 +53,7 @@ ifneq ($(CXX), g++)
 $(error This build mode is only useable with g++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -stdlib=libstdc++ -UNDEBUG -fexceptions
+ -std=c++11 -static-libstdc++ -UNDEBUG -fexceptions
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
