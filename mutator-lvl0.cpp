@@ -22,12 +22,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
+#include "mutator-lvl0.h"
 #include "mutator_aux.h"
 /*standard headers*/
 #include <cassert>
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <regex>
 #include <string>
 #include <vector>
@@ -206,6 +208,40 @@ cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rul
 cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
+/**********************************************************************************************************************/
+class StringOptionsParser
+{
+public:
+  StringOptionsParser() {}
+
+  bool MC2Parser(void)
+  {
+    if (MCEA && MCDA)
+    {
+      std::cout << "You cannot set both MCEA and MCDA. That doesn't mean anything. Run with -h or visit the documentationi for help." << std::endl;
+      return false;
+    }
+    else if (MCEA)
+    {
+      MCOptsProto.AllisSet = true;
+    }
+    else if (MCDA)
+    {
+      MCOptsProto.AllisSet = false;
+    }
+
+    return true;
+  }
+
+private:
+  struct MCOptsStructs
+  {
+    bool AllisSet;
+    std::vector<std::string> Options;
+  };
+
+  MCOptsStructs MCOptsProto;
+};
 /**********************************************************************************************************************/
 class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCmpless : public MatchFinder::MatchCallback {
 public:
@@ -7564,6 +7600,19 @@ int main(int argc, const char **argv)
 
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
+  StringOptionsParser SOPProto;
+
+#if 1
+  if (SOPProto.MC2Parser())
+  {
+    typedef std::multimap<std::string, std::string>::iterator Iter;
+    for (Iter iter = MC1EquivalencyMap.begin(); iter != MC1EquivalencyMap.end(); ++iter)
+    {
+      std::cout << "Key: " << iter->first << "  " << "Value: " << iter->second << std::endl;
+    }
+  }
+#endif
+  
   XMLDocOut.XMLCreateReport();
 
   JSONDocOUT.JSONCreateReport();
