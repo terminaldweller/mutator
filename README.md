@@ -73,6 +73,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ## Announcements
 
+* mutator will be implementing [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) rule checks and automatic refactoring of code bases to use SaferCPlusPlus libraries. The first phase will begin with implementing the compliancy checks. You can read more about SaferCPlusPlus [here](http://duneroadrunner.github.io/SaferCPlusPlus/).<br/>
 * mutator's first website is up: [project mutator](https://bloodstalker.github.io/mutator/).<br/>
 * project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
 * `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
