@@ -23,6 +23,7 @@ before_install:
       - pip install --user cpp-coveralls
 
 before_script: 
+  - ulimit -c unlimited -s
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -y
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
@@ -33,6 +34,9 @@ before_script:
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
 
 script: make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG -j2
+
+after_failure:
+  - find . -maxdepth 1 -name "core*"
 
 after_success:
   - llvm-config-4.0 --has-rtti
@@ -51,3 +55,4 @@ after_success:
   - gcc -E - <<< '#include<assert.h>'
   - ls
   - ulimit -a
+  - find . -maxdepth 1 -name "core*"
