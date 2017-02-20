@@ -14,7 +14,7 @@ printf "${Lblue}running make clean...\n${NC}" | tee ./test/precommit.rep
 "make" clean
 
 printf "${Lblue}testing the build in C++11 mode...\n${NC}" | tee -a ./test/precommit.rep
-"make" CXX=clang++ BIULD_MODE=COV_NO_CLANG
+"make" CXX=clang++ BIULD_MODE=COV_NO_CLANG -j2
 echo ""
 
 if [[ $? == 0 ]]; then
@@ -57,7 +57,7 @@ printf "${Lblue}running make clean...\n${NC}" | tee -a ./test/precommit.rep
 "make" clean
 
 printf "${Lblue}testing the build in C++1z mode...\n${NC}" | tee -a ./test/precommit.rep
-"make" CXX=clang++ BUILD_MODE=COV_NO_CLANG_1Z
+"make" CXX=clang++ BUILD_MODE=COV_NO_CLANG_1Z -j2
 echo ""
 
 if [[ $? == 0 ]]; then
