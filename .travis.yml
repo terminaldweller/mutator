@@ -56,4 +56,4 @@ after_success:
   - ls
   - ulimit -a
   - find . -maxdepth 1 -name "core*"
-  - lldb-4.0 ./core
+    #- lldb-4.0 ./core
