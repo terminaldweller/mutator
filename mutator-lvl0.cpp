@@ -194,7 +194,7 @@ std::vector<IdentInfo> IdentInfoProto;
 /*mutator-lvl0 executable options*/
 enum MisraC
 {
-  MisraC2004, MisraC2012, C2, C3
+  NA=0x0, MisraC98=(0x3<<0), MisraC2004=(0x3<<2), MisraC2012=(0x3<<4), C1=(0x1<<1), C2=(0x1<<3), C3=(0x1<<5)
 };
 
 static llvm::cl::OptionCategory MutatorLVL0Cat("mutator-lvl0 options category");
@@ -203,9 +203,9 @@ cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("mutator-lvl0 will run thr
 cl::opt<bool> MainFileOnly("MainOnly", cl::desc("mutator-lvl0 will only report the results that reside in the main file"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::ZeroOrMore);
 cl::opt<MisraC> MisraCVersion(cl::desc("choose the MisraC version to check against"), \
                               cl::values(clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
-                                  clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")), cl::init(MisraC2004));
-cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rule checks"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
-cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
+                                  clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")), cl::init(MisraC2004), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rule checks"), cl::init(" "), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(" "), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 /**********************************************************************************************************************/
@@ -216,24 +216,103 @@ public:
 
   bool MC2Parser(void)
   {
-    if (MCEA && MCDA)
+    if (MCDA)
     {
-      std::cout << "You cannot set both MCEA and MCDA. That doesn't mean anything. Run with -h or visit the documentationi for help." << std::endl;
-      return false;
+      PopulateRuleList(false);
     }
     else if (MCEA)
     {
-      MCOptsProto.AllisSet = true;
+      PopulateRuleList(true);
     }
-    else if (MCDA)
-    {
-      MCOptsProto.AllisSet = false;
-    }
+    
+    ParseString();
+
+    //UpdateRuleList();
 
     return true;
   }
 
 private:
+  void PopulateRuleList(bool PopValue)
+  {
+    if ((MisraCVersion & 0x2) == 1)
+    {
+      // C1 
+      RuleList.push_back(std::make_pair("0", PopValue));
+      
+      typedef std::multimap<std::string,std::string>::const_iterator Iter;
+      for (Iter iter = MC1EquivalencyMap.begin(); iter != MC1EquivalencyMap.end(); ++iter)
+      {
+        if (iter->first != std::prev(iter)->first)
+        {
+          RuleList.push_back(std::make_pair(iter->first, PopValue));
+        }
+      }
+    }
+
+    if ((MisraCVersion & 0x8) == 1)
+    {
+      // C2
+      typedef std::map<std::string, bool>::const_iterator Iter;
+      for (Iter iter = MC2OptsMap.begin(); iter != MC2OptsMap.end(); ++iter)
+      {
+        RuleList.push_back(std::make_pair(iter->first, PopValue));
+      }
+
+    }
+
+    if ((MisraCVersion & 0x20) == 1)
+    {
+      // C3
+    }
+  }
+ 
+  void ParseString(void)
+  {
+    char* TempChar;
+
+    if (MCDA)
+    {
+      std::strcpy(TempChar, MCE.c_str());
+      char *TokenString = std::strtok(TempChar, " ");
+
+      while (TokenString != NULL)
+      {
+        ParsedString.push_back(std::make_pair(TokenString, true));
+
+        TokenString = std::strtok(TempChar, " ");
+      }
+    }
+
+    if (MCEA)
+    {
+        std::strcpy(TempChar, MCD.c_str());
+      char *TokenString = std::strtok(TempChar, " ");
+
+      while (TokenString != NULL)
+      {
+        ParsedString.push_back(std::make_pair(TokenString, false));
+
+        TokenString = std::strtok(TempChar, " ");
+      }
+    }
+  }
+
+  void UpdateRuleList(void)
+  {
+    for (auto &iter : RuleList)
+    {
+      for (auto &yaiter : ParsedString)
+      {
+        if (iter.first == yaiter.first)
+        {
+          iter.second = yaiter.second;
+          break;
+        }
+      }
+    }
+  }
+
   struct MCOptsStructs
   {
     bool AllisSet;
@@ -241,6 +320,10 @@ private:
   };
 
   MCOptsStructs MCOptsProto;
+
+  std::vector<std::pair<std::string, bool>> ParsedString;
+
+  std::vector<std::pair<std::string, bool>> RuleList;
 };
 /**********************************************************************************************************************/
 class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCmpless : public MatchFinder::MatchCallback {
@@ -7596,13 +7679,18 @@ int main(int argc, const char **argv)
 {
   CommonOptionsParser op(argc, argv, MutatorLVL0Cat);
 
+  CompilationDatabase &CDB [[maybe_unused]] = op.getCompilations();
+  //std::vector<CompileCommand> loco = 
+
   const std::vector<std::string> &SourcePathList = op.getSourcePathList();
 
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
   StringOptionsParser SOPProto;
 
-#if 1
+  SOPProto.MC2Parser();
+
+#if 0
   if (SOPProto.MC2Parser())
   {
     typedef std::multimap<std::string, std::string>::iterator Iter;
