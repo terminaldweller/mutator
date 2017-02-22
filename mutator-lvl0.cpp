@@ -227,7 +227,7 @@ public:
     
     ParseString();
 
-    //UpdateRuleList();
+    UpdateRuleList();
 
     return true;
   }
