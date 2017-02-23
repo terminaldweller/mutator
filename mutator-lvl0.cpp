@@ -70,6 +70,12 @@ using namespace clang::ast_matchers;
 using namespace clang::driver;
 using namespace clang::tooling;
 /**********************************************************************************************************************/
+/*macros and defs*/
+#define _MUT0_TEST
+#if 0
+#undef _MUT0_TEST
+#endif
+/**********************************************************************************************************************/
 /*global vars*/
 Devi::XMLReport XMLDocOut;
 Devi::JSONReport JSONDocOUT;
@@ -190,11 +196,10 @@ struct IdentInfo
 std::vector<IdentInfo> IdentInfoProto;
 /*@DEVI-end*/
 /**********************************************************************************************************************/
-
 /*mutator-lvl0 executable options*/
 enum MisraC
 {
-  NA=0x0, MisraC98=(0x3<<0), MisraC2004=(0x3<<2), MisraC2012=(0x3<<4), C1=(0x1<<1), C2=(0x1<<3), C3=(0x1<<5)
+  NA=(0x1<<6), MisraC98=(0x1<<0), MisraC2004=(0x1<<2), MisraC2012=(0x1<<4), C1=(0x1<<1), C2=(0x1<<3), C3=(0x1<<5)
 };
 
 static llvm::cl::OptionCategory MutatorLVL0Cat("mutator-lvl0 options category");
@@ -204,8 +209,8 @@ cl::opt<bool> MainFileOnly("MainOnly", cl::desc("mutator-lvl0 will only report t
 cl::opt<MisraC> MisraCVersion(cl::desc("choose the MisraC version to check against"), \
                               cl::values(clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
                                   clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")), cl::init(MisraC2004), cl::cat(MutatorLVL0Cat), cl::Optional);
-cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rule checks"), cl::init(" "), cl::cat(MutatorLVL0Cat), cl::Optional);
-cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(" "), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rule checks"), cl::init("10.1 "), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(" 9.3"), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 /**********************************************************************************************************************/
@@ -232,10 +237,28 @@ public:
     return true;
   }
 
+  void Dump(bool InArg)
+  {
+    if (InArg)
+    {
+      for (auto &iter : RuleList)
+      {
+        std::cerr << "RLKey: " << iter.first << " " << "RLValue: " << iter.second << std::endl;
+      }
+
+      std::cerr << std::endl;
+
+      for (auto &iter : ParsedString)
+      {
+        std::cerr << "PSKey: " << iter.first << " " << "PSValue: " << iter.second << std::endl;
+      }
+    }
+  }
+
 private:
   void PopulateRuleList(bool PopValue)
   {
-    if ((MisraCVersion & 0x2) == 1)
+    if (MisraCVersion < 0x4)
     {
       // C1 
       RuleList.push_back(std::make_pair("0", PopValue));
@@ -250,7 +273,7 @@ private:
       }
     }
 
-    if ((MisraCVersion & 0x8) == 1)
+    if (MisraCVersion < 0x10)
     {
       // C2
       typedef std::map<std::string, bool>::const_iterator Iter;
@@ -261,7 +284,7 @@ private:
 
     }
 
-    if ((MisraCVersion & 0x20) == 1)
+    if (MisraCVersion < 0x40)
     {
       // C3
     }
@@ -269,31 +292,43 @@ private:
  
   void ParseString(void)
   {
-    char* TempChar;
+#if 1
+    std::cout << "MCD:" << MCD << std::endl;
+    std::cout << "MCE:" << MCE << std::endl;
+#endif
+
+    bool Disenable;
+    std::string TempString;
 
     if (MCDA)
     {
-      std::strcpy(TempChar, MCE.c_str());
-      char *TokenString = std::strtok(TempChar, " ");
+      Disenable = true;
+      TempString = MCE;
+    }
+    else if (MCEA)
+    {
+      Disenable = false;
+      TempString = MCD;
+    }
+    
+    size_t WhiteSpacePos = TempString.find(" ", 0U);
+    size_t OldPosition = 0U;
 
-      while (TokenString != NULL)
-      {
-        ParsedString.push_back(std::make_pair(TokenString, true));
+    if (WhiteSpacePos == std::string::npos)
+    {
+      ParsedString.push_back(std::make_pair(TempString, false));
 
-        TokenString = std::strtok(TempChar, " ");
-      }
+      return void();
     }
 
-    if (MCEA)
+    while(WhiteSpacePos != std::string::npos)
     {
-        std::strcpy(TempChar, MCD.c_str());
-      char *TokenString = std::strtok(TempChar, " ");
+      OldPosition = WhiteSpacePos;
+      WhiteSpacePos = TempString.find(" ", WhiteSpacePos + 1U);
 
-      while (TokenString != NULL)
+      if (WhiteSpacePos != std::string::npos)
       {
-        ParsedString.push_back(std::make_pair(TokenString, false));
-
-        TokenString = std::strtok(TempChar, " ");
+        ParsedString.push_back(std::make_pair(TempString.substr(WhiteSpacePos, WhiteSpacePos - OldPosition), Disenable));
       }
     }
   }
@@ -312,14 +347,6 @@ private:
       }
     }
   }
-
-  struct MCOptsStructs
-  {
-    bool AllisSet;
-    std::vector<std::string> Options;
-  };
-
-  MCOptsStructs MCOptsProto;
 
   std::vector<std::pair<std::string, bool>> ParsedString;
 
@@ -7690,7 +7717,11 @@ int main(int argc, const char **argv)
 
   SOPProto.MC2Parser();
 
-#if 0
+#if defined(_MUT0_TEST)
+  SOPProto.Dump(false);
+#endif
+
+#if defined(_MUT0_TEST)
   if (SOPProto.MC2Parser())
   {
     typedef std::multimap<std::string, std::string>::iterator Iter;
