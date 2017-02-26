@@ -72,7 +72,7 @@ using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*macros and defs*/
 #define _MUT0_TEST
-#if 0
+#if 1
 #undef _MUT0_TEST
 #endif
 /**********************************************************************************************************************/
@@ -243,14 +243,14 @@ public:
     {
       for (auto &iter : RuleList)
       {
-        std::cerr << "RLKey: " << iter.first << " " << "RLValue: " << iter.second << std::endl;
+        std::cout<< "Debug: " << "RLKey: " << iter.first << " " << "RLValue: " << iter.second << std::endl;
       }
 
-      std::cerr << std::endl;
+      std::cout << std::endl;
 
       for (auto &iter : ParsedString)
       {
-        std::cerr << "PSKey: " << iter.first << " " << "PSValue: " << iter.second << std::endl;
+        std::cout << "Debug: " << "PSKey: " << iter.first << " " << "PSValue: " << iter.second << std::endl;
       }
     }
   }
@@ -328,7 +328,7 @@ private:
 
       if (WhiteSpacePos != std::string::npos)
       {
-        ParsedString.push_back(std::make_pair(TempString.substr(WhiteSpacePos, WhiteSpacePos - OldPosition), Disenable));
+        ParsedString.push_back(std::make_pair(TempString.substr(OldPosition + 1U, WhiteSpacePos - OldPosition - 1U), Disenable));
       }
     }
   }
@@ -7718,7 +7718,7 @@ int main(int argc, const char **argv)
   SOPProto.MC2Parser();
 
 #if defined(_MUT0_TEST)
-  SOPProto.Dump(false);
+  SOPProto.Dump(true);
 #endif
 
 #if defined(_MUT0_TEST)
