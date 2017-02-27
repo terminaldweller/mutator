@@ -19,6 +19,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /*code structure inspired by Eli Bendersky's tutorial on Rewriters.*/
 /**********************************************************************************************************************/
+/*inclusion guard*/
+#ifndef MUTATOR_0_H
+#define MUTATOR_0_H
+/**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
 /*standard library headers*/
@@ -321,6 +325,8 @@ std::multimap<std::string,std::string> MC1EquivalencyMap = {
 };
 
 std::multimap<std::string, std::string> MC3EquivalencyMap;
+/**********************************************************************************************************************/
+#endif
 /**********************************************************************************************************************/
 /*last line intentionally left blank*/
 
