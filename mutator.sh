@@ -107,7 +107,7 @@ do
 				if [[ "$F_END_ACTION" == run ]]; then
 					echo "running $F_ACTION_NAME ..."
 					echo "running ./$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE for $F_ACTION_NAME"
-          "./"$F_EXEC_NAME ${!F_EXEC_COPTS} $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
+          eval "./"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
 					if [[ "$F_PRINT_PRETTY" = true ]]; then
 						echo "running pretty print..."
 						source ./extra-tools/ReportPrintPretty.sh $F_OUT_FILE $F_OUT_FILE-pretty
