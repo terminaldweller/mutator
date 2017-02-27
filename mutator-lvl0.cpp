@@ -206,9 +206,9 @@ static llvm::cl::OptionCategory MutatorLVL0Cat("mutator-lvl0 options category");
 /*@DEVI-the option has been added since gcc does it.its as simple as that.*/
 cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("mutator-lvl0 will run through System Headers"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::ZeroOrMore);
 cl::opt<bool> MainFileOnly("MainOnly", cl::desc("mutator-lvl0 will only report the results that reside in the main file"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::ZeroOrMore);
-cl::opt<MisraC> MisraCVersion(cl::desc("choose the MisraC version to check against"), \
-                              cl::values(clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
-                                  clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")), cl::init(MisraC2004), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<MisraC> MisraCVersion("MCV", cl::desc("choose the MisraC version to check against"), \
+                              cl::values(clEnumVal(MisraC98, "Misrac-1998"), clEnumVal(MisraC2004, "Misra-C:2004"), clEnumVal(MisraC2012, "Misra-C:2012"), \
+                                  clEnumVal(C1, "Misra-C:1998"), clEnumVal(C2, "Misra-C:2004"), clEnumVal(C3, "Misra-C:2012")), cl::init(MisraC2004), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rule checks"), cl::init("10.1 "), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(" 9.3"), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
@@ -7707,7 +7707,25 @@ int main(int argc, const char **argv)
   CommonOptionsParser op(argc, argv, MutatorLVL0Cat);
 
   CompilationDatabase &CDB [[maybe_unused]] = op.getCompilations();
-  //std::vector<CompileCommand> loco = 
+  std::vector<CompileCommand> ComCom = CDB.getAllCompileCommands();
+  std::vector<std::vector<std::string>> ExecCL;
+  
+#if defined(_MUT0_TEST)
+  for (auto &iter : ComCom)
+  {
+    ExecCL.push_back(iter.CommandLine);
+  }
+
+  for (auto &iter : ExecCL)
+  {
+    for (auto &yaiter : iter)
+    {
+      std::cout << "comcom: " << yaiter << std::endl;
+    }
+
+    std::cout << std::endl;
+  }
+#endif
 
   const std::vector<std::string> &SourcePathList = op.getSourcePathList();
 
