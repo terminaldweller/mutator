@@ -22,61 +22,101 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*inclusion directives*/
 #include "mutatord.h"
 /*library headers*/
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <syslog.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <syslog.h>
+#include <time.h>
+#include <unistd.h>
 /**********************************************************************************************************************/
+void time_n_date(FILE* infile)
+{
+  time_t tnd = time(NULL);
+  fprintf(infile, "%s", ctime(&tnd));
+}
+
+void signal_callback_handler(int signum)
+{
+  exit(signum);
+}
+
 int main(void)
 {
+  //signal(SIGINT, signal_callback_handler);
+
   /*getting a process ID*/
   pid_t pid;
   /*getting a session ID*/
   pid_t sid;
+
+  FILE *mut_log;
+  mut_log = fopen("mutatord-log", "w");
+  
+  /*printing out time n date*/
+  fprintf(mut_log, "%s", "daemon started on ");
+  time_n_date(mut_log);
 
   /*fork off the parent process*/
   pid = fork();
 
   if (pid < 0)
   {
+    //fprintf(mut_log, "%s", "failed to get a pid.\n");
     exit(EXIT_FAILURE);
   }
 
   if (pid > 0)
   {
+    fprintf(mut_log, "%s%d%s", "successfully got a pid:", pid, "\n");
     exit(EXIT_SUCCESS);
   }
 
   umask(0);
-
+  fprintf(mut_log, "%s", "set umask to 0.\n");
+  
   /*create a new session ID for the child process*/
   sid = setsid();
   if (sid < 0)
   {
+    fprintf(mut_log, "%s", "failed to get an sid.\n");
     exit(EXIT_FAILURE);
+  }
+  else
+  {
+    fprintf(mut_log, "%s%d%s", "got an sid:", sid, "\n");
   }
 
   /*change the current working directory*/
-  if (chdir("/") < 0)
+  if ((chdir("/")) < 0)
   {
+    fprintf(mut_log, "%s", "failed to change to root dir.\n");
     exit(EXIT_FAILURE);
+  }
+  else
+  {
+    fprintf(mut_log, "%s", "changed to root dir.\n");
   }
 
   /*close the standard file descriptors*/
-  close(STDIN_FILENO) ;
+  close(STDIN_FILENO);
   close(STDOUT_FILENO);
   close(STDERR_FILENO);
+  fprintf(mut_log, "%s", "closed standard file descriptors..\n");
 
   /*deamon loop*/
   while(1)
   {
-    sleep(30);
+    fprintf(mut_log, "%s", "mutatord is running fine.\n");
+    sleep(1);
   }
+
+  fclose(mut_log);
+  exit(EXIT_SUCCESS);
 
 }
 /*last line intentionally left blank*/
