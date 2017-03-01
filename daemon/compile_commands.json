@@ -1,0 +1,7 @@
+[
+    {
+        "command": "cc -c -o mutatord mutatord.c", 
+        "directory": "/home/bloodstalker/devi/hell2/daemon", 
+        "file": "/home/bloodstalker/devi/hell2/daemon/mutatord.c"
+    }
+]
