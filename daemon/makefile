@@ -21,7 +21,7 @@ clean:
 	rm -f *.o *~ $(TARGET)
 
 help:
-	@echo 'all build the target. all is the deafult.'
+	@echo 'all builds the target. all is the default.'
 	@echo 'clean runs clean.'
 	@echo 'help runs help.'
 
