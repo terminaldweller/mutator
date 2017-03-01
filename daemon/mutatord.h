@@ -21,8 +21,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 #ifndef __MUTATOR_D_H
 #define __MUTATOR_D_H
+/**********************************************************************************************************************/
+/*headers*/
+#include <stdio.h>
+/**********************************************************************************************************************/
+/*function prototypes*/
+void signal_callback_handler(int signum);
 
-
+void time_n_date(FILE* infile);
 
 #endif
 /*last line intentionally left blank*/
