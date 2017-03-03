@@ -10,7 +10,7 @@
 
 
 A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
-Reports are genrated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
+Reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
 You can Join the Maillist here, [mutator maillist](https://www.freelists.org/list/mutator). The maillist is moderated.<br/>
 You can follow Project `mutator` on twitter, @xashmith.
 <br/>
@@ -57,7 +57,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 * `mutator-lvl1` and **`mutator-lvl2`** are collectively the code muatation and code transformation(automatic-refactoring) executables. Currently the automatic code transformations implemented are only limited to adding braces to blocks that are missing it, fixing SwitchStmts with adding a default clause if missing and breaks, swapping the RHS and LHS when the RHS is a constant and adding `else` if an if-else is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
-* Branch a release candidate for `mutator-lvl0`, then start writing the unit tests. This might take a while, since I will try to find testers and code reviewers. If you are willing to help with testing, Email me at `thabogre@gmail.com`. Please set the subject to `mutator-lvl0 test` so I wouldnt miss it. I'll do the unit tests and reviews myself if I dont manage to find volunteers for that. while it's far from ideal, it's better than nothing.
+* Branch a release candidate for `mutator-lvl0`, then start writing the unit tests. This might take a while, since I will try to find testers and code reviewers. If you are willing to help with testing, Email me at `thabogre@gmail.com`. Please set the subject to `mutator-lvl0 test` so I wouldn't miss it. I'll do the unit tests and reviews myself if I don't manage to find volunteers for that. While it's far from ideal, it's better than nothing.
 * Implementing the automatic refactoring features of mutator.
 * Upgrading the UI to be able to handle the new automatic-refactoring features.
 
@@ -142,7 +142,7 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 	* `build-all` runs make all.<br/>
 	* `run` runs the `mutator` and `mutator-lvl2` executables on the inputs.<br/>
 	* `default` runs build-all and then run.<br/>
-	* `format` calls `clang-format` to format the mutant. later to be used for the test command.<br/>
+	* `format` calls `clang-format` to format the mutant. Later to be used for the test command.<br/>
 	* `test` runs the tests on the executables and checks the results (not implemented yet).<br/>
 	* `misrac` checks for misrac rules.<br/>
 * `-v, --version` prints out the version.<br/>
@@ -151,19 +151,19 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-pp,	--print-pretty`, prints the output in a pretty format in a new file. The new file has the same name with a "-pretty" added to the name in the same directory.<br/>
 * `-t,	--test`, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind. For example: `-test mutator-lvl0 valgrind`.<br/>
 * `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
-* `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. it is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
+* `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. It is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
 
 `mutator-lvl0` options:<br/>
 
 * SysHeader, will let the executable know that you wish the checks to run through system headers as well. Off by default.<br/>
-* MainOnly, will only pusblish check results for matches residing in the main file,i.e. the current TU(Translation Unit).<br/>
-* MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. currently only supports MisraC2004 or C2.<br/>
+* MainOnly, will only publish check results for matches residing in the main file,i.e. The current TU(Translation Unit).<br/>
+* MisraC2004,MisraC2012,C2,C3 will let the executable know which Misra guidelines you want the source to be checked against. Currently only supports MisraC2004 or C2.<br/>
 
 #### Note
 
 Some of Misra-C rules are already implemented by Clang as warnings, so for those cases, mutator uses the built-in diagnostics instead of re-inventing the wheel. For those diagnostics to appear in the mutator report you should refrain from using the Clang `-w` flag as that silences the warnings.<br/>
 
-If you are running the executables using `mutator.sh` you don't need to read this note through. if you are running the executable directly however, then you have to pass groups of arguments in a specific order otherwise the executable won't be able to recognize the options and will throw errors. For example this is the right way to run `mutator-lvl0`:<br/>
+If you are running the executables using `mutator.sh` you don't need to read this note through. If you are running the executable directly however, then you have to pass groups of arguments in a specific order otherwise the executable won't be able to recognize the options and will throw errors. For example this is the right way to run `mutator-lvl0`:<br/>
 
 ```bash
 
@@ -197,7 +197,7 @@ Here's the command I use to run the TDD tests:<br/>
 
 #### The Action File
 
-`mutator` can accept a file which tells it what to do. Currently this feature is only supporte for `mutator-lvl0`. You can find a sample under `./samples` named `action_file.mutator`.
+`mutator` can accept a file which tells it what to do. Currently this feature is only supported for `mutator-lvl0`. You can find a sample under `./samples` named `action_file.mutator`.
 
 ```bash
 
@@ -219,17 +219,17 @@ end_action:run
 Here's the explanation for the fields:<br/>
 
 * `action_name` lets you specify a name for the action to run. Marks the start of an action.<br/>
-* `executable_name` is used for detemining which executable to run.<br/>
+* `executable_name` is used for determining which executable to run.<br/>
 * `exec_opts` is the field used for passing the executable-specific options.<br/>
 * `in_files` is a list of the input files to pass to the executable.<br/>
-* `libtooling_options` is used for passin the clang options.<br/>
-* `out_files` is used to pass the result file to mutator. For `mutator-lvl0`, this field detemines the Misra-C check results.<br/>
+* `libtooling_options` is used for passing the clang options.<br/>
+* `out_files` is used to pass the result file to mutator. For `mutator-lvl0`, this field determines the Misra-C check results.<br/>
 * `log_files` is used to pass the file to hold the log. Mostly meant to be used with `mutator` and `mutator-lvl2`.<br/>
 * `print_pretty` is a boolean switch. Used for running `ReportPrintPretty.sh`.<br/>
 * `end_action` is used to tell `mutator.sh` what action to do. Currently the only supported options are "run" and "stop". "run" will run the action and "stop" will not run it. Also marks the end of an action.<br/>
 * Lines starting with a hash(`#`) are considered comments.<br/>
 
-Field names shall not have preceeding whitespace or tab. The `:` character shall immeidately follow the field name with options appearing after it.<br/>
+Field names shall not have preceding whitespace or tab. The `:` character shall immediately follow the field name with options appearing after it.<br/>
 `end_action` field should appear as the last field of a action.<br/>
 
 You can run the sample action file with this:<br/>
@@ -245,7 +245,7 @@ Currently, the mutation-only features(mutation for the sake of mutation, technic
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile. So run `make clean` before invoking `bear make target`.<br/>
 
 ### Implementation Notes
-This parts contains notes regarding the implementation of the mutator executables.
+This part contains notes regarding the implementation of the mutator executables.
 
 #### mutator-lvl0
 * The implementation for the Misra-C:2004 rules 11.1,11.2,11.4 and 11.5 might seem unorthodox. Here's the explanation. The essence of the 11.1,11.2,11.3 and 11.4 rules as a collective is (after being translated into clang AST) that any time there is an `ImplicitCastExpr` or `CStyleCastExpr` that has `CastKind = CK_BitCast` the rule-checker should tag it. `CK_BitCast` means that a bit-pattern of one kind is being interpreted as a bit-pattern of another kind which is dangerous. This `CastKind` couple with the other `CastKinds` provided by the clang frontend enable us to tag cases where there is a deviation from the specified rules. Of course it is possible to check for exactly what the rules ask for but execution-time.<br/>
@@ -259,7 +259,7 @@ Here's a quick look into the project files and directories:<br/>
 * **mutator-lvl2.cpp** contains some other Misra-C implementers. Rewriting the code in multiple stages allows for more simplistic rewrites and is also a check to see whether the output is actually buildable.<br/>
 * **mutator.sh** is the UI, which is supposed to work like just any other nix UI(option-wise).<br/>
 * The **utility** folder holds the C source and headers that are necessary to run the instrumented code(currently unused).<br/>
-* **mutator-aux.cpp.h** hold the auxillary functions that most modules will need.<br/>
+* **mutator-aux.cpp.h** hold the auxiliary functions that most modules will need.<br/>
 * Well there is the **makefile**.<br/>
 * The **test** folder holds the **TDD** tests.<br/>
 * The **docs** folder contains the documents related to the project. Currently the doc for the current status of the Misra-C:2004 implementation is there.<br/>
@@ -272,7 +272,7 @@ Here's a quick look into the project files and directories:<br/>
 ### Dev Method
 TDD tests are created for each added feature which are stored under the **test** folder in the repo.<br/>
 Smoke tests and Daily builds are conducted to make sure the code base builds correctly more than once every day.<br/>
-Everytime there is a new commit, the code base is buildable and runnable. If you are having problems, raise an issue or let me know.<br/>
+Every time there is a new commit, the code base is buildable and runnable. If you are having problems, raise an issue or let me know.<br/>
 The code base uses Coverity for static analysis and CI Travis for checking the build matrix.<br/>
 
 ### Notes
@@ -282,7 +282,7 @@ The code base uses Coverity for static analysis and CI Travis for checking the b
 #### **As soon as I manage to find a copy of the Misra-C:2012 document, I'll implement that. Currently the tool only supports Misra-C:2004.**<br/>
 Misra-C rule checker outputs a simple text or xml report. JSON support will be implemented in the future.<br/>
 I'm using **TDD**. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.Those tests will be added later.<br/>
-The project has been tested to biuld on Fedora23(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
+The project has been tested to biuld on Fedora25(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
 The project might, at a later point in time, start using **Cmake** for the build process. Currently the TDD tests use CMake as an extra check.<br/>
 Misra 2012 support will be added in the future.<br/>
 Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if youre going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
@@ -297,7 +297,6 @@ If you run into an issue please raise one here or just contact me with proper in
 ### Future Features
 * Misra-c:2012 check support<br/>
 * Ability to turn off some rule checks<br/>
-* An XML schema for the XML report<br/>
 * using Appveyor to test windows builds<br/>
 
 ### Support
