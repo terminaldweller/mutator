@@ -3,5 +3,15 @@
         "command": "cc -c -o mutatord mutatord.c", 
         "directory": "/home/bloodstalker/devi/hell2/daemon", 
         "file": "/home/bloodstalker/devi/hell2/daemon/mutatord.c"
+    }, 
+    {
+        "command": "cc -c -o mutatorclient mutatorclient.c", 
+        "directory": "/home/bloodstalker/devi/hell2/daemon", 
+        "file": "/home/bloodstalker/devi/hell2/daemon/mutatorclient.c"
+    }, 
+    {
+        "command": "cc -c -o mutatorserver mutatorserver.c", 
+        "directory": "/home/bloodstalker/devi/hell2/daemon", 
+        "file": "/home/bloodstalker/devi/hell2/daemon/mutatorserver.c"
     }
 ]
