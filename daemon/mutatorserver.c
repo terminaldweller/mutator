@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "mutatorserver.h"
 /*standard headers*/
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -78,8 +79,30 @@ int main (int argc, char *argv[])
   /*recieve a message from client*/
   while((read_size = recv(client_sock, client_message, 2000, 0)) > 0)
   {
-    /*send the message back to the client*/
-    write(client_sock, client_message, strlen(client_message));
+    FILE* clientistream;
+    char runresponse[2000];
+#if 0
+    /*get the mutator driver command*/
+    if (system(client_message) < 0)
+    {
+      puts("server returned an error.");
+    }
+#endif
+    /*open pipe, run command*/
+    if (!(clientistream = popen(client_message, "r")))
+    {
+      
+    }
+    puts ("task completed.");
+
+    while (fgets(runresponse, sizeof(runresponse), clientistream) != NULL)
+    {
+      write(client_sock, runresponse, strlen(runresponse));
+    }
+    puts("read from temp file.");
+
+    /*close pipe*/
+    pclose(clientistream);
   }
 
   if (read_size  == 0)
