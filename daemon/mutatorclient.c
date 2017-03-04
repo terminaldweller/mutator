@@ -62,7 +62,13 @@ int main(int argc, char *argv[])
   while(1)
   {
     printf("enter massage: ");
-    scanf("%s", message);
+    
+    /*@DEVI-should later do something about reading from stdin*/
+    if (fgets(message, 2000, stdin) == NULL)
+    {
+      puts("could not read from stdin");
+    }
+    puts("read from stdin.");
 
     /*send some data*/
     if (send(sock, message, strlen(message), 0) < 0)
@@ -81,10 +87,12 @@ int main(int argc, char *argv[])
     puts("server reply: ");
     puts(server_reply);
 
+#if 0
     if (strncmp(server_reply, "end_comm", strlen(server_reply)))
     {
       break;
     }
+#endif
   }
 
   close(sock);
