@@ -55,7 +55,6 @@ int main(int argc, char *argv[])
     perror("connect failed.error.");
     return 1;
   }
-
   puts("connected.");
 
   /*keep communicating with the server.*/
@@ -64,11 +63,17 @@ int main(int argc, char *argv[])
     printf("enter massage: ");
     
     /*@DEVI-should later do something about reading from stdin*/
-    if (fgets(message, 2000, stdin) == NULL)
+    if (fgets(message, 4000, stdin) == NULL)
     {
       puts("could not read from stdin");
     }
     puts("read from stdin.");
+
+    if (strncmp(message, "end_comm", 8) == 0)
+    {
+      puts("client terminated.");
+      break;
+    }
 
     /*send some data*/
     if (send(sock, message, strlen(message), 0) < 0)
@@ -76,6 +81,11 @@ int main(int argc, char *argv[])
       puts("send fialed.");
       return 1;
     }
+    puts("message sent.");
+    puts(message);
+
+    sleep(1);
+    fflush(stdin);
 
     /*recieve a reply from the server*/
     if (recv(sock, server_reply, 2000, 0) < 0)
@@ -87,12 +97,12 @@ int main(int argc, char *argv[])
     puts("server reply: ");
     puts(server_reply);
 
-#if 0
-    if (strncmp(server_reply, "end_comm", strlen(server_reply)))
+    for (int i = 0; i < 2000; ++i)
     {
-      break;
+      server_reply[i] = 0;
     }
-#endif
+
+    fflush(stdout);
   }
 
   close(sock);
