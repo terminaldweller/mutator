@@ -30,10 +30,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 int main (int argc, char *argv[])
 {
-  int socket_desc, client_sock, c, read_size;
+  int socket_desc, client_sock, socketlength, read_size;
   struct sockaddr_in server, client;
 
   char client_message[2000];
+  FILE* clientistream;
+  char runresponse[4000];
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -42,7 +44,6 @@ int main (int argc, char *argv[])
   {
     printf("could not create socket.");
   }
-
   puts ("socket created.");
 
   server.sin_family = AF_INET;
@@ -63,44 +64,42 @@ int main (int argc, char *argv[])
 
   /*Accept incoming connection*/
   puts("Waiting for incoming connections...");
-  c = sizeof(struct sockaddr_in);
+  socketlength = sizeof(struct sockaddr_in);
 
   /*accept incoming connection from client*/
-  client_sock = accept(socket_desc, (struct sockaddr*)&client, (socklen_t*)&c);
+  client_sock = accept(socket_desc, (struct sockaddr*)&client, (socklen_t*)&socketlength);
 
   if (client_sock < 0)
   {
     perror("could not accept incoming client.");
     return 1;
   }
-
   puts("connection accpeted.");
 
   /*recieve a message from client*/
   while((read_size = recv(client_sock, client_message, 2000, 0)) > 0)
   {
-    FILE* clientistream;
-    char runresponse[2000];
-#if 0
-    /*get the mutator driver command*/
-    if (system(client_message) < 0)
-    {
-      puts("server returned an error.");
-    }
-#endif
+    fflush(stdin);
+
     /*open pipe, run command*/
     if (!(clientistream = popen(client_message, "r")))
     {
-      
+      perror("client command did not run successfully.");
     }
     puts ("task completed.");
+
+    for (int i = 0; i < 2000; ++i)
+    {
+      client_message[i] = 0;
+    }
 
     while (fgets(runresponse, sizeof(runresponse), clientistream) != NULL)
     {
       write(client_sock, runresponse, strlen(runresponse));
     }
-    puts("read from temp file.");
+    puts("response sent to client.");
 
+    fflush(stdout);
     /*close pipe*/
     pclose(clientistream);
   }
