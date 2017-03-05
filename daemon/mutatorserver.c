@@ -19,6 +19,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
+/*macros*/
+#define __DBG
+#if 0
+#undef __DBG
+#endif
+/**********************************************************************************************************************/
 /*inclusion directive*/
 #include "mutatorserver.h"
 /*standard headers*/
@@ -36,6 +42,7 @@ int main (int argc, char *argv[])
   char client_message[2000];
   FILE* clientistream;
   char runresponse[4000];
+  char NOOUT[]="command did not return any output. could be an error or not.";
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -81,8 +88,12 @@ int main (int argc, char *argv[])
   {
     fflush(stdin);
 
+    puts("got command from client.");
+
     /*open pipe, run command*/
-    if (!(clientistream = popen(client_message, "r")))
+    clientistream = popen(client_message, "r");
+
+    if (clientistream == NULL)
     {
       perror("client command did not run successfully.");
     }
@@ -93,16 +104,37 @@ int main (int argc, char *argv[])
       client_message[i] = 0;
     }
 
+    if (fgets(runresponse, sizeof(runresponse), clientistream) == NULL)
+    {
+      /*say there was nothing on stdout to send.*/
+      write(client_sock, NOOUT, strlen(NOOUT));
+    }
+
+    rewind(clientistream);
+
     while (fgets(runresponse, sizeof(runresponse), clientistream) != NULL)
     {
+#if defined(__DBG)
+      puts("command stdout:");
+      puts(runresponse);
+#endif
       write(client_sock, runresponse, strlen(runresponse));
     }
+
     puts("response sent to client.");
 
     fflush(stdout);
     /*close pipe*/
     pclose(clientistream);
+
+#if defined(__DBG)
+    puts("checkpoint 1");
+#endif
   }
+
+#if defined(__DBG)
+    puts("checkpoint 10");
+#endif
 
   if (read_size  == 0)
   {

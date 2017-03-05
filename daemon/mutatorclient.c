@@ -19,6 +19,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
+/*macros*/
+#define __DBG
+#if 0
+#undef __DBG
+#endif
+/**********************************************************************************************************************/
 /*inclusion directive*/
 #include "mutatorclient.h"
 /*standard header libraries*/
@@ -34,6 +40,7 @@ int main(int argc, char *argv[])
   struct sockaddr_in server;
   char message[1000];
   char server_reply[2000];
+  int recvlength;
 
   /*create socket*/
   sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -87,15 +94,32 @@ int main(int argc, char *argv[])
     sleep(1);
     fflush(stdin);
 
+#if defined(__DBG)
+    puts("checkpoint 1");
+#endif
+
     /*recieve a reply from the server*/
-    if (recv(sock, server_reply, 2000, 0) < 0)
+    recvlength = recv(sock, server_reply, 2000, 0);
+
+#if defined(__DBG)
+    puts("checkpoint 2");
+#endif
+
+    if (recvlength < 0)
     {
       puts("recv failed.");
       break;
     }
+    else if (recvlength == 0)
+    {
+      puts("server sent no output.");
+    }
+    else
+    {
+      puts("server reply: ");
+      puts(server_reply);
+    }
   
-    puts("server reply: ");
-    puts(server_reply);
 
     for (int i = 0; i < 2000; ++i)
     {
