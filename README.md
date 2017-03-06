@@ -11,6 +11,7 @@
 
 A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
 Reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
+You can also run the mutator daemon(`mutatord`) which runs it in a client-server mode, with the client being a thin client.<br/>
 You can Join the Maillist here, [mutator maillist](https://www.freelists.org/list/mutator). The maillist is moderated.<br/>
 You can follow Project `mutator` on twitter, @xashmith.
 <br/>
@@ -73,6 +74,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ## Announcements
 
+* mutator now has a daemon,a server and a client. It works, but we all know how much weight we can put on "it just works", don't we?  I'll be polishing it over the coming days. For more info and detail see `README.md` under `daemon` in project root. Also, please do note that you don't have to use the server feature. You can just run mutator like before. It's an added functionality. It does not modify previous functionality.<br/>
 * mutator will be implementing [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) rule checks and automatic refactoring of code bases to use SaferCPlusPlus libraries. The first phase will begin with implementing the compliancy checks. You can read more about SaferCPlusPlus [here](http://duneroadrunner.github.io/SaferCPlusPlus/).<br/>
 * mutator's first website is up: [project mutator](https://bloodstalker.github.io/mutator/).<br/>
 * project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
