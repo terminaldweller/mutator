@@ -1,9 +1,8 @@
 
 /***************************************************Project Mutator****************************************************/
 /*first line intentionally left blank.*/
-/*the source code for the static checks(Misra-C,...)*/
 /*Copyright (C) 2017 Farzad Sadeghi
-This header for the daemon.
+This header is for the client.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
