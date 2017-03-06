@@ -1,7 +1,6 @@
 
 /***************************************************Project Mutator****************************************************/
 /*first line intentionally left blank.*/
-/*the source code for the static checks(Misra-C,...)*/
 /*Copyright (C) 2017 Farzad Sadeghi
 This source file contains mutator's daemon.
 
@@ -19,8 +18,15 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
+/*macros*/
+#define __DBG
+#if 0
+#undef __DBG
+#endif
+/**********************************************************************************************************************/
 /*inclusion directives*/
 #include "mutatord.h"
+#include "daemon_aux.h"
 /*library headers*/
 #include <errno.h>
 #include <fcntl.h>
@@ -54,6 +60,8 @@ int main(void)
   /*getting a session ID*/
   pid_t sid;
 
+  int server_exit_code;
+
   FILE *mut_log;
   mut_log = fopen("mutatord-log", "w");
   
@@ -63,6 +71,9 @@ int main(void)
 
   /*fork off the parent process*/
   pid = fork();
+
+  fprintf(mut_log, "%s", "child forked on ");
+  time_n_date(mut_log);
 
   if (pid < 0)
   {
@@ -81,6 +92,7 @@ int main(void)
   
   /*create a new session ID for the child process*/
   sid = setsid();
+
   if (sid < 0)
   {
     fprintf(mut_log, "%s", "failed to get an sid.\n");
@@ -111,13 +123,15 @@ int main(void)
   /*deamon loop*/
   while(1)
   {
-    fprintf(mut_log, "%s", "mutatord is running fine.\n");
-    sleep(1);
+    fprintf(mut_log, "%s", "running server...\n");
+    //sleep(1);
+    server_exit_code = mutator_server();
+    fprintf(mut_log, "%s%d", "server terminated with exit code ", server_exit_code);
   }
 
+  /*these obviously will never run. theyre just a reminder that i need to handle the gracefull shutdown*/
   fclose(mut_log);
   exit(EXIT_SUCCESS);
-
 }
 /*last line intentionally left blank*/
 
