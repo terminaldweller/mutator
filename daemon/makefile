@@ -7,22 +7,22 @@ TARGETD=mutatord
 TARGETS=mutatorserver
 TARGETC=mutatorclient
 ##################################RULES################################
-.DEFAULT: all
+.DEFAULT:all
 
-.PHONY: all clean help
+.PHONY:all clean help $(TARGETC) $(TARGETS) $(TARGETD)
 
-all: $(TARGETD) $(TARGETC) $(TARGETS)
+all:$(TARGETC) $(TARGETS) $(TARGETD)
 
 .c.o:
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-TARGETD:
+$(TARGETC): $(TARGETC).o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
-TARGETS:
+$(TARGETS): $(TARGETS).o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
-TARGETC:
+$(TARGETD): $(TARGETD).o daemon_aux.o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
 clean:
@@ -30,9 +30,9 @@ clean:
 
 help:
 	@echo 'all builds the daemon, the server and the client. all is the default.'
-	@echo 'mutatord build the daemon'
+	@echo 'mutatord builds the daemon with the server'
 	@echo 'mutatorc builds the client'
-	@echo 'mutators builds the client'
+	@echo 'mutators builds the standalone server'
 	@echo 'clean runs clean.'
 	@echo 'help runs help.'
 
