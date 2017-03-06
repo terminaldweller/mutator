@@ -1,9 +1,8 @@
 
 /***************************************************Project Mutator****************************************************/
 /*first line intentionally left blank.*/
-/*the source code for the static checks(Misra-C,...)*/
 /*Copyright (C) 2017 Farzad Sadeghi
-This source file contains mutator's daemon.
+This source file contains mutator's client as a standalone.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
