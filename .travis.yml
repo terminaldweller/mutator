@@ -33,7 +33,8 @@ before_script:
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
 
-script: make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG -j2
+script: 
+  - make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG -j2
   - make -C daemon
 
 after_failure:
