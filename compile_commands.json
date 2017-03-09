@@ -1,0 +1,47 @@
+[
+    {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -Werror=date-time -std=c++11 -ffunction-sections -fdata-sections -O3 -DNDEBUG -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -o mutator-lvl0.o mutator-lvl0.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2", 
+        "file": "/home/bloodstalker/devi/hell2/mutator-lvl0.cpp"
+    }, 
+    {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -Werror=date-time -std=c++11 -ffunction-sections -fdata-sections -O3 -DNDEBUG -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -o tinyxml2.o tinyxml2.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2/tinyxml2", 
+        "file": "/home/bloodstalker/devi/hell2/tinyxml2/tinyxml2.cpp"
+    }, 
+    {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -Werror=date-time -std=c++11 -ffunction-sections -fdata-sections -O3 -DNDEBUG -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -o mutator_aux.o mutator_aux.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2", 
+        "file": "/home/bloodstalker/devi/hell2/mutator_aux.cpp"
+    }, 
+    {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -Werror=date-time -std=c++11 -ffunction-sections -fdata-sections -O3 -DNDEBUG -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -o mutator-lvl1.o mutator-lvl1.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2", 
+        "file": "/home/bloodstalker/devi/hell2/mutator-lvl1.cpp"
+    }, 
+    {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -Werror=date-time -std=c++11 -ffunction-sections -fdata-sections -O3 -DNDEBUG -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -o mutator-lvl2.o mutator-lvl2.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2", 
+        "file": "/home/bloodstalker/devi/hell2/mutator-lvl2.cpp"
+    }, 
+    {
+        "command": "cc -c -o mutatorclient.o mutatorclient.c", 
+        "directory": "/home/bloodstalker/devi/hell2/daemon", 
+        "file": "/home/bloodstalker/devi/hell2/daemon/mutatorclient.c"
+    }, 
+    {
+        "command": "cc -c -o mutatord.o mutatord.c", 
+        "directory": "/home/bloodstalker/devi/hell2/daemon", 
+        "file": "/home/bloodstalker/devi/hell2/daemon/mutatord.c"
+    }, 
+    {
+        "command": "cc -c -o daemon_aux.o daemon_aux.c", 
+        "directory": "/home/bloodstalker/devi/hell2/daemon", 
+        "file": "/home/bloodstalker/devi/hell2/daemon/daemon_aux.c"
+    }, 
+    {
+        "command": "cc -c -o mutatorserver.o mutatorserver.c", 
+        "directory": "/home/bloodstalker/devi/hell2/daemon", 
+        "file": "/home/bloodstalker/devi/hell2/daemon/mutatorserver.c"
+    }
+]
