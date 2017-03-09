@@ -4,6 +4,7 @@ include macros.mk
 
 #######################################VARS####################################
 CXX?=clang++
+CC?=clang
 LLVM_CONF?=llvm-config
 BUILD_MODE?=COV_NO_CLANG_1Z
 SHELL:=/bin/bash
@@ -84,13 +85,16 @@ LD_FLAGS+=$(EXTRA_LD_FLAGS)
 TARGET0=mutator-lvl0
 TARGET1=mutator-lvl1
 TARGET2=mutator-lvl2
+TARGETC=mutatorclient
+TARGETD=mutatord
+TARGETS=mutatorserver
 
 ######################################RULES####################################
 .DEFAULT: all
 
 .PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2)
 
-all: $(TARGET0) $(TARGET1) $(TARGET2)
+all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -106,10 +110,20 @@ $(TARGET2): $(TARGET2).o mutator_aux.o
 $(TARGET0): $(TARGET0).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
+$(TARGETC):
+	$(MAKE) -C daemon mutatorclient
+
+$(TARGETD):
+	$(MAKE) -C daemon mutatord
+
+$(TARGETS):
+	$(MAKE) -C daemon mutatorserver
+
 clean:
 	rm -f *.o *~ $(TARGET0) $(TARGET1) $(TARGET2)
 	$(MAKE) -C tinyxml2 clean
 	$(MAKE) -C json clean
+	$(MAKE) -C daemon clean
 
 install:
 	chmod +x ./mutator.sh
