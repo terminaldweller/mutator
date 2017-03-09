@@ -22,9 +22,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #define __MUTATOR_AUX_SERVER_H
 /**********************************************************************************************************************/
 /*headers*/
+#include <stdio.h>
 /**********************************************************************************************************************/
 /*function prototypes*/
-int mutator_server(void);
+int mutator_server(FILE* log_file);
 
 #endif
 /*last line intentionally left blank*/

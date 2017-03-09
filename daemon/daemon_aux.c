@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <arpa/inet.h>
 #include <unistd.h>
 /**********************************************************************************************************************/
-int mutator_server(void)
+int mutator_server(FILE* log_file)
 {
   int socket_desc, client_sock, socketlength, read_size;
   struct sockaddr_in server, client;
@@ -41,16 +41,16 @@ int mutator_server(void)
   char client_message[2000];
   FILE* clientistream;
   char runresponse[4000];
-  char NOOUT[]="command did not return any output. could be an error or not.";
+  char NOOUT[]="command did not return any output. could be an error or not.\n";
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
 
   if (socket_desc < 0)
   {
-    printf("could not create socket.");
+    fprintf(log_file, "%s", "could not create socket.\n");
   }
-  puts ("socket created.");
+  fprintf (log_file, "%s", "socket created.\n");
 
   server.sin_family = AF_INET;
   server.sin_addr.s_addr = INADDR_ANY;
@@ -59,17 +59,17 @@ int mutator_server(void)
   /*Bind*/
   if (bind(socket_desc, (struct sockaddr*)&server, sizeof(server)) < 0)
   {
-    perror("bind failed.error.");
+    perror("bind failed.error.\n");
     return 1;
   }
 
-  puts("bind done.");
+  fprintf(log_file, "%s", "bind done.\n");
 
   /*Listen*/
   listen(socket_desc, 3);
 
   /*Accept incoming connection*/
-  puts("Waiting for incoming connections...");
+  fprintf(log_file, "%s", "Waiting for incoming connections...\n");
   socketlength = sizeof(struct sockaddr_in);
 
   /*accept incoming connection from client*/
@@ -80,14 +80,14 @@ int mutator_server(void)
     perror("could not accept incoming client.");
     return 1;
   }
-  puts("connection accpeted.");
+  fprintf(log_file, "%s", "connection accpeted.\n");
 
   /*recieve a message from client*/
   while((read_size = recv(client_sock, client_message, 2000, 0)) > 0)
   {
     fflush(stdin);
 
-    puts("got command from client.");
+    fprintf(log_file, "%s","got command from client.\n");
 
     /*open pipe, run command*/
     clientistream = popen(client_message, "r");
@@ -96,7 +96,7 @@ int mutator_server(void)
     {
       perror("client command did not run successfully.");
     }
-    puts ("task completed.");
+    fprintf(log_file, "%s", "task completed.\n");
 
     for (int i = 0; i < 2000; ++i)
     {
@@ -114,31 +114,33 @@ int mutator_server(void)
     while (fgets(runresponse, sizeof(runresponse), clientistream) != NULL)
     {
 #if defined(__DBG)
-      puts("command stdout:");
-      puts(runresponse);
+      fscanf(log_file, "%s", "command stdout:");
+      fscanf(log_file, "%s", runresponse);
 #endif
       write(client_sock, runresponse, strlen(runresponse));
+      fprintf(log_file, "%s", runresponse);
     }
 
-    puts("response sent to client.");
+    fprintf(log_file, "%s", "response sent to client.\n");
 
     fflush(stdout);
     /*close pipe*/
     pclose(clientistream);
 
 #if defined(__DBG)
-    puts("checkpoint 1");
+    fprintf(log_file, "%s", "checkpoint 1\n");
 #endif
   }
 
 #if defined(__DBG)
-    puts("checkpoint 10");
+    fprintf(log_file, "%s", "checkpoint 10\n");
 #endif
 
   if (read_size  == 0)
   {
-    puts("client disconnected");
+    fprintf(log_file, "%s", "client disconnected\n");
     fflush(stdout);
+    fprintf(log_file, "%s", "closing log file\n");
   }
   else if (read_size == -1)
   {

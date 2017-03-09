@@ -46,14 +46,21 @@ void time_n_date(FILE* infile)
   fprintf(infile, "%s", ctime(&tnd));
 }
 
-void signal_callback_handler(int signum)
+void sigint_callback_handler(int signum)
 {
+  exit(signum);
+}
+
+void sigterm_callback_handler(int signum)
+{
+  //fclose(infile);
   exit(signum);
 }
 
 int main(void)
 {
-  //signal(SIGINT, signal_callback_handler);
+  signal(SIGINT, sigint_callback_handler);
+  signal(SIGTERM, sigterm_callback_handler);
 
   /*getting a process ID*/
   pid_t pid;
@@ -86,6 +93,8 @@ int main(void)
     fprintf(mut_log, "%s%d%s", "successfully got a pid:", pid, "\n");
     exit(EXIT_SUCCESS);
   }
+
+  /*i don't have a bellybutton so we're fine.*/
 
   umask(0);
   fprintf(mut_log, "%s", "set umask to 0.\n");
@@ -125,11 +134,13 @@ int main(void)
   {
     fprintf(mut_log, "%s", "running server...\n");
     //sleep(1);
-    server_exit_code = mutator_server();
-    fprintf(mut_log, "%s%d", "server terminated with exit code ", server_exit_code);
+    server_exit_code = mutator_server(mut_log);
+    fprintf(mut_log, "%s%d%s", "server terminated with exit code ", server_exit_code, "\n");
+    fprintf (mut_log, "%s", "closing down server\n");
+    fclose(mut_log);
   }
 
-  /*these obviously will never run. theyre just a reminder that i need to handle the gracefull shutdown*/
+  /*@DEVI-these obviously will never run. theyre just a reminder that i need to handle the gracefull shutdown*/
   fclose(mut_log);
   exit(EXIT_SUCCESS);
 }

@@ -25,7 +25,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <stdio.h>
 /**********************************************************************************************************************/
 /*function prototypes*/
-void signal_callback_handler(int signum);
+void sigint_callback_handler(int signum);
+
+void sigterm_callbacl_handler(int signum);
 
 void time_n_date(FILE* infile);
 
