@@ -299,10 +299,13 @@ If you run into an issue please raise one here or just contact me with proper in
 ### Suggestions and Feature Requests
 If you have any suggestions or have any feature requests for project mutator, you can send them to `bloodstalker@zoho.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/> 
 
-### Future Features
+### TODO List
 * Misra-c:2012 check support<br/>
 * Ability to turn off some rule checks<br/>
-* using Appveyor to test windows builds<br/>
+* Using Appveyor to test windows builds<br/>
+* Fix the broken coverage build<br/>
+* Have the servor capture stderr<br/>
+* mutator's website is a wreck<br/>
 
 ### Support
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>
