@@ -49,6 +49,7 @@ int mutator_server(FILE* log_file)
   if (socket_desc < 0)
   {
     fprintf(log_file, "%s", "could not create socket.\n");
+    exit(EXIT_FAILURE);
   }
   fprintf (log_file, "%s", "socket created.\n");
 

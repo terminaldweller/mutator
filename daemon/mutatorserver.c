@@ -49,6 +49,7 @@ int main (int argc, char *argv[])
   if (socket_desc < 0)
   {
     printf("could not create socket.");
+    exit(EXIT_FAILURE);
   }
   puts ("socket created.");
 

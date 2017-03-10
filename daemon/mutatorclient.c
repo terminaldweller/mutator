@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*standard header libraries*/
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -47,6 +48,7 @@ int main(int argc, char *argv[])
   if (sock == -1)
   {
     printf ("could not create socket");
+    exit(EXIT_FAILURE);
   }
 
   puts("created socket");
@@ -69,7 +71,7 @@ int main(int argc, char *argv[])
     printf("enter massage: ");
     
     /*@DEVI-should later do something about reading from stdin*/
-    if (fgets(message, 4000, stdin) == NULL)
+    if (fgets(message, 1000, stdin) == NULL)
     {
       puts("could not read from stdin");
     }
