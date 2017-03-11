@@ -56,6 +56,7 @@ int main (int argc, char *argv[])
   server.sin_family = AF_INET;
   server.sin_addr.s_addr = INADDR_ANY;
   server.sin_port = htons(8888);
+  memset(server.sin_zero, 0, 8);
 
   /*Bind*/
   if (bind(socket_desc, (struct sockaddr*)&server, sizeof(server)) < 0)

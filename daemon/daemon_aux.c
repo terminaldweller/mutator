@@ -142,6 +142,8 @@ int mutator_server(FILE* log_file)
     fprintf(log_file, "%s", "client disconnected\n");
     fflush(stdout);
     fprintf(log_file, "%s", "closing log file\n");
+    close(client_sock);
+    close(socket_desc);
   }
   else if (read_size == -1)
   {

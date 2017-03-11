@@ -141,8 +141,10 @@ int main(void)
   }while(0);
 
   /*@DEVI-these obviously will never run. theyre just a reminder that i need to handle the gracefull shutdown*/
+#if 0
   fclose(mut_log);
   exit(EXIT_SUCCESS);
+#endif
 }
 /*last line intentionally left blank*/
 
