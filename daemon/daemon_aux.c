@@ -56,6 +56,7 @@ int mutator_server(FILE* log_file)
   server.sin_family = AF_INET;
   server.sin_addr.s_addr = INADDR_ANY;
   server.sin_port = htons(8888);
+  memset(server.sin_zero, 0, 8);
 
   /*Bind*/
   if (bind(socket_desc, (struct sockaddr*)&server, sizeof(server)) < 0)
@@ -142,8 +143,6 @@ int mutator_server(FILE* log_file)
     fprintf(log_file, "%s", "client disconnected\n");
     fflush(stdout);
     fprintf(log_file, "%s", "closing log file\n");
-    close(client_sock);
-    close(socket_desc);
   }
   else if (read_size == -1)
   {
@@ -154,6 +153,8 @@ int mutator_server(FILE* log_file)
     /*intentionally left blank*/
   }
 
+  close(client_sock);
+  close(socket_desc);
   return 0;
 }
 /**********************************************************************************************************************/
