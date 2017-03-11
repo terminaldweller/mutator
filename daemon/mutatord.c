@@ -130,7 +130,7 @@ int main(void)
   fprintf(mut_log, "%s", "closed standard file descriptors..\n");
 
   /*deamon loop*/
-  while(1)
+  do
   {
     fprintf(mut_log, "%s", "running server...\n");
     //sleep(1);
@@ -138,7 +138,7 @@ int main(void)
     fprintf(mut_log, "%s%d%s", "server terminated with exit code ", server_exit_code, "\n");
     fprintf (mut_log, "%s", "closing down server\n");
     fclose(mut_log);
-  }
+  }while(0);
 
   /*@DEVI-these obviously will never run. theyre just a reminder that i need to handle the gracefull shutdown*/
   fclose(mut_log);
