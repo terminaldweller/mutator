@@ -80,6 +80,7 @@ int mutator_server(FILE* log_file)
   if (client_sock < 0)
   {
     perror("could not accept incoming client.");
+    close(socket_desc);
     return 1;
   }
   fprintf(log_file, "%s", "connection accpeted.\n");
