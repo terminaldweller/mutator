@@ -213,9 +213,12 @@ cl::opt<std::string> MCE("MCE", cl::desc("MisraC switches to enable specific rul
 cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific rule checks"), cl::init(" 9.3"), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<bool> SFRCPP("SFRCPP", cl::desc("Enables SaferCPlusPlus rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 /**********************************************************************************************************************/
 class StringOptionsParser
 {
+friend class MutatorLVL0Tests;
+
 public:
   StringOptionsParser() {}
 
