@@ -48,6 +48,15 @@ EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell
 EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
 endif
 
+ifeq ($(BUILD_MODE), COV_NO_CLANG_14)
+ifeq ($(CXX), g++)
+$(error This build mode is only useable with clang++.)
+endif
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
+ -std=c++14 -stdlib=libstdc++ -UNDEBUG -fexceptions
+EXTRA_LD_FLAGS=-v tinyxml2/tinyxml2.o
+endif
+
 ifeq ($(BUILD_MODE), GNU_MODE)
 ifneq ($(CXX), g++)
 $(error This build mode is only useable with g++.)
