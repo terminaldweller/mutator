@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <map>
 #include <string>
 #include <vector>
+#include <unordered_map>
 /**********************************************************************************************************************/
 /*externals*/
 std::map<std::string,bool> MC2OptsMap = {
@@ -325,6 +326,8 @@ std::multimap<std::string,std::string> MC1EquivalencyMap = {
 };
 
 std::multimap<std::string, std::string> MC3EquivalencyMap;
+
+std::unordered_map<std::string, std::string> SaferCPPEquivalencyMap;
 /**********************************************************************************************************************/
 class MutatorLVL0Tests
 {
