@@ -7776,6 +7776,10 @@ int main(int argc, const char **argv)
   {
     std::cerr << E1.what() << std::endl;
   }
+  catch (std::domain_error &E2)
+  {
+    std::cerr << E2.what() << std::endl;
+  }
 
   return RunResult;
 }
