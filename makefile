@@ -101,9 +101,9 @@ TARGETS=mutatorserver
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2)
+.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS
 
-all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS)
+all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) TAGS
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -128,6 +128,9 @@ $(TARGETD):
 $(TARGETS):
 	$(MAKE) -C daemon mutatorserver
 
+TAGS: $(SRCS)
+	$(CTAGS) $(SRCS)
+
 clean:
 	rm -f *.o *~ $(TARGET0) $(TARGET1) $(TARGET2)
 	$(MAKE) -C tinyxml2 clean
@@ -139,12 +142,14 @@ install:
 	chmod +x ./extra-tools/ReportPrintPretty.sh
 	chmod +x ./extra-tools/precommitTests.sh
 	if [[ ! -d "./temp" ]]; then mkdir temp; fi
+	#@echo 'mutatir home variable not set.'
 
 help:
 	@echo '- There is help.'
 	@echo '- All is the default.'
 	@echo '- install makes the scripts executable. Currently this is all it does.'
 	@echo '- Clean.'
+	@echo '- TAGS will run ctags on the C/C++ source files.'
 	@echo '- You can use the target names as build targets to just build one executable.'
 	@echo '- LLVM_CONF will tell the makefile the name of llvm-config. llvm-config is the default.'
 	@echo '- CXX will let you set the compiler. currently the only accepted values are clang++ and g++. clang++ is the default.'
