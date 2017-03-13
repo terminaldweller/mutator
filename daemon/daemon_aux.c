@@ -33,6 +33,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <arpa/inet.h>
 #include <unistd.h>
 /**********************************************************************************************************************/
+bool cleanser(char cleansee[])
+{
+  bool nullterminated = false;
+  bool cleansee_health = true;
+
+  for (int i = 0; i < 2000; ++i)
+  {
+    if (cleansee[i] == '\0')
+    {
+      nullterminated = true;
+      break;
+    }
+
+    if (cleansee[i] == '|')
+    {
+      cleansee_health = false;
+    }
+
+    if (cleansee[i] == ';')
+    {
+      cleansee_health = false;
+    }
+  }
+
+  return (cleansee_health && nullterminated);
+}
+/**********************************************************************************************************************/
 int mutator_server(FILE* log_file)
 {
   int socket_desc, client_sock, socketlength, read_size;
@@ -42,6 +69,7 @@ int mutator_server(FILE* log_file)
   FILE* clientistream;
   char runresponse[4000];
   char NOOUT[]="command did not return any output. could be an error or not.\n";
+  char BADOUT[]="what are you exactly trying to do?";
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -90,10 +118,19 @@ int mutator_server(FILE* log_file)
   {
     fflush(stdin);
 
-    fprintf(log_file, "%s","got command from client.\n");
+    fprintf(log_file, "%s", "got command from client.\n");
 
-    /*open pipe, run command*/
-    clientistream = popen(client_message, "r");
+    if (cleanser(client_message) == true)
+    {
+      /*open pipe, run command*/
+      clientistream = popen(client_message, "r");
+    }
+    else
+    {
+      fprintf(log_file, "%s", "what are you trying to do exactly?");
+      write(client_sock, BADOUT, strlen(BADOUT));
+      continue;
+    }
 
     if (clientistream == NULL)
     {

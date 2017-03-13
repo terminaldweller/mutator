@@ -24,7 +24,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*headers*/
 #include <stdio.h>
 /**********************************************************************************************************************/
+typedef int bool;
+#define true 1
+#define false 0
+/**********************************************************************************************************************/
 /*function prototypes*/
+bool cleanser(char cleansee[]);
+
 int mutator_server(FILE* log_file);
 
 #endif

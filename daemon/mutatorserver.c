@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 /*inclusion directive*/
 #include "mutatorserver.h"
+#include "daemon_aux.h"
 /*standard headers*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,8 +92,16 @@ int main (int argc, char *argv[])
 
     puts("got command from client.");
 
-    /*open pipe, run command*/
-    clientistream = popen(client_message, "r");
+    if (cleanser(client_message))
+    {
+      /*open pipe, run command*/
+      clientistream = popen(client_message, "r");
+    }
+    else
+    {
+      puts("what are you trying to do exactly?");
+      continue;
+    }
 
     if (clientistream == NULL)
     {
