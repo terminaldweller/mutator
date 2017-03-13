@@ -19,7 +19,7 @@ all:$(TARGETC) $(TARGETS) $(TARGETD)
 $(TARGETC): $(TARGETC).o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
-$(TARGETS): $(TARGETS).o
+$(TARGETS): $(TARGETS).o daemon_aux.o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
 $(TARGETD): $(TARGETD).o daemon_aux.o
