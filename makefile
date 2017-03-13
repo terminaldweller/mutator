@@ -103,7 +103,7 @@ TARGETS=mutatorserver
 
 .PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS
 
-all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) TAGS
+all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
