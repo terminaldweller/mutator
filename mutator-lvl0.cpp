@@ -5734,6 +5734,76 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief Tags all array declarations and uses of arrays through indexes.
+ */
+class SFCPPARR01 : public MatchFinder::MatchCallback
+{
+  public:
+    SFCPPARR01 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    /**
+     * @brief The virtual method that runs the tagging.
+     *
+     * @param MR MatchFinder::MatchResulet 
+     */
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::VarDecl>("sfcpparrdecl") != nullptr)
+      {
+        const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("sfcpparrdecl");
+        
+        SourceLocation SL = VD->getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        {
+          return void();
+        }
+
+        std::cout << "SaferCPP01" << ":" << "Native CPP array declared:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP01", "Native CPP array declared:");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native CPP array declared:");
+      }
+
+      if (MR.Nodes.getNodeAs<clang::ArraySubscriptExpr>("sfcpparrsubscript") != nullptr)
+      {
+        const ArraySubscriptExpr* ASE = MR.Nodes.getNodeAs<clang::ArraySubscriptExpr>("sfcpparrsubscript");
+
+        SourceLocation SL = ASE->getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        {
+          return void();
+        }
+
+        std::cout << "SaferCPP01" << ":" << "Native CPP array used:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP01", "Native CPP array used");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native CPP arry=ay used");
+      }
+    }
+
+  private:
+    Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -7226,7 +7296,7 @@ public:
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent51(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
-    HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R) {
+    HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R) {
 
 #if 1
     /*forstmts whithout a compound statement.*/
@@ -7489,6 +7559,10 @@ public:
 
     Matcher.addMatcher(enumConstantDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5enumconst"), &HandlerForIdent5X);
     /*end of matchers for 5.x*/
+
+    Matcher.addMatcher(arraySubscriptExpr().bind("sfcpparrsubscript"), &HandlerForSFCPPARR01);
+
+    Matcher.addMatcher(varDecl(hasType(arrayType())).bind("sfcpparrdecl"), &HandlerForSFCPPARR01);
 #endif
   }
 
@@ -7566,6 +7640,7 @@ private:
   MCTypes612 HandlerForTypes612;
   MCConst71 HandlerForConst71;
   MCIdent5x HandlerForIdent5X;
+  SFCPPARR01 HandlerForSFCPPARR01;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
