@@ -142,7 +142,7 @@ install:
 	chmod +x ./extra-tools/ReportPrintPretty.sh
 	chmod +x ./extra-tools/precommitTests.sh
 	if [[ ! -d "./temp" ]]; then mkdir temp; fi
-	#@echo 'mutatir home variable not set.'
+	$(shell echo MUTATOR_HOME=$$(pwd) > mutator.config)
 
 help:
 	@echo '- There is help.'
