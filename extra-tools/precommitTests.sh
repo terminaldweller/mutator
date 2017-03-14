@@ -6,7 +6,7 @@ Lblue="\033[1;34m"
 Orange="\033[0;33m"
 NC="\033[0m"
 
-REP_FILE="/test/precommit.rep"
+REP_FILE="test/precommit.rep"
 
 printf "${Lblue}switching to mutator root...\n${NC}" | tee ../test/precommit.rep
 cd ..
