@@ -97,13 +97,14 @@ TARGET2=mutator-lvl2
 TARGETC=mutatorclient
 TARGETD=mutatord
 TARGETS=mutatorserver
+SFCPP01=safercpp-arr
 
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS
+.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS $(SFCPP01)
 
-all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS)
+all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -116,8 +117,11 @@ $(TARGET1): $(TARGET1).o mutator_aux.o
 $(TARGET2): $(TARGET2).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@	
 
-$(TARGET0): $(TARGET0).o mutator_aux.o
+$(TARGET0): $(TARGET0).o mutator_aux.o mutator_report.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
+
+$(SFCPP01): ./safercpp/$(SFCPP01).o mutator_aux.o
+	$(MAKE) -C safercpp CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
 $(TARGETC):
 	$(MAKE) -C daemon mutatorclient
@@ -136,6 +140,7 @@ clean:
 	$(MAKE) -C tinyxml2 clean
 	$(MAKE) -C json clean
 	$(MAKE) -C daemon clean
+	$(MAKE) -C safercpp clean
 
 install:
 	chmod +x ./mutator.sh
