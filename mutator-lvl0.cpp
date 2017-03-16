@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*project headers*/
 #include "mutator-lvl0.h"
 #include "mutator_aux.h"
+#include "mutator_report.h"
 /*standard headers*/
 #include <cassert>
 #include <exception>
