@@ -63,6 +63,27 @@ cl::opt<bool> SafeSubset("SafeSubset", cl::desc("safercpp will check for element
 cl::opt<bool> ConvertToSCPP("ConvertToSCPP", cl::desc("safercpp will translate the source to a (memory) safe subset of the language"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 
+SourceRange nice_source_range(const SourceRange& sr, Rewriter &Rewrite) {
+    SourceLocation SL = sr.getBegin();
+    SourceLocation SLE = sr.getEnd();
+    if (SL.isMacroID() || SLE.isMacroID()) {
+    	int q = 5;
+    }
+    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+    SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+    return SourceRange(SL, SLE);
+}
+
+bool filtered_out_by_location(const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL) {
+	bool retval = false;
+	if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
+		retval = true;
+	} else if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
+		retval = true;
+	}
+	return retval;
+}
+
 static std::string with_whitespace_removed(const std::string& str) {
 	std::string retval = str;
 	retval.erase(std::remove_if(retval.begin(), retval.end(), isspace), retval.end());
@@ -292,24 +313,9 @@ public:
 
 		if ((BO != nullptr) && (RHS != nullptr) && (LHS != nullptr) && (DRE != nullptr))
 	    {
-	        SourceLocation BOSL = BO->getLocStart();
-	        SourceLocation BOSLMID;
-
-	        if (BOSL.isMacroID())
-	        {
-	          BOSLMID = Devi::SourceLocationHasMacro(BOSL, Rewrite, "start");
-	        }
-
-	        BOSL = Devi::SourceLocationHasMacro(BOSL, Rewrite, "start");
-	        SourceLocation BOSLE = BO->getLocEnd();
-	        SourceLocation BOSLEMID;
-
-	        if (BOSLE.isMacroID())
-	        {
-	          BOSLEMID = Devi::SourceLocationHasMacro(BOSLE, Rewrite, "end");
-	        }
-
-	        BOSLE = Devi::SourceLocationHasMacro(BOSLE, Rewrite, "end");
+	        auto BOSR = nice_source_range(BO->getSourceRange(), Rewrite);
+	        SourceLocation BOSL = BOSR.getBegin();
+	        SourceLocation BOSLE = BOSR.getEnd();
 
 	        ASTContext *const ASTC = MR.Context;
 	        FullSourceLoc FBOSL = ASTC->getFullLoc(BOSL);
@@ -324,19 +330,13 @@ public:
 	      	  return;
 	        }
 
-	      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, BOSL))
-	      {
-	        return void();
-	      }
-
-	      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, BOSL))
-	      {
+	      if (filtered_out_by_location(MR, BOSL)) {
 	        return void();
 	      }
 
 	      Expr::NullPointerConstantKind kind = RHS->isNullPointerConstant(*ASTC, Expr::NullPointerConstantValueDependence());
 	      if (clang::Expr::NPCK_NotNull != kind) {
-			  auto lhs_source_range = LHS->getSourceRange();
+			  auto lhs_source_range = nice_source_range(LHS->getSourceRange(), Rewrite);
 			  std::string lhs_source_text;
 			  if (lhs_source_range.isValid()) {
 				  lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
@@ -360,7 +360,7 @@ public:
 				  if (nullptr != FD) {
 					  DD = FD;
 
-					  auto field_decl_source_range = FD->getSourceRange();
+					  auto field_decl_source_range = nice_source_range(FD->getSourceRange(), Rewrite);
 					  auto field_decl_source_location_str = field_decl_source_range.getBegin().printToString(*MR.SourceManager);
 					  std::string field_decl_source_text;
 					  if (field_decl_source_range.isValid()) {
@@ -373,11 +373,7 @@ public:
 					  variable_name = FD->getNameAsString();
 				  } else if (nullptr != VD) {
 					  DD = VD;
-					  SourceLocation VDSL = VD->getLocStart();
-					  VDSL = Devi::SourceLocationHasMacro(VDSL, Rewrite, "start");
-					  SourceLocation VDSLE = VD->getLocEnd();
-					  VDSLE = Devi::SourceLocationHasMacro(VDSLE, Rewrite, "end");
-					  decl_source_range = clang::SourceRange(VDSL, VDSLE);
+					  auto decl_source_range = nice_source_range(VD->getSourceRange(), Rewrite);
 
 					  auto qualified_name = VD->getQualifiedNameAsString();
 					  static const std::string mse_namespace_str1 = "mse::";
@@ -450,24 +446,9 @@ public:
 
 		if ((CE != nullptr) && (DRE != nullptr))
 	    {
-	        SourceLocation CESL = CE->getLocStart();
-	        SourceLocation CESLMID;
-
-	        if (CESL.isMacroID())
-	        {
-	          CESLMID = Devi::SourceLocationHasMacro(CESL, Rewrite, "start");
-	        }
-
-	        CESL = Devi::SourceLocationHasMacro(CESL, Rewrite, "start");
-	        SourceLocation CESLE = CE->getLocEnd();
-	        SourceLocation CESLEMID;
-
-	        if (CESLE.isMacroID())
-	        {
-	          CESLEMID = Devi::SourceLocationHasMacro(CESLE, Rewrite, "end");
-	        }
-
-	        CESLE = Devi::SourceLocationHasMacro(CESLE, Rewrite, "end");
+	        auto CESR = nice_source_range(CE->getSourceRange(), Rewrite);
+	        SourceLocation CESL = CESR.getBegin();
+	        SourceLocation CESLE = CESR.getEnd();
 
 	        ASTContext *const ASTC = MR.Context;
 	        FullSourceLoc FCESL = ASTC->getFullLoc(CESL);
@@ -482,13 +463,7 @@ public:
 	      	  return;
 	        }
 
-	      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, CESL))
-	      {
-	        return void();
-	      }
-
-	      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, CESL))
-	      {
+	      if (filtered_out_by_location(MR, CESL)) {
 	        return void();
 	      }
 
@@ -504,7 +479,7 @@ public:
 				  if (ends_with_free) {
 					  auto iter = CE->arg_begin();
 					  assert((*iter)->getType().getTypePtrOrNull());
-					  auto arg_source_range = (*iter)->getSourceRange();
+					  auto arg_source_range = nice_source_range((*iter)->getSourceRange(), Rewrite);
 					  std::string arg_source_text;
 					  if (arg_source_range.isValid()) {
 						  arg_source_text = Rewrite.getRewrittenText(arg_source_range);
@@ -534,7 +509,7 @@ public:
 						  }
 
 						  if (nullptr != DD) {
-							  auto decl_source_range = DD->getSourceRange();
+							  auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
 							  auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 							  std::string decl_source_text;
 							  if (decl_source_range.isValid()) {
@@ -626,10 +601,9 @@ public:
     {
       const CastExpr* CE = MR.Nodes.getNodeAs<clang::CastExpr>("mcsssarraytopointerdecay");
 
-      SourceLocation SL = CE->getLocStart();
-      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      SourceLocation SLE = CE->getLocEnd();
-      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+      auto SR = nice_source_range(CE->getSourceRange(), Rewrite);
+      SourceLocation SL = SR.getBegin();
+      SourceLocation SLE = SR.getEnd();
 
       ASTContext *const ASTC = MR.Context;
       FullSourceLoc FSL = ASTC->getFullLoc(SL);
@@ -642,15 +616,14 @@ public:
     	  return;
       }
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      if (filtered_out_by_location(MR, SL))
       {
         /*intentionally left blank*/
       }
       else
       {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
         {
-        	if (true) {
+        	if (false) {
 				  std::cout << "sss1.2:" << "array to pointer decay:";
 				  std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
@@ -678,31 +651,29 @@ public:
     {
       const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcsssnativepointer");
 
-      SourceLocation SL = VD->getLocStart();
-      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      SourceLocation SE = VD->getLocEnd();
-      SE = Devi::SourceLocationHasMacro(SE, Rewrite, "end");
+      auto SR = nice_source_range(VD->getSourceRange(), Rewrite);
+      SourceLocation SL = SR.getBegin();
+      SourceLocation SLE = SR.getEnd();
 
       ASTContext* const ASTC = MR.Context;
       FullSourceLoc FSL = ASTC->getFullLoc(SL);
 
       auto source_location_str = SL.printToString(*MR.SourceManager);
       std::string source_text;
-      if (SL.isValid() && SE.isValid()) {
-    	  source_text = Rewrite.getRewrittenText(SourceRange(SL, SE));
+      if (SL.isValid() && SLE.isValid()) {
+    	  source_text = Rewrite.getRewrittenText(SourceRange(SL, SLE));
       } else {
     	  return;
       }
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      if (filtered_out_by_location(MR, SL))
       {
         /*intentionally left blank*/
       }
       else
       {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
         {
-        	if (SafeSubset) {
+        	if (false && SafeSubset) {
 			  std::cout << "sss1.1:" << "native pointer:";
 			  std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
@@ -734,24 +705,9 @@ public:
     {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcsssvardecl");
 
-      SourceLocation SL = VD->getLocStart();
-      SourceLocation SLMID;
-
-      if (SL.isMacroID())
-      {
-        SLMID = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      }
-
-      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      SourceLocation SLE = VD->getLocEnd();
-      SourceLocation SLEMID;
-
-      if (SLE.isMacroID())
-      {
-        SLEMID = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
-      }
-
-      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+      auto SR = nice_source_range(VD->getSourceRange(), Rewrite);
+      SourceLocation SL = SR.getBegin();
+      SourceLocation SLE = SR.getEnd();
 
       QualType QT = VD->getType();
 
@@ -768,6 +724,10 @@ public:
     	  source_text = Rewrite.getRewrittenText(SourceRange(SL, SLE));
       } else {
     	  return;
+      }
+
+      if (filtered_out_by_location(MR, SL)) {
+        return void();
       }
 
       auto storage_duration = VD->getStorageDuration();
@@ -787,7 +747,7 @@ public:
 	  std::string initialization_expr_str;
 	  auto pInitExpr = VD->getInit();
 	  if (VD->hasInit() && pInitExpr) {
-		  auto init_expr_source_range = pInitExpr->getSourceRange();
+		  auto init_expr_source_range = nice_source_range(pInitExpr->getSourceRange(), Rewrite);
 		  initialization_expr_str = Rewrite.getRewrittenText(init_expr_source_range);
 	  }
 
@@ -908,7 +868,7 @@ static CRandomAccessIteratorFromPointerDDeclRetval RandomAccessIteratorFromPoint
 
     	auto pInitExpr = VD->getInit();
     	if (VD->hasInit() && pInitExpr) {
-    	  auto init_expr_source_range = pInitExpr->getSourceRange();
+    	  auto init_expr_source_range = nice_source_range(pInitExpr->getSourceRange(), Rewrite);
     	  initialization_expr_str = Rewrite.getRewrittenText(init_expr_source_range);
     	}
     }
@@ -934,7 +894,7 @@ static CRandomAccessIteratorFromPointerDDeclRetval RandomAccessIteratorFromPoint
 			  if (is_static) {
 				  replacement_code += "static ";
 			  }
-			  replacement_code += "mse::TAnyRandomAccessIterator<";
+			  replacement_code += "mse::TNullableAnyRandomAccessIterator<";
 			  replacement_code += type_str;
 			  replacement_code += "> ";
 			  replacement_code += variable_name;
@@ -985,8 +945,8 @@ static std::vector<const DeclaratorDecl*> IndividualDeclaratorDecls(const Declar
 		assert(false);
 		return retval;
 	}
-	SourceLocation SL = VD->getLocStart();
-    SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+    auto SR = nice_source_range(VD->getSourceRange(), Rewrite);
+    SourceLocation SL = SR.getBegin();
 
     auto decl_context = VD->getDeclContext();
 	if ((!decl_context) || (!SL.isValid())) {
@@ -997,8 +957,8 @@ static std::vector<const DeclaratorDecl*> IndividualDeclaratorDecls(const Declar
 			auto decl = (*decl_iter);
 			auto var_decl = dynamic_cast<const DeclaratorDecl*>(decl);
 			if (var_decl) {
-				SourceLocation l_SL = var_decl->getLocStart();
-				l_SL = Devi::SourceLocationHasMacro(l_SL, Rewrite, "start");
+		        auto VDSR = nice_source_range(var_decl->getSourceRange(), Rewrite);
+		        SourceLocation l_SL = VDSR.getBegin();
 				if (l_SL == SL) {
 					retval.push_back(var_decl);
 				}
@@ -1027,24 +987,9 @@ public:
     {
         const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcssspointerarithmetic");
 
-        SourceLocation SL = DRE->getLocStart();
-        SourceLocation SLMID;
-
-        if (SL.isMacroID())
-        {
-          SLMID = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-        }
-
-        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-        SourceLocation SLE = DRE->getLocEnd();
-        SourceLocation SLEMID;
-
-        if (SLE.isMacroID())
-        {
-          SLEMID = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
-        }
-
-        SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
+        auto SR = nice_source_range(DRE->getSourceRange(), Rewrite);
+        SourceLocation SL = SR.getBegin();
+        SourceLocation SLE = SR.getEnd();
 
         QualType QT = DRE->getType();
 
@@ -1064,13 +1009,7 @@ public:
         }
 
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (filtered_out_by_location(MR, SL)) {
         return void();
       }
 
@@ -1089,7 +1028,7 @@ public:
       if (!DD) {
     	  return;
       } else {
-		  auto decl_source_range = DD->getSourceRange();
+		  auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
 		  auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 		  std::string decl_source_text;
 		  if (decl_source_range.isValid()) {
@@ -1155,7 +1094,7 @@ private:
 };
 
 /**********************************************************************************************************************/
-static std::string IPointerFromPointerDecl(const DeclaratorDecl* DD, Rewriter &Rewrite, bool discard_initializer = false) {
+static std::string IPointerFromPointerDecl(const DeclaratorDecl* DD, Rewriter &Rewrite) {
 	std::string retval;
 
 	QualType QT = DD->getType();
@@ -1180,14 +1119,14 @@ static std::string IPointerFromPointerDecl(const DeclaratorDecl* DD, Rewriter &R
 
     	auto pInitExpr = VD->getInit();
     	if (VD->hasInit() && pInitExpr) {
-    	  auto init_expr_source_range = pInitExpr->getSourceRange();
+    	  auto init_expr_source_range = nice_source_range(pInitExpr->getSourceRange(), Rewrite);
     	  initialization_expr_str = Rewrite.getRewrittenText(init_expr_source_range);
     	}
     } else if (FD) {
     	/* Just placeholder code for now. Haven't thought about this case yet. */
     	auto pInitExpr = FD->getInClassInitializer();
     	if (FD->hasInClassInitializer() && pInitExpr) {
-    	  auto init_expr_source_range = pInitExpr->getSourceRange();
+    	  auto init_expr_source_range = nice_source_range(pInitExpr->getSourceRange(), Rewrite);
     	  initialization_expr_str = Rewrite.getRewrittenText(init_expr_source_range);
     	}
     }
@@ -1218,7 +1157,7 @@ static std::string IPointerFromPointerDecl(const DeclaratorDecl* DD, Rewriter &R
 			  replacement_code += "> ";
 			  replacement_code += variable_name;
 
-			  if (("" != initialization_expr_str) && (!discard_initializer)) {
+			  if (("" != initialization_expr_str) && false) {
 				  replacement_code += " = ";
 				  replacement_code += initialization_expr_str;
 			  }
@@ -1270,24 +1209,9 @@ public:
 
 	if ((BO != nullptr) && (CE != nullptr) && (DRE != nullptr))
     {
-        SourceLocation BOSL = BO->getLocStart();
-        SourceLocation BOSLMID;
-
-        if (BOSL.isMacroID())
-        {
-          BOSLMID = Devi::SourceLocationHasMacro(BOSL, Rewrite, "start");
-        }
-
-        BOSL = Devi::SourceLocationHasMacro(BOSL, Rewrite, "start");
-        SourceLocation BOSLE = BO->getLocEnd();
-        SourceLocation BOSLEMID;
-
-        if (BOSLE.isMacroID())
-        {
-          BOSLEMID = Devi::SourceLocationHasMacro(BOSLE, Rewrite, "end");
-        }
-
-        BOSLE = Devi::SourceLocationHasMacro(BOSLE, Rewrite, "end");
+        auto BOSR = nice_source_range(BO->getSourceRange(), Rewrite);
+        SourceLocation BOSL = BOSR.getBegin();
+        SourceLocation BOSLE = BOSR.getEnd();
 
         ASTContext *const ASTC = MR.Context;
         FullSourceLoc FBOSL = ASTC->getFullLoc(BOSL);
@@ -1302,33 +1226,29 @@ public:
       	  return;
         }
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, BOSL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, BOSL))
-      {
+      if (filtered_out_by_location(MR, BOSL)) {
         return void();
       }
 
       auto function_decl = CE->getDirectCallee();
       auto num_args = CE->getNumArgs();
-      if (function_decl && (1 == num_args)) {
-    	  {
-			  std::string function_name = function_decl->getNameAsString();
-			  static const std::string alloc_str = "alloc";
-			  static const std::string realloc_str = "realloc";
-			  auto lc_function_name = tolowerstr(function_name);
-			  bool ends_with_alloc = ((lc_function_name.size() >= alloc_str.size())
-					  && (0 == lc_function_name.compare(lc_function_name.size() - alloc_str.size(), alloc_str.size(), alloc_str)));
-			  bool ends_with_realloc = (ends_with_alloc && (lc_function_name.size() >= realloc_str.size())
-					  && (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
+      if (function_decl && ((1 == num_args) || (2 == num_args))) {
+		  std::string function_name = function_decl->getNameAsString();
+		  static const std::string alloc_str = "alloc";
+		  static const std::string realloc_str = "realloc";
+		  auto lc_function_name = tolowerstr(function_name);
+		  bool ends_with_alloc = ((lc_function_name.size() >= alloc_str.size())
+				  && (0 == lc_function_name.compare(lc_function_name.size() - alloc_str.size(), alloc_str.size(), alloc_str)));
+		  bool ends_with_realloc = (ends_with_alloc && (lc_function_name.size() >= realloc_str.size())
+				  && (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
+		  bool still_potentially_valid1 = (ends_with_alloc && (1 == num_args)) || (ends_with_realloc && (2 == num_args));
+		  if (still_potentially_valid1) {
+			  auto iter = CE->arg_begin();
 			  if (ends_with_realloc) {
-				  int q = 5;
-			  } else if (ends_with_alloc) {
-				  auto iter = CE->arg_begin();
-				  auto arg_source_range = (*iter)->getSourceRange();
+				  iter++;
+			  }
+			  {
+				  auto arg_source_range = nice_source_range((*iter)->getSourceRange(), Rewrite);
 				  std::string arg_source_text;
 				  if (arg_source_range.isValid()) {
 					  arg_source_text = Rewrite.getRewrittenText(arg_source_range);
@@ -1406,7 +1326,7 @@ public:
 								  }
 
 					        	  if (nullptr != DD) {
-									  auto decl_source_range = DD->getSourceRange();
+									  auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
 									  auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 									  std::string decl_source_text;
 									  if (decl_source_range.isValid()) {
@@ -1458,7 +1378,7 @@ public:
 					        		  }
 					        		  if ("" != element_type_str) {
 						            	  auto lhs = BO->getLHS();
-						            	  auto lhs_source_range = lhs->getSourceRange();
+						            	  auto lhs_source_range = nice_source_range(lhs->getSourceRange(), Rewrite);
 						            	  auto lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
 						            	  bo_replacement_code += lhs_source_text;
 						            	  bo_replacement_code += ".resize(";
@@ -1543,24 +1463,9 @@ public:
 
 	if ((DS != nullptr) && (CE != nullptr) && (DD != nullptr))
     {
-        SourceLocation DSSL = DS->getLocStart();
-        SourceLocation DSSLMID;
-
-        if (DSSL.isMacroID())
-        {
-          DSSLMID = Devi::SourceLocationHasMacro(DSSL, Rewrite, "start");
-        }
-
-        DSSL = Devi::SourceLocationHasMacro(DSSL, Rewrite, "start");
-        SourceLocation DSSLE = DS->getLocEnd();
-        SourceLocation DSSLEMID;
-
-        if (DSSLE.isMacroID())
-        {
-          DSSLEMID = Devi::SourceLocationHasMacro(DSSLE, Rewrite, "end");
-        }
-
-        DSSLE = Devi::SourceLocationHasMacro(DSSLE, Rewrite, "end");
+        auto DSSR = nice_source_range(DS->getSourceRange(), Rewrite);
+        SourceLocation DSSL = DSSR.getBegin();
+        SourceLocation DSSLE = DSSR.getEnd();
 
         ASTContext *const ASTC = MR.Context;
         FullSourceLoc FDSSL = ASTC->getFullLoc(DSSL);
@@ -1575,33 +1480,29 @@ public:
       	  return;
         }
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, DSSL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, DSSL))
-      {
+      if (filtered_out_by_location(MR, DSSL)) {
         return void();
       }
 
       auto function_decl = CE->getDirectCallee();
       auto num_args = CE->getNumArgs();
-      if (function_decl && (1 == num_args)) {
-    	  {
-			  std::string function_name = function_decl->getNameAsString();
-			  static const std::string alloc_str = "alloc";
-			  static const std::string realloc_str = "realloc";
-			  auto lc_function_name = tolowerstr(function_name);
-			  bool ends_with_alloc = ((lc_function_name.size() >= alloc_str.size())
-					  && (0 == lc_function_name.compare(lc_function_name.size() - alloc_str.size(), alloc_str.size(), alloc_str)));
-			  bool ends_with_realloc = (ends_with_alloc && (lc_function_name.size() >= realloc_str.size())
-					  && (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
+      if (function_decl && ((1 == num_args) || (2 == num_args))) {
+		  std::string function_name = function_decl->getNameAsString();
+		  static const std::string alloc_str = "alloc";
+		  static const std::string realloc_str = "realloc";
+		  auto lc_function_name = tolowerstr(function_name);
+		  bool ends_with_alloc = ((lc_function_name.size() >= alloc_str.size())
+				  && (0 == lc_function_name.compare(lc_function_name.size() - alloc_str.size(), alloc_str.size(), alloc_str)));
+		  bool ends_with_realloc = (ends_with_alloc && (lc_function_name.size() >= realloc_str.size())
+				  && (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
+		  bool still_potentially_valid1 = (ends_with_alloc && (1 == num_args)) || (ends_with_realloc && (2 == num_args));
+		  if (still_potentially_valid1) {
+			  auto iter = CE->arg_begin();
 			  if (ends_with_realloc) {
-				  int q = 5;
-			  } else if (ends_with_alloc) {
-				  auto iter = CE->arg_begin();
-				  auto arg_source_range = (*iter)->getSourceRange();
+				  iter++;
+			  }
+			  {
+				  auto arg_source_range = nice_source_range((*iter)->getSourceRange(), Rewrite);
 				  std::string arg_source_text;
 				  if (arg_source_range.isValid()) {
 					  arg_source_text = Rewrite.getRewrittenText(arg_source_range);
@@ -1659,7 +1560,7 @@ public:
 				            	  std::string variable_name;
 
 					        	  if (nullptr != DD) {
-									  auto decl_source_range = DD->getSourceRange();
+									  auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
 									  auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 									  std::string decl_source_text;
 									  if (decl_source_range.isValid()) {
@@ -1681,7 +1582,7 @@ public:
 							          auto decls = IndividualDeclaratorDecls(DD, Rewrite);
 							          if ((1 <= decls.size()) && (decls.back() == DD)) {
 							        	  for (const auto& decl : decls) {
-									          declaration_replacement_code += IPointerFromPointerDecl(decl, Rewrite, true/*discard_initializer*/);
+									          declaration_replacement_code += IPointerFromPointerDecl(decl, Rewrite);
 							        		  declaration_replacement_code += "(";
 							        		  declaration_replacement_code += num_elements_text;
 							        		  declaration_replacement_code += "); \n";
@@ -1787,24 +1688,9 @@ public:
 
 	if ((CE != nullptr) && (DRE != nullptr))
     {
-        SourceLocation CESL = CE->getLocStart();
-        SourceLocation CESLMID;
-
-        if (CESL.isMacroID())
-        {
-          CESLMID = Devi::SourceLocationHasMacro(CESL, Rewrite, "start");
-        }
-
-        CESL = Devi::SourceLocationHasMacro(CESL, Rewrite, "start");
-        SourceLocation CESLE = CE->getLocEnd();
-        SourceLocation CESLEMID;
-
-        if (CESLE.isMacroID())
-        {
-          CESLEMID = Devi::SourceLocationHasMacro(CESLE, Rewrite, "end");
-        }
-
-        CESLE = Devi::SourceLocationHasMacro(CESLE, Rewrite, "end");
+        auto CESR = nice_source_range(CE->getSourceRange(), Rewrite);
+        SourceLocation CESL = CESR.getBegin();
+        SourceLocation CESLE = CESR.getEnd();
 
         ASTContext *const ASTC = MR.Context;
         FullSourceLoc FCESL = ASTC->getFullLoc(CESL);
@@ -1819,13 +1705,7 @@ public:
       	  return;
         }
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, CESL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, CESL))
-      {
+      if (filtered_out_by_location(MR, CESL)) {
         return void();
       }
 
@@ -1841,7 +1721,7 @@ public:
 			  if (ends_with_free) {
 				  auto iter = CE->arg_begin();
 				  assert((*iter)->getType().getTypePtrOrNull());
-				  auto arg_source_range = (*iter)->getSourceRange();
+				  auto arg_source_range = nice_source_range((*iter)->getSourceRange(), Rewrite);
 				  std::string arg_source_text;
 				  if (arg_source_range.isValid()) {
 					  arg_source_text = Rewrite.getRewrittenText(arg_source_range);
@@ -1871,7 +1751,7 @@ public:
 					  }
 
 					  if (nullptr != DD) {
-						  auto decl_source_range = DD->getSourceRange();
+						  auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
 						  auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 						  std::string decl_source_text;
 						  if (decl_source_range.isValid()) {
@@ -1946,24 +1826,9 @@ public:
 
 	if ((BO != nullptr) && (RHS != nullptr) && (LHS != nullptr) && (DRE != nullptr))
     {
-        SourceLocation BOSL = BO->getLocStart();
-        SourceLocation BOSLMID;
-
-        if (BOSL.isMacroID())
-        {
-          BOSLMID = Devi::SourceLocationHasMacro(BOSL, Rewrite, "start");
-        }
-
-        BOSL = Devi::SourceLocationHasMacro(BOSL, Rewrite, "start");
-        SourceLocation BOSLE = BO->getLocEnd();
-        SourceLocation BOSLEMID;
-
-        if (BOSLE.isMacroID())
-        {
-          BOSLEMID = Devi::SourceLocationHasMacro(BOSLE, Rewrite, "end");
-        }
-
-        BOSLE = Devi::SourceLocationHasMacro(BOSLE, Rewrite, "end");
+        auto BOSR = nice_source_range(BO->getSourceRange(), Rewrite);
+        SourceLocation BOSL = BOSR.getBegin();
+        SourceLocation BOSLE = BOSR.getEnd();
 
         ASTContext *const ASTC = MR.Context;
         FullSourceLoc FBOSL = ASTC->getFullLoc(BOSL);
@@ -1978,19 +1843,13 @@ public:
       	  return;
         }
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, BOSL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, BOSL))
-      {
+      if (filtered_out_by_location(MR, BOSL)) {
         return void();
       }
 
       Expr::NullPointerConstantKind kind = RHS->isNullPointerConstant(*ASTC, Expr::NullPointerConstantValueDependence());
       if (clang::Expr::NPCK_NotNull != kind) {
-		  auto lhs_source_range = LHS->getSourceRange();
+		  auto lhs_source_range = nice_source_range(LHS->getSourceRange(), Rewrite);
 		  std::string lhs_source_text;
 		  if (lhs_source_range.isValid()) {
 			  lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
@@ -2021,7 +1880,7 @@ public:
 			  }
 
 			  if (nullptr != DD) {
-				  auto decl_source_range = DD->getSourceRange();
+				  auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
 				  auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 				  std::string decl_source_text;
 				  if (decl_source_range.isValid()) {
@@ -2192,6 +2051,13 @@ class MyFrontendAction : public ASTFrontendAction
 {
 public:
   MyFrontendAction() {}
+  ~MyFrontendAction() {
+	  if (ConvertToSCPP) {
+		  auto res = overwriteChangedFiles();
+		  int q = 5;
+	  }
+  }
+
   void EndSourceFileAction() override {
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
   }
@@ -2199,6 +2065,10 @@ public:
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
+  }
+
+  bool overwriteChangedFiles() {
+	  return TheRewriter.overwriteChangedFiles();
   }
 
 private:
