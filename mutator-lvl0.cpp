@@ -72,9 +72,17 @@ using namespace clang::driver;
 using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*macros and defs*/
+
+/*@DEVI-disbale debugs info printouts.*/
 #define _MUT0_TEST
-#if 1
+#if 0
 #undef _MUT0_TEST
+#endif
+
+/*@DEVI-disbale all matchers.*/
+#define _MUT0_DIS_MATCHERS
+#if 0
+#undef _MUT0_DIS_MATCHERS
 #endif
 /**********************************************************************************************************************/
 /*global vars*/
@@ -5774,11 +5782,11 @@ class SFCPPARR01 : public MatchFinder::MatchCallback
         JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native CPP array declared:");
       }
 
-      if (MR.Nodes.getNodeAs<clang::ArraySubscriptExpr>("sfcpparrsubscript") != nullptr)
+      if (MR.Nodes.getNodeAs<clang::CastExpr>("sfcpparrcastexpr") != nullptr)
       {
-        const ArraySubscriptExpr* ASE = MR.Nodes.getNodeAs<clang::ArraySubscriptExpr>("sfcpparrsubscript");
+        const CastExpr* CS = MR.Nodes.getNodeAs<clang::CastExpr>("sfcpparrcastexpr");
 
-        SourceLocation SL = ASE->getLocStart();
+        SourceLocation SL = CS->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -7299,20 +7307,16 @@ public:
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
     HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R) {
 
-#if 1
-    /*forstmts whithout a compound statement.*/
+/*@DEVI-disables all matchers*/
+#if defined(_MUT0_DIS_MATCHERS)
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
 
-    /*whilestmts without a compound statement.*/
     Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mcwhile"), &HandlerWhileCmpless);
 
-    /*else blocks that dont have a compound statemnt.*/
     Matcher.addMatcher(ifStmt(allOf(hasElse(unless(ifStmt())), hasElse(unless(compoundStmt())))).bind("mcelse"), &HandlerElseCmpless);
 
-    /*if blocks that dont have a compound statement.*/
     Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mcif"), &HandlerIfCmpless);
 
-    /*if-elseif statements that are missing the else block.*/
     Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mcifelse"), &HandlerForIfElse);
 
     Matcher.addMatcher(switchStmt(hasDescendant(compoundStmt(hasDescendant(switchCase(unless(hasDescendant(breakStmt()))))))).bind("mcswitchbrk"), &HandlerForSwitchBrkLess);
@@ -7561,9 +7565,11 @@ public:
     Matcher.addMatcher(enumConstantDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5enumconst"), &HandlerForIdent5X);
     /*end of matchers for 5.x*/
 
-    Matcher.addMatcher(arraySubscriptExpr().bind("sfcpparrsubscript"), &HandlerForSFCPPARR01);
-
     Matcher.addMatcher(varDecl(hasType(arrayType())).bind("sfcpparrdecl"), &HandlerForSFCPPARR01);
+
+    Matcher.addMatcher(implicitCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
+
+    Matcher.addMatcher(cStyleCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
 #endif
   }
 
