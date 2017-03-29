@@ -325,6 +325,8 @@ std::multimap<std::string,std::string> MC1EquivalencyMap = {
   {"127","20.12"}
 };
 
+std::pair<std::string, bool> Mutator0RuleChecks;
+
 std::multimap<std::string, std::string> MC3EquivalencyMap;
 
 std::unordered_map<std::string, std::string> SaferCPPEquivalencyMap;
