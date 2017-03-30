@@ -3,7 +3,12 @@
 include ../macros.mk
 
 #######################################VARS####################################
+CXX_FLAGS+=-frtti
 SFCPP01=safercpp-arr
+
+ifeq ($(shell $(LLVM_CONF) --has-rtti), NO)
+$(error your llvm-config says you dont have rtti. you cant build safercpparr without rtti support.)
+endif
 ######################################RULES####################################
 .DEFAULT: all
 
