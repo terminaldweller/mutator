@@ -5811,6 +5811,124 @@ class SFCPPARR01 : public MatchFinder::MatchCallback
     Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief The matcher run by SFCPPARR02. This ones does all the real tagging.
+ */
+class SFCPPARR02SUB : public MatchFinder::MatchCallback
+{
+  public:
+    SFCPPARR02SUB (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpp02sub") != nullptr)
+      {
+        const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpp02sub");
+
+        SourceManager *const SM = MR.SourceManager;
+
+        SourceLocation SL = DRE->getLocStart();
+        CheckSLValidity(SL);
+        //SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+        SL = SM->getSpellingLoc(SL);
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        {
+          return void();
+        }
+
+        const NamedDecl* ND = DRE->getFoundDecl();
+
+        SourceLocation OriginSL = ND->getLocStart();
+        CheckSLValidity(OriginSL);
+        //OriginSL = Devi::SourceLocationHasMacro(OriginSL, Rewrite, "start");
+        OriginSL = SM->getSpellingLoc(OriginSL);
+
+        StringRef OriginFileName [[maybe_unused]] = SM->getFilename(OriginSL);
+
+#if 0
+        std::cout << "GarbageOut" << ":" << "Origin:" << DRE->getFoundDecl()->getName().str() << std::endl;
+        std::cout << "GarbageOut" << ":" << "Origin:" << ExtOriginFileName.str() << ":" << "Proto:" << OriginFileName.str() << std::endl;
+        std::cout << "GarbageOut" << ":" << "Origin:" << ExtOriginSL.printToString(*SM) << ":" << "Proto:" << OriginSL.printToString(*SM) << std::endl;
+#endif
+
+        if (OriginSL == ExtOriginSL && OriginFileName == ExtOriginFileName)
+        {
+          std::cout << "SaferCPP01" << ":" << "Native Array used - pointer points to an array:" << SL.printToString(*MR.SourceManager) << ":" << DRE->getFoundDecl()->getName().str() << std::endl;
+        }
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP01", "Native Array used - pointer points to an array:");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native Array used - pointer points to an array:");
+      }
+    }
+
+    void setOriginSourceLocation(SourceLocation inSL)
+    {
+    ExtOriginSL = inSL;
+    }
+
+    void setOriginFileName(StringRef inStrRef)
+    {
+      ExtOriginFileName = inStrRef;
+    }
+
+  private:
+    Rewriter &Rewrite;
+    SourceLocation ExtOriginSL;
+    StringRef ExtOriginFileName;
+};
+/**********************************************************************************************************************/
+/**
+ * @brief MatchCallback for safercpp matching of pointers pointing to arrays.
+ */
+class SFCPPARR02 : public MatchFinder::MatchCallback
+{
+  public:
+    SFCPPARR02 (Rewriter &Rewrite) : Rewrite(Rewrite), SubHandler(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpparrdeep") != nullptr)
+      {
+        const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpparrdeep");
+
+        ASTContext *const ASTC = MR.Context;
+
+        SourceManager *const SM = MR.SourceManager;
+
+        SourceLocation SL = DRE->getLocStart();
+        CheckSLValidity(SL);
+        SL = SM->getSpellingLoc(SL);
+
+        const NamedDecl* ND = DRE->getFoundDecl();
+
+        StringRef NDName = ND->getName();
+
+        SubHandler.setOriginSourceLocation(SM->getSpellingLoc(ND->getLocStart()));
+        SubHandler.setOriginFileName(SM->getFilename(SM->getSpellingLoc(ND->getLocStart())));
+
+        Matcher.addMatcher(declRefExpr(to(varDecl(hasName(NDName.str())))).bind("sfcpp02sub"), &SubHandler);
+
+        Matcher.matchAST(*ASTC);
+
+#if 0
+        std::cout << "GarbageOutOrigin" << ":" << "GarbageOutOrigin:" << SL.printToString(*MR.SourceManager) << ":" << NDName.str() << std::endl;
+#endif
+      }
+    }
+
+  private:
+    Rewriter &Rewrite;
+    MatchFinder Matcher;
+    SFCPPARR02SUB SubHandler;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -7305,7 +7423,7 @@ public:
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent51(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
-    HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R) {
+    HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R), HandlerForSFCPPARR02(R) {
 
 /*@DEVI-disables all matchers*/
 #if defined(_MUT0_DIS_MATCHERS)
@@ -7570,6 +7688,9 @@ public:
     Matcher.addMatcher(implicitCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
 
     Matcher.addMatcher(cStyleCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
+
+    Matcher.addMatcher(declRefExpr(hasAncestor(binaryOperator(allOf(hasLHS(declRefExpr().bind("sfcpparrdeep")), hasRHS(hasDescendant(implicitCastExpr(hasCastKind(CK_ArrayToPointerDecay))))\
+                , hasOperatorName("="))))), &HandlerForSFCPPARR02);
 #endif
   }
 
@@ -7648,6 +7769,7 @@ private:
   MCConst71 HandlerForConst71;
   MCIdent5x HandlerForIdent5X;
   SFCPPARR01 HandlerForSFCPPARR01;
+  SFCPPARR02 HandlerForSFCPPARR02;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
