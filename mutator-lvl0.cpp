@@ -4125,6 +4125,7 @@ public:
         uint64_t ICETypeSize = ASTC->getTypeSize(CanonTypeDaddy);
         uint64_t ChildTypeSize = ASTC->getTypeSize(CanonTypeChild);
 
+        /*
         bool ICETypeIsSignedInt = CanonTypeDaddy->getAsPlaceholderType()->isSignedInteger();
         bool ChildTypeIsSignedInt = CanonTypeChild->getAsPlaceholderType()->isSignedInteger();
 
@@ -4132,6 +4133,33 @@ public:
         bool ChildTypeIsUSignedInt = CanonTypeChild->getAsPlaceholderType()->isUnsignedInteger();
 
         if (CanonTypeDaddy->getAsPlaceholderType()->isInteger() && CanonTypeChild->getAsPlaceholderType()->isInteger())
+        */
+
+        bool ICETypeIsSignedInt = false;
+        bool ICETypeIsUSignedInt = false;
+        bool ICETypeIsInteger = false;
+        if (CanonTypeDaddy) {
+        	auto placeholderType = CanonTypeDaddy->getAsPlaceholderType();
+        	if (placeholderType) {
+        		ICETypeIsSignedInt = placeholderType->isSignedInteger();
+        		ICETypeIsUSignedInt = placeholderType->isUnsignedInteger();
+        		ICETypeIsInteger = placeholderType->isInteger();
+        	}
+        }
+
+        bool ChildTypeIsSignedInt = false;
+        bool ChildTypeIsUSignedInt = false;
+        bool ChildTypeIsInteger = false;
+        if (CanonTypeChild) {
+        	auto placeholderType = CanonTypeChild->getAsPlaceholderType();
+        	if (placeholderType) {
+        		ChildTypeIsSignedInt = placeholderType->isSignedInteger();
+        		ChildTypeIsUSignedInt = placeholderType->isUnsignedInteger();
+        		ChildTypeIsInteger = placeholderType->isInteger();
+        	}
+        }
+
+        if (ICETypeIsInteger && ChildTypeIsInteger)
         {
           if ((ICETypeIsSignedInt && ChildTypeIsUSignedInt) || (ICETypeIsUSignedInt && ChildTypeIsSignedInt))
           {
@@ -4202,10 +4230,32 @@ public:
           const clang::Type* DaddyCPXElementType = DaddyCPXQT.getTypePtr();
           const clang::Type * ChildCPXElementType = ChildCPXQT.getTypePtr();
 
+          /*
           bool IsSignedCPXDaddy = DaddyCPXElementType->getAsPlaceholderType()->isSignedInteger();
           bool IsSignedCPXChild = ChildCPXElementType->getAsPlaceholderType()->isSignedInteger();
           bool IsUnsignedCPXDaddy = DaddyCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
           bool IsUnsignedCPXChild = ChildCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
+          */
+
+          bool IsSignedCPXDaddy = false;
+          bool IsUnsignedCPXDaddy = false;
+          if (DaddyCPXElementType) {
+          	auto placeholderType = DaddyCPXElementType->getAsPlaceholderType();
+          	if (placeholderType) {
+          		IsSignedCPXDaddy = placeholderType->isSignedInteger();
+          		IsUnsignedCPXDaddy = placeholderType->isUnsignedInteger();
+          	}
+          }
+
+          bool IsSignedCPXChild = false;
+          bool IsUnsignedCPXChild = false;
+          if (ChildCPXElementType) {
+          	auto placeholderType = ChildCPXElementType->getAsPlaceholderType();
+          	if (placeholderType) {
+          		IsSignedCPXChild = placeholderType->isSignedInteger();
+          		IsUnsignedCPXChild = placeholderType->isUnsignedInteger();
+          	}
+          }
 
           if ((IsSignedCPXDaddy && IsUnsignedCPXChild) || (IsUnsignedCPXDaddy && IsSignedCPXChild))
           {
@@ -4869,7 +4919,14 @@ public:
 
       const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
 
-      bool TypeIsUSignedInt = CanonTP->getAsPlaceholderType()->isUnsignedInteger();
+      //bool TypeIsUSignedInt = CanonTP->getAsPlaceholderType()->isUnsignedInteger();
+      bool TypeIsUSignedInt = false;
+      if (CanonTP) {
+    	  auto placeholderType = CanonTP->getAsPlaceholderType();
+    	  if (placeholderType) {
+    		  TypeIsUSignedInt = placeholderType->isUnsignedInteger();
+    	  }
+      }
 
       if (TypeIsUSignedInt)
       {
