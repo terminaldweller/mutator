@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 /*macros*/
 #define __DBG
-#if 1
+#if 0
 #undef __DBG
 #endif
 /**********************************************************************************************************************/
@@ -97,14 +97,14 @@ int main(int argc, char *argv[])
     fflush(stdin);
 
 #if defined(__DBG)
-    puts("checkpoint 1");
+    puts("checkpoint 11");
 #endif
 
     /*recieve a reply from the server*/
     recvlength = recv(sock, server_reply, 2000, 0);
 
 #if defined(__DBG)
-    puts("checkpoint 2");
+    puts("checkpoint 12");
 #endif
 
     if (recvlength < 0)

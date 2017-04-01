@@ -140,6 +140,8 @@ int main(void)
     fclose(mut_log);
   }while(0);
 
+  //return server_exit_code;
+
   /*@DEVI-these obviously will never run. theyre just a reminder that i need to handle the gracefull shutdown*/
 #if 0
   fclose(mut_log);

@@ -59,6 +59,7 @@ bool cleanser(char cleansee[])
 
   return (cleansee_health && nullterminated);
 }
+
 /**********************************************************************************************************************/
 int mutator_server(FILE* log_file)
 {
@@ -67,9 +68,11 @@ int mutator_server(FILE* log_file)
 
   char client_message[2000];
   FILE* clientistream;
+  FILE* mutator_config;
   char runresponse[4000];
-  char NOOUT[]="command did not return any output. could be an error or not.\n";
-  char BADOUT[]="what are you exactly trying to do?";
+  const char NOOUT[]="command did not return any output. could be an error or not.\n";
+  const char BADOUT[]="what are you exactly trying to do?";
+  const char STD_OUT[]="stdout returned:\n";
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -120,10 +123,59 @@ int mutator_server(FILE* log_file)
 
     fprintf(log_file, "%s", "got command from client.\n");
 
+    mutator_config = fopen("/home/bloodstalker/devi/hell2/daemon/mutator.config", "r");
+
+    char configline[100];
+    const char delimiter[2]="=";
+    char* token_var;
+    const char mutator_home_var[]="MUTATOR_HOME";
+    const char driver_name[] = "/mutator.sh ";
+    char* full_command;
+    char* temp;
+
+#if 1
+#if 1
+    while (fgets(configline,sizeof(configline), mutator_config) != NULL)
+    {
+      temp = strstr(configline, mutator_home_var);
+
+      if (temp != NULL)
+      {
+        memmove(temp, configline + strlen(mutator_home_var) + 1, strlen(configline) - strlen(mutator_home_var) + 1);
+
+        break;
+      }
+    }
+#endif
+
+#if 1
+    for (int i = 0; i < strlen(temp); ++i)
+    {
+      if (i == strlen(temp) - 1)
+      {
+        temp[i] = '\0';
+      }
+    }
+    full_command = malloc(strlen(temp) + strlen(client_message) + strlen(driver_name) + 1);
+
+    strcpy(full_command,temp);
+    strcat(full_command, driver_name);
+    strcat(full_command, client_message);
+    fprintf(log_file, "%s", full_command);
+#endif
+#endif
+
     if (cleanser(client_message) == true)
     {
+#ifndef __DBG
+      clientistream = popen(full_command, "r");
+#endif
+
+#if defined(__DBG)
       /*open pipe, run command*/
       clientistream = popen(client_message, "r");
+      //clientistream = popen(full_command, "r");
+#endif
     }
     else
     {
@@ -131,6 +183,9 @@ int mutator_server(FILE* log_file)
       write(client_sock, BADOUT, strlen(BADOUT));
       continue;
     }
+
+    fprintf(log_file, "%s", "freeing memory reserved for command.\n");
+    free(full_command);
 
     if (clientistream == NULL)
     {
@@ -146,7 +201,13 @@ int mutator_server(FILE* log_file)
     if (fgets(runresponse, sizeof(runresponse), clientistream) == NULL)
     {
       /*say there was nothing on stdout to send.*/
+      fprintf(log_file, "%s", "command returned no stdout.\n");
       write(client_sock, NOOUT, strlen(NOOUT));
+    }
+    else
+    {
+      fprintf(log_file, "%s", "command returned stdout.\n");
+      write(client_sock, STD_OUT, strlen(STD_OUT));
     }
 
     rewind(clientistream);
@@ -154,8 +215,7 @@ int mutator_server(FILE* log_file)
     while (fgets(runresponse, sizeof(runresponse), clientistream) != NULL)
     {
 #if defined(__DBG)
-      fscanf(log_file, "%s", "command stdout:");
-      fscanf(log_file, "%s", runresponse);
+      fprintf(log_file, "%s", "command stdout:\n");
 #endif
       write(client_sock, runresponse, strlen(runresponse));
       fprintf(log_file, "%s", runresponse);
