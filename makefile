@@ -62,7 +62,7 @@ install:
 	chmod +x ./extra-tools/ReportPrintPretty.sh
 	chmod +x ./extra-tools/precommitTests.sh
 	if [[ ! -d "./temp" ]]; then mkdir temp; fi
-	$(shell echo MUTATOR_HOME=$$(pwd) > mutator.config)
+	$(shell echo MUTATOR_HOME=$$(pwd) > ./daemon/mutator.config)
 
 help:
 	@echo '- There is help.'
