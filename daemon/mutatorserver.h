@@ -1,4 +1,11 @@
 
+/** @file mutatorserver.h*/
+/**
+ * @brief The header for the test file for the server.
+ */
+
+/** @warning Deprecated*/
+
 /***************************************************Project Mutator****************************************************/
 /*first line intentionally left blank.*/
 /*Copyright (C) 2017 Farzad Sadeghi
