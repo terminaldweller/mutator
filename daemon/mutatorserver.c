@@ -1,4 +1,10 @@
 
+/** @file mutatorserver.c*/
+/**
+ * @brief The test file for the server. Runs the server as a stand-alone.
+ */
+
+/** @warning Deprecated*/
 /***************************************************Project Mutator****************************************************/
 /*first line intentionally left blank.*/
 /*Copyright (C) 2017 Farzad Sadeghi
