@@ -110,6 +110,7 @@ int mutator_server(FILE* log_file)
   /*Bind*/
   if (bind(socket_desc, (struct sockaddr*)&server, sizeof(server)) < 0)
   {
+    close(socket_desc);
     perror("bind failed.error.\n");
     return 1;
   }
@@ -150,7 +151,11 @@ int mutator_server(FILE* log_file)
       fprintf(log_file, "%s", NFOUND_CONFIG);
       fprintf(log_file, "%s%d%s", "fopen returned: ", errno, "\n");
       fprintf(log_file, "%s", SERVER_TERM);
-      CLEAN_UP();
+
+      fclose(log_file);
+      close(client_sock);
+      close(socket_desc);
+
       return errno;
     }
 
