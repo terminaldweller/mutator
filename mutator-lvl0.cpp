@@ -4125,16 +4125,44 @@ public:
         uint64_t ICETypeSize = ASTC->getTypeSize(CanonTypeDaddy);
         uint64_t ChildTypeSize = ASTC->getTypeSize(CanonTypeChild);
 
-        /*
-        bool ICETypeIsSignedInt = CanonTypeDaddy->getAsPlaceholderType()->isSignedInteger();
-        bool ChildTypeIsSignedInt = CanonTypeChild->getAsPlaceholderType()->isSignedInteger();
+        bool ICETypeIsSignedInt = CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Long) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Short) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::SChar) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_S) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::LongLong) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int128) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_S);
+        bool ChildTypeIsSignedInt = CanonTypeChild->isSpecificBuiltinType(BuiltinType::Kind::Long) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Short) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::SChar) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_S) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::LongLong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int128) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_S);
 
-        bool ICETypeIsUSignedInt = CanonTypeDaddy->getAsPlaceholderType()->isUnsignedInteger();
-        bool ChildTypeIsUSignedInt = CanonTypeChild->getAsPlaceholderType()->isUnsignedInteger();
+        bool ICETypeIsUSignedInt = CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::ULong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UShort) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UChar) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::ULongLong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt128) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_U);
+        bool ChildTypeIsUSignedInt = CanonTypeChild->isSpecificBuiltinType(BuiltinType::Kind::ULong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UShort) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UChar) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::ULongLong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt128) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_U);
 
-        if (CanonTypeDaddy->getAsPlaceholderType()->isInteger() && CanonTypeChild->getAsPlaceholderType()->isInteger())
-        */
+        bool ICETypeIsInteger = ICETypeIsSignedInt || ICETypeIsUSignedInt;
+        bool ChildTypeIsInteger = ChildTypeIsSignedInt || ChildTypeIsUSignedInt;
 
+#if 0
         bool ICETypeIsSignedInt = false;
         bool ICETypeIsUSignedInt = false;
         bool ICETypeIsInteger = false;
@@ -4158,6 +4186,7 @@ public:
         		ChildTypeIsInteger = placeholderType->isInteger();
         	}
         }
+#endif
 
         if (ICETypeIsInteger && ChildTypeIsInteger)
         {
@@ -4919,7 +4948,16 @@ public:
 
       const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
 
-      //bool TypeIsUSignedInt = CanonTP->getAsPlaceholderType()->isUnsignedInteger();
+      bool TypeIsUSignedInt = CanonTP->isSpecificBuiltinType(BuiltinType::Kind::ULong) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UInt) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UShort) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UChar) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::ULongLong) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UInt128) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::WChar_U);
+
+#if 0
       bool TypeIsUSignedInt = false;
       if (CanonTP) {
     	  auto placeholderType = CanonTP->getAsPlaceholderType();
@@ -4927,6 +4965,7 @@ public:
     		  TypeIsUSignedInt = placeholderType->isUnsignedInteger();
     	  }
       }
+#endif
 
       if (TypeIsUSignedInt)
       {
