@@ -23,10 +23,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #if 1
 #undef __DBG
 #endif
+
+#define __DBG_2
+#if 1
+#undef __DBG_2
+#endif
+
+#define CLEAN_UP() \
+      do{\
+      fclose(log_file);\
+      fclose(mutator_config);\
+      close(client_sock);\
+      close(socket_desc);\
+      }\
+      while(0)
 /**********************************************************************************************************************/
 /*inclusion directive*/
 #include "daemon_aux.h"
 /*standard headers*/
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,7 +88,9 @@ int mutator_server(FILE* log_file)
   const char NOOUT[]="command did not return any output. could be an error or not.\n";
   const char BADOUT[]="what are you exactly trying to do?";
   const char STD_OUT[]="stdout returned:\n";
-  const char EMPTY_CONFIG[]="empty config file or file not found.\n";
+  const char EMPTY_CONFIG[]="error: empty config file.\n";
+  const char NFOUND_CONFIG[]="error: cant find config file in the default path.\n";
+  const char SERVER_TERM[]="server terminated.\n";
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -126,6 +143,17 @@ int mutator_server(FILE* log_file)
 
     mutator_config = fopen("/home/bloodstalker/devi/hell2/daemon/mutator.config", "r");
 
+    if (mutator_config == NULL)
+    {
+      write(client_sock, NFOUND_CONFIG, strlen(NFOUND_CONFIG));
+      write(client_sock, SERVER_TERM, strlen(SERVER_TERM));
+      fprintf(log_file, "%s", NFOUND_CONFIG);
+      fprintf(log_file, "%s%d%s", "fopen returned: ", errno, "\n");
+      fprintf(log_file, "%s", SERVER_TERM);
+      CLEAN_UP();
+      return errno;
+    }
+
     char configline[100];
     const char delimiter[2]="=";
     char* token_var;
@@ -133,51 +161,54 @@ int mutator_server(FILE* log_file)
     const char driver_name[] = "/mutator.sh ";
     char* full_command;
     char* temp;
+    char* dummy;
 
     /*checking for an empty config-file. could also mean the config file was not found.*/
     if(fgets(configline,sizeof(configline), mutator_config) == NULL)
     {
+      write(client_sock, EMPTY_CONFIG, strlen(EMPTY_CONFIG));
+      write(client_sock, SERVER_TERM, strlen(SERVER_TERM));
       fprintf(log_file, "%s", EMPTY_CONFIG);
-      fclose(log_file);
-      fclose(mutator_config);
-      close(client_sock);
-      close(socket_desc);
-      return 1;
+      fprintf(log_file, "%s", SERVER_TERM);
+      CLEAN_UP();
+      /*@DEVI-return SIGPIPE*/
+      return 141;
     }
 
     rewind(mutator_config);
 
-#if 1
-#if 1
     while (fgets(configline,sizeof(configline), mutator_config) != NULL)
     {
       temp = strstr(configline, mutator_home_var);
 
       if (temp != NULL)
       {
-        memmove(temp, configline + strlen(mutator_home_var) + 1, strlen(configline) - strlen(mutator_home_var) + 1);
+        memmove(temp, configline + strlen(mutator_home_var) + 1, strlen(configline) - strlen(mutator_home_var) - 1);
 
         break;
       }
     }
-#endif
 
-#if 1
-      for (int i = 0; i < strlen(temp); ++i)
-      {
-        if (i == strlen(temp) - 1)
-        {
-          temp[i] = '\0';
-        }
-      }
-    full_command = malloc(strlen(temp) + strlen(client_message) + strlen(driver_name) + 1);
+    /*@DEVI-null-terminating temp*/
+    temp[strlen(temp) - strlen(mutator_home_var) - 2] = '\0';
+    /*@DEVI-checks whether the line-break char was also sent.if yes, then removes it.*/
+    if (client_message[read_size - 1] == '\n')
+    {
+      client_message[read_size - 1] = '\0';
+    }
+
+    full_command = malloc(strlen(temp) + read_size + strlen(driver_name) + 1);
 
     strcpy(full_command,temp);
     strcat(full_command, driver_name);
+    /*@DEVI-client_message is not null-terminated but strcat takes care of that.*/
     strcat(full_command, client_message);
-    fprintf(log_file, "%s", full_command);
+
+#if defined(__DBG_2)
+    fprintf(log_file, "%s%s%s", "temp is: ", temp, "\n");
+    fprintf(log_file, "%s%s%s", "driver_name is: ",driver_name, "\n");
 #endif
-#endif
+    fprintf(log_file, "%s%s%s", "full_command is: ", full_command, "\n");
 
     if (cleanser(client_message) == true)
     {
