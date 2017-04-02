@@ -149,11 +149,14 @@ int mutator_server(FILE* log_file)
 #endif
 
 #if 1
-    for (int i = 0; i < strlen(temp); ++i)
+    if (temp != NULL)
     {
-      if (i == strlen(temp) - 1)
+      for (int i = 0; i < strlen(temp); ++i)
       {
-        temp[i] = '\0';
+        if (i == strlen(temp) - 1)
+        {
+          temp[i] = '\0';
+        }
       }
     }
     full_command = malloc(strlen(temp) + strlen(client_message) + strlen(driver_name) + 1);
@@ -181,11 +184,14 @@ int mutator_server(FILE* log_file)
     {
       fprintf(log_file, "%s", "what are you trying to do exactly?");
       write(client_sock, BADOUT, strlen(BADOUT));
+      free(full_command);
+      fclose(mutator_config);
       continue;
     }
 
     fprintf(log_file, "%s", "freeing memory reserved for command.\n");
     free(full_command);
+    fclose(mutator_config);
 
     if (clientistream == NULL)
     {
