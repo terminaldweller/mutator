@@ -73,6 +73,7 @@ int mutator_server(FILE* log_file)
   const char NOOUT[]="command did not return any output. could be an error or not.\n";
   const char BADOUT[]="what are you exactly trying to do?";
   const char STD_OUT[]="stdout returned:\n";
+  const char EMPTY_CONFIG[]="empty config file or file not found.\n";
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -133,6 +134,17 @@ int mutator_server(FILE* log_file)
     char* full_command;
     char* temp;
 
+    /*checking for an empty config-file. could also mean the config file was not found.*/
+    if(fgets(configline,sizeof(configline), mutator_config) == NULL)
+    {
+      fprintf(log_file, "%s", EMPTY_CONFIG);
+      fclose(log_file);
+      fclose(mutator_config);
+      return 1;
+    }
+
+    rewind(mutator_config);
+
 #if 1
 #if 1
     while (fgets(configline,sizeof(configline), mutator_config) != NULL)
@@ -149,8 +161,6 @@ int mutator_server(FILE* log_file)
 #endif
 
 #if 1
-    if (temp != NULL)
-    {
       for (int i = 0; i < strlen(temp); ++i)
       {
         if (i == strlen(temp) - 1)
@@ -158,7 +168,6 @@ int mutator_server(FILE* log_file)
           temp[i] = '\0';
         }
       }
-    }
     full_command = malloc(strlen(temp) + strlen(client_message) + strlen(driver_name) + 1);
 
     strcpy(full_command,temp);
