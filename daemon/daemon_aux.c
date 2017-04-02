@@ -140,6 +140,8 @@ int mutator_server(FILE* log_file)
       fprintf(log_file, "%s", EMPTY_CONFIG);
       fclose(log_file);
       fclose(mutator_config);
+      close(client_sock);
+      close(socket_desc);
       return 1;
     }
 
