@@ -6025,7 +6025,7 @@ class SFCPPARR02 : public MatchFinder::MatchCallback
 };
 /**********************************************************************************************************************/
 /**
- * @brief The callback for the Safercpp pointer matchers.
+ * @brief The callback for the Safercpp pointer matchers. Matches the dedlarations.
  */
 class SFCPPPNTR01 : public MatchFinder::MatchCallback
 {
@@ -6052,6 +6052,45 @@ class SFCPPPNTR01 : public MatchFinder::MatchCallback
           return void();
         }
 
+        std::cout << "SaferCPP02" << ":" << "Native pointer declared:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP02", "Native pointer declared:");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP02", "Native pointer declared:");
+      }
+    }
+
+  private:
+    Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**
+ * @brief The callback for the Safercpp pointer matchers. Matches the DeclRefExprs.
+ */
+class SFCPPPNTR02 : public MatchFinder::MatchCallback
+{
+  public:
+    SFCPPPNTR02 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpppntr02") != nullptr)
+      {
+        const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpppntr02");
+
+        SourceLocation SL = DRE->getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        {
+          return void();
+        }
+
         std::cout << "SaferCPP02" << ":" << "Native pointer used:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP02", "Native pointer used:");
@@ -6062,6 +6101,7 @@ class SFCPPPNTR01 : public MatchFinder::MatchCallback
   private:
     Rewriter &Rewrite;
 };
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -7558,7 +7598,7 @@ public:
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent51(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
     HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R), HandlerForSFCPPARR02(R), \
-    HandlerForSFCPPPNTR01(R) {
+    HandlerForSFCPPPNTR01(R), HandlerForSFCPPPNTR02(R) {
 
 /*@DEVI-disables all matchers*/
 #if defined(_MUT0_DIS_MATCHERS)
@@ -7828,6 +7868,8 @@ public:
                 , hasOperatorName("="))))), &HandlerForSFCPPARR02);
 
     Matcher.addMatcher(varDecl(hasType(pointerType())).bind("sfcpppntr01"), &HandlerForSFCPPPNTR01);
+
+    Matcher.addMatcher(declRefExpr(hasType(pointerType())).bind("sfcpppntr02"), &HandlerForSFCPPPNTR02);
 #endif
   }
 
@@ -7908,6 +7950,7 @@ private:
   SFCPPARR01 HandlerForSFCPPARR01;
   SFCPPARR02 HandlerForSFCPPARR02;
   SFCPPPNTR01 HandlerForSFCPPPNTR01;
+  SFCPPPNTR02 HandlerForSFCPPPNTR02;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
