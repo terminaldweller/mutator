@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 /*macros*/
 #define __DBG
-#if 0
+#if 1
 #undef __DBG
 #endif
 /**********************************************************************************************************************/
@@ -139,6 +139,8 @@ int main(void)
     fprintf (mut_log, "%s", "closing down server\n");
     fclose(mut_log);
   }while(0);
+
+  return server_exit_code;
 
   /*@DEVI-these obviously will never run. theyre just a reminder that i need to handle the gracefull shutdown*/
 #if 0

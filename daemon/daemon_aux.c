@@ -23,10 +23,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #if 1
 #undef __DBG
 #endif
+
+#define __DBG_2
+#if 1
+#undef __DBG_2
+#endif
+
+#define CLEAN_UP() \
+      do{\
+      fclose(log_file);\
+      fclose(mutator_config);\
+      close(client_sock);\
+      close(socket_desc);\
+      }\
+      while(0)
 /**********************************************************************************************************************/
 /*inclusion directive*/
 #include "daemon_aux.h"
 /*standard headers*/
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,6 +74,7 @@ bool cleanser(char cleansee[])
 
   return (cleansee_health && nullterminated);
 }
+
 /**********************************************************************************************************************/
 int mutator_server(FILE* log_file)
 {
@@ -67,9 +83,14 @@ int mutator_server(FILE* log_file)
 
   char client_message[2000];
   FILE* clientistream;
+  FILE* mutator_config;
   char runresponse[4000];
-  char NOOUT[]="command did not return any output. could be an error or not.\n";
-  char BADOUT[]="what are you exactly trying to do?";
+  const char NOOUT[]="command did not return any output. could be an error or not.\n";
+  const char BADOUT[]="what are you exactly trying to do?";
+  const char STD_OUT[]="stdout returned:\n";
+  const char EMPTY_CONFIG[]="error: empty config file.\n";
+  const char NFOUND_CONFIG[]="error: cant find config file in the default path.\n";
+  const char SERVER_TERM[]="server terminated.\n";
 
   /*create socket*/
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -89,6 +110,7 @@ int mutator_server(FILE* log_file)
   /*Bind*/
   if (bind(socket_desc, (struct sockaddr*)&server, sizeof(server)) < 0)
   {
+    close(socket_desc);
     perror("bind failed.error.\n");
     return 1;
   }
@@ -120,17 +142,103 @@ int mutator_server(FILE* log_file)
 
     fprintf(log_file, "%s", "got command from client.\n");
 
+    mutator_config = fopen("/home/bloodstalker/devi/hell2/daemon/mutator.config", "r");
+
+    if (mutator_config == NULL)
+    {
+      write(client_sock, NFOUND_CONFIG, strlen(NFOUND_CONFIG));
+      write(client_sock, SERVER_TERM, strlen(SERVER_TERM));
+      fprintf(log_file, "%s", NFOUND_CONFIG);
+      fprintf(log_file, "%s%d%s", "fopen returned: ", errno, "\n");
+      fprintf(log_file, "%s", SERVER_TERM);
+
+      fclose(log_file);
+      close(client_sock);
+      close(socket_desc);
+
+      return errno;
+    }
+
+    char configline[100];
+    const char delimiter[2]="=";
+    char* token_var;
+    const char mutator_home_var[]="MUTATOR_HOME";
+    const char driver_name[] = "/mutator.sh ";
+    char* full_command;
+    char* temp;
+    char* dummy;
+
+    /*checking for an empty config-file. could also mean the config file was not found.*/
+    if(fgets(configline,sizeof(configline), mutator_config) == NULL)
+    {
+      write(client_sock, EMPTY_CONFIG, strlen(EMPTY_CONFIG));
+      write(client_sock, SERVER_TERM, strlen(SERVER_TERM));
+      fprintf(log_file, "%s", EMPTY_CONFIG);
+      fprintf(log_file, "%s", SERVER_TERM);
+      CLEAN_UP();
+      /*@DEVI-return SIGPIPE*/
+      return 141;
+    }
+
+    rewind(mutator_config);
+
+    while (fgets(configline,sizeof(configline), mutator_config) != NULL)
+    {
+      temp = strstr(configline, mutator_home_var);
+
+      if (temp != NULL)
+      {
+        memmove(temp, configline + strlen(mutator_home_var) + 1, strlen(configline) - strlen(mutator_home_var) - 1);
+
+        break;
+      }
+    }
+
+    /*@DEVI-null-terminating temp*/
+    temp[strlen(temp) - strlen(mutator_home_var) - 2] = '\0';
+    /*@DEVI-checks whether the line-break char was also sent.if yes, then removes it.*/
+    if (client_message[read_size - 1] == '\n')
+    {
+      client_message[read_size - 1] = '\0';
+    }
+
+    full_command = malloc(strlen(temp) + read_size + strlen(driver_name) + 1);
+
+    strcpy(full_command,temp);
+    strcat(full_command, driver_name);
+    /*@DEVI-client_message is not null-terminated but strcat takes care of that.*/
+    strcat(full_command, client_message);
+
+#if defined(__DBG_2)
+    fprintf(log_file, "%s%s%s", "temp is: ", temp, "\n");
+    fprintf(log_file, "%s%s%s", "driver_name is: ",driver_name, "\n");
+#endif
+    fprintf(log_file, "%s%s%s", "full_command is: ", full_command, "\n");
+
     if (cleanser(client_message) == true)
     {
+#ifndef __DBG
+      clientistream = popen(full_command, "r");
+#endif
+
+#if defined(__DBG)
       /*open pipe, run command*/
       clientistream = popen(client_message, "r");
+      //clientistream = popen(full_command, "r");
+#endif
     }
     else
     {
       fprintf(log_file, "%s", "what are you trying to do exactly?");
       write(client_sock, BADOUT, strlen(BADOUT));
+      free(full_command);
+      fclose(mutator_config);
       continue;
     }
+
+    fprintf(log_file, "%s", "freeing memory reserved for command.\n");
+    free(full_command);
+    fclose(mutator_config);
 
     if (clientistream == NULL)
     {
@@ -146,7 +254,13 @@ int mutator_server(FILE* log_file)
     if (fgets(runresponse, sizeof(runresponse), clientistream) == NULL)
     {
       /*say there was nothing on stdout to send.*/
+      fprintf(log_file, "%s", "command returned no stdout.\n");
       write(client_sock, NOOUT, strlen(NOOUT));
+    }
+    else
+    {
+      fprintf(log_file, "%s", "command returned stdout.\n");
+      write(client_sock, STD_OUT, strlen(STD_OUT));
     }
 
     rewind(clientistream);
@@ -154,8 +268,7 @@ int mutator_server(FILE* log_file)
     while (fgets(runresponse, sizeof(runresponse), clientistream) != NULL)
     {
 #if defined(__DBG)
-      fscanf(log_file, "%s", "command stdout:");
-      fscanf(log_file, "%s", runresponse);
+      fprintf(log_file, "%s", "command stdout:\n");
 #endif
       write(client_sock, runresponse, strlen(runresponse));
       fprintf(log_file, "%s", runresponse);

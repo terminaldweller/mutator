@@ -97,14 +97,14 @@ int main(int argc, char *argv[])
     fflush(stdin);
 
 #if defined(__DBG)
-    puts("checkpoint 1");
+    puts("checkpoint 11");
 #endif
 
     /*recieve a reply from the server*/
     recvlength = recv(sock, server_reply, 2000, 0);
 
 #if defined(__DBG)
-    puts("checkpoint 2");
+    puts("checkpoint 12");
 #endif
 
     if (recvlength < 0)

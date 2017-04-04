@@ -4125,16 +4125,44 @@ public:
         uint64_t ICETypeSize = ASTC->getTypeSize(CanonTypeDaddy);
         uint64_t ChildTypeSize = ASTC->getTypeSize(CanonTypeChild);
 
-        /*
-        bool ICETypeIsSignedInt = CanonTypeDaddy->getAsPlaceholderType()->isSignedInteger();
-        bool ChildTypeIsSignedInt = CanonTypeChild->getAsPlaceholderType()->isSignedInteger();
+        bool ICETypeIsSignedInt = CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Long) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Short) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::SChar) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_S) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::LongLong) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int128) || \
+                                  CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_S);
+        bool ChildTypeIsSignedInt = CanonTypeChild->isSpecificBuiltinType(BuiltinType::Kind::Long) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Short) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::SChar) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_S) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::LongLong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Int128) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_S);
 
-        bool ICETypeIsUSignedInt = CanonTypeDaddy->getAsPlaceholderType()->isUnsignedInteger();
-        bool ChildTypeIsUSignedInt = CanonTypeChild->getAsPlaceholderType()->isUnsignedInteger();
+        bool ICETypeIsUSignedInt = CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::ULong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UShort) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UChar) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::ULongLong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt128) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_U);
+        bool ChildTypeIsUSignedInt = CanonTypeChild->isSpecificBuiltinType(BuiltinType::Kind::ULong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UShort) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UChar) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::ULongLong) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::UInt128) || \
+                                    CanonTypeDaddy->isSpecificBuiltinType(BuiltinType::Kind::WChar_U);
 
-        if (CanonTypeDaddy->getAsPlaceholderType()->isInteger() && CanonTypeChild->getAsPlaceholderType()->isInteger())
-        */
+        bool ICETypeIsInteger = ICETypeIsSignedInt || ICETypeIsUSignedInt;
+        bool ChildTypeIsInteger = ChildTypeIsSignedInt || ChildTypeIsUSignedInt;
 
+#if 0
         bool ICETypeIsSignedInt = false;
         bool ICETypeIsUSignedInt = false;
         bool ICETypeIsInteger = false;
@@ -4158,6 +4186,7 @@ public:
         		ChildTypeIsInteger = placeholderType->isInteger();
         	}
         }
+#endif
 
         if (ICETypeIsInteger && ChildTypeIsInteger)
         {
@@ -4919,7 +4948,16 @@ public:
 
       const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
 
-      //bool TypeIsUSignedInt = CanonTP->getAsPlaceholderType()->isUnsignedInteger();
+      bool TypeIsUSignedInt = CanonTP->isSpecificBuiltinType(BuiltinType::Kind::ULong) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UInt) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UShort) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UChar) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::ULongLong) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UInt128) || \
+                                  CanonTP->isSpecificBuiltinType(BuiltinType::Kind::WChar_U);
+
+#if 0
       bool TypeIsUSignedInt = false;
       if (CanonTP) {
     	  auto placeholderType = CanonTP->getAsPlaceholderType();
@@ -4927,6 +4965,7 @@ public:
     		  TypeIsUSignedInt = placeholderType->isUnsignedInteger();
     	  }
       }
+#endif
 
       if (TypeIsUSignedInt)
       {
@@ -5983,6 +6022,84 @@ class SFCPPARR02 : public MatchFinder::MatchCallback
     Rewriter &Rewrite;
     MatchFinder Matcher;
     SFCPPARR02SUB SubHandler;
+};
+/**********************************************************************************************************************/
+/**
+ * @brief The callback for the Safercpp pointer matchers. Matches the dedlarations.
+ */
+class SFCPPPNTR01 : public MatchFinder::MatchCallback
+{
+  public:
+    SFCPPPNTR01 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::VarDecl>("sfcpppntr01") != nullptr)
+      {
+        const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("sfcpppntr01");
+
+        SourceLocation SL = VD->clang::Decl::getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        {
+          return void();
+        }
+
+        std::cout << "SaferCPP02" << ":" << "Native pointer declared:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP02", "Native pointer declared:");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP02", "Native pointer declared:");
+      }
+    }
+
+  private:
+    Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**
+ * @brief The callback for the Safercpp pointer matchers. Matches the DeclRefExprs.
+ */
+class SFCPPPNTR02 : public MatchFinder::MatchCallback
+{
+  public:
+    SFCPPPNTR02 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpppntr02") != nullptr)
+      {
+        const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpppntr02");
+
+        SourceLocation SL = DRE->getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        {
+          return void();
+        }
+
+        std::cout << "SaferCPP02" << ":" << "Native pointer used:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP02", "Native pointer used:");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP02", "Native pointer used:");
+      }
+    }
+
+  private:
+    Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -7480,7 +7597,8 @@ public:
     HandlerForPointer1723(R), HandlerForPointer174(R), HandlerForPointer175(R), HandlerForTypes61(R), HandlerForSU181(R), \
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent51(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
-    HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R), HandlerForSFCPPARR02(R) {
+    HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R), HandlerForSFCPPARR02(R), \
+    HandlerForSFCPPPNTR01(R), HandlerForSFCPPPNTR02(R) {
 
 /*@DEVI-disables all matchers*/
 #if defined(_MUT0_DIS_MATCHERS)
@@ -7748,6 +7866,10 @@ public:
 
     Matcher.addMatcher(declRefExpr(hasAncestor(binaryOperator(allOf(hasLHS(declRefExpr().bind("sfcpparrdeep")), hasRHS(hasDescendant(implicitCastExpr(hasCastKind(CK_ArrayToPointerDecay))))\
                 , hasOperatorName("="))))), &HandlerForSFCPPARR02);
+
+    Matcher.addMatcher(varDecl(hasType(pointerType())).bind("sfcpppntr01"), &HandlerForSFCPPPNTR01);
+
+    Matcher.addMatcher(declRefExpr(hasType(pointerType())).bind("sfcpppntr02"), &HandlerForSFCPPPNTR02);
 #endif
   }
 
@@ -7827,6 +7949,8 @@ private:
   MCIdent5x HandlerForIdent5X;
   SFCPPARR01 HandlerForSFCPPARR01;
   SFCPPARR02 HandlerForSFCPPARR02;
+  SFCPPPNTR01 HandlerForSFCPPPNTR01;
+  SFCPPPNTR02 HandlerForSFCPPPNTR02;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
