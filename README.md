@@ -92,7 +92,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 #### Linux
 
-To build the project, you need to have the LLVM libraries 4.0 and up built in Release mode. The project can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:292415.<br/>
+To build the project, you need to have the LLVM libraries 4.0 or higher. The project can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:299357.<br/>
 Here Are the build options:<br/>
 
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
