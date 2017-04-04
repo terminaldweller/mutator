@@ -75,14 +75,14 @@ using namespace clang::tooling;
 
 /*@DEVI-disbale debugs info printouts.*/
 #define _MUT0_TEST
-#if 0
+#if 1
 #undef _MUT0_TEST
 #endif
 
 /*@DEVI-disbale all matchers.*/
-#define _MUT0_DIS_MATCHERS
+#define _MUT0_EN_MATCHERS
 #if 0
-#undef _MUT0_DIS_MATCHERS
+#undef _MUT0_EN_MATCHERS
 #endif
 /**********************************************************************************************************************/
 /*global vars*/
@@ -365,6 +365,7 @@ private:
   std::vector<std::pair<std::string, bool>> RuleList;
 };
 /**********************************************************************************************************************/
+/****************************************************ASTMatcher Callbacks**********************************************/
 class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCmpless : public MatchFinder::MatchCallback {
 public:
   MCForCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
@@ -376,6 +377,7 @@ public:
       const ForStmt *FS = MR.Nodes.getNodeAs<clang::ForStmt>("mcfor");
 
       SourceLocation SL = FS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
 #if 0
@@ -404,6 +406,7 @@ public:
       const WhileStmt *WS = MR.Nodes.getNodeAs<clang::WhileStmt>("mcwhile");
 
       SourceLocation SL = WS->getLocStart();
+      CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
 #if 0
@@ -4162,6 +4165,7 @@ public:
         bool ICETypeIsInteger = ICETypeIsSignedInt || ICETypeIsUSignedInt;
         bool ChildTypeIsInteger = ChildTypeIsSignedInt || ChildTypeIsUSignedInt;
 
+
 #if 0
         bool ICETypeIsSignedInt = false;
         bool ICETypeIsUSignedInt = false;
@@ -5901,6 +5905,30 @@ class SFCPPARR01 : public MatchFinder::MatchCallback
         XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP01", "Native CPP array used");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native CPP arry=ay used");
       }
+
+      if (MR.Nodes.getNodeAs<clang::FieldDecl>("sfcpparrfield") != nullptr)
+      {
+        const FieldDecl* FD = MR.Nodes.getNodeAs<clang::FieldDecl>("sfcpparrfield");
+
+        SourceLocation SL = FD->getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
+        {
+          return void();
+        }
+
+        std::cout << "SaferCPP01" << ":" << "Native CPP array field used:" << SL.printToString(*MR.SourceManager) << ":" << std::endl;
+
+        XMLDocOut.XMLAddNode(MR.Context, SL, "SaferCPP01", "Native CPP array field used");
+        JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native CPP arryay field used");
+      }
     }
 
   private:
@@ -6101,6 +6129,8 @@ class SFCPPPNTR02 : public MatchFinder::MatchCallback
   private:
     Rewriter &Rewrite;
 };
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -6348,24 +6378,32 @@ public:
 
     bool ShouldBeTagged194 = false;
 
-    if (DMD->isDefined())
+#if 1
+    if (DMD)
     {
-      if (!MI->tokens_empty())
+      if (DMD->isDefined())
       {
-        ArrayRef<Token> TokenArrayRef = MI->tokens();
-
-        unsigned NumOfTokens = MI->getNumTokens();
-
-        if (NumOfTokens == 1U)
+        if (!MI->tokens_empty())
         {
-          if (!(TokenArrayRef[0].getKind() == tok::identifier))
+          ArrayRef<Token> TokenArrayRef = MI->tokens();
+
+          unsigned NumOfTokens = MI->getNumTokens();
+
+          if (NumOfTokens == 1U)
           {
-            ShouldBeTagged194 = true;
+            if (!(TokenArrayRef[0].getKind() == tok::identifier))
+            {
+              ShouldBeTagged194 = true;
+            }
           }
-        }
-        else if (NumOfTokens == 3U)
-        {
-          if (!(TokenArrayRef[0].getKind() == tok::l_paren && TokenArrayRef[1].getKind() == tok::identifier && TokenArrayRef[2].getKind() == tok::r_paren))
+          else if (NumOfTokens == 3U)
+          {
+            if (!(TokenArrayRef[0].getKind() == tok::l_paren && TokenArrayRef[1].getKind() == tok::identifier && TokenArrayRef[2].getKind() == tok::r_paren))
+            {
+              ShouldBeTagged194 = true;
+            }
+          }
+          else
           {
             ShouldBeTagged194 = true;
           }
@@ -6374,22 +6412,19 @@ public:
         {
           ShouldBeTagged194 = true;
         }
-      }
-      else
-      {
-        ShouldBeTagged194 = true;
-      }
 
-      if (ShouldBeTagged194)
-      {
+        if (ShouldBeTagged194)
+        {
 #if 0
-        std::cout << "19.14 : " << "Illegal \"defined\" form : " << std::endl;
-        std::cout << SL.printToString(SM) << "\n" << std::endl;
+          std::cout << "19.14 : " << "Illegal \"defined\" form : " << std::endl;
+          std::cout << SL.printToString(SM) << "\n" << std::endl;
 
-        XMLDocOut.XMLAddNode(SM, SL, "19.14", "Illegal \"defined\" form : ");
+          XMLDocOut.XMLAddNode(SM, SL, "19.14", "Illegal \"defined\" form : ");
 #endif
+        }
       }
     }
+#endif
 #endif
   }
 
@@ -6442,6 +6477,7 @@ public:
         if (PMD != nullptr)
         {
           SourceLocation PSL = PMD->getLocation();
+          CheckSLValidity(PSL);
 
           if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
           {
@@ -6543,6 +6579,8 @@ public:
     {
       const MacroDirective* PMD = MD->getPrevious();
       SourceLocation PSL = PMD->getLocation();
+      /*@DEVI-A quick fix.Fixme.*/
+      CheckSLValidity(PSL);
 
       if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
       {
@@ -7601,7 +7639,7 @@ public:
     HandlerForSFCPPPNTR01(R), HandlerForSFCPPPNTR02(R) {
 
 /*@DEVI-disables all matchers*/
-#if defined(_MUT0_DIS_MATCHERS)
+#if defined(_MUT0_EN_MATCHERS)
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
 
     Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mcwhile"), &HandlerWhileCmpless);
@@ -7860,6 +7898,8 @@ public:
 
     Matcher.addMatcher(varDecl(hasType(arrayType())).bind("sfcpparrdecl"), &HandlerForSFCPPARR01);
 
+    Matcher.addMatcher(fieldDecl(hasType(arrayType())).bind("sfcpparrfield"), &HandlerForSFCPPARR01);
+
     Matcher.addMatcher(implicitCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
 
     Matcher.addMatcher(cStyleCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
@@ -8066,7 +8106,9 @@ public:
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
   {
+#if 1
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
+#endif
 
     DiagnosticsEngine &DiagEngine = CI.getPreprocessor().getDiagnostics();
 
