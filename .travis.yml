@@ -54,7 +54,7 @@ after_success:
   - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -I/usr/include/linux -Wall > /dev/null
   - gcov -v
   - gcc -v
-  - coveralls --exclude ./json --exclude ./tinyxml2 --exclude-pattern 'clang' --exclude-pattern 'llvm'
+    #- coveralls --exclude ./json --exclude ./tinyxml2 --exclude-pattern 'clang' --exclude-pattern 'llvm'
     #- gcc -E - <<< '#include<stddef.h>'
     #- gcc -E - <<< '#include<assert.h>'
   - ls
