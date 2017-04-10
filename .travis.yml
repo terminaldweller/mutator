@@ -43,7 +43,7 @@ after_failure:
 after_success:
   - llvm-config-4.0 --has-rtti
   - gcc -v
-  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -Wall > /dev/null
+  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -I/usr/include/linux -Wall > /dev/null
   - make clean
   - make mutator-lvl0 CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_GNU -j2
   - echo "deb http://old-releases.ubuntu.com/ubuntu/ hardy universe" | sudo tee -a /etc/apt/sources.list
@@ -59,5 +59,9 @@ after_success:
   - ulimit -a
   - find . -maxdepth 1 -name "core*"
   - ls -s
+    cd test
+    gcc testFuncs3.c -c
     cd /usr/lib/syslinux
+    ls
+    cd /usr/include/linux
     ls
