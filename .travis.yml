@@ -11,12 +11,12 @@ matrix:
     addons:
       coverity_scan:
         project:
-         name: "bloodstalker/mutator"
-         description: "Build submitted via Travis CI"
-      notification_email: thabogre@gmail.com
-      build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-4.0"
-      build_command:   "make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG"
-      branch_pattern: master
+          name: "bloodstalker/mutator"
+          description: "Build submitted via Travis CI"
+        notification_email: thabogre@gmail.com
+        build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-4.0"
+        build_command:   "make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG"
+        branch_pattern: master
 
 before_install:
       - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
