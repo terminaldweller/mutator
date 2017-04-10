@@ -34,9 +34,9 @@ ifeq ($(BUILD_MODE), COV_GNU)
 #$(error This build mode is only useable with clang++.)
 #endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++11 -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions -Xclang -coverage-version='408*' -Xclang -coverage-cfg-checksum\
+ -std=c++11 -UNDEBUG -fprofile-arcs -ftest-coverage -fexceptions -Xclang -coverage-version='409*' -Xclang -coverage-cfg-checksum\
  -Xclang -coverage-no-function-names-in-data
-EXTRA_LD_FLAGS=-v -fprofile-arcs -ftest-coverage -fexceptions -Xclang -coverage-version='408*' -Xclang -coverage-cfg-checksum\
+EXTRA_LD_FLAGS=-v -fprofile-arcs -ftest-coverage -fexceptions -Xclang -coverage-version='409*' -Xclang -coverage-cfg-checksum\
  -Xclang -coverage-no-function-names-in-data
 endif
 
