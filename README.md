@@ -6,6 +6,7 @@
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
 </a>
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
+[![Coverage Status](https://coveralls.io/repos/github/bloodstalker/mutator/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/mutator?branch=master)
 <a href="https://twitter.com/xashmith" class="twitter-follow-button" data-show-count="false">Follow @xashmith</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 
@@ -92,7 +93,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 #### Linux
 
-To build the project, you need to have the LLVM libraries 4.0 or higher. The project can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:299357.<br/>
+To build the project, you need to have the LLVM libraries 4.0 or higher. The project can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:299810.<br/>
 Here Are the build options:<br/>
 
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
