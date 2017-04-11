@@ -50,6 +50,10 @@ Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
 **mutator** will run the level-1 implementers and mutators.<br/>
 **mutator-lvl2** will run the level-2 implementers and mutators.<br/>
 Mutation levels have nothing to do with the order of mutants.<br/>
+**mutatord** is the mutator daemon that runs the server.<br/>
+**mutatorclient** is the thin client that sends commands to the server.<br/>
+**safercpp-arr** is SaferCPP's automatic refactoring tool for arrays.<br/>
+**bruiser** tries to break your code.<br/>
 <br/>
 
 ### Dev Status
@@ -59,6 +63,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 * `mutator-lvl1` and **`mutator-lvl2`** are collectively the code muatation and code transformation(automatic-refactoring) executables. Currently the automatic code transformations implemented are only limited to adding braces to blocks that are missing it, fixing SwitchStmts with adding a default clause if missing and breaks, swapping the RHS and LHS when the RHS is a constant and adding `else` if an if-else is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
+* Bruiser
 * Branch a release candidate for `mutator-lvl0`, then start writing the unit tests. This might take a while, since I will try to find testers and code reviewers. If you are willing to help with testing, Email me at `thabogre@gmail.com`. Please set the subject to `mutator-lvl0 test` so I wouldn't miss it. I'll do the unit tests and reviews myself if I don't manage to find volunteers for that. While it's far from ideal, it's better than nothing.
 * Implementing the automatic refactoring features of mutator.
 * Upgrading the UI to be able to handle the new automatic-refactoring features.
@@ -75,6 +80,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ## Announcements
 
+* mutator has a new experimental member, bruiser. The idea is that we are already inside the code, so why not break it?<br/>
 * mutator now has a daemon,a server and a client. It works, but we all know how much weight we can put on "it just works", don't we?  I'll be polishing it over the coming days. For more info and detail see `README.md` under `daemon` in project root. Also, please do note that you don't have to use the server feature. You can just run mutator like before. It's an added functionality. It does not modify previous functionality.<br/>
 * mutator will be implementing [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) rule checks and automatic refactoring of code bases to use SaferCPlusPlus libraries. The first phase will begin with implementing the compliancy checks. You can read more about SaferCPlusPlus [here](http://duneroadrunner.github.io/SaferCPlusPlus/).<br/>
 * mutator's first website is up: [project mutator](https://bloodstalker.github.io/mutator/).<br/>
@@ -93,7 +99,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 #### Linux
 
-To build the project, you need to have the LLVM libraries 4.0 or higher. The project can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:299810.<br/>
+To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:299810.<br/>
 Here Are the build options:<br/>
 
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
