@@ -13,13 +13,14 @@ TARGETC=mutatorclient
 TARGETD=mutatord
 TARGETS=mutatorserver
 SFCPP01=safercpp-arr
+BRUISER=bruiser
 
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS $(SFCPP01)
+.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS $(SFCPP01) $(BRUISER)
 
-all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01)
+all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -37,6 +38,9 @@ $(TARGET0): $(TARGET0).o mutator_aux.o mutator_report.o
 
 $(SFCPP01): ./safercpp/$(SFCPP01).o mutator_aux.o
 	$(MAKE) -C safercpp CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
+
+$(BRUISER): ./bruiser/$(BRUISER).o mutator_aux.o
+	$(MAKE) -C bruiser CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
 $(TARGETC):
 	$(MAKE) -C daemon mutatorclient
@@ -56,6 +60,7 @@ clean:
 	$(MAKE) -C json clean
 	$(MAKE) -C daemon clean
 	$(MAKE) -C safercpp clean
+	$(MAKE) -C bruiser clean
 
 install:
 	chmod +x ./mutator.sh
