@@ -90,6 +90,6 @@ LD_FLAGS+=$(shell $(LLVM_CONF) --ldflags --libs --system-libs)
 CXX_FLAGS+=$(EXTRA_CXX_FALGS)
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
-SRCS=./mutator_aux.cpp ./mutator-lvl1.cpp ./mutator-lvl0.cpp ./mutator-lvl2.cpp ./mutator-lvl0.h ./mutator_aux.h ./daemon/mutatord.h ./daemon/mutatorclient.c ./daemon/mutatorclient.h ./daemon/daemon_aux.h ./daemon/daemon_aux.c ./daemon/mutatord.c ./daemon/mutatorserver.c ./daemon/mutatorserver.h
+SRCS=./mutator_aux.cpp ./mutator-lvl1.cpp ./mutator-lvl0.cpp ./mutator-lvl2.cpp ./mutator-lvl0.h ./mutator_aux.h ./daemon/mutatord.h ./daemon/mutatorclient.c ./daemon/mutatorclient.h ./daemon/daemon_aux.h ./daemon/daemon_aux.c ./daemon/mutatord.c ./daemon/mutatorserver.c ./daemon/mutatorserver.h ./bruiser/bruiser.cpp ./bruiser/bruiser.h
 
 CTAGS=ctags --c++-kinds=+p --fields=+iaS --extra=+q 
