@@ -44,7 +44,9 @@ enum class Scope {NoValue, TU, Block};
 
 enum class FunctionDeclKind {NoValue, Definition, Declaration};
 /*********************************************************************************************************************/
-SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std::string Kind);
+SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocation SL, Rewriter &Rewrite, std::string Kind);
+
+SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite);
 /*********************************************************************************************************************/
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
 
