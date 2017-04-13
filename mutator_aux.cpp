@@ -36,7 +36,7 @@ using namespace clang;
 namespace Devi {
 /*a simple function that checks the sourcelocations for a macro expansion. returns the sourcelocation without
 macro expansion address.*/
-SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std::string Kind)
+SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocation SL, Rewriter &Rewrite, std::string Kind)
 {
   /*does the sourcelocation include a macro expansion?*/
   if ( SL.isMacroID() )
@@ -64,6 +64,18 @@ SourceLocation SourceLocationHasMacro (SourceLocation SL, Rewriter &Rewrite, std
   }
 
   return (SL);
+}
+
+SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite)
+{
+  if (__sl.isMacroID())
+  {
+    return __rewrite.getSourceMgr().getSpellingLoc(__sl);
+  }
+  else
+  {
+    return __sl;
+  }
 }
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
