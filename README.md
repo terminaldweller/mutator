@@ -71,7 +71,7 @@ make install
 If you don't have them, you can build them or get them from a repo.<br/>
 To build LLVM/Clang from source take a look at [here](https://clang.llvm.org/get_started.html) and [here](http://llvm.org/docs/GettingStarted.html).<br/>
 To build `safercpp-arr` you to need to build Clang with RTTI enabled.<br/>
-On Fedora you can just get the Requirements by dnf. For Ubuntu and Debian either look at mutator's `.travis.yaml` or check out the [nightly builds for Debian/Ubuntu](apt.llvm.org).<br/>
+On Fedora you can just get the Requirements by dnf. For Ubuntu and Debian either look at mutator's `.travis.yaml` or check out the [nightly builds for Debian/Ubuntu](http://apt.llvm.org).<br/>
 
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase on the master branch. If something's not working properly let me know.<br/>
