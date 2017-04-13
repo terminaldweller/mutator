@@ -98,7 +98,7 @@ class AbstractMatcherHandler : public virtual MatchFinder::MatchCallback
 class MatcherHandlerLVL0 : public AbstractMatcherHandler
 {
   public:
-    MatcherHandlerLVL0 (Rewriter &Rewrite) : AbstractMatcherHandler(Rewrite) {}
+    explicit MatcherHandlerLVL0 (Rewriter &Rewrite) : AbstractMatcherHandler(Rewrite) {}
 
     virtual void run(const MatchFinder::MatchResult &MR) override
     {
@@ -111,21 +111,45 @@ class MatcherHandlerLVL0 : public AbstractMatcherHandler
 class NameFinder
 {
   public:
-  NameFinder (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+    NameFinder () {}
 
-  virtual void runDeclRefExprMatcher(const llvm::StringRef __sr)
-  {
-    //Matcher.addMatcher();
-  }
+    class runDeclRefExprMatcher
+    {
+      public:
+        runDeclRefExprMatcher (Rewriter &__rwrt) : LVL0Proto(__rwrt), __rwrt(__rwrt) {}
 
-  virtual void runDeclMatcher(const llvm::StringRef __sr)
-  {
+        virtual void runMatcher(const StringRef __sr, ASTContext &__ctx)
+        {
+          Matcher.addMatcher(declRefExpr(to(namedDecl(hasName(__sr.str())))).bind("declrefexpbyname"), &LVL0Proto);
+          Matcher.matchAST(__ctx);
+        }
 
-  }
+      private:
+        MatchFinder Matcher;
+        MatcherHandlerLVL0 LVL0Proto;
+        Rewriter __rwrt;
+        StringRef __sr;
+    };
+
+    class runNamedDeclMatcher
+    {
+      public:
+        runNamedDeclMatcher (Rewriter &__rwrt) : LVL0Proto(__rwrt), __rwrt(__rwrt) {}
+
+        virtual void runMatcher(const StringRef __sr, ASTContext &__ctx)
+        {
+          Matcher.addMatcher(declRefExpr(to(namedDecl(hasName(__sr.str())))).bind("nameddeclbyname"), &LVL0Proto);
+          Matcher.matchAST(__ctx);
+        }
+
+      private:
+        MatchFinder Matcher;
+        MatcherHandlerLVL0 LVL0Proto;
+        Rewriter __rwrt;
+        StringRef __sr;
+    };
 
   private:
-  Rewriter &Rewrite;
-  MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -151,7 +175,6 @@ class IfBreaker : public MatchFinder::MatchCallback
 
         const clang::Type* CTP = TIProto.getTypeInfo(MR.Context);
 
-        //Matcher.addMatcher();
       }
 
       if (MR.Nodes.getNodeAs<clang::BinaryOperator>("dous") != nullptr)
@@ -181,22 +204,68 @@ class IfBreaker : public MatchFinder::MatchCallback
     MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief Hijacks the main main and replaces it with bruiser's main.
+ */
+class MainWrapper : public MatchFinder::MatchCallback
+{
+public:
+  MainWrapper (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR)
+  {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mainwrapper") != nullptr)
+    {
+      const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mainwrapper");
+
+      SourceLocation SL = FD->getLocStart();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite);
+
+      SourceLocation SLE = FD->getLocEnd();
+      CheckSLValidity(SLE);
+      SLE = Devi::SourceLocationHasMacro(SLE, Rewrite);
+
+      SourceRange SR(SL, SLE);
+
+      std::string MainSig = Rewrite.getRewrittenText(SR); 
+
+      size_t mainbegin = MainSig.find("main");
+
+      StringRef __sr("sub_main");
+
+      Rewrite.ReplaceText(SL.getLocWithOffset(mainbegin), 4U, __sr);
+
+      Rewrite.InsertTextAfter(SLE.getLocWithOffset(1U), StringRef("\n\nint main(int argc, const char **argv)\n{\n\tsub_main(argc, argv);\n}"));
+
+      //ruiseRep << "changed main main's name.\n"
+    }
+  }
+
+  private:
+  Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
 public:
-  MyASTConsumer(Rewriter &R) : HIfBreaker(R)
+  MyASTConsumer(Rewriter &R) : HIfBreaker(R), HMainWrapper(R)
   {}
 
   void HandleTranslationUnit(ASTContext &Context) override 
   {
     Matcher.addMatcher(ifStmt(hasDescendant(expr(anyOf(unaryOperator().bind("uno"), binaryOperator().bind("dous"))))), &HIfBreaker);
 
+    Matcher.addMatcher(functionDecl(hasName("main")).bind("mainwrapper"), &HMainWrapper);
+
     Matcher.matchAST(Context);
   }
 
 private:
   IfBreaker HIfBreaker;
+  MainWrapper HMainWrapper;
   MatchFinder Matcher;
   Rewriter R;
 };
