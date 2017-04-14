@@ -56,6 +56,23 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 **bruiser** tries to break your code.<br/>
 <br/>
 
+## How To get project mutator
+
+Assuming you already have the LLVM/Clang libraries, just run :
+
+```bash
+
+git clone https://github.com/bloodstalker/mutator
+make
+make install
+
+```
+
+If you don't have them, you can build them or get them from a repo.<br/>
+To build LLVM/Clang from source take a look at [here](https://clang.llvm.org/get_started.html) and [here](http://llvm.org/docs/GettingStarted.html).<br/>
+To build `safercpp-arr` you to need to build Clang with RTTI enabled.<br/>
+On Fedora you can just get the Requirements by dnf. For Ubuntu and Debian either look at mutator's `.travis.yaml` or check out the [nightly builds for Debian/Ubuntu](http://apt.llvm.org).<br/>
+
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase on the master branch. If something's not working properly let me know.<br/>
 

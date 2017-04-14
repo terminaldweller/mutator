@@ -8116,18 +8116,10 @@ public:
 
     DiagnosticsEngine &DiagEngine = CI.getPreprocessor().getDiagnostics();
 
-#if 0
-    std::unique_ptr<Mutator0DiagnosticConsumer> M0DiagConsumer(new Mutator0DiagnosticConsumer);
-#endif
-
-#if 0
+#if 1
     Mutator0DiagnosticConsumer* M0DiagConsumer = new Mutator0DiagnosticConsumer;
 
     DiagEngine.setClient(M0DiagConsumer, true);
-#endif
-
-#if 0
-    const IdentifierTable &IT [[maybe_unused]] = CI.getPreprocessor().getIdentifierTable();
 #endif
 
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());

@@ -27,9 +27,57 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*included modules*/
 /*project headers*/
 /*standard library headers*/
+#include <string>
+#include <fstream>
+/*clang headers*/
+#include "clang/AST/ASTContext.h"
+#include "clang/AST/Expr.h"
+#include "clang/AST/Type.h"
+#include "clang/AST/ASTTypeTraits.h"
+/*llvm headers*/
+
 /**********************************************************************************************************************/
-/*externals*/
+/*using*/
+using namespace llvm;
+using namespace clang;
 /**********************************************************************************************************************/
+namespace bruiser
+{
+/**********************************************************************************************************************/
+/**
+ * @brief This class hanhles the logging for bruiser.
+ */
+class BruiserReport
+{
+  public:
+    BruiserReport ();
+
+    ~BruiserReport();
+
+    bool PrintToLog(std::string __in_arg);
+
+  private:
+    std::ofstream BruiserLog;
+};
+/**********************************************************************************************************************/
+/**
+ * @brief looks through types.
+ */
+class TypeInfo
+{
+  public:
+    explicit TypeInfo(const clang::ast_type_traits::DynTypedNode* __dtn);
+
+    ~TypeInfo();
+
+    const clang::Type* getTypeInfo(clang::ASTContext* __astc);
+
+  private:
+    const clang::ast_type_traits::DynTypedNode* DTN;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+} // end of namespace bruiser
 #endif
 /*last line intentionally left balnk.*/
 
