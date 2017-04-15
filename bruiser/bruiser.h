@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
+#include "../tinyxml2/tinyxml2.h"
 /*standard library headers*/
 #include <string>
 #include <fstream>
@@ -38,11 +39,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 
 /**********************************************************************************************************************/
 /*using*/
+using namespace tinyxml2;
 using namespace llvm;
 using namespace clang;
 /**********************************************************************************************************************/
 namespace bruiser
 {
+/**********************************************************************************************************************/
+  const char* M0REP = "../test/misrareport.xml";
 /**********************************************************************************************************************/
 /**
  * @brief This class hanhles the logging for bruiser.
@@ -74,6 +78,39 @@ class TypeInfo
 
   private:
     const clang::ast_type_traits::DynTypedNode* DTN;
+};
+/**********************************************************************************************************************/
+class ReadMutatorRep
+{
+  public:
+    ReadMutatorRep() {}
+
+    ~ReadMutatorRep() {}
+
+    int LoadXMLDoc(void)
+    {
+      XMLError eResult = IntermediateXMLDoc.LoadFile(M0REP);
+
+      return eResult;
+    }
+
+    int ReadFirstElement(void)
+    {
+      RootPointer = IntermediateXMLDoc.FirstChild();
+
+      if (RootPointer == nullptr)
+      {
+        return XML_ERROR_FILE_READ_ERROR;
+      }
+      else
+      {
+        return XML_SUCCESS;
+      }
+    }
+
+private:
+  XMLDocument IntermediateXMLDoc;
+  XMLNode* RootPointer;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
