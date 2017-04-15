@@ -50,6 +50,9 @@ using namespace clang::tooling;
 /*global vars*/
 static llvm::cl::OptionCategory BruiserCategory("Empty");
 /**********************************************************************************************************************/
+cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init("./test/misrareport.xml"), cl::cat(BruiserCategory), cl::ZeroOrMore);
+/**********************************************************************************************************************/
 /*the implementation of the bruiser logger.*/
 bruiser::BruiserReport::BruiserReport () 
 {
@@ -175,6 +178,10 @@ class IfBreaker : public MatchFinder::MatchCallback
 
         const clang::Type* CTP = TIProto.getTypeInfo(MR.Context);
 
+        NameFinder::runDeclRefExprMatcher DRENameMatcher(Rewrite);
+
+        DRENameMatcher.runMatcher(StringRef(), *MR.Context);
+
       }
 
       if (MR.Nodes.getNodeAs<clang::BinaryOperator>("dous") != nullptr)
@@ -236,7 +243,8 @@ public:
 
       Rewrite.ReplaceText(SL.getLocWithOffset(mainbegin), 4U, __sr);
 
-      Rewrite.InsertTextAfter(SLE.getLocWithOffset(1U), StringRef("\n\nint main(int argc, const char **argv)\n{\n\tsub_main(argc, argv);\n}"));
+      /*@DEVI-obviously the best way to do this is to use the main signature already used, instead of going with a general predefined one. the current form is a temp.*/
+      Rewrite.InsertTextAfter(SLE.getLocWithOffset(1U), StringRef("\n\nint main(int argc, const char **argv)\n{\n\treturn sub_main(argc, argv);\n}\n"));
 
       //ruiseRep << "changed main main's name.\n"
     }
@@ -248,10 +256,10 @@ public:
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
-class MyASTConsumer : public ASTConsumer {
+class BruiserASTConsumer : public ASTConsumer {
 
 public:
-  MyASTConsumer(Rewriter &R) : HIfBreaker(R), HMainWrapper(R)
+  BruiserASTConsumer(Rewriter &R) : HIfBreaker(R), HMainWrapper(R)
   {}
 
   void HandleTranslationUnit(ASTContext &Context) override 
@@ -270,10 +278,10 @@ private:
   Rewriter R;
 };
 /**********************************************************************************************************************/
-class MyFrontendAction : public ASTFrontendAction 
+class BruiserFrontendAction : public ASTFrontendAction 
 {
 public:
-  MyFrontendAction() {}
+  BruiserFrontendAction() {}
   void EndSourceFileAction() override 
   {
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
@@ -282,7 +290,7 @@ public:
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override 
   {
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
-    return llvm::make_unique<MyASTConsumer>(TheRewriter);
+    return llvm::make_unique<BruiserASTConsumer>(TheRewriter);
   }
 
 private:
@@ -297,7 +305,7 @@ int main(int argc, const char **argv)
 
   bruiser::BruiserReport BruiseRep;
 
-  return Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+  return Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
 }
 /*last line interntionally left blank.*/
 
