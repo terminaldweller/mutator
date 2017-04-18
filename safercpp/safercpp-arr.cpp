@@ -298,8 +298,7 @@ public:
 class CDDecl2ReplacementAction : public CReplacementAction {
 public:
 	CDDecl2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR,
-			const CDDeclIndirection& ddecl_indirection) : m_Rewrite(Rewrite), m_MR(MR), m_ddecl_indirection(ddecl_indirection) {
-	}
+			const CDDeclIndirection& ddecl_indirection) : m_Rewrite(Rewrite), m_MR(MR), m_ddecl_indirection(ddecl_indirection) {}
 	virtual ~CDDecl2ReplacementAction() {}
 
 	virtual void do_replacement(CState1& state1) const = 0;
@@ -330,19 +329,12 @@ public:
 	virtual ~CArray2ReplacementAction() {}
 };
 
-class CDynamicArray2ReplacementAction : public CArray2ReplacementAction {
-public:
-	using CArray2ReplacementAction::CArray2ReplacementAction;
-	virtual ~CDynamicArray2ReplacementAction() {}
-};
-
-class CMemsetArray2ReplacementAction : public CDynamicArray2ReplacementAction {
+class CMemsetArray2ReplacementAction : public CArray2ReplacementAction {
 public:
 	CMemsetArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
 			const CallExpr* CE, const std::string& ce_replacement_code) :
-				CDynamicArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_CE(CE), m_DD(ddecl_indirection.m_ddecl_cptr),
-				m_ce_replacement_code(ce_replacement_code) {
-	}
+				CArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_CE(CE), m_DD(ddecl_indirection.m_ddecl_cptr),
+				m_ce_replacement_code(ce_replacement_code) {}
 	virtual ~CMemsetArray2ReplacementAction() {}
 
 	virtual void do_replacement(CState1& state1) const;
@@ -354,32 +346,13 @@ public:
 	std::string m_ce_replacement_code;
 };
 
-class CSetArrayPointerToNull2ReplacementAction : public CDynamicArray2ReplacementAction {
+class CMemcpyArray2ReplacementAction : public CArray2ReplacementAction {
 public:
-	CSetArrayPointerToNull2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
-			const BinaryOperator* BO, const std::string& bo_replacement_code) :
-				CDynamicArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_BO(BO), m_DD(ddecl_indirection.m_ddecl_cptr),
-				m_bo_replacement_code(bo_replacement_code) {
-	}
-	virtual ~CSetArrayPointerToNull2ReplacementAction() {}
-
-	virtual void do_replacement(CState1& state1) const;
-
-	const BinaryOperator* m_BO = nullptr;
-	//const DeclRefExpr* m_DRE = nullptr;
-	//const MemberExpr* m_ME = nullptr;
-	const DeclaratorDecl* m_DD = nullptr;
-	std::string m_bo_replacement_code;
-};
-
-class CFreeDynamicArray2ReplacementAction : public CDynamicArray2ReplacementAction {
-public:
-	CFreeDynamicArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
+	CMemcpyArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
 			const CallExpr* CE, const std::string& ce_replacement_code) :
-				CDynamicArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_CE(CE), m_DD(ddecl_indirection.m_ddecl_cptr),
-				m_ce_replacement_code(ce_replacement_code) {
-	}
-	virtual ~CFreeDynamicArray2ReplacementAction() {}
+				CArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_CE(CE), m_DD(ddecl_indirection.m_ddecl_cptr),
+				m_ce_replacement_code(ce_replacement_code) {}
+	virtual ~CMemcpyArray2ReplacementAction() {}
 
 	virtual void do_replacement(CState1& state1) const;
 
@@ -390,13 +363,53 @@ public:
 	std::string m_ce_replacement_code;
 };
 
+class CAssignedFromArray2ReplacementAction : public CArray2ReplacementAction {
+public:
+	CAssignedFromArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
+			const CDDeclIndirection& ddecl_indirection2) :
+				CArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_ddecl_indirection2(ddecl_indirection2) {}
+	virtual ~CAssignedFromArray2ReplacementAction() {}
+
+	virtual void do_replacement(CState1& state1) const;
+
+	const CDDeclIndirection m_ddecl_indirection2;
+};
+
+class CDDecl2ReplacementActionMap : public std::multimap<CDDeclIndirection, std::shared_ptr<CDDecl2ReplacementAction>> {
+public:
+	typedef std::multimap<CDDeclIndirection, std::shared_ptr<CDDecl2ReplacementAction>> base_class;
+	iterator insert( const std::shared_ptr<CDDecl2ReplacementAction>& cr_shptr ) {
+		iterator retval(end());
+		if (!cr_shptr) { assert(false); } else {
+			value_type val((*cr_shptr).ddecl_indirection_cref(), cr_shptr);
+			retval = base_class::insert(val);
+		}
+		return retval;
+	}
+	void do_and_dispose_matching_replacements(CState1& state1, const CDDeclIndirection& ddecl_indirection) {
+		/* The base class map may be modified during loop iterations. Maybe. */
+		auto iter = base_class::find(ddecl_indirection);
+		while (base_class::end() != iter) {
+			(*((*iter).second)).do_replacement(state1);
+			base_class::erase(iter);
+
+			iter = base_class::find(ddecl_indirection);
+		}
+	}
+};
+
+class CDynamicArray2ReplacementAction : public CArray2ReplacementAction {
+public:
+	using CArray2ReplacementAction::CArray2ReplacementAction;
+	virtual ~CDynamicArray2ReplacementAction() {}
+};
+
 class CMallocArray2ReplacementAction : public CDynamicArray2ReplacementAction {
 public:
 	CMallocArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
 			const BinaryOperator* BO, const std::string& bo_replacement_code) :
 				CDynamicArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_BO(BO), m_DD(ddecl_indirection.m_ddecl_cptr),
-				m_bo_replacement_code(bo_replacement_code) {
-	}
+				m_bo_replacement_code(bo_replacement_code) {}
 	virtual ~CMallocArray2ReplacementAction() {}
 
 	virtual void do_replacement(CState1& state1) const;
@@ -414,8 +427,7 @@ public:
 	CMallocInitializerArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
 			const DeclStmt* DS, const std::string& initializer_info_str) :
 				CDynamicArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_DS(DS), m_DD(ddecl_indirection.m_ddecl_cptr),
-				m_initializer_info_str(initializer_info_str) {
-	}
+				m_initializer_info_str(initializer_info_str) {}
 	virtual ~CMallocInitializerArray2ReplacementAction() {}
 
 	virtual void do_replacement(CState1& state1) const;
@@ -426,27 +438,38 @@ public:
 	std::string m_initializer_info_str;
 };
 
-class CDDecl2ReplacementActionMap : public std::multimap<CDDeclIndirection, std::shared_ptr<CDDecl2ReplacementAction>> {
+class CFreeDynamicArray2ReplacementAction : public CDynamicArray2ReplacementAction {
 public:
-	typedef std::multimap<CDDeclIndirection, std::shared_ptr<CDDecl2ReplacementAction>> base_class;
-	iterator insert( const std::shared_ptr<CDDecl2ReplacementAction>& cr_shptr ) {
-		iterator retval(end());
-		if (!cr_shptr) { assert(false); } else {
-			value_type val((*cr_shptr).ddecl_indirection_cref(), cr_shptr);
-			retval = base_class::insert(val);
-		}
-		return retval;
-	}
-	void do_and_dispose_matching_replacements(CState1& state1, const CDDeclIndirection& ddecl_indirection) {
-		auto range = base_class::equal_range(ddecl_indirection);
-		while (range.first != range.second) {
-			for (auto iter = range.first; range.second != iter; iter++) {
-				(*((*iter).second)).do_replacement(state1);
-			}
-			base_class::erase(range.first, range.second);
-			range = base_class::equal_range(ddecl_indirection);
-		}
-	}
+	CFreeDynamicArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
+			const CallExpr* CE, const std::string& ce_replacement_code) :
+				CDynamicArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_CE(CE), m_DD(ddecl_indirection.m_ddecl_cptr),
+				m_ce_replacement_code(ce_replacement_code) {}
+	virtual ~CFreeDynamicArray2ReplacementAction() {}
+
+	virtual void do_replacement(CState1& state1) const;
+
+	const CallExpr* m_CE = nullptr;
+	//const DeclRefExpr* m_DRE = nullptr;
+	//const MemberExpr* m_ME = nullptr;
+	const DeclaratorDecl* m_DD = nullptr;
+	std::string m_ce_replacement_code;
+};
+
+class CSetArrayPointerToNull2ReplacementAction : public CDynamicArray2ReplacementAction {
+public:
+	CSetArrayPointerToNull2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
+			const BinaryOperator* BO, const std::string& bo_replacement_code) :
+				CDynamicArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_BO(BO), m_DD(ddecl_indirection.m_ddecl_cptr),
+				m_bo_replacement_code(bo_replacement_code) {}
+	virtual ~CSetArrayPointerToNull2ReplacementAction() {}
+
+	virtual void do_replacement(CState1& state1) const;
+
+	const BinaryOperator* m_BO = nullptr;
+	//const DeclRefExpr* m_DRE = nullptr;
+	//const MemberExpr* m_ME = nullptr;
+	const DeclaratorDecl* m_DD = nullptr;
+	std::string m_bo_replacement_code;
 };
 
 class CDynamicArray2ReplacementActionMap : public CDDecl2ReplacementActionMap {
@@ -621,6 +644,87 @@ const clang::Expr* populateStmtIndirectionStack(std::vector<std::string>& stack,
 		}
 	}
 	return retval;
+}
+
+void walkTheAST1(const clang::Stmt& stmt, int depth = 0) {
+	const clang::Stmt* ST = &stmt;
+	auto stmt_class = ST->getStmtClass();
+	auto stmt_class_name = ST->getStmtClassName();
+	bool process_children_flag = true;
+	if (clang::Stmt::StmtClass::ArraySubscriptExprClass == stmt_class) {
+		//stack.push_back("ArraySubscriptExpr");
+		process_children_flag = true;
+	} else if (clang::Stmt::StmtClass::UnaryOperatorClass == stmt_class) {
+		auto UO = llvm::cast<const clang::UnaryOperator>(ST);
+		if (UO) {
+			if (clang::UnaryOperatorKind::UO_Deref == UO->getOpcode()) {
+				//stack.push_back("Deref");
+				process_children_flag = true;
+			} else {
+				auto QT = UO->getType();
+				const clang::Type* TP = QT.getTypePtr();
+				if (TP && TP->isPointerType()) {
+					if ((clang::UnaryOperatorKind::UO_PreInc == UO->getOpcode())
+							|| (clang::UnaryOperatorKind::UO_PostInc == UO->getOpcode())
+							|| (clang::UnaryOperatorKind::UO_PreDec == UO->getOpcode())
+							|| (clang::UnaryOperatorKind::UO_PostDec == UO->getOpcode())) {
+						/* Incrementing/decrementing a pointer type is pointer arithmetic and
+						 * implies the pointer is being used as an array iterator. */
+						int q = 5;
+					}
+				}
+			}
+		} else {
+			assert(false);
+		}
+	} else if ((clang::Stmt::StmtClass::ImplicitCastExprClass == stmt_class)) {
+		auto ICE = llvm::cast<const clang::ImplicitCastExpr>(ST);
+		if (ICE) {
+			auto cast_kind_name = ICE->getCastKindName();
+			auto cast_kind = ICE->getCastKind();
+			if ((clang::CK_FunctionToPointerDecay == cast_kind)) {
+				process_children_flag = false;
+			} else {
+				if ((clang::CK_ArrayToPointerDecay == cast_kind) || (clang::CK_LValueToRValue == cast_kind)) {
+					process_children_flag = true;
+				} else {
+					process_children_flag = true;
+				}
+			}
+		} else { assert(false); }
+	} else if ((clang::Stmt::StmtClass::ParenExprClass == stmt_class)) {
+		process_children_flag = true;
+	} else if(clang::Stmt::StmtClass::DeclRefExprClass == stmt_class) {
+		auto DRE = llvm::cast<const clang::DeclRefExpr>(ST);
+		if (DRE) {
+			//retval = DRE;
+			process_children_flag = true;
+		} else {
+			assert(false);
+		}
+	} else if(clang::Stmt::StmtClass::MemberExprClass == stmt_class) {
+		auto ME = llvm::cast<const clang::MemberExpr>(ST);
+		if (ME) {
+			//retval = ME;
+		} else {
+			assert(false);
+		}
+	} else {
+		if (0 == depth) {
+			int q = 5;
+		}
+		int q = 5;
+	}
+	if (process_children_flag) {
+		for (auto child_iter = ST->child_begin(); child_iter != ST->child_end(); child_iter++) {
+			if (nullptr != (*child_iter)) {
+				walkTheAST1(*(*child_iter), depth+1);
+			} else {
+				assert(false);
+			}
+		}
+	}
+	return;
 }
 
 class CDDeclConversionState {
@@ -989,39 +1093,6 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 	}
 }
 
-void CFreeDynamicArray2ReplacementAction::do_replacement(CState1& state1) const {
-	Rewriter &Rewrite = m_Rewrite;
-	const MatchFinder::MatchResult &MR = m_MR;
-	const CallExpr* CE = m_CE;
-	const DeclaratorDecl* DD = m_DD;
-
-	if ((CE != nullptr) && (DD != nullptr))
-	{
-		auto CESR = nice_source_range(CE->getSourceRange(), Rewrite);
-		auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
-		auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
-		std::string decl_source_text;
-		if (decl_source_range.isValid()) {
-			decl_source_text = Rewrite.getRewrittenText(decl_source_range);
-		} else {
-			return;
-		}
-
-		if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())) {
-
-			update_declaration(*DD, Rewrite, state1);
-
-			//state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, (*this).ddecl_indirection_cref());
-			//state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, (*this).ddecl_indirection_cref());
-
-			auto res2 = Rewrite.ReplaceText(CESR, m_ce_replacement_code);
-			int q = 3;
-		} else {
-			int q = 7;
-		}
-	}
-}
-
 void CMallocArray2ReplacementAction::do_replacement(CState1& state1) const {
 	Rewriter &Rewrite = m_Rewrite;
 	const MatchFinder::MatchResult &MR = m_MR;
@@ -1091,6 +1162,39 @@ void CMallocInitializerArray2ReplacementAction::do_replacement(CState1& state1) 
 	}
 }
 
+void CFreeDynamicArray2ReplacementAction::do_replacement(CState1& state1) const {
+	Rewriter &Rewrite = m_Rewrite;
+	const MatchFinder::MatchResult &MR = m_MR;
+	const CallExpr* CE = m_CE;
+	const DeclaratorDecl* DD = m_DD;
+
+	if ((CE != nullptr) && (DD != nullptr))
+	{
+		auto CESR = nice_source_range(CE->getSourceRange(), Rewrite);
+		auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
+		auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
+		std::string decl_source_text;
+		if (decl_source_range.isValid()) {
+			decl_source_text = Rewrite.getRewrittenText(decl_source_range);
+		} else {
+			return;
+		}
+
+		if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())) {
+
+			update_declaration(*DD, Rewrite, state1);
+
+			//state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, (*this).ddecl_indirection_cref());
+			//state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, (*this).ddecl_indirection_cref());
+
+			auto res2 = Rewrite.ReplaceText(CESR, m_ce_replacement_code);
+			int q = 3;
+		} else {
+			int q = 7;
+		}
+	}
+}
+
 void CSetArrayPointerToNull2ReplacementAction::do_replacement(CState1& state1) const {
 	Rewriter &Rewrite = m_Rewrite;
 	const MatchFinder::MatchResult &MR = m_MR;
@@ -1149,6 +1253,183 @@ void CMemsetArray2ReplacementAction::do_replacement(CState1& state1) const {
 			int q = 7;
 		}
 	}
+}
+
+void CMemcpyArray2ReplacementAction::do_replacement(CState1& state1) const {
+	Rewriter &Rewrite = m_Rewrite;
+	const MatchFinder::MatchResult &MR = m_MR;
+	const CallExpr* CE = m_CE;
+	const DeclaratorDecl* DD = m_DD;
+
+	if ((CE != nullptr) && (DD != nullptr))
+	{
+		auto CESR = nice_source_range(CE->getSourceRange(), Rewrite);
+		auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
+		auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
+		std::string decl_source_text;
+		if (decl_source_range.isValid()) {
+			decl_source_text = Rewrite.getRewrittenText(decl_source_range);
+		} else {
+			return;
+		}
+
+		if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())) {
+
+			update_declaration(*DD, Rewrite, state1);
+
+			auto res2 = Rewrite.ReplaceText(CESR, m_ce_replacement_code);
+			int q = 3;
+		} else {
+			int q = 7;
+		}
+	}
+}
+
+void CAssignedFromArray2ReplacementAction::do_replacement(CState1& state1) const {
+	Rewriter &Rewrite = m_Rewrite;
+	const MatchFinder::MatchResult &MR = m_MR;
+
+	auto res1 = state1.m_ddecl_conversion_state_map.insert(*(m_ddecl_indirection2.m_ddecl_cptr));
+	auto ddcs_map_iter = res1.first;
+	auto& ddcs_ref = (*ddcs_map_iter).second;
+	bool update_declaration_flag = res1.second;
+
+	if ("native pointer" == ddcs_ref.m_indirection_state_stack[m_ddecl_indirection2.m_indirection_level].m_current) {
+		ddcs_ref.m_indirection_state_stack[m_ddecl_indirection2.m_indirection_level].m_current = "inferred array";
+		update_declaration_flag = true;
+		state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, m_ddecl_indirection2);
+	} else if ("malloc target" == ddcs_ref.m_indirection_state_stack[m_ddecl_indirection2.m_indirection_level].m_current) {
+		ddcs_ref.m_indirection_state_stack[m_ddecl_indirection2.m_indirection_level].m_current = "dynamic array";
+		update_declaration_flag = true;
+		state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, m_ddecl_indirection2);
+	} else {
+		int q = 3;
+	}
+
+	if (update_declaration_flag) {
+		update_declaration(*(m_ddecl_indirection2.m_ddecl_cptr), Rewrite, state1);
+	}
+}
+
+struct CArrayInferenceInfo {
+	bool update_declaration_flag = false;
+	bool has_been_determined_to_be_an_array = false;
+	size_t indirection_level = 0;
+	const DeclaratorDecl* ddecl_cptr = nullptr;
+	const clang::Expr* declaration_expr_cptr = nullptr;
+};
+
+CArrayInferenceInfo infer_array_type_info_from_stmt_indirection_stack(CDDeclConversionState& ddcs_ref,
+		const std::vector<std::string>& stmt_indirection_stack, CState1& state1_ref) {
+	CArrayInferenceInfo retval;
+	auto DD = ddcs_ref.m_ddecl_cptr;
+	if (!DD) { assert(false); return retval; }
+	for (size_t i = 0; ((i < ddcs_ref.m_indirection_state_stack.size())
+			&& (i < stmt_indirection_stack.size())); i += 1) {
+		if ("native pointer" == ddcs_ref.m_indirection_state_stack[i].m_current) {
+			if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
+					|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
+				ddcs_ref.m_indirection_state_stack[i].m_current = "inferred array";
+				retval.update_declaration_flag = true;
+				state1_ref.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1_ref, CDDeclIndirection(*DD, i));
+			} else if (("malloc target" == stmt_indirection_stack[i])) {
+				ddcs_ref.m_indirection_state_stack[i].m_current = "malloc target";
+				retval.indirection_level = i;
+			} else if (("set to null" == stmt_indirection_stack[i]) ||
+					("memset/cpy target" == stmt_indirection_stack[i])) {
+				retval.indirection_level = i;
+			}
+		} else if ("malloc target" == ddcs_ref.m_indirection_state_stack[i].m_current) {
+			if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
+					|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
+				ddcs_ref.m_indirection_state_stack[i].m_current = "dynamic array";
+				retval.update_declaration_flag = true;
+				state1_ref.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1_ref, CDDeclIndirection(*DD, i));
+				state1_ref.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1_ref, CDDeclIndirection(*DD, i));
+			}
+		} else if ("inferred array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
+			if (("malloc target" == stmt_indirection_stack[i]) ||
+					("set to null" == stmt_indirection_stack[i])) {
+				ddcs_ref.m_indirection_state_stack[i].m_current = "dynamic array";
+				retval.update_declaration_flag = true;
+				retval.has_been_determined_to_be_an_array = true;
+				retval.indirection_level = i;
+				state1_ref.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1_ref, CDDeclIndirection(*DD, i));
+			} else if (("memset/cpy target" == stmt_indirection_stack[i])) {
+				retval.has_been_determined_to_be_an_array = true;
+				retval.indirection_level = i;
+			}
+		} else if ("dynamic array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
+			if (("malloc target" == stmt_indirection_stack[i]) ||
+					("set to null" == stmt_indirection_stack[i])) {
+				retval.has_been_determined_to_be_an_array = true;
+				retval.indirection_level = i;
+			}
+		}
+	}
+	return retval;
+}
+
+/* We are trying to determine, for each and every pointer, whether or not it is being used as an
+ * array iterator. So this function takes an expression using a declared (pointer) variable
+ * and notes when the (pointer) variable, or any dereference of the
+ * (pointer) variable, is being used as an array iterator. So for example, given a declaration,
+ * say, "int*** ptr1;" and an expression, say, "(*(ptr1[3]))[5]", it will note the two levels
+ * of dereference/"indirection" that are being used as array iterators/pointers. Upon determining
+ * that a pointer (or a dereference/indirection of the pointer) is being used as an array iterator,
+ * the function will execute any queued up actions that were contingent on such a determination. */
+CArrayInferenceInfo infer_array_type_info_from_stmt(const clang::Stmt& stmt_cref, const std::string& stmt_array_info_str,
+		CState1& state1_ref, const DeclaratorDecl* DD = nullptr) {
+	CArrayInferenceInfo retval;
+
+	std::vector<std::string> stmt_indirection_stack;
+	const clang::Expr* expr2 = populateStmtIndirectionStack(stmt_indirection_stack, stmt_cref);
+	std::reverse(stmt_indirection_stack.begin(), stmt_indirection_stack.end());
+	stmt_indirection_stack.push_back(stmt_array_info_str);
+	if (expr2) {
+		std::string expr2_stmt_class_name;
+		expr2_stmt_class_name = expr2->getStmtClassName();
+		const DeclaratorDecl* expr2_DD = nullptr;
+		if (clang::Stmt::StmtClass::DeclRefExprClass == expr2->getStmtClass()) {
+			auto expr2_DRE = llvm::cast<const clang::DeclRefExpr>(expr2);
+			if (expr2_DRE) {
+				auto expr2_decl = expr2_DRE->getDecl();
+				expr2_DD = dynamic_cast<const DeclaratorDecl*>(expr2_decl);
+			} else { assert(false); }
+		} else if (clang::Stmt::StmtClass::MemberExprClass == expr2->getStmtClass()) {
+			auto expr2_ME = llvm::cast<const clang::MemberExpr>(expr2);
+			if (expr2_ME) {
+				auto expr2_FD = dynamic_cast<const clang::FieldDecl*>(expr2_ME->getMemberDecl());
+				if (expr2_FD) {
+					expr2_DD = expr2_FD;
+				} else { assert(false); }
+			} else { assert(false); }
+		}
+		if (expr2_DD) {
+			auto expr2_QT = expr2_DD->getType();
+			auto expr2_type_str = expr2_QT.getAsString();
+			std::string expr2_variable_name = expr2_DD->getNameAsString();
+
+			if (nullptr == DD) {
+				DD = expr2_DD;
+			}
+			auto res1 = state1_ref.m_ddecl_conversion_state_map.insert(*DD);
+			auto ddcs_map_iter = res1.first;
+			auto& ddcs_ref = (*ddcs_map_iter).second;
+			bool update_declaration_flag = res1.second;
+
+			auto QT = (*DD).getType();
+			std::string variable_name = (*DD).getNameAsString();
+
+			if ((expr2_QT == QT) && (expr2_variable_name == variable_name)) {
+				retval = infer_array_type_info_from_stmt_indirection_stack(ddcs_ref, stmt_indirection_stack, state1_ref);
+			}
+		}
+		retval.ddecl_cptr = expr2_DD;
+	}
+	retval.declaration_expr_cptr = expr2;
+
+	return retval;
 }
 
 /**********************************************************************************************************************/
@@ -1310,6 +1591,7 @@ public:
 			auto ddcs_map_iter = res1.first;
 			auto& ddcs_ref = (*ddcs_map_iter).second;
 			//bool update_declaration_flag = res1.second;
+
 			for (size_t i = 0; (i < ddcs_ref.m_indirection_state_stack.size()); i += 1) {
 				if ("native array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
 					m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
@@ -1406,82 +1688,9 @@ public:
 					return;
 				}
 
-				auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
-				auto ddcs_map_iter = res1.first;
-				auto& ddcs_ref = (*ddcs_map_iter).second;
-				bool update_declaration_flag = res1.second;
+				auto res2 = infer_array_type_info_from_stmt(*E, "pointer arithmetic", (*this).m_state1, DD);
 
-				const clang::Type* TP = QT.getTypePtr();
-				auto type_str = QT.getAsString();
-
-				auto expr_SR = nice_source_range(E->getSourceRange(), Rewrite);
-				std::string expr_source_location_str;
-				std::string expr_source_text;
-				if (expr_SR.isValid()) {
-					expr_source_location_str = expr_SR.getBegin().printToString(*MR.SourceManager);
-					expr_source_text = Rewrite.getRewrittenText(expr_SR);
-				} else {
-					int q = 3;
-				}
-
-				std::vector<std::string> stmt_indirection_stack;
-				const clang::Expr* expr2 = populateStmtIndirectionStack(stmt_indirection_stack, *E);
-				std::reverse(stmt_indirection_stack.begin(), stmt_indirection_stack.end());
-				stmt_indirection_stack.push_back("pointer arithmetic");
-				if (expr2) {
-					std::string expr2_stmt_class_name;
-					expr2_stmt_class_name = expr2->getStmtClassName();
-					const DeclaratorDecl* expr2_DD = nullptr;
-					if (clang::Stmt::StmtClass::DeclRefExprClass == expr2->getStmtClass()) {
-						auto expr2_DRE = llvm::cast<const clang::DeclRefExpr>(expr2);
-						if (expr2_DRE) {
-							auto expr2_decl = expr2_DRE->getDecl();
-							expr2_DD = dynamic_cast<const DeclaratorDecl*>(expr2_decl);
-						} else { assert(false); }
-					} else if (clang::Stmt::StmtClass::MemberExprClass == expr2->getStmtClass()) {
-						auto expr2_ME = llvm::cast<const clang::MemberExpr>(expr2);
-						if (expr2_ME) {
-							auto expr2_FD = dynamic_cast<const clang::FieldDecl*>(expr2_ME->getMemberDecl());
-							if (expr2_FD) {
-								expr2_DD = expr2_FD;
-							} else { assert(false); }
-						} else { assert(false); }
-					}
-					if (expr2_DD) {
-						auto expr2_QT = expr2_DD->getType();
-						const clang::Type* expr2_TP = expr2_QT.getTypePtr();
-						auto expr2_type_str = clang::QualType::getAsString(expr2_QT.split());
-						std::string expr2_variable_name = expr2_DD->getNameAsString();
-						if ((expr2_QT == QT) && (expr2_variable_name == variable_name)) {
-							for (size_t i = 0; ((i < ddcs_ref.m_indirection_state_stack.size())
-									&& (i < stmt_indirection_stack.size())); i += 1) {
-								if ("native pointer" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-									if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
-											|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
-										ddcs_ref.m_indirection_state_stack[i].m_current = "inferred array";
-										update_declaration_flag = true;
-										m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-									}
-								} else if ("malloc target" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-									if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
-											|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
-										ddcs_ref.m_indirection_state_stack[i].m_current = "dynamic array";
-										update_declaration_flag = true;
-										m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-										m_state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-									}
-								}
-							}
-						} else {
-							int q = 5;
-						}
-					}
-					int q = 5;
-				} else {
-					return;
-				}
-
-				if (update_declaration_flag) {
+				if (res2.update_declaration_flag) {
 					update_declaration(*DD, Rewrite, m_state1);
 				}
 			}
@@ -1660,95 +1869,9 @@ public:
 										return;
 									}
 
-									auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
-									auto ddcs_map_iter = res1.first;
-									auto& ddcs_ref = (*ddcs_map_iter).second;
-									bool update_declaration_flag = res1.second;
+									auto res2 = infer_array_type_info_from_stmt(*LHS, "malloc target", (*this).m_state1, DD);
 
-									const clang::Type* TP = QT.getTypePtr();
-									auto type_str = QT.getAsString();
-
-									auto expr_SR = nice_source_range(LHS->getSourceRange(), Rewrite);
-									std::string expr_source_location_str;
-									std::string expr_source_text;
-									if (expr_SR.isValid()) {
-										expr_source_location_str = expr_SR.getBegin().printToString(*MR.SourceManager);
-										expr_source_text = Rewrite.getRewrittenText(expr_SR);
-									} else {
-										int q = 3;
-									}
-
-									std::vector<std::string> stmt_indirection_stack;
-									const clang::Expr* expr2 = populateStmtIndirectionStack(stmt_indirection_stack, *LHS);
-									std::reverse(stmt_indirection_stack.begin(), stmt_indirection_stack.end());
-									stmt_indirection_stack.push_back("malloc target");
-									bool lhs_has_been_determined_to_be_an_array = false;
-									size_t indirection_level = 0;
-									if (expr2) {
-										std::string expr2_stmt_class_name;
-										expr2_stmt_class_name = expr2->getStmtClassName();
-										const DeclaratorDecl* expr2_DD = nullptr;
-										if (clang::Stmt::StmtClass::DeclRefExprClass == expr2->getStmtClass()) {
-											auto expr2_DRE = llvm::cast<const clang::DeclRefExpr>(expr2);
-											if (expr2_DRE) {
-												auto expr2_decl = expr2_DRE->getDecl();
-												expr2_DD = dynamic_cast<const DeclaratorDecl*>(expr2_decl);
-											} else { assert(false); }
-										} else if (clang::Stmt::StmtClass::MemberExprClass == expr2->getStmtClass()) {
-											auto expr2_ME = llvm::cast<const clang::MemberExpr>(expr2);
-											if (expr2_ME) {
-												auto expr2_FD = dynamic_cast<const clang::FieldDecl*>(expr2_ME->getMemberDecl());
-												if (expr2_FD) {
-													expr2_DD = expr2_FD;
-												} else { assert(false); }
-											} else { assert(false); }
-										}
-										if (expr2_DD) {
-											auto expr2_QT = expr2_DD->getType();
-											const clang::Type* expr2_TP = expr2_QT.getTypePtr();
-											auto expr2_type_str = clang::QualType::getAsString(expr2_QT.split());
-											std::string expr2_variable_name = expr2_DD->getNameAsString();
-											if ((expr2_QT == QT) && (expr2_variable_name == variable_name)) {
-												for (size_t i = 0; ((i < ddcs_ref.m_indirection_state_stack.size())
-														&& (i < stmt_indirection_stack.size())); i += 1) {
-													if ("native pointer" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-														if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
-																|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
-															ddcs_ref.m_indirection_state_stack[i].m_current = "inferred array";
-															update_declaration_flag = true;
-															m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-														} else if (("malloc target" == stmt_indirection_stack[i])) {
-															ddcs_ref.m_indirection_state_stack[i].m_current = "malloc target";
-															indirection_level = i;
-														}
-													} else if ("inferred array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-														if (("malloc target" == stmt_indirection_stack[i])) {
-															ddcs_ref.m_indirection_state_stack[i].m_current = "dynamic array";
-															update_declaration_flag = true;
-															lhs_has_been_determined_to_be_an_array = true;
-															indirection_level = i;
-															m_state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-														}
-													} else if ("dynamic array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-														if (("malloc target" == stmt_indirection_stack[i])) {
-															lhs_has_been_determined_to_be_an_array = true;
-															indirection_level = i;
-														}
-													} else {
-														assert(!(("native array" == ddcs_ref.m_indirection_state_stack[i].m_current)
-																&& (("malloc target" == stmt_indirection_stack[i]))));
-													}
-												}
-											} else {
-												int q = 5;
-											}
-										}
-										int q = 5;
-									} else {
-										return;
-									}
-
-									if (update_declaration_flag) {
+									if (res2.update_declaration_flag) {
 										update_declaration(*DD, Rewrite, m_state1);
 									}
 
@@ -1799,9 +1922,9 @@ public:
 
 										auto BOSR = clang::SourceRange(BOSL, BOSLE);
 										if (ConvertToSCPP && decl_source_range.isValid() && (BOSR.isValid())) {
-											auto cr_shptr = std::make_shared<CMallocArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, indirection_level), BO, bo_replacement_code);
+											auto cr_shptr = std::make_shared<CMallocArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, res2.indirection_level), BO, bo_replacement_code);
 
-											if (lhs_has_been_determined_to_be_an_array) {
+											if (res2.has_been_determined_to_be_an_array) {
 												(*cr_shptr).do_replacement(m_state1);
 											} else {
 												m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
@@ -1936,11 +2059,6 @@ public:
 								 * "sizeof(something) * something_else". So we're just going to assume that
 								 * this is an instance of an array being allocated. */
 								std::string num_elements_text/* = before_str + after_str*/;
-								QualType QT;
-								std::string element_type_str;
-								clang::SourceRange decl_source_range;
-								std::string variable_name;
-								std::string declaration_replacement_code;
 
 								if (nullptr != DD) {
 									auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
@@ -1951,8 +2069,8 @@ public:
 									} else {
 										return;
 									}
-									QT = DD->getType();
-									variable_name = DD->getNameAsString();
+									QualType QT = DD->getType();
+									auto variable_name = DD->getNameAsString();
 
 									auto qualified_name = DD->getQualifiedNameAsString();
 									static const std::string mse_namespace_str1 = "mse::";
@@ -1984,6 +2102,7 @@ public:
 									const clang::Type* TP = QT.getTypePtr();
 									auto lhs_type_str = QT.getAsString();
 
+									std::string element_type_str;
 									if (TP->isArrayType()) {
 										auto ATP = llvm::cast<const clang::ArrayType>(TP);
 										assert(nullptr != ATP);
@@ -2147,95 +2266,9 @@ public:
 									return;
 								}
 
-								auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
-								auto ddcs_map_iter = res1.first;
-								auto& ddcs_ref = (*ddcs_map_iter).second;
-								bool update_declaration_flag = res1.second;
+								auto res2 = infer_array_type_info_from_stmt(*(*(CE->arg_begin())), "malloc target", (*this).m_state1, DD);
 
-								const clang::Type* TP = QT.getTypePtr();
-								auto type_str = QT.getAsString();
-
-								auto expr_SR = nice_source_range(CE->getSourceRange(), Rewrite);
-								std::string expr_source_location_str;
-								std::string expr_source_text;
-								if (expr_SR.isValid()) {
-									expr_source_location_str = expr_SR.getBegin().printToString(*MR.SourceManager);
-									expr_source_text = Rewrite.getRewrittenText(expr_SR);
-								} else {
-									int q = 3;
-								}
-
-								std::vector<std::string> stmt_indirection_stack;
-								const clang::Expr* expr2 = populateStmtIndirectionStack(stmt_indirection_stack, *(*(CE->arg_begin())));
-								std::reverse(stmt_indirection_stack.begin(), stmt_indirection_stack.end());
-								stmt_indirection_stack.push_back("malloc target");
-								bool target_has_been_determined_to_be_an_array = false;
-								size_t indirection_level = 0;
-								if (expr2) {
-									std::string expr2_stmt_class_name;
-									expr2_stmt_class_name = expr2->getStmtClassName();
-									const DeclaratorDecl* expr2_DD = nullptr;
-									if (clang::Stmt::StmtClass::DeclRefExprClass == expr2->getStmtClass()) {
-										auto expr2_DRE = llvm::cast<const clang::DeclRefExpr>(expr2);
-										if (expr2_DRE) {
-											auto expr2_decl = expr2_DRE->getDecl();
-											expr2_DD = dynamic_cast<const DeclaratorDecl*>(expr2_decl);
-										} else { assert(false); }
-									} else if (clang::Stmt::StmtClass::MemberExprClass == expr2->getStmtClass()) {
-										auto expr2_ME = llvm::cast<const clang::MemberExpr>(expr2);
-										if (expr2_ME) {
-											auto expr2_FD = dynamic_cast<const clang::FieldDecl*>(expr2_ME->getMemberDecl());
-											if (expr2_FD) {
-												expr2_DD = expr2_FD;
-											} else { assert(false); }
-										} else { assert(false); }
-									}
-									if (expr2_DD) {
-										auto expr2_QT = expr2_DD->getType();
-										const clang::Type* expr2_TP = expr2_QT.getTypePtr();
-										auto expr2_type_str = clang::QualType::getAsString(expr2_QT.split());
-										std::string expr2_variable_name = expr2_DD->getNameAsString();
-										if ((expr2_QT == QT) && (expr2_variable_name == variable_name)) {
-											for (size_t i = 0; ((i < ddcs_ref.m_indirection_state_stack.size())
-													&& (i < stmt_indirection_stack.size())); i += 1) {
-												if ("native pointer" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-													if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
-															|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
-														ddcs_ref.m_indirection_state_stack[i].m_current = "inferred array";
-														update_declaration_flag = true;
-														m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-													} else if (("malloc target" == stmt_indirection_stack[i])) {
-														ddcs_ref.m_indirection_state_stack[i].m_current = "malloc target";
-														indirection_level = i;
-													}
-												} else if ("inferred array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-													if (("malloc target" == stmt_indirection_stack[i])) {
-														ddcs_ref.m_indirection_state_stack[i].m_current = "dynamic array";
-														update_declaration_flag = true;
-														target_has_been_determined_to_be_an_array = true;
-														indirection_level = i;
-														m_state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-													}
-												} else if ("dynamic array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-													if (("malloc target" == stmt_indirection_stack[i])) {
-														target_has_been_determined_to_be_an_array = true;
-														indirection_level = i;
-													}
-												} else {
-													assert(!(("native array" == ddcs_ref.m_indirection_state_stack[i].m_current)
-															&& (("malloc target" == stmt_indirection_stack[i]))));
-												}
-											}
-										} else {
-											int q = 5;
-										}
-									}
-									int q = 5;
-								} else {
-									return;
-								}
-
-								if (update_declaration_flag) {
+								if (res2.update_declaration_flag) {
 									update_declaration(*DD, Rewrite, m_state1);
 								}
 
@@ -2243,9 +2276,9 @@ public:
 								ce_replacement_code += ".resize(0)";
 
 								if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())) {
-									auto cr_shptr = std::make_shared<CFreeDynamicArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, indirection_level), CE, ce_replacement_code);
+									auto cr_shptr = std::make_shared<CFreeDynamicArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, res2.indirection_level), CE, ce_replacement_code);
 
-									if (target_has_been_determined_to_be_an_array) {
+									if (res2.has_been_determined_to_be_an_array) {
 										(*cr_shptr).do_replacement(m_state1);
 									} else {
 										m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
@@ -2364,95 +2397,9 @@ public:
 							return;
 						}
 
-						auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
-						auto ddcs_map_iter = res1.first;
-						auto& ddcs_ref = (*ddcs_map_iter).second;
-						bool update_declaration_flag = res1.second;
+						auto res2 = infer_array_type_info_from_stmt(*LHS, "set to null", (*this).m_state1, DD);
 
-						const clang::Type* TP = QT.getTypePtr();
-						auto type_str = QT.getAsString();
-
-						auto expr_SR = nice_source_range(LHS->getSourceRange(), Rewrite);
-						std::string expr_source_location_str;
-						std::string expr_source_text;
-						if (expr_SR.isValid()) {
-							expr_source_location_str = expr_SR.getBegin().printToString(*MR.SourceManager);
-							expr_source_text = Rewrite.getRewrittenText(expr_SR);
-						} else {
-							int q = 3;
-						}
-
-						std::vector<std::string> stmt_indirection_stack;
-						const clang::Expr* expr2 = populateStmtIndirectionStack(stmt_indirection_stack, *LHS);
-						std::reverse(stmt_indirection_stack.begin(), stmt_indirection_stack.end());
-						stmt_indirection_stack.push_back("malloc target");
-						bool lhs_has_been_determined_to_be_an_array = false;
-						size_t indirection_level = 0;
-						if (expr2) {
-							std::string expr2_stmt_class_name;
-							expr2_stmt_class_name = expr2->getStmtClassName();
-							const DeclaratorDecl* expr2_DD = nullptr;
-							if (clang::Stmt::StmtClass::DeclRefExprClass == expr2->getStmtClass()) {
-								auto expr2_DRE = llvm::cast<const clang::DeclRefExpr>(expr2);
-								if (expr2_DRE) {
-									auto expr2_decl = expr2_DRE->getDecl();
-									expr2_DD = dynamic_cast<const DeclaratorDecl*>(expr2_decl);
-								} else { assert(false); }
-							} else if (clang::Stmt::StmtClass::MemberExprClass == expr2->getStmtClass()) {
-								auto expr2_ME = llvm::cast<const clang::MemberExpr>(expr2);
-								if (expr2_ME) {
-									auto expr2_FD = dynamic_cast<const clang::FieldDecl*>(expr2_ME->getMemberDecl());
-									if (expr2_FD) {
-										expr2_DD = expr2_FD;
-									} else { assert(false); }
-								} else { assert(false); }
-							}
-							if (expr2_DD) {
-								auto expr2_QT = expr2_DD->getType();
-								const clang::Type* expr2_TP = expr2_QT.getTypePtr();
-								auto expr2_type_str = clang::QualType::getAsString(expr2_QT.split());
-								std::string expr2_variable_name = expr2_DD->getNameAsString();
-								if ((expr2_QT == QT) && (expr2_variable_name == variable_name)) {
-									for (size_t i = 0; ((i < ddcs_ref.m_indirection_state_stack.size())
-											&& (i < stmt_indirection_stack.size())); i += 1) {
-										if ("native pointer" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-											if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
-													|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
-												ddcs_ref.m_indirection_state_stack[i].m_current = "inferred array";
-												update_declaration_flag = true;
-												m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-											} else if (("malloc target" == stmt_indirection_stack[i])) {
-												//ddcs_ref.m_indirection_state_stack[i].m_current = "malloc target";
-												indirection_level = i;
-											}
-										} else if ("inferred array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-											if (("malloc target" == stmt_indirection_stack[i])) {
-												ddcs_ref.m_indirection_state_stack[i].m_current = "dynamic array";
-												update_declaration_flag = true;
-												lhs_has_been_determined_to_be_an_array = true;
-												indirection_level = i;
-												m_state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-											}
-										} else if ("dynamic array" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-											if (("malloc target" == stmt_indirection_stack[i])) {
-												lhs_has_been_determined_to_be_an_array = true;
-												indirection_level = i;
-											}
-										} else {
-											assert(!(("native array" == ddcs_ref.m_indirection_state_stack[i].m_current)
-													&& (("malloc target" == stmt_indirection_stack[i]))));
-										}
-									}
-								} else {
-									int q = 5;
-								}
-							}
-							int q = 5;
-						} else {
-							return;
-						}
-
-						if (update_declaration_flag) {
+						if (res2.update_declaration_flag) {
 							update_declaration(*DD, Rewrite, m_state1);
 						}
 
@@ -2462,9 +2409,9 @@ public:
 						bo_replacement_code += ".resize(0)";
 
 						if (ConvertToSCPP && decl_source_range.isValid() && (BOSR.isValid())) {
-							auto cr_shptr = std::make_shared<CSetArrayPointerToNull2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, indirection_level), BO, bo_replacement_code);
+							auto cr_shptr = std::make_shared<CSetArrayPointerToNull2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, res2.indirection_level), BO, bo_replacement_code);
 
-							if (lhs_has_been_determined_to_be_an_array) {
+							if (res2.has_been_determined_to_be_an_array) {
 								(*cr_shptr).do_replacement(m_state1);
 							} else {
 								m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
@@ -2595,85 +2542,9 @@ public:
 									return;
 								}
 
-								auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
-								auto ddcs_map_iter = res1.first;
-								auto& ddcs_ref = (*ddcs_map_iter).second;
-								bool update_declaration_flag = res1.second;
+								auto res2 = infer_array_type_info_from_stmt(*(*(CE->arg_begin())), "memset/cpy target", (*this).m_state1, DD);
 
-								auto expr_SR = nice_source_range(CE->getSourceRange(), Rewrite);
-								std::string expr_source_location_str;
-								std::string expr_source_text;
-								if (expr_SR.isValid()) {
-									expr_source_location_str = expr_SR.getBegin().printToString(*MR.SourceManager);
-									expr_source_text = Rewrite.getRewrittenText(expr_SR);
-								} else {
-									int q = 3;
-								}
-
-								std::vector<std::string> stmt_indirection_stack;
-								const clang::Expr* expr2 = populateStmtIndirectionStack(stmt_indirection_stack, *(*(CE->arg_begin())));
-								std::reverse(stmt_indirection_stack.begin(), stmt_indirection_stack.end());
-								stmt_indirection_stack.push_back("memset target");
-								bool target_has_been_determined_to_be_an_array = false;
-								size_t indirection_level = 0;
-								if (expr2) {
-									std::string expr2_stmt_class_name;
-									expr2_stmt_class_name = expr2->getStmtClassName();
-									const DeclaratorDecl* expr2_DD = nullptr;
-									if (clang::Stmt::StmtClass::DeclRefExprClass == expr2->getStmtClass()) {
-										auto expr2_DRE = llvm::cast<const clang::DeclRefExpr>(expr2);
-										if (expr2_DRE) {
-											auto expr2_decl = expr2_DRE->getDecl();
-											expr2_DD = dynamic_cast<const DeclaratorDecl*>(expr2_decl);
-										} else { assert(false); }
-									} else if (clang::Stmt::StmtClass::MemberExprClass == expr2->getStmtClass()) {
-										auto expr2_ME = llvm::cast<const clang::MemberExpr>(expr2);
-										if (expr2_ME) {
-											auto expr2_FD = dynamic_cast<const clang::FieldDecl*>(expr2_ME->getMemberDecl());
-											if (expr2_FD) {
-												expr2_DD = expr2_FD;
-											} else { assert(false); }
-										} else { assert(false); }
-									}
-									if (expr2_DD) {
-										auto expr2_QT = expr2_DD->getType();
-										const clang::Type* expr2_TP = expr2_QT.getTypePtr();
-										auto expr2_type_str = clang::QualType::getAsString(expr2_QT.split());
-										std::string expr2_variable_name = expr2_DD->getNameAsString();
-										if ((expr2_QT == QT) && (expr2_variable_name == variable_name)) {
-											for (size_t i = 0; ((i < ddcs_ref.m_indirection_state_stack.size())
-													&& (i < stmt_indirection_stack.size())); i += 1) {
-												if ("native pointer" == ddcs_ref.m_indirection_state_stack[i].m_current) {
-													if (("ArraySubscriptExpr" == stmt_indirection_stack[i])
-															|| ("pointer arithmetic" == stmt_indirection_stack[i])) {
-														ddcs_ref.m_indirection_state_stack[i].m_current = "inferred array";
-														update_declaration_flag = true;
-														m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
-													} else if (("memset target" == stmt_indirection_stack[i])) {
-														//ddcs_ref.m_indirection_state_stack[i].m_current = "memset target";
-														indirection_level = i;
-													}
-												} else if (("inferred array" == ddcs_ref.m_indirection_state_stack[i].m_current)
-														|| ("dynamic array" == ddcs_ref.m_indirection_state_stack[i].m_current)
-														|| ("native array" == ddcs_ref.m_indirection_state_stack[i].m_current)) {
-													if (("memset target" == stmt_indirection_stack[i])) {
-														target_has_been_determined_to_be_an_array = true;
-														indirection_level = i;
-													}
-												} else {
-													int q = 5;
-												}
-											}
-										} else {
-											int q = 5;
-										}
-									}
-									int q = 5;
-								} else {
-									return;
-								}
-
-								if (update_declaration_flag) {
+								if (res2.update_declaration_flag) {
 									update_declaration(*DD, Rewrite, m_state1);
 								}
 
@@ -2703,13 +2574,13 @@ public:
 								if ("" != arg1_element_type_str) {
 									ce_replacement_code = "for (size_t i = 0; i < (" + arg_source_text3
 											+ ")/sizeof(" + arg1_element_type_str + "); i += 1) { ";
-									ce_replacement_code += arg_source_text1 + "[i] = " + arg_source_text2 + "; ";
+									ce_replacement_code += "(" + arg_source_text1 + ")[i] = " + arg_source_text2 + "; ";
 									ce_replacement_code += "}";
 
 									if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())) {
-										auto cr_shptr = std::make_shared<CMemsetArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, indirection_level), CE, ce_replacement_code);
+										auto cr_shptr = std::make_shared<CMemsetArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, res2.indirection_level), CE, ce_replacement_code);
 
-										if (target_has_been_determined_to_be_an_array) {
+										if (true || res2.has_been_determined_to_be_an_array) {
 											(*cr_shptr).do_replacement(m_state1);
 										} else {
 											m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
@@ -2736,6 +2607,302 @@ private:
 	CState1& m_state1;
 };
 
+class MCSSSMemcpy : public MatchFinder::MatchCallback
+{
+public:
+	MCSSSMemcpy (Rewriter &Rewrite, CState1& state1) :
+		Rewrite(Rewrite), m_state1(state1) {}
+
+	virtual void run(const MatchFinder::MatchResult &MR)
+	{
+		const CallExpr* CE = MR.Nodes.getNodeAs<clang::CallExpr>("mcsssmemcpy1");
+		const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcsssmemcpy2");
+		const MemberExpr* ME = MR.Nodes.getNodeAs<clang::MemberExpr>("mcsssmemcpy3");
+
+		if ((CE != nullptr) && (DRE != nullptr))
+		{
+			auto CESR = nice_source_range(CE->getSourceRange(), Rewrite);
+			SourceLocation CESL = CESR.getBegin();
+			SourceLocation CESLE = CESR.getEnd();
+
+			ASTContext *const ASTC = MR.Context;
+			FullSourceLoc FCESL = ASTC->getFullLoc(CESL);
+
+			SourceManager &SM = ASTC->getSourceManager();
+
+			auto source_location_str = CESL.printToString(*MR.SourceManager);
+			std::string source_text;
+			if (CESL.isValid() && CESLE.isValid()) {
+				source_text = Rewrite.getRewrittenText(SourceRange(CESL, CESLE));
+			} else {
+				return;
+			}
+
+			if (filtered_out_by_location(MR, CESL)) {
+				return void();
+			}
+
+			auto function_decl = CE->getDirectCallee();
+			auto num_args = CE->getNumArgs();
+			if (function_decl && (3 == num_args)) {
+				{
+					std::string function_name = function_decl->getNameAsString();
+					static const std::string memcpy_str = "memcpy";
+					if (memcpy_str == function_name) {
+						auto iter1 = CE->arg_begin();
+						assert((*iter1)->getType().getTypePtrOrNull());
+						auto arg_source_range1 = nice_source_range((*iter1)->getSourceRange(), Rewrite);
+
+						auto iter2 = iter1;
+						iter2++;
+						assert((*iter2)->getType().getTypePtrOrNull());
+						auto arg_source_range2 = nice_source_range((*iter2)->getSourceRange(), Rewrite);
+
+						auto iter3 = iter2;
+						iter3++;
+						assert((*iter3)->getType().getTypePtrOrNull());
+						auto arg_source_range3 = nice_source_range((*iter3)->getSourceRange(), Rewrite);
+
+						std::string arg_source_text1;
+						std::string arg_source_text2;
+						std::string arg_source_text3;
+						if (arg_source_range1.isValid() && arg_source_range2.isValid() && arg_source_range3.isValid()) {
+							arg_source_text1 = Rewrite.getRewrittenText(arg_source_range1);
+							arg_source_text2 = Rewrite.getRewrittenText(arg_source_range2);
+							arg_source_text3 = Rewrite.getRewrittenText(arg_source_range3);
+							QualType QT;
+							std::string element_type_str;
+							clang::SourceRange decl_source_range;
+							std::string variable_name;
+							std::string ce_replacement_code;
+							const clang::DeclaratorDecl* DD = nullptr;
+
+							auto decl = DRE->getDecl();
+							DD = dynamic_cast<const DeclaratorDecl*>(decl);
+							auto VD = dynamic_cast<const VarDecl*>(decl);
+
+							const clang::FieldDecl* FD = nullptr;
+							if (nullptr != ME) {
+								auto member_decl = ME->getMemberDecl();
+								FD = dynamic_cast<const clang::FieldDecl*>(ME->getMemberDecl());
+							}
+							if (nullptr != FD) {
+								DD = FD;
+							} else if (nullptr != VD) {
+								DD = VD;
+							} else {
+								int q = 7;
+							}
+
+							if (nullptr != DD) {
+								auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
+								auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
+								std::string decl_source_text;
+								if (decl_source_range.isValid()) {
+									decl_source_text = Rewrite.getRewrittenText(decl_source_range);
+								} else {
+									return;
+								}
+								QT = DD->getType();
+								auto qtype_str = QT.getAsString();
+								variable_name = DD->getNameAsString();
+
+								auto qualified_name = DD->getQualifiedNameAsString();
+								static const std::string mse_namespace_str1 = "mse::";
+								static const std::string mse_namespace_str2 = "::mse::";
+								if ((0 == qualified_name.compare(0, mse_namespace_str1.size(), mse_namespace_str1))
+										|| (0 == qualified_name.compare(0, mse_namespace_str2.size(), mse_namespace_str2))) {
+									return;
+								}
+
+								auto res2 = infer_array_type_info_from_stmt(*(*(CE->arg_begin())), "memset/cpy target", (*this).m_state1, DD);
+
+								if (res2.update_declaration_flag) {
+									update_declaration(*DD, Rewrite, m_state1);
+								}
+
+								const clang::Type* arg1_TP = QT.getTypePtr();
+								auto arg1_type_str = QT.getAsString();
+
+								std::string arg1_element_type_str;
+								if (arg1_TP->isArrayType()) {
+									auto ATP = llvm::cast<const clang::ArrayType>(arg1_TP);
+									assert(nullptr != ATP);
+									auto element_type = ATP->getElementType();
+									auto elementSplitQualType = element_type.split();
+									auto type_str = clang::QualType::getAsString(elementSplitQualType);
+									if (("char" != type_str) && ("const char" != type_str)) {
+										arg1_element_type_str = type_str;
+									}
+								} else if (arg1_TP->isPointerType()) {
+									auto TPP = llvm::cast<const clang::PointerType>(arg1_TP);
+									assert(nullptr != TPP);
+									auto target_type = TPP->getPointeeType();
+									auto splitQualType = target_type.split();
+									auto type_str = clang::QualType::getAsString(splitQualType);
+									if (("char" != type_str) && ("const char" != type_str)) {
+										arg1_element_type_str = type_str;
+									}
+								}
+								if ("" != arg1_element_type_str) {
+									ce_replacement_code = "for (size_t i = 0; i < (" + arg_source_text3
+											+ ")/sizeof(" + arg1_element_type_str + "); i += 1) { ";
+									ce_replacement_code += "(" + arg_source_text1 + ")[i] = (" + arg_source_text2 + ")[i]; ";
+									ce_replacement_code += "}";
+
+									if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())) {
+										auto cr_shptr = std::make_shared<CMemcpyArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, res2.indirection_level), CE, ce_replacement_code);
+
+										if (true || res2.has_been_determined_to_be_an_array) {
+											(*cr_shptr).do_replacement(m_state1);
+										} else {
+											m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+										}
+									} else {
+										int q = 7;
+									}
+								}
+							}
+							int q = 5;
+						} else {
+							int q = 5;
+						}
+						int q = 5;
+					}
+				}
+
+			}
+		}
+	}
+
+private:
+	Rewriter &Rewrite;
+	CState1& m_state1;
+};
+
+class MCSSSConditionalInitializer : public MatchFinder::MatchCallback
+{
+public:
+	MCSSSConditionalInitializer (Rewriter &Rewrite, CState1& state1) :
+		Rewrite(Rewrite), m_state1(state1) {}
+
+	virtual void run(const MatchFinder::MatchResult &MR)
+	{
+		const DeclStmt* DS = MR.Nodes.getNodeAs<clang::DeclStmt>("mcsssconditionalinitializer1");
+		const clang::ConditionalOperator* CO = MR.Nodes.getNodeAs<clang::ConditionalOperator>("mcsssconditionalinitializer2");
+		const Expr* LHS = nullptr;
+		const Expr* RHS = nullptr;
+		if (CO) {
+			LHS = CO->getLHS();
+			RHS = CO->getRHS();
+		}
+		const DeclaratorDecl* DD = MR.Nodes.getNodeAs<clang::DeclaratorDecl>("mcsssconditionalinitializer3");
+
+		if ((DS != nullptr) && (LHS != nullptr) && (RHS != nullptr) && (DD != nullptr))
+		{
+			auto DSSR = nice_source_range(DS->getSourceRange(), Rewrite);
+			SourceLocation DSSL = DSSR.getBegin();
+			SourceLocation DSSLE = DSSR.getEnd();
+
+			ASTContext *const ASTC = MR.Context;
+			FullSourceLoc FDSSL = ASTC->getFullLoc(DSSL);
+
+			SourceManager &SM = ASTC->getSourceManager();
+
+			auto source_location_str = DSSL.printToString(*MR.SourceManager);
+			std::string source_text;
+			if (DSSL.isValid() && DSSLE.isValid()) {
+				source_text = Rewrite.getRewrittenText(SourceRange(DSSL, DSSLE));
+			} else {
+				return;
+			}
+
+			if (filtered_out_by_location(MR, DSSL)) {
+				return void();
+			}
+
+			if (std::string::npos != source_location_str.find("73")) {
+				walkTheAST1(*LHS);
+				int q = 5;
+			}
+
+			auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
+			auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
+			std::string decl_source_text;
+			if (decl_source_range.isValid()) {
+				decl_source_text = Rewrite.getRewrittenText(decl_source_range);
+			} else {
+				return;
+			}
+			QualType QT = DD->getType();
+			auto variable_name = DD->getNameAsString();
+
+			auto qualified_name = DD->getQualifiedNameAsString();
+			static const std::string mse_namespace_str1 = "mse::";
+			static const std::string mse_namespace_str2 = "::mse::";
+			if ((0 == qualified_name.compare(0, mse_namespace_str1.size(), mse_namespace_str1))
+					|| (0 == qualified_name.compare(0, mse_namespace_str2.size(), mse_namespace_str2))) {
+				return;
+			}
+
+			auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
+			auto ddcs_map_iter = res1.first;
+			auto& ddcs_ref = (*ddcs_map_iter).second;
+			bool update_declaration_flag = res1.second;
+
+			{
+				auto res2 = infer_array_type_info_from_stmt(*LHS, "", (*this).m_state1);
+				if (res2.ddecl_cptr && res2.declaration_expr_cptr) {
+					std::string variable_name = res2.ddecl_cptr->getNameAsString();
+					auto QT = res2.ddecl_cptr->getType();
+					auto LHS_QT = LHS->getType();
+					if (QT == LHS_QT) {
+
+						if (ConvertToSCPP && decl_source_range.isValid()) {
+							auto cr_shptr = std::make_shared<CAssignedFromArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, 0), CDDeclIndirection(*(res2.ddecl_cptr) , res2.indirection_level));
+
+							if (true || res2.has_been_determined_to_be_an_array) {
+								(*cr_shptr).do_replacement(m_state1);
+							} else {
+								m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+							}
+						} else {
+							int q = 7;
+						}
+					}
+				}
+			}
+
+			{
+				auto res2 = infer_array_type_info_from_stmt(*RHS, "", (*this).m_state1);
+				if (res2.ddecl_cptr && res2.declaration_expr_cptr) {
+					std::string variable_name = res2.ddecl_cptr->getNameAsString();
+					auto QT = res2.ddecl_cptr->getType();
+					auto RHS_QT = RHS->getType();
+					if (QT == RHS_QT) {
+
+						if (ConvertToSCPP && decl_source_range.isValid()) {
+							auto cr_shptr = std::make_shared<CAssignedFromArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, 0), CDDeclIndirection(*(res2.ddecl_cptr) , res2.indirection_level));
+
+							if (true || res2.has_been_determined_to_be_an_array) {
+								(*cr_shptr).do_replacement(m_state1);
+							} else {
+								m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+							}
+						} else {
+							int q = 7;
+						}
+					}
+				}
+			}
+		}
+	}
+
+private:
+	Rewriter &Rewrite;
+	CState1& m_state1;
+};
+
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 
@@ -2743,7 +2910,7 @@ public:
   MyASTConsumer(Rewriter &R) : HandlerForSSSNativePointer(R), HandlerForSSSArrayToPointerDecay(R, m_state1),
 	HandlerForSSSVarDecl2(R, m_state1), HandlerForSSSPointerArithmetic2(R, m_state1), HandlerForSSSMalloc2(R, m_state1),
 	HandlerForSSSMallocInitializer2(R, m_state1), HandlerForSSSFree2(R, m_state1), HandlerForSSSSetToNull2(R, m_state1),
-	HandlerForSSSMemset(R, m_state1)
+	HandlerForSSSMemset(R, m_state1), HandlerForSSSMemcpy(R, m_state1), HandlerForSSSConditionalInitializer(R, m_state1)
   {
 	  Matcher.addMatcher(varDecl(hasType(pointerType())).bind("mcsssnativepointer"), &HandlerForSSSNativePointer);
 
@@ -2830,6 +2997,30 @@ public:
 						argumentCountIs(3),
 						hasAnyArgument(hasType(pointerType()))
 	  		)).bind("mcsssmemset1"), &HandlerForSSSMemset);
+
+	  Matcher.addMatcher(
+	  		callExpr(allOf(
+	  				hasAnyArgument(
+	  				expr(anyOf(
+								memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemcpy2")))).bind("mcsssmemcpy3"),
+								hasDescendant(memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemcpy2")))).bind("mcsssmemcpy3")),
+								hasDescendant(declRefExpr().bind("mcsssmemcpy2"))
+						))),
+						argumentCountIs(3),
+						hasAnyArgument(hasType(pointerType()))
+	  		)).bind("mcsssmemcpy1"), &HandlerForSSSMemcpy);
+
+	  Matcher.addMatcher(declStmt(hasDescendant(
+	  		varDecl(hasInitializer(ignoringImpCasts(
+					anyOf(
+							conditionalOperator(has(declRefExpr())).bind("mcsssconditionalinitializer2"),
+							conditionalOperator(hasDescendant(declRefExpr())).bind("mcsssconditionalinitializer2"),
+							cStyleCastExpr(has(conditionalOperator(has(declRefExpr())).bind("mcsssconditionalinitializer2"))),
+							cStyleCastExpr(has(conditionalOperator(hasDescendant(declRefExpr())).bind("mcsssconditionalinitializer2")))
+					)
+	  		))).bind("mcsssconditionalinitializer3")
+				)).bind("mcsssconditionalinitializer1"), &HandlerForSSSConditionalInitializer);
+
   }
 
   void HandleTranslationUnit(ASTContext &Context) override 
@@ -2850,6 +3041,8 @@ private:
   MCSSSFree2 HandlerForSSSFree2;
   MCSSSSetToNull2 HandlerForSSSSetToNull2;
   MCSSSMemset HandlerForSSSMemset;
+  MCSSSMemcpy HandlerForSSSMemcpy;
+  MCSSSConditionalInitializer HandlerForSSSConditionalInitializer;
 
   MatchFinder Matcher;
 };
