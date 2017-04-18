@@ -44,12 +44,21 @@ using namespace llvm;
 using namespace clang;
 /**********************************************************************************************************************/
 namespace bruiser
-{
+{ //start of namespace bruiser
 /**********************************************************************************************************************/
   const char* M0REP = "../test/misrareport.xml";
 /**********************************************************************************************************************/
+/*Error Codes*/
+#define M0_ERROR_CODES \
+  X(BAD_M0_XML, "bad m0 xml.", 100) \
+  X(CANT_OPEN_M0_XML, "could not open m0 xml.", 101) \
+
+#define X(__x1, __x2, __x3) __x1,
+  enum class M0_ERR {M0_ERROR_CODES};
+#undef X
+/**********************************************************************************************************************/
 /**
- * @brief This class hanhles the logging for bruiser.
+ * @brief This class handles the logging for bruiser.
  */
 class BruiserReport
 {
