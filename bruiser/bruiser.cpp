@@ -49,9 +49,11 @@ using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
 static llvm::cl::OptionCategory BruiserCategory("Empty");
+
+bruiser::M0_ERR m0_err;
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
-cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init("./test/misrareport.xml"), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 /*the implementation of the bruiser logger.*/
 bruiser::BruiserReport::BruiserReport () 
