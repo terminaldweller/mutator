@@ -278,7 +278,7 @@ private:
       umRuleList.insert({"0", PopValue});
       
       typedef std::multimap<std::string,std::string>::const_iterator Iter;
-      for (Iter iter = MC1EquivalencyMap.begin(); iter != MC1EquivalencyMap.end(); ++iter)
+      for (Iter iter = MC1EquivalencyMap.begin(), iterE = MC1EquivalencyMap.end(); iter != iterE; ++iter)
       {
         if (iter->first != std::prev(iter)->first)
         {
@@ -291,7 +291,7 @@ private:
     {
       // C2
       typedef std::map<std::string, bool>::const_iterator Iter;
-      for (Iter iter = MC2OptsMap.begin(); iter != MC2OptsMap.end(); ++iter)
+      for (Iter iter = MC2OptsMap.begin(), iterE = MC2OptsMap.end(); iter != iterE; ++iter)
       {
         umRuleList.insert({iter->first, PopValue});
       }
@@ -6880,7 +6880,7 @@ public:
       {
         unsigned marker = 0U;
 
-        for (ArrayRef<Token>::iterator iter = TokenArrayRef.begin(); iter != TokenArrayRef.end(); ++iter)
+        for (ArrayRef<Token>::iterator iter = TokenArrayRef.begin(), iterE = TokenArrayRef.end(); iter != iterE; ++iter)
         {
           if (iter->getKind() == tok::kw_while)
           {
@@ -8419,7 +8419,7 @@ int main(int argc, const char **argv)
   if (SOPProto.MC2Parser())
   {
     typedef std::multimap<std::string, std::string>::iterator Iter;
-    for (Iter iter = MC1EquivalencyMap.begin(); iter != MC1EquivalencyMap.end(); ++iter)
+    for (Iter iter = MC1EquivalencyMap.begin(), iterE = MC1EquivalencyMap.end(); iter != iterE; ++iter)
     {
       std::cout << "Key: " << iter->first << "  " << "Value: " << iter->second << "\n";
     }
