@@ -67,7 +67,8 @@ class BruiserReport
 
     ~BruiserReport();
 
-    bool PrintToLog(std::string __in_arg);
+    template <typename T>
+    bool PrintToLog(T __arg);
 
   private:
     std::ofstream BruiserLog;
