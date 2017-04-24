@@ -51,6 +51,7 @@ using namespace clang::tooling;
 static llvm::cl::OptionCategory BruiserCategory("Empty");
 
 bruiser::M0_ERR m0_err;
+bruiser::BruiserReport BruiseRep;
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
@@ -66,9 +67,17 @@ bruiser::BruiserReport::~BruiserReport()
   BruiserLog.close();
 }
 
-bool bruiser::BruiserReport::PrintToLog(std::string __in_arg)
+template <typename T>
+/**
+ * @brief Will print the argument in the log file. Expects to receive valid types usable for a stream.
+ *
+ * @param __arg
+ *
+ * @return Returns true if the write was successful, false otherwise.
+ */
+bool bruiser::BruiserReport::PrintToLog(T __arg)
 {
-  BruiserLog << __in_arg << "\n";
+  BruiserLog << __arg << "\n";
   return !BruiserLog.bad();
 }
 /**********************************************************************************************************************/
@@ -104,6 +113,8 @@ class MatcherHandlerLVL0 : public AbstractMatcherHandler
 {
   public:
     explicit MatcherHandlerLVL0 (Rewriter &Rewrite) : AbstractMatcherHandler(Rewrite) {}
+
+    virtual ~MatcherHandlerLVL0() {}
 
     virtual void run(const MatchFinder::MatchResult &MR) override
     {
@@ -248,7 +259,7 @@ public:
       /*@DEVI-obviously the best way to do this is to use the main signature already used, instead of going with a general predefined one. the current form is a temp.*/
       Rewrite.InsertTextAfter(SLE.getLocWithOffset(1U), StringRef("\n\nint main(int argc, const char **argv)\n{\n\treturn sub_main(argc, argv);\n}\n"));
 
-      //ruiseRep << "changed main main's name.\n"
+      //BruiseRep.PrintToLog("hijacked main main.");
     }
   }
 
@@ -305,9 +316,11 @@ int main(int argc, const char **argv)
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
-  bruiser::BruiserReport BruiseRep;
+  int RunResult = Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
 
-  return Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
+  BruiseRep.PrintToLog(RunResult);
+
+  return RunResult;
 }
 /*last line interntionally left blank.*/
 
