@@ -90,21 +90,21 @@ class TypeInfo
     const clang::ast_type_traits::DynTypedNode* DTN;
 };
 /**********************************************************************************************************************/
-class ReadMutatorRep
+class ReadM0
 {
   public:
-    ReadMutatorRep() {}
+    ReadM0() {}
 
-    ~ReadMutatorRep() {}
+    ~ReadM0() {}
 
-    int LoadXMLDoc(void)
+    XMLError LoadXMLDoc(void)
     {
       XMLError eResult = IntermediateXMLDoc.LoadFile(M0REP);
 
       return eResult;
     }
 
-    int ReadFirstElement(void)
+    XMLError ReadFirstElement(void)
     {
       RootPointer = IntermediateXMLDoc.FirstChild();
 
@@ -118,11 +118,36 @@ class ReadMutatorRep
       }
     }
 
-private:
-  XMLDocument IntermediateXMLDoc;
-  XMLNode* RootPointer;
+    XMLNode* getRootPointer(void)
+    {
+      return RootPointer;
+    }
+
+  private:
+    void Debug(void)
+    {
+
+    }
+
+    XMLDocument IntermediateXMLDoc;
+    XMLNode* RootPointer;
 };
 /**********************************************************************************************************************/
+class SearchM0
+{
+  public:
+    SearchM0(XMLNode* __rptr) : RootPointer(__rptr) {}
+
+    ~SearchM0() {};
+
+    void Debug(void) 
+    {
+
+    }
+
+  private:
+    XMLNode* RootPointer;
+};
 /**********************************************************************************************************************/
 } // end of namespace bruiser
 #endif
