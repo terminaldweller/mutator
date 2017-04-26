@@ -16,7 +16,7 @@ all: $(BRUISER)
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
