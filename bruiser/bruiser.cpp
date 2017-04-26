@@ -259,7 +259,7 @@ public:
       /*@DEVI-obviously the best way to do this is to use the main signature already used, instead of going with a general predefined one. the current form is a temp.*/
       Rewrite.InsertTextAfter(SLE.getLocWithOffset(1U), StringRef("\n\nint main(int argc, const char **argv)\n{\n\treturn sub_main(argc, argv);\n}\n"));
 
-      //BruiseRep.PrintToLog("hijacked main main.");
+      BruiseRep.PrintToLog("hijacked main main.");
     }
   }
 
@@ -318,7 +318,27 @@ int main(int argc, const char **argv)
 
   int RunResult = Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
 
+  BruiseRep.PrintToLog("bruiser exited with:");
   BruiseRep.PrintToLog(RunResult);
+
+  bruiser::ReadM0 M0Rep;
+  tinyxml2::XMLError XMLErr;
+
+  XMLErr = M0Rep.LoadXMLDoc();
+  if (XMLErr != XML_SUCCESS)
+  {
+    std::cerr << "could not load m0 xml report.\n";
+    return XMLErr;
+  }
+
+  XMLErr = M0Rep.ReadFirstElement();
+  if (XMLErr != XML_SUCCESS)
+  {
+    std::cerr << "could not read first element of m0 xml report.\n";
+    return XMLErr;
+  }
+
+  bruiser::SearchM0(M0Rep.getRootPointer());
 
   return RunResult;
 }
