@@ -10,40 +10,29 @@
 <a href="https://twitter.com/xashmith" class="twitter-follow-button" data-show-count="false">Follow @xashmith</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 
-A C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++.<br/>
+Here's the elevator pitch: mutator is a suite of tools aimed at analysis and automation of C/C++ code development.<br/>
+Here's a detailed list of what's currently available:<br/>
+mutator-lvl0(m0) will run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
+Safercpp runs the automatic refactoring sets on your source code, automatically changing your code to use the SaferCpp libraries.<br/>
+mutator-lvl1 and mutator-lvl2 currently only have a few simple refactorings mostly related to code formatting.<br/>
+bruiser is an exciting yet experimental feature. You can read about the idea in bruiser's directory.<br/>
+mutatord, the mutator server and the client are also provided as optional features.<br/>
+
+#### So why should I choose to use m0 over another static analysis tool?
+That would be because m0's requirement set is different. m0's tests are aimed at lowering the bug-count(bug prevention, not finding bugs), increasing portablity and maintainability across different architectures and environments.<br/>
+
+#### What is SaferCpp?
+SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more (here)[https://github.com/duneroadrunner/SaferCPlusPlus].<br/>
+
 Reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
 You can also run the mutator daemon(`mutatord`) which runs it in a client-server mode, with the client being a thin client.<br/>
-You can Join the Maillist here, [mutator maillist](https://www.freelists.org/list/mutator). The maillist is moderated.<br/>
+You can Join the Maillist here, [mutator maillist](https://www.freelists.org/list/mutator).<br/>
 You can follow Project `mutator` on twitter, @xashmith.
 <br/>
 
-Here are some samples from the `mutator-lvl0`, the Misra-C checker Reports:<br/>
-
-```XML
-
-<MisraDiag Misra-C:2004Rule="9.1" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1088" SpellingColumnNumber="3">staic local variable does not have initialization : </MisraDiag>
-<MisraDiag Misra-C:2004Rule="13.6" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1092" SpellingColumnNumber="5">ForStmt controlling variable modified in the body of the loop: </MisraDiag>
-<MisraDiag Misra-C:2004Rule="14.9" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1094" SpellingColumnNumber="5">"If" statement has no braces {}: </MisraDiag>
-<MisraDiag Misra-C:2004Rule="14.9" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1096" SpellingColumnNumber="5">"If" statement has no braces {}: </MisraDiag>
-<MisraDiag Misra-C:2004Rule="14.6" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1090" SpellingColumnNumber="3">More than one BreakStmt used in the loop counter: </MisraDiag>
-<MisraDiag Misra-C:2004Rule="13.6" FileName="/home/bloodstalker/devi/hell2/test/testFuncs1.c" SpellingLineNumber="1102" SpellingColumnNumber="5">ForStmt controlling variable modified in the body of the loop: </MisraDiag>
-
-```
-
-```JSON
-
-{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1094}}
-{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1096}}
-{"MisraDiag":{"Description":"More than one BreakStmt used in the loop counter: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.6","SpellingColumnNumber":3,"SpellingLineNumber":1090}}
-{"MisraDiag":{"Description":"ForStmt controlling variable modified in the body of the loop: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"13.6","SpellingColumnNumber":5,"SpellingLineNumber":1102}}
-{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1103}}
-{"MisraDiag":{"Description":"\"If\" statement has no braces {}: ","FileName":"/home/bloodstalker/devi/hell2/test/testFuncs1.c","Misra-C:2004Rule":"14.9","SpellingColumnNumber":5,"SpellingLineNumber":1109}}
-
-```
-
 ## mutator
 
-`mutator` is a C code mutator,Misra-C checker and code transformation tool written using the Clang frontend(LibTooling) as a stand-alone in C++. It consists of three(well so far) executables and a UI written in bash. You can run executables like any other CLI tool or just run them through the UI which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
+`mutator is a suite of tools aimed at analysis and automation of C/C++ code development with thin client-server architectur written using the Clang front-end(LibTooling) as a stand-alone in C++. It consists of three(well so far) executables and a UI written in bash. You can run executables like any other CLI tool or just run them through the UI which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
 
 <br/>
 **mutator-lvl0** will run the Misra-C checks.<br/>
@@ -116,7 +105,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 #### Linux
 
-To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:299810.<br/>
+To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:301395.<br/>
 Here Are the build options:<br/>
 
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
