@@ -60,6 +60,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Rewrite/Core/Rewriter.h"
 /*LLVM headers*/
 #include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/APInt.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
@@ -8433,8 +8434,25 @@ int main(int argc, const char **argv)
   IsThereJunkPreInclusion ITJPIInstance;
 
   ITJPIInstance.Check(SourcePathList);
+  
+  int RunResult = 0;
 
-  int RunResult = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+  try 
+  {
+    RunResult = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+  }
+  catch (MutExHeaderNotFound &E1)
+  {
+    std::cerr << E1.what() << "\n";
+  }
+  catch (std::domain_error &E2)
+  {
+    std::cerr << E2.what() << "\n";
+  }
+  catch(...)
+  {
+    std::cerr << "Unexpected exception!\n";
+  }
 
   CheckForNullStatements CheckForNull;
 
@@ -8445,16 +8463,6 @@ int main(int argc, const char **argv)
   XMLDocOut.SaveReport();
 
   JSONDocOUT.CloseReport();
-
-  try {}
-  catch (MutExHeaderNotFound &E1)
-  {
-    std::cerr << E1.what() << "\n";
-  }
-  catch (std::domain_error &E2)
-  {
-    std::cerr << E2.what() << "\n";
-  }
 
   return RunResult;
 }
