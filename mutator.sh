@@ -107,7 +107,11 @@ do
         if [[ "$F_END_ACTION" == run ]]; then
           echo "running $F_ACTION_NAME ..."
           echo "running ./$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE for $F_ACTION_NAME"
-          eval "./"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
+          if [[ "$F_EXEC_NAME" == safercpp-arr ]]; then
+            eval "./safercpp/"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
+          else
+            eval "./"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
+          fi
           if [[ "$F_PRINT_PRETTY" = true ]]; then
             echo "running pretty print..."
             source ./extra-tools/ReportPrintPretty.sh $F_OUT_FILE $F_OUT_FILE-pretty
@@ -118,6 +122,15 @@ do
         else
           echo "unknown option $F_END_ACTION for end_action. currently the only acceptable options are \"run\" and \"stop\"."
         fi
+        F_ACTION_NAME=""
+        F_EXEC_NAME=""
+        F_EXEC_COPTS=""
+        F_IN_FILES=""
+        F_LIBTOOLING_OPTS=""
+        F_OUT_FILE=""
+        F_LOG_FILE=""
+        F_PRINT_PRETTY=""
+        F_END_ACTION=""
         ;;
       esac
     done < "$INPUT_FILE"
