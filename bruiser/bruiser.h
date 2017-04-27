@@ -93,7 +93,19 @@ class TypeInfo
 class ReadM0
 {
   public:
-    ReadM0() {}
+    ReadM0() 
+    {
+      try
+      {
+      XMLError eResult = IntermediateXMLDoc.LoadFile(M0REP);
+
+      RootPointer = IntermediateXMLDoc.FirstChild();
+      }
+      catch (std::exception& e)
+      {
+
+      }
+    }
 
     ~ReadM0() {}
 
