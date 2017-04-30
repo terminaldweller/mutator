@@ -40,7 +40,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
 /*other*/
-#include "ncurses/curses.h"
+#include "curses.h"
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
