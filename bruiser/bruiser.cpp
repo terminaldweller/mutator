@@ -39,6 +39,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
+/*other*/
+#include "ncurses/curses.h"
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -46,6 +48,11 @@ using namespace clang;
 using namespace clang::ast_matchers;
 using namespace clang::driver;
 using namespace clang::tooling;
+/**********************************************************************************************************************/
+#define __DBG_1
+#if 0
+#undef __DBG_1
+#endif
 /**********************************************************************************************************************/
 /*global vars*/
 static llvm::cl::OptionCategory BruiserCategory("Empty");
@@ -189,7 +196,7 @@ class IfBreaker : public MatchFinder::MatchCallback
         const ast_type_traits::DynTypedNode DynNode = ast_type_traits::DynTypedNode::create<clang::Expr>(*EXP);
         bruiser::TypeInfo TIProto(&DynNode);
 
-        const clang::Type* CTP = TIProto.getTypeInfo(MR.Context);
+        const clang::Type* CTP [[maybe_unused]] = TIProto.getTypeInfo(MR.Context);
 
         NameFinder::runDeclRefExprMatcher DRENameMatcher(Rewrite);
 
@@ -214,8 +221,8 @@ class IfBreaker : public MatchFinder::MatchCallback
         const clang::Type* LTP = LQT.getTypePtr();
         const clang::Type* RTP = RQT.getTypePtr();
 
-        const clang::Type* CLTP = MR.Context->getCanonicalType(LTP);
-        const clang::Type* CRTP = MR.Context->getCanonicalType(RTP);
+        const clang::Type* CLTP [[maybe_unused]] = MR.Context->getCanonicalType(LTP);
+        const clang::Type* CRTP [[maybe_unused]] = MR.Context->getCanonicalType(RTP);
       }
     }
 
@@ -313,34 +320,97 @@ private:
 /*Main*/
 int main(int argc, const char **argv) 
 {
-  CommonOptionsParser op(argc, argv, BruiserCategory);
-  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+  int RunResult;
+  bruiser::ShellHistory shHistory;
+  int InKey;
 
-  int RunResult = Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
-
-  BruiseRep.PrintToLog("bruiser exited with:");
-  BruiseRep.PrintToLog(RunResult);
-
-  bruiser::ReadM0 M0Rep;
-  tinyxml2::XMLError XMLErr;
-
-  XMLErr = M0Rep.LoadXMLDoc();
-  if (XMLErr != XML_SUCCESS)
   {
-    std::cerr << "could not load m0 xml report.\n";
-    return XMLErr;
+    char command[130];
+    while(true)
+    {
+      std::cout << ">>";
+      InKey = getch();
+      std::cin.getline(command, sizeof(command));
+      shHistory.History.push_back(command);
+#if defined(__DBG_1)
+      std::cout << shHistory.History.size() << "\n";
+      std::cout << shHistory.History.capacity() << "\n";
+#endif
+
+      if (InKey == KEY_UP)
+      {
+        //std::cout << shHistory.History[];
+        std::cout << "caught key_up";
+      }
+      else if(InKey == KEY_DOWN)
+      {
+        std::cout << "caught key_down";
+      }
+
+      if (std::strcmp(command, "exit") == 0 || std::strcmp(command, "quit") == 0)
+      {
+        return 0;
+        continue;
+      }
+
+      if (std::strcmp(command, "m0") == 0)
+      {
+        BruiseRep.PrintToLog("bruiser exited with:");
+        BruiseRep.PrintToLog(RunResult);
+
+        bruiser::ReadM0 M0Rep;
+        tinyxml2::XMLError XMLErr;
+
+        XMLErr = M0Rep.LoadXMLDoc();
+        if (XMLErr != XML_SUCCESS)
+        {
+          std::cout << RED << "could not load m0 xml report.\n" << NORMAL;
+          std::cout << RED << "tinyxml2 returned " << XMLErr << NORMAL;
+          return XMLErr;
+        }
+
+        XMLErr = M0Rep.ReadFirstElement();
+        if (XMLErr != XML_SUCCESS)
+        {
+          std::cerr << RED << "could not read first element of m0 xml report.\n" << NORMAL;
+          return XMLErr;
+        }
+
+        bruiser::SearchM0(M0Rep.getRootPointer());
+        continue;
+      }
+
+      if (std::strcmp(command, "hijack main") == 0)
+      {
+        CommonOptionsParser op(argc, argv, BruiserCategory);
+        ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+
+        RunResult = Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
+        std::cout << CYAN <<"hijacking main returned " << RunResult << "\n";
+        continue;
+      }
+
+      if (std::strcmp(command, "clear") == 0)
+      {
+        std::cout << CLEAR;
+        continue;
+      }
+
+      if (std::strcmp(command, "shell") == 0)
+      {
+        system("bash -t");
+        continue;
+      }
+
+      if (std::strcmp(command, "help") == 0)
+      {
+        std::cout << BROWN << "not implemented yet.\n" << NORMAL;
+        continue;
+      }
+
+      std::cout << RED << "unknown command. run help.\n" << NORMAL;
+    }
   }
-
-  XMLErr = M0Rep.ReadFirstElement();
-  if (XMLErr != XML_SUCCESS)
-  {
-    std::cerr << "could not read first element of m0 xml report.\n";
-    return XMLErr;
-  }
-
-  bruiser::SearchM0(M0Rep.getRootPointer());
-
-  return RunResult;
 }
 /*last line interntionally left blank.*/
 
