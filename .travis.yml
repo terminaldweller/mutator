@@ -32,6 +32,8 @@ before_script:
   - travis_retry sudo apt-get install clang-4.0 libclang-4.0-dev libclang-common-4.0-dev libllvm4.0 llvm-4.0-dev llvm-4.0 llvm-4.0-runtime libclang1-4.0-dbg libllvm4.0-dbg lldb-4.0 -y
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+  - sudo apt-get install libboost-dev
+  - sudo apt-get install lib64ncurses5-dev
 
 script: 
   - make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG -j2
