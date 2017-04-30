@@ -22,7 +22,7 @@ mutatord, the mutator server and the client are also provided as optional featur
 That would be because m0's requirement set is different. m0's tests are aimed at lowering the bug-count(bug prevention, not finding bugs), increasing portablity and maintainability across different architectures and environments.<br/>
 
 #### What is SaferCpp?
-SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more (here)[https://github.com/duneroadrunner/SaferCPlusPlus].<br/>
+SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more [here](https://github.com/duneroadrunner/SaferCPlusPlus).<br/>
 
 Reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
 You can also run the mutator daemon(`mutatord`) which runs it in a client-server mode, with the client being a thin client.<br/>
