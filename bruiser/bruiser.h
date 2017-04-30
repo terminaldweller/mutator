@@ -37,6 +37,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/AST/ASTTypeTraits.h"
 /*llvm headers*/
 
+/*boost*/
+#include "boost/circular_buffer.hpp"
 /**********************************************************************************************************************/
 /*using*/
 using namespace tinyxml2;
@@ -47,6 +49,19 @@ namespace bruiser
 { //start of namespace bruiser
 /**********************************************************************************************************************/
   const char* M0REP = "../test/misrareport.xml";
+/**********************************************************************************************************************/
+#define RED "\033[1;31m"
+#define CYAN "\033[1;36m"
+#define GREEN "\033[1;32m"
+#define BLUE "\033[1;34m"
+#define BLACK "\033[1;30m"
+#define BROWN "\033[1;33m"
+#define MAGENTA "\033[1;35m"
+#define GRAY "\033[1;37m"
+#define DARKGRAY "\033[1;30m"
+#define YELLOW "\033[1;33m"
+#define NORMAL "\033[0m"
+#define CLEAR	"\033[2J"
 /**********************************************************************************************************************/
 /*Error Codes*/
 #define M0_ERROR_CODES \
@@ -97,7 +112,7 @@ class ReadM0
     {
       try
       {
-      XMLError eResult = IntermediateXMLDoc.LoadFile(M0REP);
+      XMLError eResult [[maybe_unused]] = IntermediateXMLDoc.LoadFile(M0REP);
 
       RootPointer = IntermediateXMLDoc.FirstChild();
       }
@@ -159,6 +174,22 @@ class SearchM0
 
   private:
     XMLNode* RootPointer;
+};
+/**********************************************************************************************************************/
+class ShellHistory
+{
+  public:
+    ShellHistory() {}
+    boost::circular_buffer<std::string> History{100};
+};
+/**********************************************************************************************************************/
+class Daemonize
+{
+  public:
+    Daemonize () {}
+
+  private:
+
 };
 /**********************************************************************************************************************/
 } // end of namespace bruiser
