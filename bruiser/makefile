@@ -3,7 +3,8 @@
 include ../macros.mk
 
 #######################################VARS####################################
-CXX_FLAGS+=
+CXX_FLAGS+=-I/usr/include
+EXTRA_LD_FLAGS+=-lncurses
 BRUISER=bruiser
 
 ######################################RULES####################################
