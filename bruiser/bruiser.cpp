@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*standard headers*/
 #include <string>
 #include <iostream>
+#include <regex>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -333,6 +334,7 @@ int main(int argc, const char **argv)
       std::cin.getline(command, sizeof(command));
       shHistory.History.push_back(command);
 #if defined(__DBG_1)
+      std::cout << InKey << "\n";
       std::cout << shHistory.History.size() << "\n";
       std::cout << shHistory.History.capacity() << "\n";
 #endif
@@ -350,7 +352,6 @@ int main(int argc, const char **argv)
       if (std::strcmp(command, "exit") == 0 || std::strcmp(command, "quit") == 0)
       {
         return 0;
-        continue;
       }
 
       if (std::strcmp(command, "m0") == 0)
@@ -398,7 +399,7 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "shell") == 0)
       {
-        system("bash -t");
+        system("bash -i");
         continue;
       }
 
@@ -408,9 +409,27 @@ int main(int argc, const char **argv)
         continue;
       }
 
+      if (std::strcmp(command, "history") == 0)
+      {
+        unsigned int _cnt = 0;
+        for (auto &it : shHistory.History)
+        {
+          _cnt++;
+          std::cout << _cnt << "." << it << "\n";
+        }
+
+        continue;
+      }
+
+      if (command[0] == '!')
+      {
+        std::cout << BROWN << "not implemented yet.\n" << NORMAL;
+        continue;
+      }
+
       std::cout << RED << "unknown command. run help.\n" << NORMAL;
     }
   }
 }
-/*last line interntionally left blank.*/
+/*last line intentionally left blank.*/
 
