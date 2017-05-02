@@ -13,4 +13,5 @@ print_pretty:true
 end_action:run
 
 action_name:my_action2
-end_action:stop
+executable_name:safercpp-arr
+end_action:run
