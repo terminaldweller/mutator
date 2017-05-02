@@ -307,7 +307,7 @@ private:
  
   void ParseString(void)
   {
-#if 1
+#if 0
     std::cout << "MCD:" << MCD << "\n";
     std::cout << "MCE:" << MCE << "\n";
 #endif
