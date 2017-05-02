@@ -186,10 +186,13 @@ class ShellHistory
 class Daemonize
 {
   public:
-    Daemonize () {}
+    Daemonize (std::string __exe, std::string __opts) : Exe(__exe), Opts(__opts) {}
+
+
 
   private:
-
+    std::string Exe;
+    std::string Opts;
 };
 /**********************************************************************************************************************/
 } // end of namespace bruiser
