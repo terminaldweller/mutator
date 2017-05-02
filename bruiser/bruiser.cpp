@@ -51,7 +51,7 @@ using namespace clang::driver;
 using namespace clang::tooling;
 /**********************************************************************************************************************/
 #define __DBG_1
-#if 0
+#if 1
 #undef __DBG_1
 #endif
 /**********************************************************************************************************************/
@@ -325,6 +325,8 @@ int main(int argc, const char **argv)
   bruiser::ShellHistory shHistory;
   int InKey;
 
+  CommonOptionsParser op(argc, argv, BruiserCategory);
+
   {
     char command[130];
     while(true)
@@ -383,11 +385,10 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "hijack main") == 0)
       {
-        CommonOptionsParser op(argc, argv, BruiserCategory);
         ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
         RunResult = Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
-        std::cout << CYAN <<"hijacking main returned " << RunResult << "\n";
+        std::cout << CYAN <<"hijacking main returned " << RunResult << "\n" << NORMAL;
         continue;
       }
 
