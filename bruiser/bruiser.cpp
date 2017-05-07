@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "../mutator_aux.h"
 /*standard headers*/
 #include <string>
+#include <cassert>
 #include <iostream>
 #include <regex>
 /*LLVM headers*/
@@ -275,6 +276,67 @@ public:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class LiveListFuncs : public MatchFinder::MatchCallback
+{
+  public:
+    LiveListFuncs (Rewriter &R) : R(R) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("livelistfuncs") != nullptr)
+      {
+        const clang::FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("livelistfuncs");
+
+        PRINT_WITH_COLOR_LB(CYAN, FD->getNameAsString());
+      }
+    }
+
+  private:
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+class LiveListVars : public MatchFinder::MatchCallback
+{
+  public:
+    LiveListVars (Rewriter &R) : R(R) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars") != nullptr)
+      {
+        const clang::VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars");
+
+        PRINT_WITH_COLOR_LB(CYAN, VD->getNameAsString());
+      }
+    }
+
+  private:
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+class LiveListRecords : public MatchFinder::MatchCallback
+{
+  public:
+    LiveListRecords (Rewriter &R) : R(R) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR)
+    {
+      if (MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars") != nullptr)
+      {
+        const clang::RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars");
+
+        PRINT_WITH_COLOR_LB(CYAN, RD->getNameAsString());
+      }
+    }
+
+  private:
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class BruiserASTConsumer : public ASTConsumer {
@@ -289,6 +351,7 @@ public:
 
     Matcher.addMatcher(functionDecl(hasName("main")).bind("mainwrapper"), &HMainWrapper);
 
+
     Matcher.matchAST(Context);
   }
 
@@ -297,6 +360,38 @@ private:
   MainWrapper HMainWrapper;
   MatchFinder Matcher;
   Rewriter R;
+};
+/**********************************************************************************************************************/
+class LiveConsumer : public ASTConsumer
+{
+  public:
+    LiveConsumer(Rewriter &R) : HLLVars(R), HLLFuncs(R), HLLRecords(R)
+    {}
+
+    void HandleTranslationUnit(ASTContext &ctx) override
+    {
+      Matcher.addMatcher(varDecl().bind("livelistvars"), &HLLVars);
+
+      Matcher.addMatcher(functionDecl().bind("livelistfuncs"), &HLLFuncs);
+
+      Matcher.addMatcher(recordDecl().bind("livelistrecords"), &HLLRecords);
+
+      Matcher.addMatcher(recordDecl(isClass()).bind("livelistrecords"), &HLLRecords);
+
+      Matcher.addMatcher(recordDecl(isUnion()).bind("livelistrecords"), &HLLRecords);
+
+      Matcher.addMatcher(recordDecl(isStruct()).bind("livelistrecords"), &HLLRecords);
+
+      Matcher.matchAST(ctx);
+    }
+
+  private:
+    MatchFinder Matcher;
+    LiveListVars HLLVars;
+    LiveListFuncs HLLFuncs;
+    LiveListRecords HLLRecords;
+    std::string __who;
+    Rewriter R;
 };
 /**********************************************************************************************************************/
 class BruiserFrontendAction : public ASTFrontendAction 
@@ -318,14 +413,49 @@ private:
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
+class LiveAction : public ASTFrontendAction
+{
+  public:
+    LiveAction() {}
+
+    void EndSourceFileAction() override
+    {
+      TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+    }
+
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+    {
+      TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+      return llvm::make_unique<LiveConsumer>(TheRewriter);
+    }
+
+  private:
+    Rewriter TheRewriter;
+};
+/**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) 
 {
   int RunResult;
   bruiser::ShellHistory shHistory;
   int InKey;
+  WINDOW *win;
+
+  std::regex listcommand("^list\\s");
+  std::regex listfuncs("^list\\sfuncs$");
+  std::regex listvars("^list\\svars$");
+  std::regex listarrays("^list\\sarrays$");
+  std::regex listrecords("^list\\srecords$");
+  std::regex listclasses("^list\\sclasses$");
+  std::regex liststructs("^list\\sstructs$$");
+  std::regex dumplist("^list\\sdump\\s");
+  std::smatch smresult;
+
+  //initscr();
+  cbreak();
 
   CommonOptionsParser op(argc, argv, BruiserCategory);
+  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
   {
     char command[130];
@@ -334,6 +464,20 @@ int main(int argc, const char **argv)
       std::cout << ">>";
       InKey = getch();
       std::cin.getline(command, sizeof(command));
+      std::string dummy_string(command);
+
+      for (auto &iter : command)
+      {
+        if (iter != 0)
+        {
+          /*intentionally left blank*/
+        }
+        else
+        {
+          iter = '\0';
+        }
+      }
+
       shHistory.History.push_back(command);
 #if defined(__DBG_1)
       std::cout << InKey << "\n";
@@ -349,6 +493,39 @@ int main(int argc, const char **argv)
       else if(InKey == KEY_DOWN)
       {
         std::cout << "caught key_down";
+      }
+
+      if (std::regex_search(dummy_string, smresult, listcommand))
+      {
+        if (std::regex_search(dummy_string, smresult, listfuncs))
+        {
+          NOT_IMPLEMENTED;
+          continue;
+        }
+
+        if (std::regex_search(dummy_string, smresult, listvars))
+        {
+          NOT_IMPLEMENTED;
+          continue;
+        }
+
+        if (std::regex_search(dummy_string, smresult, listarrays))
+        {
+          NOT_IMPLEMENTED;
+          continue;
+        }
+
+        if (std::regex_search(dummy_string, smresult, listclasses))
+        {
+          NOT_IMPLEMENTED;
+          continue;
+        }
+
+        if (std::regex_search(dummy_string, smresult, listrecords))
+        {
+          NOT_IMPLEMENTED;
+          continue;
+        }
       }
 
       if (std::strcmp(command, "exit") == 0 || std::strcmp(command, "quit") == 0)
@@ -385,11 +562,15 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "hijack main") == 0)
       {
-        ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
         RunResult = Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
         std::cout << CYAN <<"hijacking main returned " << RunResult << "\n" << NORMAL;
         continue;
+      }
+
+      if (std::strcmp(command, "list") == 0)
+      {
+
       }
 
       if (std::strcmp(command, "clear") == 0)
@@ -406,7 +587,15 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "help") == 0)
       {
-        std::cout << BROWN << "not implemented yet.\n" << NORMAL;
+        std::cout << GREEN;
+
+        for (auto &iter : bruiser::CMDHelp)
+        {
+          std::cout << iter.name << ":" << iter.proto << ":" << iter.descr << "\n";
+        }
+
+        std::cout << NORMAL;
+
         continue;
       }
 
@@ -415,8 +604,8 @@ int main(int argc, const char **argv)
         unsigned int _cnt = 0;
         for (auto &it : shHistory.History)
         {
-          _cnt++;
           std::cout << _cnt << "." << it << "\n";
+          _cnt++;
         }
 
         continue;
@@ -424,13 +613,34 @@ int main(int argc, const char **argv)
 
       if (command[0] == '!')
       {
-        std::cout << BROWN << "not implemented yet.\n" << NORMAL;
+        int command_number;
+        std::string cut_string;
+        //std::cout << CYAN << command << "\n" << NORMAL;
+        //std::cout << GREEN << dummy_string << "\n" << NORMAL;
+
+        //assert(dummy_st == 130);
+
+        cut_string = dummy_string.substr(1, dummy_string.length());
+        //std::cout << GREEN << cut_string << "\n" << NORMAL;
+        command_number = std::stoi(cut_string, 0, 10);
+
+        if (command_number > SHELL_HISTORY_SIZE)
+        {
+          std::cout << RED << "the command number provided is bigger than SHELL_HISTORY_SIZE." << NORMAL << "\n";
+        }
+        else
+        {
+          std::cout << CYAN << shHistory.History[command_number] << NORMAL;
+        }
+
         continue;
       }
 
       std::cout << RED << "unknown command. run help.\n" << NORMAL;
     }
   }
+
+  //endwin();
 }
 /*last line intentionally left blank.*/
 
