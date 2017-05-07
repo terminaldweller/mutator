@@ -62,6 +62,23 @@ namespace bruiser
 #define YELLOW "\033[1;33m"
 #define NORMAL "\033[0m"
 #define CLEAR	"\033[2J"
+
+#define SHELL_HISTORY_SIZE  100
+
+#define NOT_IMPLEMENTED \
+  do{\
+    std::cout << BROWN << "not implemented yet\n" << NORMAL;\
+  }while(0)
+
+#define  PRINT_WITH_COLOR(X,Y) \
+  do{\
+    std::cout << X << Y << NORMAL;\
+  }while(0)
+
+#define  PRINT_WITH_COLOR_LB(X,Y) \
+  do{\
+    std::cout << X << Y << "\n" << NORMAL;\
+  }while(0)
 /**********************************************************************************************************************/
 /*Error Codes*/
 #define M0_ERROR_CODES \
@@ -81,7 +98,7 @@ struct help
   std::string retval;
 };
 
-help CMDHelp[] ={
+help CMDHelp[] = {
   {"help", "", "display general help", "", ""},
   {"quit", "", "quit bruiser", "", ""},
   {"exit", "", "quit bruiser", "", ""},
@@ -90,7 +107,8 @@ help CMDHelp[] ={
   {"clear", "", "clears the terminal", "", ""},
   {"shell", "", "opens up a bash shell inside bruiser", "", ""},
   {"history", "", "prints bruiser's history", "", ""},
-  {"!", "", "prints the command from history", "", ""}
+  {"!", "", "prints the command from history", "", ""},
+  {"list", "list functions", "lists the names of all available types", "", ""}
 };
 /**********************************************************************************************************************/
 /**
@@ -205,7 +223,7 @@ class ShellHistory
 {
   public:
     ShellHistory() {}
-    boost::circular_buffer<std::string> History{100};
+    boost::circular_buffer<std::string> History{SHELL_HISTORY_SIZE};
 };
 /**********************************************************************************************************************/
 class Daemonize
