@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/Lexer.h"
+#include "clang/Lex/Preprocessor.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
@@ -394,6 +395,107 @@ class LiveConsumer : public ASTConsumer
     Rewriter R;
 };
 /**********************************************************************************************************************/
+class LiveListVarsConsumer : public ASTConsumer
+{
+  public:
+    LiveListVarsConsumer(Rewriter &R) : HLLVars(R)
+    {}
+
+    void HandleTranslationUnit(ASTContext &ctx) override
+    {
+      Matcher.addMatcher(varDecl().bind("livelistvars"), &HLLVars);
+
+      Matcher.matchAST(ctx);
+    }
+
+  private:
+    LiveListVars HLLVars;
+    Rewriter R;
+    MatchFinder Matcher;
+};
+/**********************************************************************************************************************/
+class LiveListFuncsConsumer : public ASTConsumer
+{
+  public:
+    LiveListFuncsConsumer(Rewriter &R) : HLLFuncs(R)
+    {}
+
+    void HandleTranslationUnit(ASTContext &ctx) override
+    {
+      Matcher.addMatcher(functionDecl().bind("livelistfuncs"), &HLLFuncs);
+
+      Matcher.matchAST(ctx);
+    }
+
+  private:
+    MatchFinder Matcher;
+    LiveListFuncs HLLFuncs;
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+class LiveListClassConsumer : public ASTConsumer
+{
+  public:
+    LiveListClassConsumer(Rewriter &R) : HLLRecords(R)
+    {}
+
+    void HandleTranslationUnit(ASTContext &ctx) override
+    {
+      Matcher.addMatcher(recordDecl(isClass()).bind("livelistclass"), &HLLRecords);
+
+      Matcher.matchAST(ctx);
+    }
+
+  private:
+    MatchFinder Matcher;
+    LiveListRecords HLLRecords;
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+class LiveListStructConsumer : public ASTConsumer
+{
+  public:
+    LiveListStructConsumer(Rewriter &R) : HLLRecords(R)
+    {}
+
+    void HandleTranslationUnit(ASTContext &ctx) override
+    {
+      Matcher.addMatcher(recordDecl(isStruct()).bind("liveliststruct"), &HLLRecords);
+
+      Matcher.matchAST(ctx);
+    }
+
+  private:
+    MatchFinder Matcher;
+    LiveListRecords HLLRecords;
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+class LiveListUnionConsumer : public ASTConsumer
+{
+  public:
+    LiveListUnionConsumer(Rewriter &R) : HLLRecords(R)
+    {}
+
+    void HandleTranslationUnit(ASTContext &ctx) override
+    {
+      Matcher.addMatcher(recordDecl(isUnion()).bind("livelistclass"), &HLLRecords);
+
+      Matcher.matchAST(ctx);
+    }
+
+  private:
+    MatchFinder Matcher;
+    LiveListRecords HLLRecords;
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+class BlankDiagConsumer : public clang::DiagnosticConsumer
+{
+  virtual void HandleDiagnostic(DiagnosticsEngine::Level, const Diagnostic &Info) override {}
+};
+/**********************************************************************************************************************/
 class BruiserFrontendAction : public ASTFrontendAction 
 {
 public:
@@ -405,6 +507,9 @@ public:
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override 
   {
+    DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+    DE.setClient(BDCProto);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<BruiserASTConsumer>(TheRewriter);
   }
@@ -413,25 +518,107 @@ private:
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
-class LiveAction : public ASTFrontendAction
+class LiveActionListVars : public ASTFrontendAction
 {
   public:
-    LiveAction() {}
+    LiveActionListVars() {}
 
-    void EndSourceFileAction() override
-    {
-      TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
-    }
+    void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+      DE.setClient(BDCProto);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
-      return llvm::make_unique<LiveConsumer>(TheRewriter);
+      return llvm::make_unique<LiveListVarsConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
 };
+/**********************************************************************************************************************/
+class LiveActionListFuncs : public ASTFrontendAction
+{
+  public:
+    LiveActionListFuncs() {}
+
+    void EndSourceFileAction() override {}
+
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+    {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+      DE.setClient(BDCProto);
+      TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+      return llvm::make_unique<LiveListFuncsConsumer>(TheRewriter);
+    }
+
+  private:
+    Rewriter TheRewriter;
+};
+/**********************************************************************************************************************/
+class LiveActionListStructs : public ASTFrontendAction
+{
+  public:
+    LiveActionListStructs() {}
+
+    void EndSourceFileAction() override {}
+
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+    {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+      DE.setClient(BDCProto);
+      TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+      return llvm::make_unique<LiveListStructConsumer>(TheRewriter);
+    }
+
+  private:
+    Rewriter TheRewriter;
+};
+/**********************************************************************************************************************/
+class LiveActionListClasses : public ASTFrontendAction
+{
+  public:
+    LiveActionListClasses() {}
+
+    void EndSourceFileAction() override {}
+
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+    {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+      DE.setClient(BDCProto);
+      TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+      return llvm::make_unique<LiveListClassConsumer>(TheRewriter);
+    }
+
+  private:
+    Rewriter TheRewriter;
+};
+/**********************************************************************************************************************/
+class LiveActionListUnions : public ASTFrontendAction
+{
+  public:
+    LiveActionListUnions() {}
+
+    void EndSourceFileAction() override {}
+
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+    {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+      DE.setClient(BDCProto);
+      TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+      return llvm::make_unique<LiveListUnionConsumer>(TheRewriter);
+    }
+
+  private:
+    Rewriter TheRewriter;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) 
@@ -448,6 +635,7 @@ int main(int argc, const char **argv)
   std::regex listrecords("^list\\srecords$");
   std::regex listclasses("^list\\sclasses$");
   std::regex liststructs("^list\\sstructs$$");
+  std::regex listunions("^list\\sunions$$");
   std::regex dumplist("^list\\sdump\\s");
   std::smatch smresult;
 
@@ -499,13 +687,13 @@ int main(int argc, const char **argv)
       {
         if (std::regex_search(dummy_string, smresult, listfuncs))
         {
-          NOT_IMPLEMENTED;
+          RunResult = Tool.run(newFrontendActionFactory<LiveActionListFuncs>().get());
           continue;
         }
 
         if (std::regex_search(dummy_string, smresult, listvars))
         {
-          NOT_IMPLEMENTED;
+          RunResult = Tool.run(newFrontendActionFactory<LiveActionListVars>().get());
           continue;
         }
 
@@ -517,7 +705,13 @@ int main(int argc, const char **argv)
 
         if (std::regex_search(dummy_string, smresult, listclasses))
         {
-          NOT_IMPLEMENTED;
+          RunResult = Tool.run(newFrontendActionFactory<LiveActionListClasses>().get());
+          continue;
+        }
+
+        if (std::regex_search(dummy_string, smresult, listunions))
+        {
+          RunResult = Tool.run(newFrontendActionFactory<LiveActionListUnions>().get());
           continue;
         }
 
