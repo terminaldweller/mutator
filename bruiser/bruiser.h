@@ -79,6 +79,12 @@ namespace bruiser
   do{\
     std::cout << X << Y << "\n" << NORMAL;\
   }while(0)
+
+#define SHOW_TEXT(X,Y) \
+  do{\
+    wprintw(X, Y);\
+    wrefresh(X);\
+  }while(0)
 /**********************************************************************************************************************/
 /*Error Codes*/
 #define M0_ERROR_CODES \
