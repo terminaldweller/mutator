@@ -42,7 +42,7 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 **mutatord** is the mutator daemon that runs the server.<br/>
 **mutatorclient** is the thin client that sends commands to the server.<br/>
 **safercpp-arr** is SaferCPP's automatic refactoring tool for arrays.<br/>
-**bruiser** tries to break your code.<br/>
+**bruiser** the short explanation is that bruiser is an interactive shell that mutates code on demand, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
 <br/>
 
 ## How To get project mutator
