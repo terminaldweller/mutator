@@ -293,9 +293,9 @@ class LiveListFuncs : public MatchFinder::MatchCallback
           Stmt* Body = FD->getBody();
           SourceLocation SLBody = Body->getLocStart();
           SourceLocation SLShebang = FD->getLocStart();
-          PRINT_WITH_COLOR_LB(GREEN, "begin");
+          //PRINT_WITH_COLOR_LB(GREEN, "begin");
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))));
-          PRINT_WITH_COLOR_LB(GREEN, "end");
+          //PRINT_WITH_COLOR_LB(GREEN, "end");
         }
         else
         {
@@ -340,7 +340,7 @@ class LiveListRecords : public MatchFinder::MatchCallback
       {
         const clang::RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars");
 
-        PRINT_WITH_COLOR_LB(CYAN, RD->getNameAsString());
+        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())));
       }
     }
 
@@ -504,6 +504,27 @@ class LiveListUnionConsumer : public ASTConsumer
     Rewriter R;
 };
 /**********************************************************************************************************************/
+class LiveListArrayConsumer : public ASTConsumer
+{
+  public:
+    LiveListArrayConsumer(Rewriter &R) : HLLVars(R)
+    {}
+
+    void HandleTranslationUnit(ASTContext &ctx) override
+    {
+      Matcher.addMatcher(varDecl(hasType(arrayType())).bind("livelistvars"), &HLLVars);
+
+      Matcher.matchAST(ctx);
+    }
+
+  private:
+    MatchFinder Matcher;
+    LiveListVars HLLVars;
+    Rewriter R;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class BlankDiagConsumer : public clang::DiagnosticConsumer
 {
@@ -632,6 +653,25 @@ class LiveActionListUnions : public ASTFrontendAction
     Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
+class LiveActionListArrays : public ASTFrontendAction
+{
+  public:
+    LiveActionListArrays() {}
+
+    void EndSourceFileAction() override {}
+
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
+    {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+      DE.setClient(BDCProto);
+      TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+      return llvm::make_unique<LiveListArrayConsumer>(TheRewriter);
+    }
+
+  private:
+    Rewriter TheRewriter;
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /*Main*/
@@ -640,7 +680,8 @@ int main(int argc, const char **argv)
   int RunResult;
   bruiser::ShellHistory shHistory;
   int InKey;
-  WINDOW *win;
+  //unsigned int xcurse;
+  //unsigned int ycurse;
 
   std::regex listcommand("^list\\s");
   std::regex listfuncs("^list\\sfuncs$");
@@ -653,8 +694,10 @@ int main(int argc, const char **argv)
   std::regex dumplist("^list\\sdump\\s");
   std::smatch smresult;
 
+  WINDOW *win [[maybe_unused]];
+  //win = newwin(0, 0, 1, 1);
   //initscr();
-  cbreak();
+  nocbreak();
 
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
@@ -663,6 +706,8 @@ int main(int argc, const char **argv)
     char command[130];
     while(true)
     {
+      //wprintw(win, ">>");
+      //wrefresh(win);
       std::cout << ">>";
       InKey = getch();
       std::cin.getline(command, sizeof(command));
@@ -713,13 +758,19 @@ int main(int argc, const char **argv)
 
         if (std::regex_search(dummy_string, smresult, listarrays))
         {
-          NOT_IMPLEMENTED;
+          RunResult = Tool.run(newFrontendActionFactory<LiveActionListArrays>().get());
           continue;
         }
 
         if (std::regex_search(dummy_string, smresult, listclasses))
         {
           RunResult = Tool.run(newFrontendActionFactory<LiveActionListClasses>().get());
+          continue;
+        }
+
+        if (std::regex_search(dummy_string, smresult, liststructs))
+        {
+          RunResult = Tool.run(newFrontendActionFactory<LiveActionListStructs>().get());
           continue;
         }
 
@@ -847,7 +898,8 @@ int main(int argc, const char **argv)
       std::cout << RED << "unknown command. run help.\n" << NORMAL;
     }
   }
-
+  
+  //delwin(win);
   //endwin();
 }
 /*last line intentionally left blank.*/
