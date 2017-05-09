@@ -288,7 +288,21 @@ class LiveListFuncs : public MatchFinder::MatchCallback
       {
         const clang::FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("livelistfuncs");
 
-        PRINT_WITH_COLOR_LB(CYAN, FD->getNameAsString());
+        if (FD->hasBody())
+        {
+          Stmt* Body = FD->getBody();
+          SourceLocation SLBody = Body->getLocStart();
+          SourceLocation SLShebang = FD->getLocStart();
+          PRINT_WITH_COLOR_LB(GREEN, "begin");
+          PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))));
+          PRINT_WITH_COLOR_LB(GREEN, "end");
+        }
+        else
+        {
+          SourceLocation SL = FD->getLocStart();
+          SourceLocation SLE = FD->getLocEnd();
+          PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SL, SLE)));
+        }
       }
     }
 
@@ -307,7 +321,7 @@ class LiveListVars : public MatchFinder::MatchCallback
       {
         const clang::VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars");
 
-        PRINT_WITH_COLOR_LB(CYAN, VD->getNameAsString());
+        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())));
       }
     }
 
