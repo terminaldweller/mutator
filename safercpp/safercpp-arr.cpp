@@ -703,6 +703,20 @@ public:
 	clang::QualType m_qtype;
 };
 
+class CStraightReplacementExprTextModifier : public CExprTextModifier {
+public:
+	CStraightReplacementExprTextModifier(const std::string& replacement_text) :
+		m_replacement_text(replacement_text) {}
+	virtual ~CStraightReplacementExprTextModifier() {}
+	virtual std::string modified_copy(const std::string& input_text, const clang::Expr* expr_ptr = nullptr) const {
+		return m_replacement_text;
+	}
+	virtual std::string species_str() const {
+		return "straight replacement";
+	}
+	std::string m_replacement_text;
+};
+
 class CExprTextModifierStack : public std::vector<std::shared_ptr<CExprTextModifier>> {
 public:
 };
@@ -777,21 +791,81 @@ public:
 		return (*(static_cast<const clang::ConditionalOperator *>(m_expr_cptr)));
 	}
 	virtual void update_current_text() {
-		if (false) {
+		if (true) {
 			/* Do we need to update the kids first? */
-			m_cond_shptr->update_current_text();
-			m_lhs_shptr->update_current_text();
-			m_rhs_shptr->update_current_text();
+			cond_shptr()->update_current_text();
+			lhs_shptr()->update_current_text();
+			rhs_shptr()->update_current_text();
 		}
-		std::string updated_text = m_cond_shptr->m_current_text_str + " ? "
-				+ m_lhs_shptr->m_current_text_str + " : " + m_rhs_shptr->m_current_text_str;
+		std::string updated_text = cond_shptr()->m_current_text_str + " ? "
+				+ lhs_shptr()->m_current_text_str + " : " + rhs_shptr()->m_current_text_str;
 		updated_text = modified_copy(updated_text);
 		m_current_text_str = updated_text;
 	}
 
+	std::shared_ptr<CExprConversionState>& cond_shptr() {
+		if (3 != m_children_shptrs.size()) {
+			assert(false);
+			return m_cond_shptr;
+		} else {
+			return m_children_shptrs[0];
+		}
+	}
+	std::shared_ptr<CExprConversionState>& lhs_shptr() {
+		if (3 != m_children_shptrs.size()) {
+			assert(false);
+			return m_lhs_shptr;
+		} else {
+			return m_children_shptrs[1];
+		}
+	}
+	std::shared_ptr<CExprConversionState>& rhs_shptr() {
+		if (3 != m_children_shptrs.size()) {
+			assert(false);
+			return m_rhs_shptr;
+		} else {
+			return m_children_shptrs[2];
+		}
+	}
+
+private:
 	std::shared_ptr<CExprConversionState> m_cond_shptr;
 	std::shared_ptr<CExprConversionState> m_lhs_shptr;
 	std::shared_ptr<CExprConversionState> m_rhs_shptr;
+};
+
+class CAddressofArraySubscriptExprConversionState : public CExprConversionState {
+public:
+	CAddressofArraySubscriptExprConversionState(const clang::UnaryOperator& addrofexpr_cref, Rewriter &Rewrite, const clang::ArraySubscriptExpr& arraysubscriptexpr_cref) : CExprConversionState(addrofexpr_cref, Rewrite), m_arraysubscriptexpr_cptr(&arraysubscriptexpr_cref) {
+		assert(clang::UnaryOperatorKind::UO_AddrOf == addrofexpr_cref.getOpcode());
+		m_arraysubscriptexpr_shptr = std::make_shared<CExprConversionState>(*m_arraysubscriptexpr_cptr, Rewrite);
+		m_children_shptrs.push_back(m_arraysubscriptexpr_shptr);
+	}
+	const clang::UnaryOperator& addrofexpr_cref() const {
+		return (*(static_cast<const clang::UnaryOperator *>(m_expr_cptr)));
+	}
+	virtual void update_current_text() {
+		if (true) {
+			/* Do we need to update the kids first? */
+			arraysubscriptexpr_shptr()->update_current_text();
+		}
+		std::string updated_text = "&(" + arraysubscriptexpr_shptr()->m_current_text_str + ")";
+		updated_text = modified_copy(updated_text);
+		m_current_text_str = updated_text;
+	}
+
+	std::shared_ptr<CExprConversionState>& arraysubscriptexpr_shptr() {
+		if (1 != m_children_shptrs.size()) {
+			assert(false);
+			return m_arraysubscriptexpr_shptr;
+		} else {
+			return m_children_shptrs[0];
+		}
+	}
+
+private:
+	std::shared_ptr<CExprConversionState> m_arraysubscriptexpr_shptr;
+	const clang::ArraySubscriptExpr* m_arraysubscriptexpr_cptr = nullptr;
 };
 
 template<class X, class... Args>
@@ -807,13 +881,21 @@ public:
 	iterator insert( const std::shared_ptr<CExprConversionState>& cr_shptr ) {
 		iterator retval(end());
 		if (!cr_shptr) { assert(false); } else {
+			decltype((*cr_shptr).m_children_shptrs) mapped_children_shptrs;
+			for (auto& child_shptr_ref : (*cr_shptr).m_children_shptrs) {
+				//value_type val((*child_shptr_ref).m_expr_cptr, child_shptr_ref);
+				//auto res2 = base_class::insert(val);
+				auto iter1 = insert(child_shptr_ref);
+				if (child_shptr_ref != (*iter1).second) {
+					int q = 7;
+				}
+				mapped_children_shptrs.push_back((*iter1).second);
+			}
+
 			value_type val((*cr_shptr).m_expr_cptr, cr_shptr);
 			auto res1 = base_class::insert(val);
 			retval = res1.first;
-			for (auto& child_shptr_ref : (*cr_shptr).m_children_shptrs) {
-				value_type val((*child_shptr_ref).m_expr_cptr, child_shptr_ref);
-				auto res1 = base_class::insert(val);
-			}
+			(*((*retval).second)).m_children_shptrs = mapped_children_shptrs;
 		}
 		return retval;
 	}
@@ -930,6 +1012,19 @@ public:
 	virtual void do_replacement(CState1& state1) const;
 
 	const CDDeclIndirection m_ddecl_indirection2;
+};
+
+class CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction : public CArray2ReplacementAction {
+public:
+	CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction(Rewriter &Rewrite, const MatchFinder::MatchResult &MR, const CDDeclIndirection& ddecl_indirection,
+			const clang::UnaryOperator& addrofexpr_cref, const clang::ArraySubscriptExpr& arraysubscriptexpr_cref) :
+				CArray2ReplacementAction(Rewrite, MR, ddecl_indirection), m_addrofexpr_cptr(&addrofexpr_cref), m_arraysubscriptexpr_cptr(&arraysubscriptexpr_cref) {}
+	virtual ~CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction() {}
+
+	virtual void do_replacement(CState1& state1) const;
+
+	const clang::UnaryOperator* m_addrofexpr_cptr = nullptr;
+	const clang::ArraySubscriptExpr* m_arraysubscriptexpr_cptr = nullptr;
 };
 
 class CDDecl2ReplacementActionMap : public std::multimap<CDDeclIndirection, std::shared_ptr<CDDecl2ReplacementAction>> {
@@ -1929,6 +2024,47 @@ void CSameTypeArray2ReplacementAction::do_replacement(CState1& state1) const {
 	}
 }
 
+void CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction::do_replacement(CState1& state1) const {
+	Rewriter &Rewrite = m_Rewrite;
+	const MatchFinder::MatchResult &MR = m_MR;
+
+	const clang::UnaryOperator* UO = m_addrofexpr_cptr;
+	const ArraySubscriptExpr* ASE = m_arraysubscriptexpr_cptr;
+	if (UO && ASE) {
+		auto UOSR = nice_source_range(UO->getSourceRange(), (*this).m_Rewrite);
+		auto ase_SR = nice_source_range(ASE->getSourceRange(), (*this).m_Rewrite);
+		if ((UOSR.isValid()) && (ase_SR.isValid())) {
+			auto uocs_iter = state1.m_expr_conversion_state_map.find(UO);
+			if (state1.m_expr_conversion_state_map.end() == uocs_iter) {
+				std::shared_ptr<CExprConversionState> shptr1 = make_expr_conversion_state_shared_ptr<CAddressofArraySubscriptExprConversionState>(*UO, m_Rewrite, *ASE);
+				uocs_iter = state1.m_expr_conversion_state_map.insert(shptr1);
+			}
+			auto& uocs_shptr_ref = (*uocs_iter).second;
+
+			auto index_expr_cptr = ASE->getIdx();
+			auto array_expr_cptr = ASE->getBase();
+			if (index_expr_cptr && array_expr_cptr) {
+				auto index_expr_SR = nice_source_range(index_expr_cptr->getSourceRange(), (*this).m_Rewrite);
+				auto array_expr_SR = nice_source_range(array_expr_cptr->getSourceRange(), (*this).m_Rewrite);
+				if (index_expr_SR.isValid() && array_expr_SR.isValid()) {
+					std::string index_expr_text = (*this).m_Rewrite.getRewrittenText(index_expr_SR);
+					std::string array_expr_text = (*this).m_Rewrite.getRewrittenText(array_expr_SR);
+
+					std::string UO_replacement_text = "((" + array_expr_text + ") + (" + index_expr_text + "))";
+					if (ConvertToSCPP) {
+						std::shared_ptr<CExprTextModifier> shptr1 = std::make_shared<CStraightReplacementExprTextModifier>(UO_replacement_text);
+						(*uocs_shptr_ref).m_expr_text_modifier_stack.push_back(shptr1);
+						(*uocs_shptr_ref).update_current_text();
+
+						(*this).m_Rewrite.ReplaceText(UOSR, (*uocs_shptr_ref).m_current_text_str);
+					}
+				}
+			}
+
+		}
+	}
+}
+
 void CConditionalOperatorReconciliation2ReplacementAction::do_replacement(CState1& state1) const {
 	const clang::ConditionalOperator* CO = m_CO;
 	const Expr* COND = nullptr;
@@ -2044,6 +2180,8 @@ void CConditionalOperatorReconciliation2ReplacementAction::do_replacement(CState
 						(*lhscs_shptr_ref).m_expr_text_modifier_stack.push_back(shptr1);
 						(*lhscs_shptr_ref).update_current_text();
 					}
+				} else {
+					int q = 7;
 				}
 			}
 			if (rhs_needs_to_be_wrapped) {
@@ -2063,6 +2201,8 @@ void CConditionalOperatorReconciliation2ReplacementAction::do_replacement(CState
 						(*rhscs_shptr_ref).m_expr_text_modifier_stack.push_back(shptr1);
 						(*rhscs_shptr_ref).update_current_text();
 					}
+				} else {
+					int q = 7;
 				}
 			}
 
@@ -2076,6 +2216,8 @@ void CConditionalOperatorReconciliation2ReplacementAction::do_replacement(CState
 				auto& ddcs_ref = (*ddcs_map_iter).second;
 
 				ddcs_ref.m_initializer_info_str = " = " + cocs_shptr_ref.m_current_text_str;
+
+				update_declaration(*m_var_DD, m_Rewrite, state1);
 			}
 
 		}
@@ -2086,6 +2228,7 @@ void CConditionalOperatorReconciliation2ReplacementAction::do_replacement(CState
 struct CLeadingAddressofOperatorInfo {
 	bool leading_addressof_operator_detected = false;
 	const clang::Expr* without_leading_addressof_operator_expr_cptr = nullptr;
+	const clang::UnaryOperator* addressof_unary_operator_cptr = nullptr;
 };
 CLeadingAddressofOperatorInfo leading_addressof_operator_info_from_stmt(const clang::Stmt& stmt_cref, int depth = 0) {
 	CLeadingAddressofOperatorInfo retval;
@@ -2098,6 +2241,7 @@ CLeadingAddressofOperatorInfo leading_addressof_operator_info_from_stmt(const cl
 		if (UO) {
 			if (clang::UnaryOperatorKind::UO_AddrOf == UO->getOpcode()) {
 				retval.leading_addressof_operator_detected = true;
+				retval.addressof_unary_operator_cptr = UO;
 
 				auto child_iter = ST->child_begin();
 				if (child_iter != ST->child_end()) {
@@ -2624,9 +2768,6 @@ public:
 			} else {
 				return;
 			}
-			if (std::string::npos != source_location_str.find("526")) {
-				int q = 5;
-			}
 
 			if (filtered_out_by_location(MR, BOSL)) {
 				return void();
@@ -2761,15 +2902,14 @@ public:
 									}
 
 									const clang::Type* lhs_TP = lhs_QT.getTypePtr();
-									auto lhs_type_str = clang::QualType::getAsString(lhs_QT.split());
+									auto lhs_type_str = lhs_QT.getAsString();
 
 									std::string lhs_element_type_str;
 									if (lhs_TP->isArrayType()) {
 										auto ATP = llvm::cast<const clang::ArrayType>(lhs_TP);
 										assert(nullptr != ATP);
 										auto element_type = ATP->getElementType();
-										auto elementSplitQualType = element_type.split();
-										auto type_str = clang::QualType::getAsString(elementSplitQualType);
+										auto type_str = element_type.getAsString();
 										if (("char" != type_str) && ("const char" != type_str)) {
 											lhs_element_type_str = type_str;
 										}
@@ -2777,8 +2917,7 @@ public:
 										auto TPP = llvm::cast<const clang::PointerType>(lhs_TP);
 										assert(nullptr != TPP);
 										auto target_type = TPP->getPointeeType();
-										auto splitQualType = target_type.split();
-										auto type_str = clang::QualType::getAsString(splitQualType);
+										auto type_str = target_type.getAsString();
 										if (("char" != type_str) && ("const char" != type_str)) {
 											lhs_element_type_str = type_str;
 										}
@@ -2871,6 +3010,10 @@ public:
 
 			if (filtered_out_by_location(MR, DSSL)) {
 				return void();
+			}
+
+			if (std::string::npos != source_location_str.find("288")) {
+				int q = 5;
 			}
 
 			auto function_decl = CE->getDirectCallee();
@@ -2993,14 +3136,15 @@ public:
 										auto ATP = llvm::cast<const clang::ArrayType>(TP);
 										assert(nullptr != ATP);
 										auto element_type = ATP->getElementType();
-										auto elementSplitQualType = element_type.split();
-										element_type_str = clang::QualType::getAsString(elementSplitQualType);
+										auto type_str = element_type.getAsString();
+										if (("char" != type_str) && ("const char" != type_str)) {
+											element_type_str = type_str;
+										}
 									} else if (TP->isPointerType()) {
 										auto TPP = llvm::cast<const clang::PointerType>(TP);
 										assert(nullptr != TPP);
 										auto target_type = TPP->getPointeeType();
-										auto splitQualType = target_type.split();
-										auto type_str = clang::QualType::getAsString(splitQualType);
+										auto type_str = target_type.getAsString();
 										if (("char" != type_str) && ("const char" != type_str)) {
 											element_type_str = type_str;
 										}
@@ -3105,35 +3249,23 @@ public:
 					bool ends_with_free = ((lc_function_name.size() >= free_str.size())
 							&& (0 == lc_function_name.compare(lc_function_name.size() - free_str.size(), free_str.size(), free_str)));
 					if (ends_with_free) {
-						auto iter = CE->arg_begin();
-						assert((*iter)->getType().getTypePtrOrNull());
-						auto arg_source_range = nice_source_range((*iter)->getSourceRange(), Rewrite);
+						auto arg_iter = CE->arg_begin();
+						assert((*arg_iter)->getType().getTypePtrOrNull());
+						auto arg_source_range = nice_source_range((*arg_iter)->getSourceRange(), Rewrite);
 						std::string arg_source_text;
 						if (arg_source_range.isValid()) {
 							arg_source_text = Rewrite.getRewrittenText(arg_source_range);
 							//auto arg_source_text_sans_ws = with_whitespace_removed(arg_source_text);
+
 							QualType QT;
-							std::string element_type_str;
-							clang::SourceRange decl_source_range;
 							std::string variable_name;
 							std::string ce_replacement_code;
-							const clang::DeclaratorDecl* DD = nullptr;
 
-							auto decl = DRE->getDecl();
-							DD = dynamic_cast<const DeclaratorDecl*>(decl);
-							auto VD = dynamic_cast<const VarDecl*>(decl);
+							auto res2 = infer_array_type_info_from_stmt(*(*(CE->arg_begin())), "malloc target", (*this).m_state1);
+							auto DD = res2.ddecl_cptr;
 
-							const clang::FieldDecl* FD = nullptr;
-							if (nullptr != ME) {
-								auto member_decl = ME->getMemberDecl();
-								FD = dynamic_cast<const clang::FieldDecl*>(ME->getMemberDecl());
-							}
-							if (nullptr != FD) {
-								DD = FD;
-							} else if (nullptr != VD) {
-								DD = VD;
-							} else {
-								int q = 7;
+							if (res2.update_declaration_flag) {
+								update_declaration(*DD, Rewrite, m_state1);
 							}
 
 							if (nullptr != DD) {
@@ -3156,26 +3288,44 @@ public:
 									return;
 								}
 
-								auto res2 = infer_array_type_info_from_stmt(*(*(CE->arg_begin())), "malloc target", (*this).m_state1, DD);
+								const clang::Type* TP = QT.getTypePtr();
+								auto type_str = QT.getAsString();
 
-								if (res2.update_declaration_flag) {
-									update_declaration(*DD, Rewrite, m_state1);
+								std::string element_type_str;
+								if (TP->isArrayType()) {
+									auto ATP = llvm::cast<const clang::ArrayType>(TP);
+									assert(nullptr != ATP);
+									auto element_type = ATP->getElementType();
+									auto type_str = element_type.getAsString();
+									if (("char" != type_str) && ("const char" != type_str)) {
+										element_type_str = type_str;
+									}
+								} else if (TP->isPointerType()) {
+									auto TPP = llvm::cast<const clang::PointerType>(TP);
+									assert(nullptr != TPP);
+									auto target_type = TPP->getPointeeType();
+									auto type_str = target_type.getAsString();
+									if (("char" != type_str) && ("const char" != type_str)) {
+										element_type_str = type_str;
+									}
 								}
 
-								ce_replacement_code = "(" + arg_source_text + ")";
-								ce_replacement_code += ".resize(0)";
+								if ("" != element_type_str) {
+									ce_replacement_code = "(" + arg_source_text + ")";
+									ce_replacement_code += ".resize(0)";
 
-								if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())
-										&& (nullptr != res2.ddecl_conversion_state_ptr)) {
-									auto cr_shptr = std::make_shared<CFreeDynamicArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, res2.indirection_level), CE, ce_replacement_code);
+									if (ConvertToSCPP && decl_source_range.isValid() && (CESR.isValid())
+											&& (nullptr != res2.ddecl_conversion_state_ptr)) {
+										auto cr_shptr = std::make_shared<CFreeDynamicArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*(res2.ddecl_cptr), res2.indirection_level), CE, ce_replacement_code);
 
-									if ((*(res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_an_array(res2.indirection_level)) {
-										(*cr_shptr).do_replacement(m_state1);
+										if ((*(res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_an_array(res2.indirection_level)) {
+											(*cr_shptr).do_replacement(m_state1);
+										} else {
+											m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
+										}
 									} else {
-										m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
+										int q = 7;
 									}
-								} else {
-									int q = 7;
 								}
 							}
 							int q = 5;
@@ -3244,72 +3394,49 @@ public:
 					lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
 					//auto lhs_source_text_sans_ws = with_whitespace_removed(lhs_source_text);
 
-					QualType QT;
-					std::string element_type_str;
-					clang::SourceRange decl_source_range;
-					std::string variable_name;
-					std::string bo_replacement_code;
-					const clang::DeclaratorDecl* DD = nullptr;
+					auto lhs_res2 = infer_array_type_info_from_stmt(*LHS, "set to null", (*this).m_state1);
+					bool lhs_is_an_indirect_type = is_an_indirect_type(LHS->getType());
 
-					auto decl = DRE->getDecl();
-					DD = dynamic_cast<const DeclaratorDecl*>(decl);
-					auto VD = dynamic_cast<const VarDecl*>(decl);
-
-					const clang::FieldDecl* FD = nullptr;
-					if (nullptr != ME) {
-						auto member_decl = ME->getMemberDecl();
-						FD = dynamic_cast<const clang::FieldDecl*>(ME->getMemberDecl());
-					}
-					if (nullptr != FD) {
-						DD = FD;
-					} else if (nullptr != VD) {
-						DD = VD;
-					} else {
-						int q = 7;
+					if (lhs_res2.update_declaration_flag) {
+						update_declaration(*(lhs_res2.ddecl_cptr), Rewrite, m_state1);
 					}
 
-					if (nullptr != DD) {
-						auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
-						auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
-						std::string decl_source_text;
-						if (decl_source_range.isValid()) {
-							decl_source_text = Rewrite.getRewrittenText(decl_source_range);
-						} else {
-							return;
+					auto lhs_QT = LHS->getType();
+					const clang::Type* lhs_TP = lhs_QT.getTypePtr();
+					auto lhs_type_str = lhs_QT.getAsString();
+
+					std::string lhs_element_type_str;
+					if (lhs_TP->isArrayType()) {
+						auto ATP = llvm::cast<const clang::ArrayType>(lhs_TP);
+						assert(nullptr != ATP);
+						auto element_type = ATP->getElementType();
+						auto type_str = element_type.getAsString();
+						if (("char" != type_str) && ("const char" != type_str)) {
+							lhs_element_type_str = type_str;
 						}
-						QT = DD->getType();
-						variable_name = DD->getNameAsString();
-
-						auto qualified_name = DD->getQualifiedNameAsString();
-						static const std::string mse_namespace_str1 = "mse::";
-						static const std::string mse_namespace_str2 = "::mse::";
-						if ((0 == qualified_name.compare(0, mse_namespace_str1.size(), mse_namespace_str1))
-								|| (0 == qualified_name.compare(0, mse_namespace_str2.size(), mse_namespace_str2))) {
-							return;
+					} else if (lhs_TP->isPointerType()) {
+						auto TPP = llvm::cast<const clang::PointerType>(lhs_TP);
+						assert(nullptr != TPP);
+						auto target_type = TPP->getPointeeType();
+						auto type_str = target_type.getAsString();
+						if (("char" != type_str) && ("const char" != type_str)) {
+							lhs_element_type_str = type_str;
 						}
+					}
 
-						auto res2 = infer_array_type_info_from_stmt(*LHS, "set to null", (*this).m_state1, DD);
+					if ("" != lhs_element_type_str) {
+						if (ConvertToSCPP && (lhs_res2.ddecl_conversion_state_ptr) && lhs_is_an_indirect_type) {
+							auto lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
+							std::string bo_replacement_code = "(" + lhs_source_text + ")";
+							bo_replacement_code += ".resize(0)";
 
-						if (res2.update_declaration_flag) {
-							update_declaration(*DD, Rewrite, m_state1);
-						}
+							auto cr_shptr = std::make_shared<CSetArrayPointerToNull2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*(lhs_res2.ddecl_cptr), lhs_res2.indirection_level), BO, bo_replacement_code);
 
-						auto lhs_source_range = nice_source_range(LHS->getSourceRange(), Rewrite);
-						auto lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
-						bo_replacement_code += "(" + lhs_source_text + ")";
-						bo_replacement_code += ".resize(0)";
-
-						if (ConvertToSCPP && decl_source_range.isValid() && (BOSR.isValid())
-								&& (nullptr != res2.ddecl_conversion_state_ptr)) {
-							auto cr_shptr = std::make_shared<CSetArrayPointerToNull2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, res2.indirection_level), BO, bo_replacement_code);
-
-							if ((*(res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_an_array(res2.indirection_level)) {
+							if ((*(lhs_res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_an_array(lhs_res2.indirection_level)) {
 								(*cr_shptr).do_replacement(m_state1);
 							} else {
 								m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
 							}
-						} else {
-							int q = 7;
 						}
 					}
 					int q = 5;
@@ -3448,8 +3575,7 @@ public:
 									auto ATP = llvm::cast<const clang::ArrayType>(arg1_TP);
 									assert(nullptr != ATP);
 									auto element_type = ATP->getElementType();
-									auto elementSplitQualType = element_type.split();
-									auto type_str = clang::QualType::getAsString(elementSplitQualType);
+									auto type_str = element_type.getAsString();
 									if (("char" != type_str) && ("const char" != type_str)) {
 										arg1_element_type_str = type_str;
 									}
@@ -3457,8 +3583,7 @@ public:
 									auto TPP = llvm::cast<const clang::PointerType>(arg1_TP);
 									assert(nullptr != TPP);
 									auto target_type = TPP->getPointeeType();
-									auto splitQualType = target_type.split();
-									auto type_str = clang::QualType::getAsString(splitQualType);
+									auto type_str = target_type.getAsString();
 									if (("char" != type_str) && ("const char" != type_str)) {
 										arg1_element_type_str = type_str;
 									}
@@ -3627,8 +3752,7 @@ public:
 								auto ATP = llvm::cast<const clang::ArrayType>(arg1_TP);
 								assert(nullptr != ATP);
 								auto element_type = ATP->getElementType();
-								auto elementSplitQualType = element_type.split();
-								auto type_str = clang::QualType::getAsString(elementSplitQualType);
+								auto type_str = element_type.getAsString();
 								if (("char" != type_str) && ("const char" != type_str)) {
 									arg1_element_type_str = type_str;
 								}
@@ -3636,8 +3760,7 @@ public:
 								auto TPP = llvm::cast<const clang::PointerType>(arg1_TP);
 								assert(nullptr != TPP);
 								auto target_type = TPP->getPointeeType();
-								auto splitQualType = target_type.split();
-								auto type_str = clang::QualType::getAsString(splitQualType);
+								auto type_str = target_type.getAsString();
 								if (("char" != type_str) && ("const char" != type_str)) {
 									arg1_element_type_str = type_str;
 								}
@@ -4126,12 +4249,6 @@ public:
 				if (ends_with_free || ends_with_alloc || ends_with_realloc || is_memcpy || is_memset || begins_with__builtin_) {
 					return void();
 				}
-				if ("lodepng_deflate" == function_name) {
-					int q = 5;
-				}
-				if ("deflate" == function_name) {
-					int q = 5;
-				}
 
 				auto function_decls_range = function_decl1->redecls();
 
@@ -4155,11 +4272,34 @@ public:
 							bool rhs_is_an_indirect_type = is_an_indirect_type(arg_EX->getType());
 							assert(lhs_is_an_indirect_type == rhs_is_an_indirect_type);
 
+							auto res1 = m_state1.m_ddecl_conversion_state_map.insert(*param_VD);
+							auto ddcs_map_iter = res1.first;
+							auto& ddcs_ref = (*ddcs_map_iter).second;
+							bool update_declaration_flag = res1.second;
+
 							size_t lhs_indirection_level_adjustment = 0;
 							auto rhs_res3 = leading_addressof_operator_info_from_stmt(*arg_EX);
 							if (rhs_res3.without_leading_addressof_operator_expr_cptr) {
+								assert(rhs_res3.leading_addressof_operator_detected && rhs_res3.addressof_unary_operator_cptr);
+
 								arg_EX = rhs_res3.without_leading_addressof_operator_expr_cptr;
 								lhs_indirection_level_adjustment = 1;
+
+								const clang::ArraySubscriptExpr* array_subscript_expr_cptr = nullptr;
+								if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(rhs_res3.without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
+									assert(llvm::isa<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr));
+									array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr);
+								}
+								if (array_subscript_expr_cptr) {
+									std::shared_ptr<CArray2ReplacementAction> cr_shptr = std::make_shared<CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction>(Rewrite, MR,
+											CDDeclIndirection(*param_VD, 0), *(rhs_res3.addressof_unary_operator_cptr), *array_subscript_expr_cptr);
+
+									if (ddcs_ref.has_been_determined_to_be_an_array(0)) {
+										(*cr_shptr).do_replacement(m_state1);
+									} else {
+										m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+									}
+								}
 							}
 							auto rhs_res2 = infer_array_type_info_from_stmt(*arg_EX, "", (*this).m_state1);
 
@@ -4217,11 +4357,6 @@ public:
 								}
 							}
 
-							auto res1 = m_state1.m_ddecl_conversion_state_map.insert(*param_VD);
-							auto ddcs_map_iter = res1.first;
-							auto& ddcs_ref = (*ddcs_map_iter).second;
-							bool update_declaration_flag = res1.second;
-
 							if (ddcs_ref.m_ddecl_cptr && update_declaration_flag) {
 								update_declaration(*(ddcs_ref.m_ddecl_cptr), Rewrite, m_state1);
 							}
@@ -4243,6 +4378,8 @@ public:
 											cr_shptr = std::make_shared<CAssignmentTargetConstrainsSourceArray2ReplacementAction>(Rewrite, MR,
 													CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
 										} else {
+											/* Levels of indirection beyond the first one must be of the same type,
+											 * not just of "compatible" types. */
 											cr_shptr = std::make_shared<CSameTypeArray2ReplacementAction>(Rewrite, MR,
 													CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
 										}
@@ -4264,8 +4401,8 @@ public:
 											cr_shptr = std::make_shared<CAssignmentSourceConstrainsTargetArray2ReplacementAction>(Rewrite, MR,
 													CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i), CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment));
 										} else {
-											/* This is actually redundant since we decided to make CSameTypeArray2ReplacementAction
-											 * apply the constraint in both directions already. But the redundancy doesn't hurt. */
+											/* Levels of indirection beyond the first one must be of the same type,
+											 * not just of "compatible" types. */
 											cr_shptr = std::make_shared<CSameTypeArray2ReplacementAction>(Rewrite, MR,
 													CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i), CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment));
 										}
@@ -4429,8 +4566,8 @@ public:
 	  Matcher.addMatcher(clang::ast_matchers::declaratorDecl().bind("mcsssvardecl"), &HandlerForSSSVarDecl2);
 
 	  Matcher.addMatcher(expr(allOf(
-	  		hasParent(expr(anyOf( \
-					unaryOperator(hasOperatorName("++")), unaryOperator(hasOperatorName("--")), \
+	  		hasParent(expr(anyOf(
+					unaryOperator(hasOperatorName("++")), unaryOperator(hasOperatorName("--")),
 					binaryOperator(hasOperatorName("+=")), binaryOperator(hasOperatorName("-=")),
 					castExpr(hasParent(expr(anyOf(
 							binaryOperator(hasOperatorName("+")), binaryOperator(hasOperatorName("+=")),
@@ -4452,36 +4589,34 @@ public:
 	  		hasOperatorName("="),
 	  		hasRHS(
 	  				anyOf(
-	  						cStyleCastExpr(has(callExpr().bind("mcsssmalloc2"))),
-								callExpr().bind("mcsssmalloc2")
+	  						cStyleCastExpr(has(ignoringParenCasts(callExpr().bind("mcsssmalloc2")))),
+	  						ignoringParenCasts(callExpr().bind("mcsssmalloc2"))
 	  				)
 				),
-	  		hasLHS(anyOf(
-						memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmalloc3")))).bind("mcsssmalloc4"),
+	  		hasLHS(ignoringParenCasts(anyOf(
+	  				memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmalloc3")))).bind("mcsssmalloc4"),
 						declRefExpr().bind("mcsssmalloc3"),
 						hasDescendant(memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmalloc3")))).bind("mcsssmalloc4")),
 						hasDescendant(declRefExpr().bind("mcsssmalloc3"))
-				)),
+				))),
 	  		hasLHS(expr(hasType(pointerType())))
 				)).bind("mcsssmalloc1"), &HandlerForSSSMalloc2);
 
 	  Matcher.addMatcher(declStmt(hasDescendant(
-	  		varDecl(hasInitializer(ignoringImpCasts(
-					anyOf(
-							cStyleCastExpr(has(callExpr().bind("mcsssmallocinitializer2"))),
+	  		varDecl(hasInitializer(ignoringParenCasts(
 							callExpr().bind("mcsssmallocinitializer2")
-					)
 	  		))).bind("mcsssmallocinitializer3")
 				)).bind("mcsssmallocinitializer1"), &HandlerForSSSMallocInitializer2);
 
 	  Matcher.addMatcher(
 	  		callExpr(allOf(
-	  				hasAnyArgument(
+	  				hasAnyArgument(ignoringParenCasts(
 	  				expr(anyOf(
 								memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssfree2")))).bind("mcsssfree3"),
+								declRefExpr().bind("mcsssfree2"),
 								hasDescendant(memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssfree2")))).bind("mcsssfree3")),
 								hasDescendant(declRefExpr().bind("mcsssfree2"))
-						))),
+						)))),
 						argumentCountIs(1),
 						hasAnyArgument(hasType(pointerType()))
 	  		)).bind("mcsssfree1"), &HandlerForSSSFree2);
@@ -4489,9 +4624,8 @@ public:
 	  Matcher.addMatcher(binaryOperator(allOf(
 	  		hasOperatorName("="),
 	  		hasLHS(anyOf(
-	  				memberExpr(expr(hasDescendant(declRefExpr().bind("mcssssettonull3")))).bind("mcssssettonull4"),
-	  				hasDescendant(memberExpr(expr(hasDescendant(declRefExpr().bind("mcssssettonull3")))).bind("mcssssettonull4")),
-						hasDescendant(declRefExpr().bind("mcssssettonull3"))
+						ignoringParenCasts(declRefExpr().bind("mcssssettonull3")),
+						ignoringParenCasts(expr(hasDescendant(declRefExpr().bind("mcssssettonull3"))))
 				)),
 				hasLHS(expr(hasType(pointerType())))
 				)).bind("mcssssettonull1"), &HandlerForSSSSetToNull2);
@@ -4499,11 +4633,12 @@ public:
 	  Matcher.addMatcher(
 	  		callExpr(allOf(
 	  				hasAnyArgument(
-	  				expr(anyOf(
-								memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemset2")))).bind("mcsssmemset3"),
+	  						ignoringParenCasts(expr(anyOf(
+	  						memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemset2")))).bind("mcsssmemset3"),
+								declRefExpr().bind("mcsssmemset2"),
 								hasDescendant(memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemset2")))).bind("mcsssmemset3")),
 								hasDescendant(declRefExpr().bind("mcsssmemset2"))
-						))),
+						)))),
 						argumentCountIs(3),
 						hasAnyArgument(hasType(pointerType()))
 	  		)).bind("mcsssmemset1"), &HandlerForSSSMemset);
@@ -4511,22 +4646,21 @@ public:
 	  Matcher.addMatcher(
 	  		callExpr(allOf(
 	  				hasAnyArgument(
-	  				expr(anyOf(
-								memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemcpy2")))).bind("mcsssmemcpy3"),
+	  						ignoringParenCasts(expr(anyOf(
+	  						memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemcpy2")))).bind("mcsssmemcpy3"),
+								declRefExpr().bind("mcsssmemcpy2"),
 								hasDescendant(memberExpr(expr(hasDescendant(declRefExpr().bind("mcsssmemcpy2")))).bind("mcsssmemcpy3")),
 								hasDescendant(declRefExpr().bind("mcsssmemcpy2"))
-						))),
+						)))),
 						argumentCountIs(3),
 						hasAnyArgument(hasType(pointerType()))
 	  		)).bind("mcsssmemcpy1"), &HandlerForSSSMemcpy);
 
 	  Matcher.addMatcher(declStmt(hasDescendant(
-	  		varDecl(hasInitializer(ignoringImpCasts(
+	  		varDecl(hasInitializer(ignoringParenCasts(
 					anyOf(
 							conditionalOperator(has(declRefExpr())).bind("mcsssconditionalinitializer2"),
-							conditionalOperator(hasDescendant(declRefExpr())).bind("mcsssconditionalinitializer2"),
-							cStyleCastExpr(has(conditionalOperator(has(declRefExpr())).bind("mcsssconditionalinitializer2"))),
-							cStyleCastExpr(has(conditionalOperator(hasDescendant(declRefExpr())).bind("mcsssconditionalinitializer2")))
+							conditionalOperator(hasDescendant(declRefExpr())).bind("mcsssconditionalinitializer2")
 					)
 	  		))).bind("mcsssconditionalinitializer3")
 				)).bind("mcsssconditionalinitializer1"), &HandlerForSSSConditionalInitializer);
