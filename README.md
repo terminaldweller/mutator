@@ -105,6 +105,16 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 #### Linux
 
+First clone the repo and then initialize and update the submodule in it:<br/>
+
+```bash
+
+git clone https://github.com/bloodstalker/mutator
+git submodule init
+git submodule update
+
+```
+
 To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:301395.<br/>
 Here Are the build options:<br/>
 
