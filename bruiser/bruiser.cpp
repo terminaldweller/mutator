@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*included modules*/
 /*project headers*/
 #include "bruiser.h"
+#include "bruiser-extra.h"
 #include "../mutator_aux.h"
 /*standard headers*/
 #include <string>
@@ -43,7 +44,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
 /*other*/
-#include "curses.h"
+#include "linenoise/linenoise.h"
+#include "lua-5.3.4/src/lua.h"
+#include "lua-5.3.4/src/lualib.h"
+#include "lua-5.3.4/src/lauxlib.h"
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -102,6 +106,29 @@ const clang::Type* bruiser::TypeInfo::getTypeInfo(clang::ASTContext* __astc)
   const clang::Type* TP = EXP->getType().getTypePtr();
 
   return __astc->getCanonicalType(TP);
+}
+/**********************************************************************************************************************/
+namespace bruiser
+{
+  void BruiserLinenoiseCompletionCallback(const char* __buf, linenoiseCompletions* __lc)
+  {
+    if (__buf[0] == 'h')
+    {
+      linenoiseAddCompletion(__lc, "help");
+    }
+  }
+
+  char* BruiserLinenoiseHintsCallback(const char* __buf, int* __color, int* __bold)
+  {
+    if (!strcasecmp(__buf, "h"))
+    {
+      *__color = LN_MAGENTA;
+      *__bold = NO_BOLD;
+      return (char *)"elp";
+    }
+
+    return NULL;
+  }
 }
 /**********************************************************************************************************************/
 class AbstractMatcherHandler : public virtual MatchFinder::MatchCallback
@@ -679,9 +706,6 @@ int main(int argc, const char **argv)
 {
   int RunResult;
   bruiser::ShellHistory shHistory;
-  int InKey;
-  //unsigned int xcurse;
-  //unsigned int ycurse;
 
   std::regex listcommand("^list\\s");
   std::regex listfuncs("^list\\sfuncs$");
@@ -694,25 +718,34 @@ int main(int argc, const char **argv)
   std::regex dumplist("^list\\sdump\\s");
   std::smatch smresult;
 
-  WINDOW *win [[maybe_unused]];
-  //win = newwin(0, 0, 1, 1);
-  //initscr();
-  nocbreak();
-
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
+  /*linenoise init*/
+  linenoiseSetCompletionCallback(bruiser::BruiserLinenoiseCompletionCallback);
+  linenoiseSetHintsCallback(bruiser::BruiserLinenoiseHintsCallback);
+  /*setting up the initial history size to SHELL_HISTORY_SIZE*/
+  linenoiseHistorySetMaxLen(SHELL_HISTORY_SIZE);
+  linenoiseHistoryLoad(SHELL_HISTORY_FILE);
+  linenoiseSetMultiLine(1);
+
+
   {
-    char command[130];
-    while(true)
+    char* command;
+    while((command = linenoise("bruiser>>")) != NULL)
+    //while(true)
     {
       //wprintw(win, ">>");
       //wrefresh(win);
       std::cout << ">>";
-      InKey = getch();
-      std::cin.getline(command, sizeof(command));
+
+      linenoiseHistoryAdd(command);
+      linenoiseHistorySave(SHELL_HISTORY_FILE);
+
+      //std::cin.getline(command, sizeof(command));
       std::string dummy_string(command);
 
+#if 0
       for (auto &iter : command)
       {
         if (iter != 0)
@@ -724,6 +757,7 @@ int main(int argc, const char **argv)
           iter = '\0';
         }
       }
+#endif
 
       shHistory.History.push_back(command);
 #if defined(__DBG_1)
@@ -731,16 +765,6 @@ int main(int argc, const char **argv)
       std::cout << shHistory.History.size() << "\n";
       std::cout << shHistory.History.capacity() << "\n";
 #endif
-
-      if (InKey == KEY_UP)
-      {
-        //std::cout << shHistory.History[];
-        std::cout << "caught key_up";
-      }
-      else if(InKey == KEY_DOWN)
-      {
-        std::cout << "caught key_down";
-      }
 
       if (std::regex_search(dummy_string, smresult, listcommand))
       {
@@ -834,7 +858,8 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "clear") == 0)
       {
-        std::cout << CLEAR;
+        linenoiseClearScreen();
+        //std::cout << CLEAR;
         continue;
       }
 
@@ -870,6 +895,14 @@ int main(int argc, const char **argv)
         continue;
       }
 
+      if (std::strcmp(command, "version") == 0)
+      {
+        PRINT_WITH_COLOR_LB("bruiser experimental version something.", GREEN);
+        PRINT_WITH_COLOR_LB("project mutator", GREEN);
+        PRINT_WITH_COLOR_LB("GPL v2.0", GREEN);
+        PRINT_WITH_COLOR_LB("bloodstalker 2017", GREEN);
+      }
+
       if (command[0] == '!')
       {
         int command_number;
@@ -896,11 +929,12 @@ int main(int argc, const char **argv)
       }
 
       std::cout << RED << "unknown command. run help.\n" << NORMAL;
+      free(command);
     }
+
+    return 0;
   }
   
-  //delwin(win);
-  //endwin();
 }
 /*last line intentionally left blank.*/
 
