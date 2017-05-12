@@ -1,0 +1,6 @@
+*.[ao]
+*.exe
+*.out
+*.swp
+*.gcno
+*.gcda
