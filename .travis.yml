@@ -34,6 +34,8 @@ before_script:
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
   - sudo apt-get install libboost-dev
   - sudo apt-get install lib64ncurses5-dev
+  - git submodule init
+  - git submodule update
 
 script: 
   - make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG -j2
