@@ -377,6 +377,19 @@ private:
   Rewriter R;
 };
 /**********************************************************************************************************************/
+class LiveConsumerFactory
+{
+  public:
+    LiveConsumerFactory() {}
+
+    template<typename T>
+      void operator()(T __consumer)
+      {
+
+      }
+
+};
+/**********************************************************************************************************************/
 class LiveConsumer : public ASTConsumer
 {
   public:
@@ -385,18 +398,6 @@ class LiveConsumer : public ASTConsumer
 
     void HandleTranslationUnit(ASTContext &ctx) override
     {
-      Matcher.addMatcher(varDecl().bind("livelistvars"), &HLLVars);
-
-      Matcher.addMatcher(functionDecl().bind("livelistfuncs"), &HLLFuncs);
-
-      Matcher.addMatcher(recordDecl().bind("livelistrecords"), &HLLRecords);
-
-      Matcher.addMatcher(recordDecl(isClass()).bind("livelistrecords"), &HLLRecords);
-
-      Matcher.addMatcher(recordDecl(isUnion()).bind("livelistrecords"), &HLLRecords);
-
-      Matcher.addMatcher(recordDecl(isStruct()).bind("livelistrecords"), &HLLRecords);
-
       Matcher.matchAST(ctx);
     }
 
@@ -405,7 +406,6 @@ class LiveConsumer : public ASTConsumer
     LiveListVars HLLVars;
     LiveListFuncs HLLFuncs;
     LiveListRecords HLLRecords;
-    std::string __who;
     Rewriter R;
 };
 /**********************************************************************************************************************/
