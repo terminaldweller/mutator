@@ -17,7 +17,13 @@ all: $(BRUISER)
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o
+linenoise.o:
+	$(CC) $(CC_FLAGS) linenoise/linenoise.c -c -o linenoise.o
+
+lua:
+	$(MAKE) -C lua-5.3.4
+
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
