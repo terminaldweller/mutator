@@ -52,6 +52,8 @@ Assuming you already have the LLVM/Clang libraries, just run :
 ```bash
 
 git clone https://github.com/bloodstalker/mutator
+git submodule init
+git submodule update
 make
 make install
 
