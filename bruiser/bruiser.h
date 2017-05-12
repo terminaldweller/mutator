@@ -63,7 +63,19 @@ namespace bruiser
 #define NORMAL "\033[0m"
 #define CLEAR	"\033[2J"
 
+#define LN_RED 31
+#define LN_GREEN 32
+#define LN_YELLOW 33
+#define LN_BLUE 34
+#define LN_MAGENTA 35
+#define LN_CYAN 36
+#define LN_WHITE 37
+
+#define BOLD 1
+#define NO_BOLD 0
+
 #define SHELL_HISTORY_SIZE  100
+#define SHELL_HISTORY_FILE "bruiser-history.txt"
 
 #define NOT_IMPLEMENTED \
   do{\
