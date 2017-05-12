@@ -9,6 +9,8 @@ SHELL:=/bin/bash
 
 
 CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
+CC_FLAGS=
+EXTRA_CC_FLAGS=
 
 ifeq ($(BUILD_MODE), COV_USE)
 ifneq ($(CXX), clang++)
@@ -89,6 +91,7 @@ LD_FLAGS+=$(shell $(LLVM_CONF) --ldflags --libs --system-libs)
 
 CXX_FLAGS+=$(EXTRA_CXX_FALGS)
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
+CC_FLAGS+=$(EXTRA_CC_FLAGS)
 
 SRCS=./mutator_aux.cpp ./mutator-lvl1.cpp ./mutator-lvl0.cpp ./mutator-lvl2.cpp ./mutator-lvl0.h ./mutator_aux.h ./daemon/mutatord.h ./daemon/mutatorclient.c ./daemon/mutatorclient.h ./daemon/daemon_aux.h ./daemon/daemon_aux.c ./daemon/mutatord.c ./daemon/mutatorserver.c ./daemon/mutatorserver.h ./bruiser/bruiser.cpp ./bruiser/bruiser.h
 
