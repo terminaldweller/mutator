@@ -45,7 +45,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "llvm/IR/Function.h"
 /*other*/
 #include "linenoise/linenoise.h"
-#include "lua-5.3.4/src/lua.h"
+#include "lua-5.3.4/src/lua.hpp"
 #include "lua-5.3.4/src/lualib.h"
 #include "lua-5.3.4/src/lauxlib.h"
 /**********************************************************************************************************************/
@@ -69,6 +69,47 @@ bruiser::BruiserReport BruiseRep;
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
+/**********************************************************************************************************************/
+class LuaEngine
+{
+  public:
+    LuaEngine() 
+    {
+      LS = luaL_newstate();
+    }
+
+    void LoadBaseLib(void)
+    {
+      luaopen_base(LS);
+    }
+
+    void LoadAuxLibs(void)
+    {
+      luaopen_table(LS);
+      luaopen_io(LS);
+      luaopen_string(LS);
+    }
+
+    void LoadEverylib(void)
+    {
+      this->LoadBaseLib();
+      this->LoadAuxLibs();
+      luaopen_math(LS);
+    }
+
+    int RunScript(char* __lua_script)
+    {
+      return luaL_dofile(LS, __lua_script);
+    }
+
+    void Cleanup(void)
+    {
+      lua_close(LS);
+    }
+
+  private:
+    lua_State* LS;
+};
 /**********************************************************************************************************************/
 /*the implementation of the bruiser logger.*/
 bruiser::BruiserReport::BruiserReport () 
@@ -733,38 +774,14 @@ int main(int argc, const char **argv)
   {
     char* command;
     while((command = linenoise("bruiser>>")) != NULL)
-    //while(true)
     {
-      //wprintw(win, ">>");
-      //wrefresh(win);
-      std::cout << ">>";
-
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
 
       //std::cin.getline(command, sizeof(command));
       std::string dummy_string(command);
 
-#if 0
-      for (auto &iter : command)
-      {
-        if (iter != 0)
-        {
-          /*intentionally left blank*/
-        }
-        else
-        {
-          iter = '\0';
-        }
-      }
-#endif
-
       shHistory.History.push_back(command);
-#if defined(__DBG_1)
-      std::cout << InKey << "\n";
-      std::cout << shHistory.History.size() << "\n";
-      std::cout << shHistory.History.capacity() << "\n";
-#endif
 
       if (std::regex_search(dummy_string, smresult, listcommand))
       {
@@ -897,10 +914,18 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "version") == 0)
       {
-        PRINT_WITH_COLOR_LB("bruiser experimental version something.", GREEN);
-        PRINT_WITH_COLOR_LB("project mutator", GREEN);
-        PRINT_WITH_COLOR_LB("GPL v2.0", GREEN);
-        PRINT_WITH_COLOR_LB("bloodstalker 2017", GREEN);
+        PRINT_WITH_COLOR_LB(GRAY, "bruiser experimental version something.");
+        PRINT_WITH_COLOR_LB(GRAY, "project mutator");
+        PRINT_WITH_COLOR_LB(GRAY, "GPL v2.0");
+        PRINT_WITH_COLOR_LB(GRAY, "bloodstalker 2017");
+      }
+
+      if (std::strcmp(command, "runlua") == 0)
+      {
+        LuaEngine LE;
+        LE.LoadEverylib();
+        LE.RunScript((char*)"/home/bloodstalker/devi/abbatoir/hole6/proto.lua");
+        LE.Cleanup();
       }
 
       if (command[0] == '!')
@@ -929,7 +954,8 @@ int main(int argc, const char **argv)
       }
 
       std::cout << RED << "unknown command. run help.\n" << NORMAL;
-      free(command);
+
+      linenoiseFree(command);
     }
 
     return 0;
