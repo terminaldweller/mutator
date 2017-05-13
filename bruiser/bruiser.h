@@ -91,12 +91,6 @@ namespace bruiser
   do{\
     std::cout << X << Y << "\n" << NORMAL;\
   }while(0)
-
-#define SHOW_TEXT(X,Y) \
-  do{\
-    wprintw(X, Y);\
-    wrefresh(X);\
-  }while(0)
 /**********************************************************************************************************************/
 /*Error Codes*/
 #define M0_ERROR_CODES \
@@ -107,13 +101,25 @@ namespace bruiser
   enum class M0_ERR {M0_ERROR_CODES};
 #undef X
 /**********************************************************************************************************************/
+/*Enums*/
+  /**
+   * @brief Gene Kinds.
+   */
+  enum class DoomKind {UnidentifiedGene, 
+    CStyleCastExpr, ExplicitCastExpr, ImplicitCastExpr, 
+    Stmt, CompoundStmt, LoopStmt, ForStmt, WhileStmt, IfStmt, ElseStmt, DoStmt, SwitchStmt, CaseStmt,
+    Decl, FunctionDecl, ClassDecl, VarDecl, RecordDecl, ArrayDecl, StructDecl, UnionDecl, VectorDecl,
+    MapDecl, UnorderedMapDecl, MemberFunctionDecl, TemplateDecl, ClassTemplateDecl, ParmVarDecl
+  };
+/**********************************************************************************************************************/
 struct help
 {
-  std::string name;
-  std::string proto;
-  std::string descr;
-  std::string protoprefix;
-  std::string retval;
+  public:
+    std::string name;
+    std::string proto;
+    std::string descr;
+    std::string protoprefix;
+    std::string retval;
 };
 
 help CMDHelp[] = {
@@ -254,6 +260,27 @@ class Daemonize
   private:
     std::string Exe;
     std::string Opts;
+};
+/**********************************************************************************************************************/
+class Amino
+{
+  public:
+
+  private:
+};
+/**********************************************************************************************************************/
+/**
+ * @brief A container class for the bad genes
+ */
+class DoomedStrain
+{
+  public:
+  DoomedStrain() {}
+  ~DoomedStrain() {}
+
+
+  private:
+  std::vector<bruiser::Amino> Aminos;
 };
 /**********************************************************************************************************************/
 } // end of namespace bruiser
