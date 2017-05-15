@@ -1,7 +1,192 @@
 [
     {
-        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Werror=date-time -std=c++11 -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -ffunction-sections -fdata-sections -O2 -fno-exceptions -DLLVM_BUILD_GLOBAL_ISEL -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -o bruiser.o bruiser.cpp", 
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Werror=date-time -std=c++11 -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -ffunction-sections -fdata-sections -O2 -fno-exceptions -DLLVM_BUILD_GLOBAL_ISEL -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -I/usr/include -o bruiser.o bruiser.cpp", 
         "directory": "/home/bloodstalker/devi/hell2/bruiser", 
         "file": "/home/bloodstalker/devi/hell2/bruiser/bruiser.cpp"
+    }, 
+    {
+        "command": "cc -c -o linenoise.o linenoise/linenoise.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/linenoise/linenoise.c"
+    }, 
+    {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Werror=date-time -std=c++11 -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -ffunction-sections -fdata-sections -O2 -fno-exceptions -DLLVM_BUILD_GLOBAL_ISEL -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -I/usr/include -o CompletionHints.o CompletionHints.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/CompletionHints.cpp"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lapi.o lapi.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lapi.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lcode.o lcode.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lcode.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lctype.o lctype.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lctype.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o ldebug.o ldebug.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/ldebug.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o ldo.o ldo.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/ldo.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o ldump.o ldump.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/ldump.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lfunc.o lfunc.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lfunc.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lgc.o lgc.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lgc.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o llex.o llex.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/llex.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lmem.o lmem.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lmem.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lobject.o lobject.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lobject.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lopcodes.o lopcodes.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lopcodes.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lparser.o lparser.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lparser.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lstate.o lstate.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lstate.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lstring.o lstring.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lstring.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o ltable.o ltable.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/ltable.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o ltm.o ltm.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/ltm.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lundump.o lundump.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lundump.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lvm.o lvm.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lvm.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lzio.o lzio.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lzio.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lauxlib.o lauxlib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lauxlib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lbaselib.o lbaselib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lbaselib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lbitlib.o lbitlib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lbitlib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lcorolib.o lcorolib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lcorolib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o ldblib.o ldblib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/ldblib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o liolib.o liolib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/liolib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lmathlib.o lmathlib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lmathlib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o loslib.o loslib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/loslib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lstrlib.o lstrlib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lstrlib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o ltablib.o ltablib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/ltablib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lutf8lib.o lutf8lib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lutf8lib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o loadlib.o loadlib.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/loadlib.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o linit.o linit.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/linit.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lua.o lua.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lua.c"
+    }, 
+    {
+        "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o luac.o luac.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/luac.c"
     }
 ]
