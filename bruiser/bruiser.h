@@ -79,17 +79,19 @@ namespace bruiser
 
 #define NOT_IMPLEMENTED \
   do{\
-    std::cout << BROWN << "not implemented yet\n" << NORMAL;\
+    printf(BROWN "not implemented yet.");\
+    printf(NORMAL"\n");\
   }while(0)
 
 #define  PRINT_WITH_COLOR(X,Y) \
   do{\
-    std::cout << X << Y << NORMAL;\
+    printf(X Y NORMAL);\
   }while(0)
 
 #define  PRINT_WITH_COLOR_LB(X,Y) \
   do{\
-    std::cout << X << Y << "\n" << NORMAL;\
+    printf(X "%s", Y);\
+    printf(NORMAL"\n");\
   }while(0)
 /**********************************************************************************************************************/
 /*Error Codes*/
