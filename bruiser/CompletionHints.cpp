@@ -63,15 +63,17 @@ namespace bruiser
           break;
         }
 
-        if (iter.find(dummy) == 0U)
+        if (iter.find(__buf) == 0U)
         {
           *__color = 35;
-          *__bold = 0;
+          *__bold = 1;
           int sizet = dummy.length();
 
-          std::string dummy2 = iter.substr(sizet, iter.length() - sizet + 1);
+          std::string dummy2 = iter.substr(sizet, std::string::npos);
 
-          /*LEAKS MEMORY*/
+          /*@DEVI-apparently linenoise expects the return value to live past the hints callback function returning, 
+           * i mean that's why our vector version returns junk. linenoise later frees the returned hint so there 
+           * should be no leaked memory(it calls freeHintsCallback).*/
           char* returnchar = new char[dummy2.size() + 1];
           std::copy(dummy2.begin(), dummy2.end(), returnchar);
           returnchar[dummy2.size()] = '\0';
@@ -81,12 +83,13 @@ namespace bruiser
           retchar.push_back('\0');
           //std::cout << "\n" << retchar.data() << "\n";
           char* c = (char*)retchar.data();
-          //std::cout << "\n" << c << "\n";
+          std::cout << "\n" << c << "\n";
 #endif
 
           return returnchar;
           //return c;
-          //return &*retchar.data();
+          //return retchar.data();
+          //return &retchar[0];
         }
       }
     }
