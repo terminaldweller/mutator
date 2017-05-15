@@ -23,7 +23,7 @@ linenoise.o:
 $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4 linux
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
