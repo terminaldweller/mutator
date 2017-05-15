@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*included modules*/
 /*project headers*/
 #include "bruiser.h"
-#include "bruiser-extra.h"
+#include "CompletionHints.h"
 #include "../mutator_aux.h"
 /*standard headers*/
 #include <string>
@@ -763,8 +763,8 @@ int main(int argc, const char **argv)
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
   /*linenoise init*/
-  linenoiseSetCompletionCallback(bruiser::BruiserLinenoiseCompletionCallback);
-  linenoiseSetHintsCallback(bruiser::BruiserLinenoiseHintsCallback);
+  linenoiseSetCompletionCallback(bruiser::ShellCompletion);
+  linenoiseSetHintsCallback(bruiser::ShellHints);
   /*setting up the initial history size to SHELL_HISTORY_SIZE*/
   linenoiseHistorySetMaxLen(SHELL_HISTORY_SIZE);
   linenoiseHistoryLoad(SHELL_HISTORY_FILE);
