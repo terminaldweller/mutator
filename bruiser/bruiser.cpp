@@ -362,14 +362,16 @@ class LiveListFuncs : public MatchFinder::MatchCallback
           SourceLocation SLBody = Body->getLocStart();
           SourceLocation SLShebang = FD->getLocStart();
           //PRINT_WITH_COLOR_LB(GREEN, "begin");
-          PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))));
+          //printf(CYAN"%s",  R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
+          //printf(NORMAL "\n");
+          PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
           //PRINT_WITH_COLOR_LB(GREEN, "end");
         }
         else
         {
           SourceLocation SL = FD->getLocStart();
           SourceLocation SLE = FD->getLocEnd();
-          PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SL, SLE)));
+          PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SL, SLE)).c_str());
         }
       }
     }
@@ -389,7 +391,7 @@ class LiveListVars : public MatchFinder::MatchCallback
       {
         const clang::VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars");
 
-        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())));
+        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())).c_str());
       }
     }
 
@@ -408,7 +410,7 @@ class LiveListRecords : public MatchFinder::MatchCallback
       {
         const clang::RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars");
 
-        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())));
+        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())).c_str());
       }
     }
 
@@ -864,7 +866,9 @@ int main(int argc, const char **argv)
       {
 
         RunResult = Tool.run(newFrontendActionFactory<BruiserFrontendAction>().get());
-        std::cout << CYAN <<"hijacking main returned " << RunResult << "\n" << NORMAL;
+        //std::cout << CYAN <<"hijacking main returned " << RunResult << "\n" << NORMAL;
+        printf(CYAN"hijacking main returned %d", RunResult);
+        printf(NORMAL"\n");
         continue;
       }
 
@@ -888,11 +892,11 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "help") == 0)
       {
-        std::cout << GREEN;
 
         for (auto &iter : bruiser::CMDHelp)
         {
-          std::cout << iter.name << ":" << iter.proto << ":" << iter.descr << "\n";
+          printf(GREEN"%s:%s:%s",iter.name.c_str(),iter.proto.c_str(),iter.descr.c_str());
+          printf(NORMAL"\n");
         }
 
         std::cout << NORMAL;
@@ -914,10 +918,11 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "version") == 0)
       {
-        PRINT_WITH_COLOR_LB(GRAY, "bruiser experimental version something.");
-        PRINT_WITH_COLOR_LB(GRAY, "project mutator");
-        PRINT_WITH_COLOR_LB(GRAY, "GPL v2.0");
-        PRINT_WITH_COLOR_LB(GRAY, "bloodstalker 2017");
+        PRINT_WITH_COLOR_LB(GREEN, "bruiser experimental version something.");
+        PRINT_WITH_COLOR_LB(GREEN, "project mutator");
+        PRINT_WITH_COLOR_LB(GREEN, "GPL v2.0");
+        PRINT_WITH_COLOR_LB(GREEN, "bloodstalker 2017");
+        continue;
       }
 
       if (std::strcmp(command, "runlua") == 0)
@@ -953,7 +958,12 @@ int main(int argc, const char **argv)
         continue;
       }
 
-      std::cout << RED << "unknown command. run help.\n" << NORMAL;
+      if (command != NULL)
+      {
+        printf(BLUE"unknown command. run help" NORMAL "\n");
+        //PRINT_WITH_COLOR_LB(BLUE, "unknown command. run help");
+        //std::cout << RED << "unknown command. run help.\n" << NORMAL;
+      }
 
       linenoiseFree(command);
     }
