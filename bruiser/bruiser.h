@@ -2,7 +2,7 @@
 /***************************************************Project Mutator****************************************************/
 //-*-c++-*-
 /*first line intentionally left blank.*/
-/*the header for mutator's code breaker.*/
+/*the header for bruiser's main.*/
 /*Copyright (C) 2017 Farzad Sadeghi
 
 This program is free software; you can redistribute it and/or
@@ -104,15 +104,6 @@ namespace bruiser
 #undef X
 /**********************************************************************************************************************/
 /*Enums*/
-  /**
-   * @brief Gene Kinds.
-   */
-  enum class DoomKind {UnidentifiedGene, 
-    CStyleCastExpr, ExplicitCastExpr, ImplicitCastExpr, 
-    Stmt, CompoundStmt, LoopStmt, ForStmt, WhileStmt, IfStmt, ElseStmt, DoStmt, SwitchStmt, CaseStmt,
-    Decl, FunctionDecl, ClassDecl, VarDecl, RecordDecl, ArrayDecl, StructDecl, UnionDecl, VectorDecl,
-    MapDecl, UnorderedMapDecl, MemberFunctionDecl, TemplateDecl, ClassTemplateDecl, ParmVarDecl
-  };
 /**********************************************************************************************************************/
 struct help
 {
@@ -264,26 +255,6 @@ class Daemonize
     std::string Opts;
 };
 /**********************************************************************************************************************/
-class Amino
-{
-  public:
-
-  private:
-};
-/**********************************************************************************************************************/
-/**
- * @brief A container class for the bad genes
- */
-class DoomedStrain
-{
-  public:
-  DoomedStrain() {}
-  ~DoomedStrain() {}
-
-
-  private:
-  std::vector<bruiser::Amino> Aminos;
-};
 /**********************************************************************************************************************/
 } // end of namespace bruiser
 #endif
