@@ -2,7 +2,7 @@
 /***************************************************Project Mutator****************************************************/
 //-*-c++-*-
 /*first line intentionally left blank.*/
-/*the source code for the mutator code breaker.*/
+/*the main for bruiser.*/
 /*Copyright (C) 2017 Farzad Sadeghi
 
 This program is free software; you can redistribute it and/or
@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "CompletionHints.h"
 #include "../mutator_aux.h"
 /*standard headers*/
+#include "fstream"
 #include <string>
 #include <cassert>
 #include <iostream>
@@ -906,12 +907,26 @@ int main(int argc, const char **argv)
 
       if (std::strcmp(command, "history") == 0)
       {
+        std::ifstream historyfile;
+        historyfile.open(SHELL_HISTORY_FILE);
+
+        std::string tempstring;
+        unsigned int tempint = 0;
+        while(std::getline(historyfile, tempstring))
+        {
+          printf(GREEN"%d - %s", tempint, tempstring.c_str());
+          printf(NORMAL"\n");
+
+          tempint++;
+        }
+#if 0
         unsigned int _cnt = 0;
         for (auto &it : shHistory.History)
         {
           std::cout << _cnt << "." << it << "\n";
           _cnt++;
         }
+#endif
 
         continue;
       }
