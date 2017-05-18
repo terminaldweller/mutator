@@ -47,6 +47,7 @@ class XMLReport
 {
 public:
   XMLReport();
+  ~XMLReport();
 
   void XMLCreateReport(void);
   void XMLAddNode(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description);
@@ -59,6 +60,8 @@ public:
   void XMLAddNode(std::string FilePath, std::string MisraRule, std::string Description);
 
   void XMLAddNode(unsigned Line, unsigned Column, std::string FileName, std::string MisraRule, std::string Description);
+
+  bool isReportEmpty(void);
 
   void SaveReport(void);
 
