@@ -47,6 +47,11 @@ XMLReport::XMLReport()
 #endif
 }
 
+XMLReport::~XMLReport()
+{
+  XMLReportDoc.InsertEndChild(RootPointer);
+}
+
 void XMLReport::XMLCreateReport()
 {
   XMLReportDoc.InsertFirstChild(RootPointer);
@@ -138,13 +143,25 @@ void XMLReport::XMLAddNode(unsigned Line, unsigned Column, std::string FileName,
   RootPointer->InsertEndChild(MisraElement);
 }
 
+bool XMLReport::isReportEmpty(void)
+{
+  return false;
+}
+
 void XMLReport::SaveReport(void)
 {
+  if(this->isReportEmpty())
+  {
+    return void();
+  }
+
+  XMLReportDoc.InsertEndChild(RootPointer);
+
   XMLError XMLErrorResult = XMLReportDoc.SaveFile("./test/misrareport.xml");
 
   if (XMLErrorResult != XML_SUCCESS)
   {
-    std::cout << "could not write xml misra report." << std::endl;
+    std::cerr << "could not write xml misra report.\n";
   }
 }
 /***************************************************End of XMLReport**************************************************/
