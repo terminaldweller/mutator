@@ -226,6 +226,7 @@ cl::opt<std::string> MCD("MCD", cl::desc("MisraC switches to disable specific ru
 cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> SFRCPP("SFRCPP", cl::desc("Enables SaferCPlusPlus rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<bool> mutagen("mutagen", cl::desc("runs mutagen after running the static tests"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 /**********************************************************************************************************************/
 class StringOptionsParser
 {
@@ -6005,7 +6006,7 @@ class SFCPPARR02SUB : public MatchFinder::MatchCallback
     }
 
   private:
-    Rewriter &Rewrite;
+    Rewriter &Rewrite [[maybe_unused]];
     SourceLocation ExtOriginSL;
     StringRef ExtOriginFileName;
 };
@@ -6050,7 +6051,7 @@ class SFCPPARR02 : public MatchFinder::MatchCallback
     }
 
   private:
-    Rewriter &Rewrite;
+    Rewriter &Rewrite [[maybe_unused]];
     MatchFinder Matcher;
     SFCPPARR02SUB SubHandler;
 };
