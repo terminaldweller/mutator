@@ -30,6 +30,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <string>
 #include <vector>
 #include <unordered_map>
+/*clang headers*/
+#include "clang/AST/ASTContext.h"
+#include "clang/AST/ASTTypeTraits.h"
 /**********************************************************************************************************************/
 /*externals*/
 std::map<std::string,bool> MC2OptsMap = {
@@ -343,6 +346,34 @@ class MutatorLVL0Tests
 
   private:
 
+};
+/**********************************************************************************************************************/
+#define EXTRACT_MUTAGEN 
+
+class MutagenExtraction
+{
+  public:
+    MutagenExtraction() {}
+
+    void ExtractAncestry(clang::ast_type_traits::DynTypedNode __dtn, clang::ASTContext &__astx)
+    {
+      clang::ASTContext::DynTypedNodeList DNL = __astx.getParents(__dtn);
+
+      std::vector<std::string> temp;
+
+      temp.push_back(DNL[0].getNodeKind().asStringRef().str());
+
+      while (__astx.getParents(__dtn)[0].getNodeKind().asStringRef().str() != "FunctionDecl")
+      {
+        DNL = __astx.getParents(__dtn);
+        temp.push_back(DNL[0].getNodeKind().asStringRef().str());
+      }
+
+      MutantStrainsAncestry.push_back(temp);
+    }
+
+  private:
+    std::vector<std::vector<std::string>> MutantStrainsAncestry;
 };
 /**********************************************************************************************************************/
 #endif
