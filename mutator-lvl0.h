@@ -361,8 +361,11 @@ class MutagenExtraction
 
       std::vector<std::string> temp;
 
+      /*FIXME-a temp. obviously well end up losing some parents in cpp if we're just picking up the 
+       * first parent from the list.*/
       temp.push_back(DNL[0].getNodeKind().asStringRef().str());
 
+      /*FIXME-what does getparents return when there are no more parents to return?*/
       while (__astx.getParents(__dtn)[0].getNodeKind().asStringRef().str() != "FunctionDecl")
       {
         DNL = __astx.getParents(__dtn);
