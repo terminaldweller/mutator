@@ -919,14 +919,6 @@ int main(int argc, const char **argv)
 
           tempint++;
         }
-#if 0
-        unsigned int _cnt = 0;
-        for (auto &it : shHistory.History)
-        {
-          std::cout << _cnt << "." << it << "\n";
-          _cnt++;
-        }
-#endif
 
         continue;
       }
@@ -950,6 +942,8 @@ int main(int argc, const char **argv)
 
       if (command[0] == '!')
       {
+        /*FIXME*/
+#if 0
         int command_number;
         std::string cut_string;
         //std::cout << CYAN << command << "\n" << NORMAL;
@@ -969,6 +963,7 @@ int main(int argc, const char **argv)
         {
           std::cout << CYAN << shHistory.History[command_number] << NORMAL;
         }
+#endif 
 
         continue;
       }
