@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
+#include "mutator_report.h"
 /*standard library headers*/
 #include <iostream>
 #include <map>
@@ -347,6 +348,18 @@ class MutatorLVL0Tests
 
   private:
 
+};
+/**********************************************************************************************************************/
+class mutagenAncestryReport : public Devi::XMLReportBase
+{
+  public:
+    mutagenAncestryReport() {}
+    ~mutagenAncestryReport() {}
+
+    virtual void AddNode(void)
+    {}
+
+  private:
 };
 /**********************************************************************************************************************/
 #define EXTRACT_MUTAGEN 
