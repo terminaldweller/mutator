@@ -38,13 +38,41 @@ using json = nlohmann::json;
 namespace Devi {
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
+/****************************************************XMLReportBase****************************************************/
+  XMLReportBase::XMLReportBase()
+  {
+    RootPointer = Doc.NewElement("mutagen:Report");
+    RootPointer->SetAttribute("xmlns:mutator", "http://www.w3.org/2001/XMLSchema");
+  }
+
+  XMLReportBase::~XMLReportBase()
+  {
+    Doc.InsertEndChild(RootPointer);
+  }
+
+  void XMLReportBase::CreateReport()
+  {
+    Doc.InsertFirstChild(RootPointer);
+  }
+
+  void XMLReportBase::SaveReport()
+  {
+    Doc.InsertEndChild(RootPointer);
+
+    XMLError XMLErrorResult = Doc.SaveFile("./test/misrareport.xml");
+
+    if (XMLErrorResult != XML_SUCCESS)
+    {
+      std::cerr << "could not write xml misra report.\n";
+    }
+  }
+/************************************************end of XMLReportBase*************************************************/
+/*********************************************************************************************************************/
 /******************************************************XMLReport******************************************************/
 XMLReport::XMLReport()
 {
   RootPointer = XMLReportDoc.NewElement("mutator:Report");
-#if 1
   RootPointer->SetAttribute("xmlns:mutator", "http://www.w3.org/2001/XMLSchema");
-#endif
 }
 
 XMLReport::~XMLReport()
