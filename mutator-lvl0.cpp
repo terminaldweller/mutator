@@ -438,6 +438,15 @@ public:
     {
       const IfStmt *IS = MR.Nodes.getNodeAs<clang::IfStmt>("mcelse");
 
+#if 1
+      if (mutagen)
+      {
+        ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
+        ME.DumpLast();
+        ME.DumpAll();
+      }
+#endif
+
       SourceLocation SL = IS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -463,6 +472,7 @@ public:
   }
 
 private:
+  MutagenExtraction ME;
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
@@ -8376,6 +8386,7 @@ public:
   }
 
 private:
+  MutagenExtraction ME;
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
