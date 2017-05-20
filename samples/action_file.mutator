@@ -1,7 +1,7 @@
 action_name:my_action1
 executable_name:mutator-lvl0
 #these are the options specific to the executable
-exec_opts:-MCEA -MCD=" 10.1 9.1 9.2 9.3 9.3" -SysHeader=false -MainOnly=true -MCV=C2
+exec_opts:-MCEA -MCD=" 10.1 9.1 9.2 9.3 9.3" -SysHeader=false -MainOnly=true -MCV=C2 -mutagen
 in_files:./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c
 #clang options
 libtooling_options:-std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall
