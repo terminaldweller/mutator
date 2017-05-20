@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*included modules*/
 /*project headers*/
 /*standard library headers*/
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -355,27 +356,51 @@ class MutagenExtraction
   public:
     MutagenExtraction() {}
 
+    ~MutagenExtraction() {}
+
     void ExtractAncestry(clang::ast_type_traits::DynTypedNode __dtn, clang::ASTContext &__astx)
     {
       clang::ASTContext::DynTypedNodeList DNL = __astx.getParents(__dtn);
 
-      std::vector<std::string> temp;
-
-      /*FIXME-a temp. obviously well end up losing some parents in cpp if we're just picking up the 
+      /*FIXME-a LastStrain. obviously well end up losing some parents in cpp if we're just picking up the 
        * first parent from the list.*/
-      temp.push_back(DNL[0].getNodeKind().asStringRef().str());
+      LastStrain.push_back(DNL[0].getNodeKind().asStringRef().str());
+      clang::ast_type_traits::DynTypedNode DTN = DNL[0];
 
       /*FIXME-what does getparents return when there are no more parents to return?*/
-      while (__astx.getParents(__dtn)[0].getNodeKind().asStringRef().str() != "FunctionDecl")
+      while (DTN.getNodeKind().asStringRef().str() != "FunctionDecl")
       {
-        DNL = __astx.getParents(__dtn);
-        temp.push_back(DNL[0].getNodeKind().asStringRef().str());
+        DNL = __astx.getParents(DTN);
+        DTN = DNL[0];
+        LastStrain.push_back(DTN.getNodeKind().asStringRef().str());
       }
 
-      MutantStrainsAncestry.push_back(temp);
+      MutantStrainsAncestry.push_back(LastStrain);
+    }
+
+    void DumpLast(void)
+    {
+      for (auto &iter : LastStrain)
+      {
+        std::cout << "DoomedStrain : " << iter << "\n";
+      }
+    }
+
+    void DumpAll(void)
+    {
+      for (auto &iter : MutantStrainsAncestry)
+      {
+        for (auto &iterer : iter)
+        {
+          std::cout << "DoomedStrainAll : " << iterer << "\n";
+        }
+
+        std::cout << "\n";
+      }
     }
 
   private:
+    std::vector<std::string> LastStrain;
     std::vector<std::vector<std::string>> MutantStrainsAncestry;
 };
 /**********************************************************************************************************************/
