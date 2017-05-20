@@ -943,27 +943,33 @@ int main(int argc, const char **argv)
       if (command[0] == '!')
       {
         /*FIXME*/
-#if 0
-        int command_number;
         std::string cut_string;
-        //std::cout << CYAN << command << "\n" << NORMAL;
-        //std::cout << GREEN << dummy_string << "\n" << NORMAL;
-
-        //assert(dummy_st == 130);
-
+        unsigned int command_number;
         cut_string = dummy_string.substr(1, dummy_string.length());
-        //std::cout << GREEN << cut_string << "\n" << NORMAL;
         command_number = std::stoi(cut_string, 0, 10);
 
-        if (command_number > SHELL_HISTORY_SIZE)
+        if (command_number > SHELL_HISTORY_SIZE - 1)
         {
-          std::cout << RED << "the command number provided is bigger than SHELL_HISTORY_SIZE." << NORMAL << "\n";
+          PRINT_WITH_COLOR_LB(RED, "the command number provided is bigger than SHELL_HISTORY_SIZE");
         }
         else
         {
-          std::cout << CYAN << shHistory.History[command_number] << NORMAL;
+          std::ifstream historyfile;
+          historyfile.open(SHELL_HISTORY_FILE);
+          std::string tempstring;
+          unsigned int tempint = 0;
+
+          while(std::getline(historyfile, tempstring))
+          {
+            if (tempint == command_number)
+            {
+              PRINT_WITH_COLOR_LB(NORMAL, tempstring.c_str());
+              break;
+            }
+
+            tempint++;
+          }
         }
-#endif 
 
         continue;
       }
