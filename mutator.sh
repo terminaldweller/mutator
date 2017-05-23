@@ -109,6 +109,8 @@ do
           echo "running ./$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE for $F_ACTION_NAME"
           if [[ "$F_EXEC_NAME" == safercpp-arr ]]; then
             eval "./safercpp/"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
+          elif [[ "$F_EXEC_NAME" == bruiser ]]; then
+            source "./bruiser/"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS
           else
             eval "./"$F_EXEC_NAME $F_EXEC_COPTS $F_IN_FILES -- $F_LIBTOOLING_OPTS > $F_OUT_FILE
           fi
