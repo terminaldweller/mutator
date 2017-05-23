@@ -55,11 +55,11 @@ namespace Devi {
     Doc.InsertFirstChild(RootPointer);
   }
 
-  void XMLReportBase::SaveReport()
+  void XMLReportBase::SaveReport(const char* __filename)
   {
     Doc.InsertEndChild(RootPointer);
 
-    XMLError XMLErrorResult = Doc.SaveFile("./test/misrareport.xml");
+    XMLError XMLErrorResult = Doc.SaveFile(__filename);
 
     if (XMLErrorResult != XML_SUCCESS)
     {

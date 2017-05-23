@@ -89,6 +89,7 @@ using namespace clang::tooling;
 /*global vars*/
 Devi::XMLReport XMLDocOut;
 Devi::JSONReport JSONDocOUT;
+MutagenExtraction ME;
 
 std::vector<SourceLocation> MacroDefSourceLocation;
 std::vector<SourceLocation> MacroUndefSourceLocation;
@@ -438,14 +439,14 @@ public:
     {
       const IfStmt *IS = MR.Nodes.getNodeAs<clang::IfStmt>("mcelse");
 
-#if 1
       if (mutagen)
       {
         ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
+#if 0
         ME.DumpLast();
         ME.DumpAll();
-      }
 #endif
+      }
 
       SourceLocation SL = IS->getLocStart();
       CheckSLValidity(SL);
@@ -472,7 +473,6 @@ public:
   }
 
 private:
-  MutagenExtraction ME;
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
@@ -485,6 +485,11 @@ public:
     if (MR.Nodes.getNodeAs<clang::IfStmt>("mcif") != nullptr)
     {
       const IfStmt *IS = MR.Nodes.getNodeAs<clang::IfStmt>("mcif");
+
+      if (mutagen)
+      {
+        ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
+      }
 
       SourceLocation SL = IS->getLocStart();
       CheckSLValidity(SL);
@@ -8386,7 +8391,6 @@ public:
   }
 
 private:
-  MutagenExtraction ME;
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
@@ -8475,6 +8479,9 @@ int main(int argc, const char **argv)
   XMLDocOut.SaveReport();
 
   JSONDocOUT.CloseReport();
+  
+  ME.DumpAll();
+  ME.XMLReport();
 
   return RunResult;
 }

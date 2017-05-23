@@ -46,7 +46,7 @@ enum class Scope {NoValue, TU, Block};
 
 enum class FunctionDeclKind {NoValue, Definition, Declaration};
 /*********************************************************************************************************************/
-SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocation SL, Rewriter &Rewrite, std::string Kind);
+SourceLocation SourceLocationHasMacro(SourceLocation SL, Rewriter &Rewrite, std::string Kind);
 
 SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite);
 /*********************************************************************************************************************/

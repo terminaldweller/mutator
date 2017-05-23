@@ -47,9 +47,9 @@ namespace Devi {
 
     virtual void AddNode(void) = 0;
 
-    void SaveReport(void);
+    void SaveReport(const char*);
 
-    private:
+    protected:
     XMLDocument Doc;
     XMLElement* RootPointer;
   };

@@ -350,16 +350,64 @@ class MutatorLVL0Tests
 
 };
 /**********************************************************************************************************************/
-class mutagenAncestryReport : public Devi::XMLReportBase
+class mutagenAncestryReport// : public Devi::XMLReportBase
 {
   public:
-    mutagenAncestryReport() {}
-    ~mutagenAncestryReport() {}
+    mutagenAncestryReport(std::vector<std::vector<std::string>> __dss) : DoomedStrains(__dss) 
+    {
+      RootPointer = Doc.NewElement("mutagen:Report");
+      RootPointer->SetAttribute("xmlns:mutator", "http://www.w3.org/2001/XMLSchema");
+    }
+
+    ~mutagenAncestryReport() 
+    {
+      Doc.InsertEndChild(RootPointer);
+    }
 
     virtual void AddNode(void)
-    {}
+    {
+#if 1
+      XMLElement* MGene = Doc.NewElement("DoomedStrains");
+
+      for (auto &iter : DoomedStrains)
+      {
+        XMLElement* NodeDoomedStrain = Doc.NewElement("DoomedStrain");
+
+        for (auto &iterer : iter)
+        {
+          XMLElement* Child = Doc.NewElement("Strain");
+          Child->SetText(iterer.c_str());
+          NodeDoomedStrain->InsertEndChild(Child);
+        }
+        
+        MGene->InsertEndChild(NodeDoomedStrain);
+      }
+
+      RootPointer->InsertEndChild(MGene);
+#endif
+    }
+
+    void CreateReport()
+    {
+      Doc.InsertFirstChild(RootPointer);
+    }
+
+    void SaveReport(const char* __filename)
+    {
+      Doc.InsertEndChild(RootPointer);
+
+      XMLError XMLErrorResult = Doc.SaveFile(__filename);
+
+      if (XMLErrorResult != XML_SUCCESS)
+      {
+        std::cerr << "could not write xml misra report.\n";
+      }
+    }
 
   private:
+    std::vector<std::vector<std::string>> DoomedStrains;
+    XMLElement* RootPointer;
+    XMLDocument Doc;
 };
 /**********************************************************************************************************************/
 #define EXTRACT_MUTAGEN 
@@ -389,6 +437,7 @@ class MutagenExtraction
       }
 
       MutantStrainsAncestry.push_back(LastStrain);
+      LastStrain.clear();
     }
 
     void DumpLast(void)
@@ -410,6 +459,14 @@ class MutagenExtraction
 
         std::cout << "\n";
       }
+    }
+
+    void XMLReport(void)
+    {
+      mutagenAncestryReport MAR(MutantStrainsAncestry);
+      MAR.CreateReport();
+      MAR.AddNode();
+      MAR.SaveReport("m0.xml");
     }
 
   private:
