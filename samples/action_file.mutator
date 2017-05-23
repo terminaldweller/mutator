@@ -15,4 +15,4 @@ end_action:run
 action_name:my_action2
 executable_name:safercpp-arr
 out_files:./test/misra-log
-end_action:run
+end_action:stop
