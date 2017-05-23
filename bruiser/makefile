@@ -7,6 +7,7 @@ CXX_FLAGS+=-I/usr/include
 EXTRA_LD_FLAGS+=-L$(shell pwd)/lua-5.3.4/src/ -llua -ldl
 BRUISER=bruiser
 LIB_LUA=./lua-5.3.4/src/liblua.a
+HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
 ######################################RULES####################################
 .DEFAULT: all
 
