@@ -442,10 +442,6 @@ public:
       if (mutagen)
       {
         ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
-#if 0
-        ME.DumpLast();
-        ME.DumpAll();
-#endif
       }
 
       SourceLocation SL = IS->getLocStart();
@@ -464,6 +460,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"Else\" statement has no braces {}: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.9", "\"Else\" statement has no braces {}: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
+        }
       }
     }
     else
@@ -507,6 +508,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"If\" statement has no braces {}: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.9", "\"If\" statement has no braces {}: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
+        }
       }
     }
     else
@@ -546,6 +552,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, IFESL, "14.10", "\"If-Else If\" statement has no ending Else: ");
         JSONDocOUT.JSONAddElement(MR.Context, IFESL, "14.10", "\"If-Else If\" statement has no ending Else: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ElseIf), *MR.Context);
+        }
       }
     }
     else
@@ -586,6 +597,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*SS), *MR.Context);
+        }
       }
     }
     else
@@ -625,6 +641,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "15.3", "\"SwitchStmt\" does not have a defaultStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "15.3", "\"SwitchStmt\" does not have a defaultStmt: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*SS), *MR.Context);
+        }
       }
     }
     else
@@ -679,6 +700,11 @@ public:
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "15.1", "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "15.1", "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: ");
+
+          if (mutagen)
+          {
+            ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CS), *MR.Context);
+          }
         }
       }
     }
@@ -719,6 +745,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "15.5", "\"SwitchStmt\" does not have a CaseStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "15.5", "\"SwitchStmt\" does not have a CaseStmt: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*SS), *MR.Context);
+        }
       }
     }
     else
@@ -760,6 +791,11 @@ public:
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "16.1", "\"FunctionDecl\" is variadic: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "16.1", "\"FunctionDecl\" is variadic: ");
+
+          if (mutagen)
+          {
+            ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FD), *MR.Context);
+          }
         }
       }
     }
@@ -818,6 +854,11 @@ public:
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "16.2", "\"FunctionDecl\" is recursive: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "16.2", "\"FunctionDecl\" is recursive: ");
+
+          if (mutagen)
+          {
+            ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CE), *MR.Context);
+          }
         }
         else
         {
@@ -897,6 +938,11 @@ public:
                 XMLDocOut.XMLAddNode(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
 
+                if (mutagen)
+                {
+                  ME.ExtractWeakPoints(SL, *MR.SourceManager, "ParmNameMismatch");
+                }
+
                 break;
               }
               else
@@ -959,6 +1005,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
+
+            if (mutagen)
+            {
+              ME.ExtractWeakPoints(SL, *MR.SourceManager, "DynamicMemoryAllocation");
+            }
           }
         }
       }
@@ -980,6 +1031,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
+
+            if (mutagen)
+            {
+              ME.ExtractWeakPoints(SL, *MR.SourceManager, "UsedLongJmp");
+            }
           }
         }
       }
@@ -1001,6 +1057,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
+
+            if (mutagen)
+            {
+              ME.ExtractWeakPoints(SL, *MR.SourceManager, "UsedToi");
+            }
           }
         }
       }
@@ -1022,6 +1083,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
+
+            if (mutagen)
+            {
+              ME.ExtractWeakPoints(SL, *MR.SourceManager, "UsedSysCalls");
+            }
           }
         }
       }
@@ -1042,6 +1108,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
+
+            if (mutagen)
+            {
+              ME.ExtractWeakPoints(SL, *MR.SourceManager, "DefAndDeclParmCntMisatch");
+            }
           }
         }
       }
@@ -8481,7 +8552,7 @@ int main(int argc, const char **argv)
   JSONDocOUT.CloseReport();
   
   ME.DumpAll();
-  ME.XMLReport();
+  ME.XMLReportAncestry();
 
   return RunResult;
 }
