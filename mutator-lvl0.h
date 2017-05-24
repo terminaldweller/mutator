@@ -37,6 +37,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/AST/ASTTypeTraits.h"
 /**********************************************************************************************************************/
 /*externals*/
+/**********************************************************************************************************************/
+struct WeakPoint
+{
+  WeakPoint(std::string  __psft, std::string __file, unsigned int __ln, unsigned int __cn) 
+  {
+    PlaceHolderStringForType = __psft;
+    File = __file;
+    LineNumber = __ln;
+    ColumnNumber = __cn;
+  }
+
+  std::string PlaceHolderStringForType;
+  std::string File;
+  unsigned int LineNumber;
+  unsigned int ColumnNumber;
+};
+/**********************************************************************************************************************/
 std::map<std::string,bool> MC2OptsMap = {
   {"1.1", false},
   {"1.2", false},
@@ -353,7 +370,7 @@ class MutatorLVL0Tests
 class mutagenAncestryReport// : public Devi::XMLReportBase
 {
   public:
-    mutagenAncestryReport(std::vector<std::vector<std::string>> __dss) : DoomedStrains(__dss) 
+    mutagenAncestryReport(std::vector<std::vector<std::string>> __dss, std::vector<WeakPoint> __wps) : DoomedStrains(__dss), WeakPoints(__wps) 
     {
       RootPointer = Doc.NewElement("mutagen:Report");
       RootPointer->SetAttribute("xmlns:mutator", "http://www.w3.org/2001/XMLSchema");
@@ -366,7 +383,6 @@ class mutagenAncestryReport// : public Devi::XMLReportBase
 
     virtual void AddNode(void)
     {
-#if 1
       XMLElement* MGene = Doc.NewElement("DoomedStrains");
 
       for (auto &iter : DoomedStrains)
@@ -384,9 +400,26 @@ class mutagenAncestryReport// : public Devi::XMLReportBase
       }
 
       RootPointer->InsertEndChild(MGene);
-#endif
     }
 
+    void AddNodeWeakPoint(void)
+    {
+      XMLElement* WeakStrain = Doc.NewElement("WeakStrains");
+
+      for (auto &iter : WeakPoints)
+      {
+        XMLElement* Child = Doc.NewElement("WeakStrain");
+        Child->SetAttribute("WeakStrainType", iter.PlaceHolderStringForType.c_str());
+        Child->SetAttribute("File", iter.File.c_str());
+        Child->SetAttribute("LineNumber", iter.LineNumber);
+        Child->SetAttribute("ColumnNumber", iter.ColumnNumber);
+        WeakStrain->InsertEndChild(Child);
+      }
+
+      RootPointer->InsertEndChild(WeakStrain);
+    }
+
+#if 1
     void CreateReport()
     {
       Doc.InsertFirstChild(RootPointer);
@@ -403,11 +436,15 @@ class mutagenAncestryReport// : public Devi::XMLReportBase
         std::cerr << "could not write xml misra report.\n";
       }
     }
+#endif
 
   private:
     std::vector<std::vector<std::string>> DoomedStrains;
+    std::vector<WeakPoint> WeakPoints;
+#if 1
     XMLElement* RootPointer;
     XMLDocument Doc;
+#endif
 };
 /**********************************************************************************************************************/
 #define EXTRACT_MUTAGEN 
@@ -440,6 +477,24 @@ class MutagenExtraction
       LastStrain.clear();
     }
 
+    void ExtractWeakPoints(SourceLocation __sl, SourceManager &__sm, std::string __type)
+    {
+      WeakPoint tmp = WeakPoint(__type, __sm.getFilename(__sl).str(), __sm.getSpellingLineNumber(__sl), __sm.getSpellingColumnNumber(__sl));
+      WeakPoints.push_back(tmp);
+    }
+
+    void ExtractWeakPoints(FullSourceLoc __fsl, SourceLocation __sl, std::string __type)
+    {
+      WeakPoint tmp = WeakPoint(__type, __fsl.getManager().getFilename(__sl).str(), __fsl.getSpellingLineNumber(), __fsl.getSpellingColumnNumber());
+      WeakPoints.push_back(tmp);
+    }
+
+    void ExtractWeakPoints(std::string __type, unsigned int __ln, unsigned int __cn, std::string __file)
+    {
+      WeakPoint tmp = WeakPoint(__type, __file, __ln, __cn);
+      WeakPoints.push_back(tmp);
+    }
+
     void DumpLast(void)
     {
       for (auto &iter : LastStrain)
@@ -461,17 +516,19 @@ class MutagenExtraction
       }
     }
 
-    void XMLReport(void)
+    void XMLReportAncestry(void)
     {
-      mutagenAncestryReport MAR(MutantStrainsAncestry);
+      mutagenAncestryReport MAR(MutantStrainsAncestry, WeakPoints);
       MAR.CreateReport();
       MAR.AddNode();
+      MAR.AddNodeWeakPoint();
       MAR.SaveReport("m0.xml");
     }
 
   private:
     std::vector<std::string> LastStrain;
     std::vector<std::vector<std::string>> MutantStrainsAncestry;
+    std::vector<WeakPoint> WeakPoints;
 };
 /**********************************************************************************************************************/
 #endif
