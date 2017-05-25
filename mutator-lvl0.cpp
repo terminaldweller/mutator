@@ -938,11 +938,6 @@ public:
                 XMLDocOut.XMLAddNode(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
 
-                if (mutagen)
-                {
-                  ME.ExtractWeakPoints(SL, *MR.SourceManager, "ParmNameMismatch");
-                }
-
                 break;
               }
               else
@@ -1006,10 +1001,6 @@ public:
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
 
-            if (mutagen)
-            {
-              ME.ExtractWeakPoints(SL, *MR.SourceManager, "DynamicMemoryAllocation");
-            }
           }
         }
       }
@@ -1031,11 +1022,6 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.7", "Use of longjmp is illegal: ");
-
-            if (mutagen)
-            {
-              ME.ExtractWeakPoints(SL, *MR.SourceManager, "UsedLongJmp");
-            }
           }
         }
       }
@@ -1057,11 +1043,6 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.10", "Use of atof,atoi and atol is illegal: ");
-
-            if (mutagen)
-            {
-              ME.ExtractWeakPoints(SL, *MR.SourceManager, "UsedToi");
-            }
           }
         }
       }
@@ -1083,11 +1064,6 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.11", "Use of abort,exit,getenv and system is illegal : ");
-
-            if (mutagen)
-            {
-              ME.ExtractWeakPoints(SL, *MR.SourceManager, "UsedSysCalls");
-            }
           }
         }
       }
@@ -1108,11 +1084,6 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "16.6", "CallExpr number of arguments does not equal the number of parameters in the declaration: ");
-
-            if (mutagen)
-            {
-              ME.ExtractWeakPoints(SL, *MR.SourceManager, "DefAndDeclParmCntMisatch");
-            }
           }
         }
       }
@@ -1212,6 +1183,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "16.9", "FunctionToPointerDecay: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "16.9", "FunctionToPointerDecay: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
+        }
       }
     }
   }
@@ -1485,6 +1461,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FD), *MR.Context);
+            }
           }
         }
       }
@@ -1509,6 +1490,11 @@ public:
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
+
+              if (mutagen)
+              {
+                ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FD), *MR.Context);
+              }
             }
           }
         }
@@ -1854,6 +1840,11 @@ public:
 
                 XMLDocOut.XMLAddNode(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
+
+                if (mutagen)
+                {
+                  ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*VD), *MR.Context);
+                }
               }
             }
           }
@@ -2043,6 +2034,11 @@ public:
 
                 XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
+
+                if (mutagen)
+                {
+                  ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ECD), *MR.Context);
+                }
               }
             }
           }
@@ -2069,6 +2065,11 @@ public:
 
                 XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
+
+                if (mutagen)
+                {
+                  ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ECD), *MR.Context);
+                }
               }
             }
           }
@@ -2132,6 +2133,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.3", "sizeof working on an expr with a side-effect : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.3", "sizeof working on an expr with a side-effect : ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+        }
       }
     }
   }
@@ -2174,6 +2180,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+        }
       }
     }
   }
@@ -2238,6 +2249,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "12.5", "RHS and/or LHS operands are not primary expressions : ");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+            }
           }
         }
       }
@@ -2282,6 +2298,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.6", "RHS and/or LHS operands are not effectively-boolean values : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.6", "RHS and/or LHS operands are not effectively-boolean values : ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+        }
       }
     }
   }
@@ -2326,6 +2347,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.7", "Bitwise operator has signed RHS and/or LHS operands: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.7", "Bitwise operator has signed RHS and/or LHS operands: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+        }
       }
     }
   }
@@ -2383,6 +2409,12 @@ public:
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "12.8", "shift size should be between zero and one less than the size of the LHS operand: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "12.8", "shift size should be between zero and one less than the size of the LHS operand: ");
+
+          /*@DEVI-FIXME-cant extract this one correctly*/
+          if (mutagen)
+          {
+            ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*RHS), *MR.Context);
+          }
         }
       }
 
@@ -2429,6 +2461,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.9", "UnaryOperator - has an expr with an unsigned underlying type: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.9", "UnaryOperator - has an expr with an unsigned underlying type: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+        }
       }
     }
   }
@@ -2467,6 +2504,11 @@ public:
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "12.10", "Comma used: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "12.10", "Comma used: ");
+
+      if (mutagen)
+      {
+        ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+      }
     }
   }
 
@@ -2504,6 +2546,11 @@ public:
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "12.13", "Unary ++ or -- have been used in an expr with other operators: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "12.13", "Unary ++ or -- have been used in an expr with other operators: ");
+
+      if (mutagen)
+      {
+        ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*UO), *MR.Context);
+      }
     }
   }
 
@@ -2543,6 +2590,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "13.1", "assignment operator used in an expr that is known to return boolean: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "13.1", "assignment operator used in an expr that is known to return boolean: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+        }
       }
     }
   }
@@ -2583,6 +2635,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "13.2", "Implicit test of an expr against zero which is not known to return a boolean result: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "13.2", "Implicit test of an expr against zero which is not known to return a boolean result: ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+        }
       }
     }
   }
@@ -2633,6 +2690,11 @@ public:
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
+
+              if (mutagen)
+              {
+                ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+              }
             }
           }
         }
@@ -2699,6 +2761,11 @@ public:
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+
+              if (mutagen)
+              {
+                ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FS), *MR.Context);
+              }
             }
           }
         }
@@ -2726,6 +2793,11 @@ public:
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
+
+              if (mutagen)
+              {
+                ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FS), *MR.Context);
+              }
             }
           }
         }
@@ -2818,6 +2890,11 @@ public:
 
                 XMLDocOut.XMLAddNode(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
+
+                if (mutagen)
+                {
+                  ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*DRE), *MR.Context);
+                }
               }
             }
           }
