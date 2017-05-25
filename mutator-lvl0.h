@@ -479,13 +479,15 @@ class MutagenExtraction
 
     void ExtractWeakPoints(SourceLocation __sl, SourceManager &__sm, std::string __type)
     {
-      WeakPoint tmp = WeakPoint(__type, __sm.getFilename(__sl).str(), __sm.getSpellingLineNumber(__sl), __sm.getSpellingColumnNumber(__sl));
+      WeakPoint tmp = WeakPoint(__type, __sm.getFilename(__sl).str(), \
+          __sm.getSpellingLineNumber(__sl), __sm.getSpellingColumnNumber(__sl));
       WeakPoints.push_back(tmp);
     }
 
     void ExtractWeakPoints(FullSourceLoc __fsl, SourceLocation __sl, std::string __type)
     {
-      WeakPoint tmp = WeakPoint(__type, __fsl.getManager().getFilename(__sl).str(), __fsl.getSpellingLineNumber(), __fsl.getSpellingColumnNumber());
+      WeakPoint tmp = WeakPoint(__type, __fsl.getManager().getFilename(__sl).str(), \
+          __fsl.getSpellingLineNumber(), __fsl.getSpellingColumnNumber());
       WeakPoints.push_back(tmp);
     }
 
