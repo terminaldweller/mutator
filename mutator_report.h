@@ -41,7 +41,7 @@ namespace Devi {
   {
     public:
     XMLReportBase();
-    ~XMLReportBase();
+    virtual ~XMLReportBase();
 
     void CreateReport(void);
 
