@@ -181,3 +181,7 @@ printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ../test
 "make" clean
 
 printf "${Lblue}finished running all tests...\n${NC}" | tee -a ../test/precommit.rep
+
+#tell me when youre done
+echo -ne '\007' && echo "" && echo -ne '\007' && echo -ne '\007'
+printf "${Green}beep...\n${NC}"
