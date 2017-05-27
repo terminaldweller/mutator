@@ -3270,6 +3270,11 @@ public:
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "15.4", "Switch expression is effectively boolean: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "15.4", "Switch expression is effectively boolean: ");
+
+      if (mutagen)
+      {
+        ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+      }
     }
   }
 
@@ -3345,6 +3350,11 @@ public:
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
+
+              if (mutagen)
+              {
+                ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
+              }
             }
           }
         }
@@ -3365,6 +3375,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against: ");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
+            }
           }
         }
       }
@@ -3384,6 +3399,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
+            }
           }
         }
       }
@@ -3403,6 +3423,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
+            }
           }
         }
       }
@@ -3447,6 +3472,11 @@ public:
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
+
+              if (mutagen)
+              {
+                ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+              }
             }
           }
         }
@@ -3741,6 +3771,11 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "17.1", "Pointer arithmatic for non-array pointers : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.1", "Pointer arithmatic for non-array pointers : ");
+
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*DRE), *MR.Context);
+        }
       }
     }
   }
@@ -3790,6 +3825,12 @@ public:
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "17.2 | 17.3", "Pointer-type operands to BinaryOperator dont point to the same array : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.2 | 17.3", "Pointer-type operands to BinaryOperator dont point to the same array : ");
+
+        /*@DEVI-FIXME-cant extract mutagen correctly*/
+        if (mutagen)
+        {
+          ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*BO), *MR.Context);
+        }
       }
     }
   }
@@ -3826,6 +3867,11 @@ public:
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+
+          if (mutagen)
+          {
+            ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CE), *MR.Context);
+          }
         }
       }
     }
@@ -3851,6 +3897,11 @@ public:
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
+
+          if (mutagen)
+          {
+            ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*DRE), *MR.Context);
+          }
         }
       }
     }
@@ -4184,6 +4235,11 @@ public:
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
+
+              if (mutagen)
+              {
+                ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CSCE), *MR.Context);
+              }
             }
           }
         }
@@ -4204,6 +4260,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CSCE), *MR.Context);
+            }
           }
         }
       }
@@ -4223,6 +4284,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CSCE), *MR.Context);
+            }
           }
         }
       }
@@ -4331,33 +4397,6 @@ public:
 
         bool ICETypeIsInteger = ICETypeIsSignedInt || ICETypeIsUSignedInt;
         bool ChildTypeIsInteger = ChildTypeIsSignedInt || ChildTypeIsUSignedInt;
-
-
-#if 0
-        bool ICETypeIsSignedInt = false;
-        bool ICETypeIsUSignedInt = false;
-        bool ICETypeIsInteger = false;
-        if (CanonTypeDaddy) {
-        	auto placeholderType = CanonTypeDaddy->getAsPlaceholderType();
-        	if (placeholderType) {
-        		ICETypeIsSignedInt = placeholderType->isSignedInteger();
-        		ICETypeIsUSignedInt = placeholderType->isUnsignedInteger();
-        		ICETypeIsInteger = placeholderType->isInteger();
-        	}
-        }
-
-        bool ChildTypeIsSignedInt = false;
-        bool ChildTypeIsUSignedInt = false;
-        bool ChildTypeIsInteger = false;
-        if (CanonTypeChild) {
-        	auto placeholderType = CanonTypeChild->getAsPlaceholderType();
-        	if (placeholderType) {
-        		ChildTypeIsSignedInt = placeholderType->isSignedInteger();
-        		ChildTypeIsUSignedInt = placeholderType->isUnsignedInteger();
-        		ChildTypeIsInteger = placeholderType->isInteger();
-        	}
-        }
-#endif
 
         if (ICETypeIsInteger && ChildTypeIsInteger)
         {
@@ -4817,8 +4856,6 @@ public:
       for (auto &iter : RawCommentArrRef)
       {
         RawText = iter->getRawText(SM);
-
-        //std::cout << "ZZZZZZZZZZZZZZZZZZZZZ" << RawText << "\n";
 
         SourceLocation RCSL = iter->getLocStart(); 
         CheckSLValidity(RCSL);
@@ -5302,6 +5339,7 @@ public:
         /*@DEVI-assumptions:nothing has more than one parent in C.*/
         if (ShortSize == ASTC->getTypeSize(QT) || 8U == ASTC->getTypeSize(QT))
         {
+          /*@DEVI-assumes there is only one parent for every node which is true only for C, not Cpp*/
           ASTContext::DynTypedNodeList NodeList = ASTC->getParents(DynOpNode);
 
           const ast_type_traits::DynTypedNode &ParentNode = NodeList[0U];
@@ -5345,6 +5383,11 @@ public:
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "10.5", "Result of operands << or ~ must be explicitly cast to the type of the expression:");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "10.5", "Result of operands << or ~ must be explicitly cast to the type of the expression:");
+
+            if (mutagen)
+            {
+              ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
+            }
           }
         }
       }
@@ -8632,6 +8675,6 @@ int main(int argc, const char **argv)
   ME.XMLReportAncestry();
 
   return RunResult;
-}
+} //end of main
 /*last line intentionally left blank.*/
 
