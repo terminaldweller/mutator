@@ -599,13 +599,18 @@ class LiveListArrayConsumer : public ASTConsumer
 /**********************************************************************************************************************/
 class BlankDiagConsumer : public clang::DiagnosticConsumer
 {
-  virtual void HandleDiagnostic(DiagnosticsEngine::Level, const Diagnostic &Info) override {}
+  public:
+    BlankDiagConsumer() = default;
+    virtual ~BlankDiagConsumer() {}
+    virtual void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel, const Diagnostic &Info) override {}
 };
 /**********************************************************************************************************************/
 class BruiserFrontendAction : public ASTFrontendAction 
 {
 public:
   BruiserFrontendAction() {}
+  virtual ~BruiserFrontendAction() {}
+
   void EndSourceFileAction() override 
   {
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
@@ -628,13 +633,16 @@ class LiveActionListVars : public ASTFrontendAction
 {
   public:
     LiveActionListVars() {}
+    virtual ~LiveActionListVars() 
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
       DE.setClient(BDCProto);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListVarsConsumer>(TheRewriter);
@@ -642,12 +650,14 @@ class LiveActionListVars : public ASTFrontendAction
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer();
 };
 /**********************************************************************************************************************/
 class LiveActionListFuncs : public ASTFrontendAction
 {
   public:
     LiveActionListFuncs() {}
+    ~LiveActionListFuncs() {}
 
     void EndSourceFileAction() override {}
 
@@ -668,6 +678,7 @@ class LiveActionListStructs : public ASTFrontendAction
 {
   public:
     LiveActionListStructs() {}
+    ~LiveActionListStructs() {}
 
     void EndSourceFileAction() override {}
 
@@ -688,6 +699,7 @@ class LiveActionListClasses : public ASTFrontendAction
 {
   public:
     LiveActionListClasses() {}
+    ~LiveActionListClasses() {}
 
     void EndSourceFileAction() override {}
 
@@ -708,6 +720,7 @@ class LiveActionListUnions : public ASTFrontendAction
 {
   public:
     LiveActionListUnions() {}
+    ~LiveActionListUnions() {}
 
     void EndSourceFileAction() override {}
 
@@ -728,6 +741,7 @@ class LiveActionListArrays : public ASTFrontendAction
 {
   public:
     LiveActionListArrays() {}
+    ~LiveActionListArrays() {}
 
     void EndSourceFileAction() override {}
 
@@ -773,7 +787,7 @@ int main(int argc, const char **argv)
   linenoiseHistoryLoad(SHELL_HISTORY_FILE);
   linenoiseSetMultiLine(1);
 
-
+  /*start runnnin the cli*/
   {
     char* command;
     while((command = linenoise("bruiser>>")) != NULL)
@@ -982,11 +996,11 @@ int main(int argc, const char **argv)
       }
 
       linenoiseFree(command);
-    }
+    } // end of while
 
     return 0;
-  }
+  } //end of cli block
   
-}
+} //end of main
 /*last line intentionally left blank.*/
 
