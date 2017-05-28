@@ -67,6 +67,9 @@ install:
 	chmod +x ./extra-tools/ReportPrintPretty.sh
 	chmod +x ./extra-tools/precommitTests.sh
 	if [[ ! -d "./temp" ]]; then mkdir temp; fi
+	if [[ ! -d "./reliquary" ]]; then mkdir reliquary; fi
+	if [[ ! -d "./reliquary/m0" ]]; then mkdir ./reliquary/m0; fi
+	if [[ ! -d "./reliquary/bruiser" ]]; then mkdir ./reliquary/bruiser; fi
 	$(shell echo MUTATOR_HOME=$$(pwd) > ./daemon/mutator.config)
 
 help:
