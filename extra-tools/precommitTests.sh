@@ -7,6 +7,8 @@ Orange="\033[0;33m"
 NC="\033[0m"
 
 REP_FILE="test/precommit.rep"
+TIME=$(date +%Y-%m-%d:%H:%M:%S)
+RELIC_COUNT=10
 
 printf "${Lblue}switching to mutator root...\n${NC}" | tee ../test/precommit.rep
 cd ..
@@ -63,6 +65,10 @@ echo ""
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator c++1z test build passed.\n${NC}" | tee -a ./test/precommit.rep
+  printf "${Orange}date and time of relic:.\n${NC}" | tee -a ./test/precommit.rep
+  echo $TIME | tee -a ./test/precommit.rep
+  cp ./mutator-lvl0 ./reliquary/m0/m0-$TIME
+  cp ./bruiser/bruiser ./reliquary/bruiser/bruiser-$TIME
 else
   printf "${Red}mutator c++1z test build failed.\n${NC}" | tee -a ./test/precommit.rep
 fi
@@ -183,5 +189,5 @@ printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ../test
 printf "${Lblue}finished running all tests...\n${NC}" | tee -a ../test/precommit.rep
 
 #tell me when youre done
-echo -ne '\007' && echo "" && echo -ne '\007' && echo -ne '\007'
+echo -ne '\007' && echo "" && echo -ne '\007' && echo "" && echo -ne '\007'
 printf "${Green}beep...\n${NC}"
