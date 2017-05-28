@@ -123,7 +123,6 @@ bruiser::BruiserReport::~BruiserReport()
   BruiserLog.close();
 }
 
-template <typename T>
 /**
  * @brief Will print the argument in the log file. Expects to receive valid types usable for a stream.
  *
@@ -131,6 +130,7 @@ template <typename T>
  *
  * @return Returns true if the write was successful, false otherwise.
  */
+template <typename T>
 bool bruiser::BruiserReport::PrintToLog(T __arg)
 {
   BruiserLog << __arg << "\n";
@@ -609,7 +609,10 @@ class BruiserFrontendAction : public ASTFrontendAction
 {
 public:
   BruiserFrontendAction() {}
-  virtual ~BruiserFrontendAction() {}
+  virtual ~BruiserFrontendAction()
+  {
+    delete BDCProto;
+  }
 
   void EndSourceFileAction() override 
   {
@@ -619,21 +622,21 @@ public:
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override 
   {
     DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-    DE.setClient(BDCProto);
+    DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<BruiserASTConsumer>(TheRewriter);
   }
 
 private:
   Rewriter TheRewriter;
+  BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListVars : public ASTFrontendAction
 {
   public:
-    LiveActionListVars() {}
-    virtual ~LiveActionListVars() 
+    LiveActionListVars() = default;
+    virtual ~LiveActionListVars()
     {
       delete BDCProto;
     }
@@ -643,7 +646,7 @@ class LiveActionListVars : public ASTFrontendAction
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListVarsConsumer>(TheRewriter);
     }
@@ -657,105 +660,120 @@ class LiveActionListFuncs : public ASTFrontendAction
 {
   public:
     LiveActionListFuncs() {}
-    ~LiveActionListFuncs() {}
+    ~LiveActionListFuncs()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListFuncsConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListStructs : public ASTFrontendAction
 {
   public:
     LiveActionListStructs() {}
-    ~LiveActionListStructs() {}
+    ~LiveActionListStructs()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListStructConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListClasses : public ASTFrontendAction
 {
   public:
     LiveActionListClasses() {}
-    ~LiveActionListClasses() {}
+    ~LiveActionListClasses()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListClassConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListUnions : public ASTFrontendAction
 {
   public:
     LiveActionListUnions() {}
-    ~LiveActionListUnions() {}
+    ~LiveActionListUnions()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListUnionConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListArrays : public ASTFrontendAction
 {
   public:
     LiveActionListArrays() {}
-    ~LiveActionListArrays() {}
+    ~LiveActionListArrays()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListArrayConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
