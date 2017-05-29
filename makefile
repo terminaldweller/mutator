@@ -70,6 +70,7 @@ install:
 	if [[ ! -d "./reliquary" ]]; then mkdir reliquary; fi
 	if [[ ! -d "./reliquary/m0" ]]; then mkdir ./reliquary/m0; fi
 	if [[ ! -d "./reliquary/bruiser" ]]; then mkdir ./reliquary/bruiser; fi
+	if [[ ! -d "./reliquary/safercpp" ]]; then mkdir ./reliquary/safercpp; fi
 	$(shell echo MUTATOR_HOME=$$(pwd) > ./daemon/mutator.config)
 
 help:
