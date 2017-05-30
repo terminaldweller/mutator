@@ -1,0 +1,18 @@
+action_name:my_action1
+executable_name:mutator-lvl0
+#these are the options specific to the executable
+exec_opts:-MCEA -SysHeader=false -MainOnly=true -MCV=C2
+in_files:./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c ./test/testFuncs1.h ./test/testFuncs2.h ./test/testFuncs3.h
+#clang options
+libtooling_options:-std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall
+#the output file
+out_files:./test/misra-log
+#the log file
+log_files:
+print_pretty:true
+end_action:run
+
+action_name:my_action2
+executable_name:safercpp-arr
+out_files:./test/misra-log
+end_action:stop
