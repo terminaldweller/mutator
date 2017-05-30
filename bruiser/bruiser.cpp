@@ -813,7 +813,6 @@ int main(int argc, const char **argv)
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
 
-      //std::cin.getline(command, sizeof(command));
       std::string dummy_string(command);
 
       shHistory.History.push_back(command);
