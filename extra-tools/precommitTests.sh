@@ -98,6 +98,7 @@ if [[ $? == 0 ]]; then
   "cp" ./bruiser/bruiser ./reliquary/bruiser/bruiser-$TIME
   "cp" ./safercpp/safercpp-arr ./reliquary/safercpp/safercpp-$TIME
   RelicKeeper
+  source ./extra-tools/oracle.sh ./test/precommit.rep
 else
   printf "${Red}mutator c++1z test build failed.\n${NC}" | tee -a ./test/precommit.rep
 fi
