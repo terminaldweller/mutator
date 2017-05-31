@@ -49,6 +49,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "lua-5.3.4/src/lua.hpp"
 #include "lua-5.3.4/src/lualib.h"
 #include "lua-5.3.4/src/lauxlib.h"
+
+#include "luadummy.h"
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -79,28 +81,71 @@ class LuaEngine
       LS = luaL_newstate();
     }
 
-    void LoadBaseLib(void)
-    {
-      luaopen_base(LS);
-    }
+    /*@DEVI-this will just create member functions that open a single lua libarary. 
+     * For example to load the string library just call LuaEngine::LoadstringLib().*/
+#define OPEN_LUA_LIBS(__x1) \
+      void Load##__x1##Lib(void){\
+      luaL_requiref(LS, #__x1, luaopen_##__x1, 1);}
+
+    OPEN_LUA_LIBS(base)
+    OPEN_LUA_LIBS(table)
+    OPEN_LUA_LIBS(io)
+    OPEN_LUA_LIBS(string)
+    OPEN_LUA_LIBS(math)
+#undef OPEN_LUA_LIBS
 
     void LoadAuxLibs(void)
     {
-      luaopen_table(LS);
-      luaopen_io(LS);
-      luaopen_string(LS);
+      luaL_requiref(LS, "table", luaopen_table, 1);
+      luaL_requiref(LS, "io", luaopen_io, 1);
+      luaL_requiref(LS, "string", luaopen_string, 1);
     }
 
     void LoadEverylib(void)
     {
-      this->LoadBaseLib();
-      this->LoadAuxLibs();
-      luaopen_math(LS);
+      luaL_openlibs(LS);
+    }
+
+    void RunString(char* __lua_string)
+    {
+
+    }
+
+    void RunChunk(char* __lua_chunk)
+    {
+      dostring(LS, __lua_chunk, "test");
     }
 
     int RunScript(char* __lua_script)
     {
       return luaL_dofile(LS, __lua_script);
+    }
+
+    void Test(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test.lua");
+      luaL_dofile(LS, "./lua-scripts/test1.lua");
+      luaL_dofile(LS, "./lua-scripts/test2.lua");
+    }
+
+    void Test2(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test1.lua");
+    }
+
+    void Test3(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test2.lua");
+    }
+
+    void Test4(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test3.lua");
+    }
+
+    lua_State* GetLuaState(void)
+    {
+      return this->LS;
     }
 
     void Cleanup(void)
@@ -805,9 +850,22 @@ int main(int argc, const char **argv)
   linenoiseHistoryLoad(SHELL_HISTORY_FILE);
   linenoiseSetMultiLine(1);
 
-  /*start runnnin the cli*/
+  /*start running the cli*/
   {
     char* command;
+
+#if 1
+    LuaEngine LE;
+    LE.LoadEverylib();
+
+    while((command = linenoise("bruiser>>")) != NULL)
+    {
+      linenoiseHistoryAdd(command);
+      linenoiseHistorySave(SHELL_HISTORY_FILE);
+      LE.RunChunk(command);
+    }
+#endif
+
     while((command = linenoise("bruiser>>")) != NULL)
     {
       linenoiseHistoryAdd(command);
@@ -967,9 +1025,30 @@ int main(int argc, const char **argv)
       {
         LuaEngine LE;
         LE.LoadEverylib();
-        LE.RunScript((char*)"/home/bloodstalker/devi/abbatoir/hole6/proto.lua");
-        LE.Cleanup();
+        LE.Test();
+        //LE.Cleanup();
+        continue;
       }
+
+#if 1
+      if (std::strcmp(command, "runluachain1") == 0)
+      {
+        LuaEngine LE;
+        LE.LoadEverylib();
+        LE.Test2();
+        //LE.Cleanup();
+        continue;
+      }
+
+      if (std::strcmp(command, "runluachain2") == 0)
+      {
+        LuaEngine LE;
+        LE.LoadEverylib();
+        LE.Test3();
+        //LE.Cleanup();
+        continue;
+      }
+#endif
 
       if (command[0] == '!')
       {
