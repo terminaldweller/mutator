@@ -108,6 +108,7 @@ std::vector<std::string> LUA_FUNCS =
   "hijack",
   "hijack main",
   "m0",
+  "runlua",
   "_G",
   "_VERSION",
   "assert",
