@@ -1,3 +1,11 @@
+
+/*DISCLAIMER*/
+/*This header is an exact copy of the lua.c file minus the main function 
+ * provided by the lua organization.*/
+/*All rights belong to the respective owners. The license is the same as the 
+ * license for the lua implementation provided by the lua organization.*/
+
+
 extern "C"
 {
 /*
