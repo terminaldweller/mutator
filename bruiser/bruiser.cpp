@@ -92,6 +92,7 @@ class LuaEngine
     OPEN_LUA_LIBS(io)
     OPEN_LUA_LIBS(string)
     OPEN_LUA_LIBS(math)
+    OPEN_LUA_LIBS(os)
 #undef OPEN_LUA_LIBS
 
     void LoadAuxLibs(void)
@@ -822,6 +823,37 @@ class LiveActionListArrays : public ASTFrontendAction
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
+/*lua wrappers*/
+class LuaWrapper
+{
+  public:
+    LuaWrapper(ClangTool &__CT) : CT(__CT) {}
+
+#define LIST_GENERATOR(__x1) \
+    int List##__x1(lua_State* L)\
+    {\
+      return CT.run(newFrontendActionFactory<LiveActionList##__x1>().get());\
+    }
+
+#define LIST_LIST_GENERATORS \
+    X(Funcs, "lists all functions") \
+    X(Vars, "lists all variables") \
+    X(Arrays, "lists all arrays") \
+    X(Classes, "lists all classes") \
+    X(Structs, "lists all structs") \
+    X(Unions, "lists all unions") \
+
+#define X(__x1, __x2) LIST_GENERATOR(__x1)
+
+    LIST_LIST_GENERATORS
+
+#undef X
+
+  private:
+    ClangTool CT;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) 
 {
@@ -841,6 +873,7 @@ int main(int argc, const char **argv)
 
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+  LuaWrapper LW(Tool);
 
   /*linenoise init*/
   linenoiseSetCompletionCallback(bruiser::ShellCompletion);
@@ -857,6 +890,14 @@ int main(int argc, const char **argv)
 #if 1
     LuaEngine LE;
     LE.LoadEverylib();
+
+#define ARG_STRINGIFIER(__x1) LW.List##__x1
+#define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, LW.List## __x1);
+
+    //LIST_LIST_GENERATORS
+    //lua_register(LE.GetLuaState(), "garbage", LW.ListVars);
+
+#undef X
 
     while((command = linenoise("bruiser>>")) != NULL)
     {
