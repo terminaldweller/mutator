@@ -93,6 +93,7 @@ class LuaEngine
     OPEN_LUA_LIBS(string)
     OPEN_LUA_LIBS(math)
     OPEN_LUA_LIBS(os)
+
 #undef OPEN_LUA_LIBS
 
     void LoadAuxLibs(void)
@@ -830,9 +831,12 @@ class LuaWrapper
     LuaWrapper(ClangTool &__CT) : CT(__CT) {}
 
 #define LIST_GENERATOR(__x1) \
-    int List##__x1(lua_State* L)\
+    int List##__x1(lua_State* __ls)\
     {\
-      return CT.run(newFrontendActionFactory<LiveActionList##__x1>().get());\
+      unsigned int InArgCnt = 0;\
+      InArgCnt = lua_gettop(__ls);\
+      this->GetClangTool().run(newFrontendActionFactory<LiveActionList##__x1>().get());\
+      return 1;\
     }
 
 #define LIST_LIST_GENERATORS \
@@ -848,11 +852,41 @@ class LuaWrapper
     LIST_LIST_GENERATORS
 
 #undef X
+#undef LIST_GENERATOR
+
+    ClangTool GetClangTool(void)
+    {
+      return this->CT;
+    }
 
   private:
     ClangTool CT;
 };
 /**********************************************************************************************************************/
+/**********************************************************************************************************************/
+typedef int (LuaWrapper::*mem_func)(lua_State* L);
+
+/**
+ * @brief A template function to wrap LuaWrapper members into somehting that lua accepts.
+ *
+ * @param __ls
+ *
+ * @return 
+ */
+template<mem_func func>
+int LuaDispatch(lua_State* __ls)
+{
+  LuaWrapper* LWPtr = *static_cast<LuaWrapper**>(lua_getextraspace(__ls));
+  return ((*LWPtr).*func)(__ls);
+}
+/**********************************************************************************************************************/
+int bubu(lua_State* __ls)
+{
+  int n = lua_gettop(__ls);
+  std::cout << "hi im bubu\n";
+  lua_pushfstring(__ls, "hi im bubu\n");
+  return 1;
+}
 /**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) 
@@ -890,20 +924,29 @@ int main(int argc, const char **argv)
 #if 1
     LuaEngine LE;
     LE.LoadEverylib();
+    *static_cast<LuaWrapper**>(lua_getextraspace(LE.GetLuaState())) = &LW;
 
-#define ARG_STRINGIFIER(__x1) LW.List##__x1
-#define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, LW.List## __x1);
+    /*@DEVI-this part is just registering our LuaWrapper member functions with lua so we can call them from lua.*/
+#define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
-    //LIST_LIST_GENERATORS
-    //lua_register(LE.GetLuaState(), "garbage", LW.ListVars);
+    LIST_LIST_GENERATORS
 
 #undef X
+#undef LIST_LIST_GENERATORS
+
+    lua_register(LE.GetLuaState(), "bubu", bubu);
 
     while((command = linenoise("bruiser>>")) != NULL)
     {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
       LE.RunChunk(command);
+#if 1
+      //LE.Test();
+      //LE.Test2();
+      //LE.Test3();
+      //luaL_dofile(LE.GetLuaState(), "./lua-scripts/test4.lua");
+#endif
     }
 #endif
 
