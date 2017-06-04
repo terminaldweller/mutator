@@ -66,6 +66,7 @@ using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
 static llvm::cl::OptionCategory BruiserCategory("Empty");
+std::vector<std::string> PushToLua;
 
 bruiser::M0_ERR m0_err;
 bruiser::BruiserReport BruiseRep;
@@ -413,6 +414,7 @@ class LiveListFuncs : public MatchFinder::MatchCallback
           //printf(CYAN"%s",  R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
           //printf(NORMAL "\n");
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
+          PushToLua.push_back(R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))));
           //PRINT_WITH_COLOR_LB(GREEN, "end");
         }
         else
@@ -420,6 +422,7 @@ class LiveListFuncs : public MatchFinder::MatchCallback
           SourceLocation SL = FD->getLocStart();
           SourceLocation SLE = FD->getLocEnd();
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SL, SLE)).c_str());
+          PushToLua.push_back(R.getRewrittenText(clang::SourceRange(SL, SLE)));
         }
       }
     }
@@ -440,6 +443,7 @@ class LiveListVars : public MatchFinder::MatchCallback
         const clang::VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars");
 
         PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())).c_str());
+        PushToLua.push_back(R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())));
       }
     }
 
@@ -459,6 +463,7 @@ class LiveListRecords : public MatchFinder::MatchCallback
         const clang::RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars");
 
         PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())).c_str());
+        PushToLua.push_back(R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())));
       }
     }
 
@@ -833,10 +838,14 @@ class LuaWrapper
 #define LIST_GENERATOR(__x1) \
     int List##__x1(lua_State* __ls)\
     {\
-      unsigned int InArgCnt = 0;\
+      unsigned int InArgCnt = 0U;\
       InArgCnt = lua_gettop(__ls);\
+      unsigned int returncount=0U;\
       this->GetClangTool().run(newFrontendActionFactory<LiveActionList##__x1>().get());\
-      return 1;\
+      for(auto &iter : PushToLua)\
+      {lua_pushstring(__ls, iter.c_str());returncount++;}\
+      PushToLua.clear();\
+      return returncount;\
     }
 
 #define LIST_LIST_GENERATORS \
