@@ -835,6 +835,92 @@ class LuaWrapper
   public:
     LuaWrapper(ClangTool &__CT) : CT(__CT) {}
 
+    int BruiserLuaHistory(lua_State* __ls)
+    {
+      std::ifstream historyfile;
+      historyfile.open(SHELL_HISTORY_FILE);
+
+      std::string tempstring;
+      unsigned int tempint = 0;
+      while(std::getline(historyfile, tempstring))
+      {
+        printf(GREEN"%d - %s", tempint, tempstring.c_str());
+        printf(NORMAL"\n");
+
+        tempint++;
+      }
+
+      return tempint;
+    }
+
+    int BruiserLuaHelp(lua_State* __ls)
+    {
+      unsigned int argcount = 0U;
+
+      for (auto &iter : bruiser::CMDHelp)
+      {
+        printf(GREEN"%s:%s:%s",iter.name.c_str(),iter.proto.c_str(),iter.descr.c_str());
+        printf(NORMAL"\n");
+        argcount++;
+      }
+
+      std::cout << NORMAL;
+      return argcount;
+    }
+
+    int BruiserLuaHijackMain(lua_State* __ls)
+    {
+        int RunResult = this->GetClangTool().run(newFrontendActionFactory<BruiserFrontendAction>().get());
+        //std::cout << CYAN <<"hijacking main returned " << RunResult << "\n" << NORMAL;
+        printf(CYAN"hijacking main returned %d", RunResult);
+        printf(NORMAL"\n");
+
+        return 1;
+    }
+
+    int BruiserLuaVersion(lua_State* __ls)
+    {
+        PRINT_WITH_COLOR_LB(GREEN, "bruiser experimental version something.");
+        PRINT_WITH_COLOR_LB(GREEN, "project mutator");
+        PRINT_WITH_COLOR_LB(GREEN, "GPL v2.0");
+        PRINT_WITH_COLOR_LB(GREEN, "bloodstalker 2017");
+
+        return 1;
+    }
+
+    int BruiserLuaClear(lua_State* _ls)
+    {
+      linenoiseClearScreen();
+      return 0;
+    }
+
+    int BruiserLuaM0(lua_State* __ls)
+    {
+        BruiseRep.PrintToLog("bruiser exited with:");
+
+        bruiser::ReadM0 M0Rep;
+        tinyxml2::XMLError XMLErr;
+
+        XMLErr = M0Rep.LoadXMLDoc();
+        if (XMLErr != XML_SUCCESS)
+        {
+          std::cout << RED << "could not load m0 xml report.\n" << NORMAL;
+          std::cout << RED << "tinyxml2 returned " << XMLErr << NORMAL;
+          return XMLErr;
+        }
+
+        XMLErr = M0Rep.ReadFirstElement();
+        if (XMLErr != XML_SUCCESS)
+        {
+          std::cerr << RED << "could not read first element of m0 xml report.\n" << NORMAL;
+          return XMLErr;
+        }
+
+        bruiser::SearchM0(M0Rep.getRootPointer());
+
+        return 1;
+    }
+
 #define LIST_GENERATOR(__x1) \
     int List##__x1(lua_State* __ls)\
     {\
@@ -889,13 +975,6 @@ int LuaDispatch(lua_State* __ls)
   return ((*LWPtr).*func)(__ls);
 }
 /**********************************************************************************************************************/
-int bubu(lua_State* __ls)
-{
-  int n = lua_gettop(__ls);
-  std::cout << "hi im bubu\n";
-  lua_pushfstring(__ls, "hi im bubu\n");
-  return 1;
-}
 /**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) 
@@ -914,8 +993,10 @@ int main(int argc, const char **argv)
   std::regex dumplist("^list\\sdump\\s");
   std::smatch smresult;
 
+  /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+  /*initialize the LuaWrapper class so we can register and run them from lua.*/
   LuaWrapper LW(Tool);
 
   /*linenoise init*/
@@ -930,12 +1011,17 @@ int main(int argc, const char **argv)
   {
     char* command;
 
-#if 1
     LuaEngine LE;
     LE.LoadEverylib();
     *static_cast<LuaWrapper**>(lua_getextraspace(LE.GetLuaState())) = &LW;
 
     /*@DEVI-this part is just registering our LuaWrapper member functions with lua so we can call them from lua.*/
+    lua_register(LE.GetLuaState(), "history", &LuaDispatch<&LuaWrapper::BruiserLuaHistory>);
+    lua_register(LE.GetLuaState(), "help", &LuaDispatch<&LuaWrapper::BruiserLuaHelp>);
+    lua_register(LE.GetLuaState(), "hijackmain", &LuaDispatch<&LuaWrapper::BruiserLuaHijackMain>);
+    lua_register(LE.GetLuaState(), "version", &LuaDispatch<&LuaWrapper::BruiserLuaVersion>);
+    lua_register(LE.GetLuaState(), "clear", &LuaDispatch<&LuaWrapper::BruiserLuaClear>);
+    /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
     LIST_LIST_GENERATORS
@@ -943,21 +1029,14 @@ int main(int argc, const char **argv)
 #undef X
 #undef LIST_LIST_GENERATORS
 
-    lua_register(LE.GetLuaState(), "bubu", bubu);
-
     while((command = linenoise("bruiser>>")) != NULL)
     {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
       LE.RunChunk(command);
-#if 1
-      //LE.Test();
-      //LE.Test2();
-      //LE.Test3();
-      //luaL_dofile(LE.GetLuaState(), "./lua-scripts/test4.lua");
-#endif
     }
-#endif
+
+    /*end of bruiser main*/
 
     while((command = linenoise("bruiser>>")) != NULL)
     {
