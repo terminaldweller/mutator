@@ -49,6 +49,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "lua-5.3.4/src/lua.hpp"
 #include "lua-5.3.4/src/lualib.h"
 #include "lua-5.3.4/src/lauxlib.h"
+
+#include "luadummy.h"
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -64,6 +66,7 @@ using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
 static llvm::cl::OptionCategory BruiserCategory("Empty");
+std::vector<std::string> PushToLua;
 
 bruiser::M0_ERR m0_err;
 bruiser::BruiserReport BruiseRep;
@@ -79,28 +82,73 @@ class LuaEngine
       LS = luaL_newstate();
     }
 
-    void LoadBaseLib(void)
-    {
-      luaopen_base(LS);
-    }
+    /*@DEVI-this will just create member functions that open a single lua libarary. 
+     * For example to load the string library just call LuaEngine::LoadstringLib().*/
+#define OPEN_LUA_LIBS(__x1) \
+      void Load##__x1##Lib(void){\
+      luaL_requiref(LS, #__x1, luaopen_##__x1, 1);}
+
+    OPEN_LUA_LIBS(base)
+    OPEN_LUA_LIBS(table)
+    OPEN_LUA_LIBS(io)
+    OPEN_LUA_LIBS(string)
+    OPEN_LUA_LIBS(math)
+    OPEN_LUA_LIBS(os)
+
+#undef OPEN_LUA_LIBS
 
     void LoadAuxLibs(void)
     {
-      luaopen_table(LS);
-      luaopen_io(LS);
-      luaopen_string(LS);
+      luaL_requiref(LS, "table", luaopen_table, 1);
+      luaL_requiref(LS, "io", luaopen_io, 1);
+      luaL_requiref(LS, "string", luaopen_string, 1);
     }
 
     void LoadEverylib(void)
     {
-      this->LoadBaseLib();
-      this->LoadAuxLibs();
-      luaopen_math(LS);
+      luaL_openlibs(LS);
+    }
+
+    void RunString(char* __lua_string)
+    {
+
+    }
+
+    void RunChunk(char* __lua_chunk)
+    {
+      dostring(LS, __lua_chunk, "test");
     }
 
     int RunScript(char* __lua_script)
     {
       return luaL_dofile(LS, __lua_script);
+    }
+
+    void Test(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test.lua");
+      luaL_dofile(LS, "./lua-scripts/test1.lua");
+      luaL_dofile(LS, "./lua-scripts/test2.lua");
+    }
+
+    void Test2(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test1.lua");
+    }
+
+    void Test3(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test2.lua");
+    }
+
+    void Test4(void)
+    {
+      luaL_dofile(LS, "./lua-scripts/test3.lua");
+    }
+
+    lua_State* GetLuaState(void)
+    {
+      return this->LS;
     }
 
     void Cleanup(void)
@@ -123,7 +171,6 @@ bruiser::BruiserReport::~BruiserReport()
   BruiserLog.close();
 }
 
-template <typename T>
 /**
  * @brief Will print the argument in the log file. Expects to receive valid types usable for a stream.
  *
@@ -131,6 +178,7 @@ template <typename T>
  *
  * @return Returns true if the write was successful, false otherwise.
  */
+template <typename T>
 bool bruiser::BruiserReport::PrintToLog(T __arg)
 {
   BruiserLog << __arg << "\n";
@@ -366,6 +414,7 @@ class LiveListFuncs : public MatchFinder::MatchCallback
           //printf(CYAN"%s",  R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
           //printf(NORMAL "\n");
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
+          PushToLua.push_back(R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))));
           //PRINT_WITH_COLOR_LB(GREEN, "end");
         }
         else
@@ -373,6 +422,7 @@ class LiveListFuncs : public MatchFinder::MatchCallback
           SourceLocation SL = FD->getLocStart();
           SourceLocation SLE = FD->getLocEnd();
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SL, SLE)).c_str());
+          PushToLua.push_back(R.getRewrittenText(clang::SourceRange(SL, SLE)));
         }
       }
     }
@@ -393,6 +443,7 @@ class LiveListVars : public MatchFinder::MatchCallback
         const clang::VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars");
 
         PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())).c_str());
+        PushToLua.push_back(R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())));
       }
     }
 
@@ -412,6 +463,7 @@ class LiveListRecords : public MatchFinder::MatchCallback
         const clang::RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars");
 
         PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())).c_str());
+        PushToLua.push_back(R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())));
       }
     }
 
@@ -609,7 +661,10 @@ class BruiserFrontendAction : public ASTFrontendAction
 {
 public:
   BruiserFrontendAction() {}
-  virtual ~BruiserFrontendAction() {}
+  virtual ~BruiserFrontendAction()
+  {
+    delete BDCProto;
+  }
 
   void EndSourceFileAction() override 
   {
@@ -619,21 +674,21 @@ public:
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override 
   {
     DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-    DE.setClient(BDCProto);
+    DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<BruiserASTConsumer>(TheRewriter);
   }
 
 private:
   Rewriter TheRewriter;
+  BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListVars : public ASTFrontendAction
 {
   public:
-    LiveActionListVars() {}
-    virtual ~LiveActionListVars() 
+    LiveActionListVars() = default;
+    virtual ~LiveActionListVars()
     {
       delete BDCProto;
     }
@@ -643,7 +698,7 @@ class LiveActionListVars : public ASTFrontendAction
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListVarsConsumer>(TheRewriter);
     }
@@ -657,106 +712,268 @@ class LiveActionListFuncs : public ASTFrontendAction
 {
   public:
     LiveActionListFuncs() {}
-    ~LiveActionListFuncs() {}
+    ~LiveActionListFuncs()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListFuncsConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListStructs : public ASTFrontendAction
 {
   public:
     LiveActionListStructs() {}
-    ~LiveActionListStructs() {}
+    ~LiveActionListStructs()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListStructConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListClasses : public ASTFrontendAction
 {
   public:
     LiveActionListClasses() {}
-    ~LiveActionListClasses() {}
+    ~LiveActionListClasses()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListClassConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListUnions : public ASTFrontendAction
 {
   public:
     LiveActionListUnions() {}
-    ~LiveActionListUnions() {}
+    ~LiveActionListUnions()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListUnionConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
 /**********************************************************************************************************************/
 class LiveActionListArrays : public ASTFrontendAction
 {
   public:
     LiveActionListArrays() {}
-    ~LiveActionListArrays() {}
+    ~LiveActionListArrays()
+    {
+      delete BDCProto;
+    }
 
     void EndSourceFileAction() override {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
     {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-      BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
-      DE.setClient(BDCProto);
+      DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
       return llvm::make_unique<LiveListArrayConsumer>(TheRewriter);
     }
 
   private:
     Rewriter TheRewriter;
+    BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
 };
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+/*lua wrappers*/
+class LuaWrapper
+{
+  public:
+    LuaWrapper(ClangTool &__CT) : CT(__CT) {}
+
+    int BruiserLuaHistory(lua_State* __ls)
+    {
+      std::ifstream historyfile;
+      historyfile.open(SHELL_HISTORY_FILE);
+
+      std::string tempstring;
+      unsigned int tempint = 0;
+      while(std::getline(historyfile, tempstring))
+      {
+        printf(GREEN"%d - %s", tempint, tempstring.c_str());
+        printf(NORMAL"\n");
+
+        tempint++;
+      }
+
+      return tempint;
+    }
+
+    int BruiserLuaHelp(lua_State* __ls)
+    {
+      unsigned int argcount = 0U;
+
+      for (auto &iter : bruiser::CMDHelp)
+      {
+        printf(GREEN"%s:%s:%s",iter.name.c_str(),iter.proto.c_str(),iter.descr.c_str());
+        printf(NORMAL"\n");
+        argcount++;
+      }
+
+      std::cout << NORMAL;
+      return argcount;
+    }
+
+    int BruiserLuaHijackMain(lua_State* __ls)
+    {
+        int RunResult = this->GetClangTool().run(newFrontendActionFactory<BruiserFrontendAction>().get());
+        //std::cout << CYAN <<"hijacking main returned " << RunResult << "\n" << NORMAL;
+        printf(CYAN"hijacking main returned %d", RunResult);
+        printf(NORMAL"\n");
+
+        return 1;
+    }
+
+    int BruiserLuaVersion(lua_State* __ls)
+    {
+        PRINT_WITH_COLOR_LB(GREEN, "bruiser experimental version something.");
+        PRINT_WITH_COLOR_LB(GREEN, "project mutator");
+        PRINT_WITH_COLOR_LB(GREEN, "GPL v2.0");
+        PRINT_WITH_COLOR_LB(GREEN, "bloodstalker 2017");
+
+        return 1;
+    }
+
+    int BruiserLuaClear(lua_State* _ls)
+    {
+      linenoiseClearScreen();
+      return 0;
+    }
+
+    int BruiserLuaM0(lua_State* __ls)
+    {
+        BruiseRep.PrintToLog("bruiser exited with:");
+
+        bruiser::ReadM0 M0Rep;
+        tinyxml2::XMLError XMLErr;
+
+        XMLErr = M0Rep.LoadXMLDoc();
+        if (XMLErr != XML_SUCCESS)
+        {
+          std::cout << RED << "could not load m0 xml report.\n" << NORMAL;
+          std::cout << RED << "tinyxml2 returned " << XMLErr << NORMAL;
+          return XMLErr;
+        }
+
+        XMLErr = M0Rep.ReadFirstElement();
+        if (XMLErr != XML_SUCCESS)
+        {
+          std::cerr << RED << "could not read first element of m0 xml report.\n" << NORMAL;
+          return XMLErr;
+        }
+
+        bruiser::SearchM0(M0Rep.getRootPointer());
+
+        return 1;
+    }
+
+#define LIST_GENERATOR(__x1) \
+    int List##__x1(lua_State* __ls)\
+    {\
+      unsigned int InArgCnt = 0U;\
+      InArgCnt = lua_gettop(__ls);\
+      unsigned int returncount=0U;\
+      this->GetClangTool().run(newFrontendActionFactory<LiveActionList##__x1>().get());\
+      for(auto &iter : PushToLua)\
+      {lua_pushstring(__ls, iter.c_str());returncount++;}\
+      PushToLua.clear();\
+      return returncount;\
+    }
+
+#define LIST_LIST_GENERATORS \
+    X(Funcs, "lists all functions") \
+    X(Vars, "lists all variables") \
+    X(Arrays, "lists all arrays") \
+    X(Classes, "lists all classes") \
+    X(Structs, "lists all structs") \
+    X(Unions, "lists all unions") \
+
+#define X(__x1, __x2) LIST_GENERATOR(__x1)
+
+    LIST_LIST_GENERATORS
+
+#undef X
+#undef LIST_GENERATOR
+
+    ClangTool GetClangTool(void)
+    {
+      return this->CT;
+    }
+
+  private:
+    ClangTool CT;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+typedef int (LuaWrapper::*mem_func)(lua_State* L);
+
+/**
+ * @brief A template function to wrap LuaWrapper members into somehting that lua accepts.
+ *
+ * @param __ls
+ *
+ * @return 
+ */
+template<mem_func func>
+int LuaDispatch(lua_State* __ls)
+{
+  LuaWrapper* LWPtr = *static_cast<LuaWrapper**>(lua_getextraspace(__ls));
+  return ((*LWPtr).*func)(__ls);
+}
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /*Main*/
@@ -776,8 +993,11 @@ int main(int argc, const char **argv)
   std::regex dumplist("^list\\sdump\\s");
   std::smatch smresult;
 
+  /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+  /*initialize the LuaWrapper class so we can register and run them from lua.*/
+  LuaWrapper LW(Tool);
 
   /*linenoise init*/
   linenoiseSetCompletionCallback(bruiser::ShellCompletion);
@@ -787,15 +1007,42 @@ int main(int argc, const char **argv)
   linenoiseHistoryLoad(SHELL_HISTORY_FILE);
   linenoiseSetMultiLine(1);
 
-  /*start runnnin the cli*/
+  /*start running the cli*/
   {
     char* command;
+
+    LuaEngine LE;
+    LE.LoadEverylib();
+    *static_cast<LuaWrapper**>(lua_getextraspace(LE.GetLuaState())) = &LW;
+
+    /*@DEVI-this part is just registering our LuaWrapper member functions with lua so we can call them from lua.*/
+    lua_register(LE.GetLuaState(), "history", &LuaDispatch<&LuaWrapper::BruiserLuaHistory>);
+    lua_register(LE.GetLuaState(), "help", &LuaDispatch<&LuaWrapper::BruiserLuaHelp>);
+    lua_register(LE.GetLuaState(), "hijackmain", &LuaDispatch<&LuaWrapper::BruiserLuaHijackMain>);
+    lua_register(LE.GetLuaState(), "version", &LuaDispatch<&LuaWrapper::BruiserLuaVersion>);
+    lua_register(LE.GetLuaState(), "clear", &LuaDispatch<&LuaWrapper::BruiserLuaClear>);
+    /*its just regisering the List function from LuaWrapper with X-macros.*/
+#define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
+
+    LIST_LIST_GENERATORS
+
+#undef X
+#undef LIST_LIST_GENERATORS
+
+    while((command = linenoise("bruiser>>")) != NULL)
+    {
+      linenoiseHistoryAdd(command);
+      linenoiseHistorySave(SHELL_HISTORY_FILE);
+      LE.RunChunk(command);
+    }
+
+    /*end of bruiser main*/
+
     while((command = linenoise("bruiser>>")) != NULL)
     {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
 
-      //std::cin.getline(command, sizeof(command));
       std::string dummy_string(command);
 
       shHistory.History.push_back(command);
@@ -950,9 +1197,30 @@ int main(int argc, const char **argv)
       {
         LuaEngine LE;
         LE.LoadEverylib();
-        LE.RunScript((char*)"/home/bloodstalker/devi/abbatoir/hole6/proto.lua");
-        LE.Cleanup();
+        LE.Test();
+        //LE.Cleanup();
+        continue;
       }
+
+#if 1
+      if (std::strcmp(command, "runluachain1") == 0)
+      {
+        LuaEngine LE;
+        LE.LoadEverylib();
+        LE.Test2();
+        //LE.Cleanup();
+        continue;
+      }
+
+      if (std::strcmp(command, "runluachain2") == 0)
+      {
+        LuaEngine LE;
+        LE.LoadEverylib();
+        LE.Test3();
+        //LE.Cleanup();
+        continue;
+      }
+#endif
 
       if (command[0] == '!')
       {

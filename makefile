@@ -66,13 +66,18 @@ install:
 	chmod +x ./mutator.sh
 	chmod +x ./extra-tools/ReportPrintPretty.sh
 	chmod +x ./extra-tools/precommitTests.sh
+	chmod +x ./extra-tools/oracle.sh
 	if [[ ! -d "./temp" ]]; then mkdir temp; fi
+	if [[ ! -d "./reliquary" ]]; then mkdir reliquary; fi
+	if [[ ! -d "./reliquary/m0" ]]; then mkdir ./reliquary/m0; fi
+	if [[ ! -d "./reliquary/bruiser" ]]; then mkdir ./reliquary/bruiser; fi
+	if [[ ! -d "./reliquary/safercpp" ]]; then mkdir ./reliquary/safercpp; fi
 	$(shell echo MUTATOR_HOME=$$(pwd) > ./daemon/mutator.config)
 
 help:
 	@echo '- There is help.'
 	@echo '- All is the default.'
-	@echo '- install makes the scripts executable. Currently this is all it does.'
+	@echo '- install makes the scripts executable. Also creates the reliquary.'
 	@echo '- Clean.'
 	@echo '- TAGS will run ctags on the C/C++ source files.'
 	@echo '- You can use the target names as build targets to just build one executable.'

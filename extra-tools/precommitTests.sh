@@ -1,5 +1,5 @@
 #!/bin/bash
-
+########################################################################################################################
 Red="\033[0;31m"
 Green="\033[0;32m"
 Lblue="\033[1;34m"
@@ -7,7 +7,36 @@ Orange="\033[0;33m"
 NC="\033[0m"
 
 REP_FILE="test/precommit.rep"
+TIME=$(date +%Y-%m-%d:%H:%M:%S)
+#how many relics to keep
+RELIC_COUNT=10
+########################################################################################################################
+function RelicKeeper
+{
+  cd ./reliquary/bruiser
+  RELIC_CNT=$(ls | gawk 'END{print NR}')
+  if (( $RELIC_CNT > 10 )); then
+    rm "$(ls -t | tail -1)"
+    printf "${Orange}RelicKeeper removed the oldest bruiser relic.\n${NC}" | tee -a ../../test/precommit.rep
+  fi
 
+  cd ../m0
+  RELIC_CNT=$(ls | gawk 'END{print NR}')
+  if (( $RELIC_CNT > 10 )); then
+    rm "$(ls -t | tail -1)"
+    printf "${Orange}RelicKeeper removed the oldest m0 relic.\n${NC}" | tee -a ../../test/precommit.rep
+  fi
+
+  cd ../safercpp
+  RELIC_CNT=$(ls | gawk 'END{print NR}')
+  if (( $RELIC_CNT > 10 )); then
+    rm "$(ls -t | tail -1)"
+    printf "${Orange}RelicKeeper removed the oldest safercpp relic.\n${NC}" | tee -a ../../test/precommit.rep
+  fi
+
+  cd ../..
+}
+########################################################################################################################
 printf "${Lblue}switching to mutator root...\n${NC}" | tee ../test/precommit.rep
 cd ..
 
@@ -63,6 +92,13 @@ echo ""
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator c++1z test build passed.\n${NC}" | tee -a ./test/precommit.rep
+  printf "${Orange}date and time of relic:.\n${NC}" | tee -a ./test/precommit.rep
+  echo $TIME | tee -a ./test/precommit.rep
+  "cp" ./mutator-lvl0 ./reliquary/m0/m0-$TIME
+  "cp" ./bruiser/bruiser ./reliquary/bruiser/bruiser-$TIME
+  "cp" ./safercpp/safercpp-arr ./reliquary/safercpp/safercpp-$TIME
+  RelicKeeper
+  source ./extra-tools/oracle.sh ./test/precommit.rep
 else
   printf "${Red}mutator c++1z test build failed.\n${NC}" | tee -a ./test/precommit.rep
 fi
@@ -183,5 +219,5 @@ printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ../test
 printf "${Lblue}finished running all tests...\n${NC}" | tee -a ../test/precommit.rep
 
 #tell me when youre done
-echo -ne '\007' && echo "" && echo -ne '\007' && echo -ne '\007'
+echo -ne '\007' && echo "" && echo -ne '\007' && echo "" && echo -ne '\007'
 printf "${Green}beep...\n${NC}"
