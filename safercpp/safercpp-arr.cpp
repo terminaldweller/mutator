@@ -4923,7 +4923,7 @@ public:
 					return void();
 				}
 
-				if ("lodepng_crc32" == function_name) {
+				if ("zlib_decompress" == function_name) {
 					int q = 5;
 				}
 
@@ -4937,8 +4937,6 @@ public:
 					auto fdecl_source_range = nice_source_range(function_decl->getSourceRange(), Rewrite);
 					auto fdecl_source_location_str = fdecl_source_range.getBegin().printToString(*MR.SourceManager);
 
-					auto param_iter = function_decl->param_begin();
-					auto arg_iter = CE->arg_begin();
 					for (size_t arg_index = 0; (CE->getNumArgs() > arg_index) && (function_decl->getNumParams() > arg_index); arg_index += 1) {
 						auto param_VD = function_decl->getParamDecl(arg_index);
 						auto arg_EX = CE->getArg(arg_index);
@@ -5019,7 +5017,8 @@ public:
 								return;
 							}
 
-							auto argii_EX = (*arg_iter)->IgnoreImplicit();
+							auto argii_EX = arg_EX->IgnoreParenImpCasts();
+							auto argii_stmt_class = argii_EX->getStmtClass();
 							if (rhs_is_an_indirect_type && (argii_EX->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass)) {
 								bool special_case1_flag = false;
 								auto casted_expr = argii_EX->IgnoreParenCasts();
