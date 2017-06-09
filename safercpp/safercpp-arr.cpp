@@ -44,6 +44,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
+#include "clang/Lex/Preprocessor.h"
 /*LLVM Headers*/
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
@@ -80,16 +81,16 @@ SourceRange nice_source_range(const SourceRange& sr, Rewriter &Rewrite) {
 	}
 }
 
-bool filtered_out_by_location(const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL) {
+bool filtered_out_by_location(const SourceManager &SM, SourceLocation SL) {
 	bool retval = false;
 
-	if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
+	if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
 		retval = true;
-	} else if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
+	} else if (!Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
 		retval = true;
 	} else {
 		bool filename_is_invalid = false;
-		std::string full_path_name = MR.SourceManager->getBufferName(SL, &filename_is_invalid);
+		std::string full_path_name = SM.getBufferName(SL, &filename_is_invalid);
 		std::string filename = full_path_name;
 		auto last_slash_pos = full_path_name.find_last_of('/');
 		if (std::string::npos != last_slash_pos) {
@@ -102,9 +103,17 @@ bool filtered_out_by_location(const ast_matchers::MatchFinder::MatchResult &MR, 
 		static const std::string mse_str = "mse";
 		if (0 == filename.compare(0, mse_str.size(), mse_str)) {
 			retval = true;
+		} else if ("<built-in>" == filename) {
+			retval = true;
 		}
 	}
 	return retval;
+}
+
+bool filtered_out_by_location(const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL) {
+  ASTContext *const ASTC = MR.Context;
+  const SourceManager &SM = ASTC->getSourceManager();
+  return filtered_out_by_location(SM, SL);
 }
 
 static std::string with_whitespace_removed(const std::string& str) {
@@ -1791,6 +1800,14 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 			}
 			auto res = generate_declaration_replacement_code(&ddecl, Rewrite, state1.m_ddecl_conversion_state_map, options_str);
 
+			static const std::string const_space_str = "const ";
+			if (string_begins_with(res.m_replacement_code, const_space_str)) {
+				/* FunctionDecl::getReturnTypeSourceRange() seems to not include prefix qualifiers, like
+				 * "const". Since the source range to be replaced doesn't include the "const " qualifier,
+				 * if present, here we make sure it's not included in the replacement code either. */
+				res.m_replacement_code = res.m_replacement_code.substr(const_space_str.length());
+			}
+
 			if (ConvertToSCPP && return_type_source_range.isValid() && (1 <= res.m_replacement_code.size())) {
 				auto res2 = Rewrite.ReplaceText(return_type_source_range, res.m_replacement_code);
 			} else {
@@ -3104,6 +3121,7 @@ private:
 
 struct CAllocFunctionInfo {
 	bool m_seems_to_be_some_kind_of_malloc_or_realloc = false;
+	bool m_seems_to_be_some_kind_of_realloc = false;
 	clang::CallExpr::const_arg_iterator m_num_bytes_arg_iter;
 	std::string m_num_bytes_arg_source_text;
 };
@@ -3186,6 +3204,9 @@ CAllocFunctionInfo analyze_malloc_resemblance(const clang::CallExpr& call_expr, 
 						retval.m_num_bytes_arg_iter = arg_iter;
 						retval.m_seems_to_be_some_kind_of_malloc_or_realloc = true;
 						retval.m_num_bytes_arg_source_text = arg_source_text;
+						if (ends_with_realloc) {
+							retval.m_seems_to_be_some_kind_of_realloc = true;
+						}
 					}
 				}
 			}
@@ -3318,18 +3339,30 @@ public:
 						}
 					}
 					if ("" != lhs_element_type_str) {
-						num_elements_text = "(";
-						num_elements_text += alloc_function_info1.m_num_bytes_arg_source_text;
-						num_elements_text += ") / sizeof(";
-						num_elements_text += lhs_element_type_str;
-						num_elements_text += ")";
-
 						auto lhs_source_range = nice_source_range(LHS->getSourceRange(), Rewrite);
 						auto lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
-						bo_replacement_code += "(" + lhs_source_text + ")";
-						bo_replacement_code += ".resize(";
-						bo_replacement_code += num_elements_text;
-						bo_replacement_code += ")";
+
+						if (false) {
+							num_elements_text = "(";
+							num_elements_text += alloc_function_info1.m_num_bytes_arg_source_text;
+							num_elements_text += ") / sizeof(";
+							num_elements_text += lhs_element_type_str;
+							num_elements_text += ")";
+
+							bo_replacement_code += "(" + lhs_source_text + ")";
+							bo_replacement_code += ".resize(";
+							bo_replacement_code += num_elements_text;
+							bo_replacement_code += ")";
+						} else {
+							if (alloc_function_info1.m_seems_to_be_some_kind_of_realloc) {
+								bo_replacement_code = "MSE_LH_REALLOC(";
+							} else {
+								bo_replacement_code = "MSE_LH_ALLOC(";
+							}
+							bo_replacement_code += lhs_element_type_str + ", ";
+							bo_replacement_code += lhs_source_text + ", ";
+							bo_replacement_code += alloc_function_info1.m_num_bytes_arg_source_text + ")";
+						}
 
 						auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 						std::string decl_source_text;
@@ -3403,189 +3436,115 @@ public:
 				int q = 5;
 			}
 
-			auto function_decl = CE->getDirectCallee();
-			auto num_args = CE->getNumArgs();
-			if (function_decl && ((1 == num_args) || (2 == num_args))) {
-				std::string function_name = function_decl->getNameAsString();
-				static const std::string alloc_str = "alloc";
-				static const std::string realloc_str = "realloc";
-				auto lc_function_name = tolowerstr(function_name);
-				bool ends_with_alloc = ((lc_function_name.size() >= alloc_str.size())
-						&& (0 == lc_function_name.compare(lc_function_name.size() - alloc_str.size(), alloc_str.size(), alloc_str)));
-				bool ends_with_realloc = (ends_with_alloc && (lc_function_name.size() >= realloc_str.size())
-						&& (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
-				bool still_potentially_valid1 = (ends_with_alloc && (1 == num_args)) || (ends_with_realloc && (2 == num_args));
-				if (still_potentially_valid1) {
-					auto iter = CE->arg_begin();
-					if (ends_with_realloc) {
-						iter++;
+			auto alloc_function_info1 = analyze_malloc_resemblance(*CE, Rewrite);
+			if (alloc_function_info1.m_seems_to_be_some_kind_of_malloc_or_realloc) {
+				/* The argument is in the form "something * sizeof(something_else)" or
+				 * "sizeof(something) * something_else". So we're just going to assume that
+				 * this is an instance of an array being allocated. */
+				std::string num_elements_text/* = before_str + after_str*/;
+
+				if (nullptr != DD) {
+					auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
+					auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
+					std::string decl_source_text;
+					if (decl_source_range.isValid()) {
+						decl_source_text = Rewrite.getRewrittenText(decl_source_range);
+					} else {
+						return;
 					}
-					{
-						auto arg_source_range = nice_source_range((*iter)->getSourceRange(), Rewrite);
-						std::string arg_source_text;
-						if (arg_source_range.isValid()) {
-							arg_source_text = Rewrite.getRewrittenText(arg_source_range);
-							//auto arg_source_text_sans_ws = with_whitespace_removed(arg_source_text);
+					QualType QT = DD->getType();
+					auto variable_name = DD->getNameAsString();
 
-							bool asterisk_found = false;
-							auto sizeof_start_index = arg_source_text.find("sizeof(");
-							if (std::string::npos != sizeof_start_index) {
-								auto sizeof_end_index = arg_source_text.find(")", sizeof_start_index);
-								if (std::string::npos != sizeof_end_index) {
-									assert(sizeof_end_index > sizeof_start_index);
-									std::string before_str = arg_source_text.substr(0, sizeof_start_index);
-									std::string after_str;
-									if (sizeof_end_index + 1 < arg_source_text.size()) {
-										after_str = arg_source_text.substr(sizeof_end_index + 1);
-									}
+					auto qualified_name = DD->getQualifiedNameAsString();
+					static const std::string mse_namespace_str1 = "mse::";
+					static const std::string mse_namespace_str2 = "::mse::";
+					if ((0 == qualified_name.compare(0, mse_namespace_str1.size(), mse_namespace_str1))
+							|| (0 == qualified_name.compare(0, mse_namespace_str2.size(), mse_namespace_str2))) {
+						return;
+					}
 
-									auto index = before_str.size() - 1;
-									while (0 <= index) {
-										if ('*' == before_str[index]) {
-											asterisk_found = true;
-										}
-										if (!std::isspace(before_str[index])) {
-											break;
-										}
+					if (!is_an_indirect_type(DD->getType())) {
+						return;
+					}
 
-										index -= 1;
-									}
-									if (asterisk_found) {
-										before_str = before_str.substr(0, index);
-									} else {
-										size_t index2 = 0;
-										while (after_str.size() > index2) {
-											if ('*' == after_str[index2]) {
-												asterisk_found = true;
-											}
-											if (!std::isspace(after_str[index2])) {
-												break;
-											}
+					auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
+					auto ddcs_map_iter = res1.first;
+					auto& ddcs_ref = (*ddcs_map_iter).second;
+					bool update_declaration_flag = res1.second;
 
-											index2 += 1;
-										}
-										if (asterisk_found) {
-											after_str = after_str.substr(index2 + 1);
-										}
-									}
-								}
-							}
-							if (true || asterisk_found) {
-								/* The argument is in the form "something * sizeof(something_else)" or
-								 * "sizeof(something) * something_else". So we're just going to assume that
-								 * this is an instance of an array being allocated. */
-								std::string num_elements_text/* = before_str + after_str*/;
+					bool lhs_has_been_determined_to_be_an_array = false;
+					if ("native pointer" == ddcs_ref.m_indirection_state_stack.at(0).current()) {
+						ddcs_ref.set_indirection_current(0, "malloc target");
+					} else if ("inferred array" == ddcs_ref.m_indirection_state_stack.at(0).current()) {
+						ddcs_ref.set_indirection_current(0, "dynamic array");
+						lhs_has_been_determined_to_be_an_array = true;
+						//update_declaration_flag = true;
+						m_state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, 0));
+					} else if ("dynamic array" == ddcs_ref.m_indirection_state_stack.at(0).current()) {
+						lhs_has_been_determined_to_be_an_array = true;
+					} else {
+						assert("native array" != ddcs_ref.m_indirection_state_stack.at(0).current());
+					}
 
-								if (nullptr != DD) {
-									auto decl_source_range = nice_source_range(DD->getSourceRange(), Rewrite);
-									auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
-									std::string decl_source_text;
-									if (decl_source_range.isValid()) {
-										decl_source_text = Rewrite.getRewrittenText(decl_source_range);
-									} else {
-										return;
-									}
-									QualType QT = DD->getType();
-									auto variable_name = DD->getNameAsString();
+					const clang::Type* TP = QT.getTypePtr();
+					auto lhs_type_str = QT.getAsString();
 
-									auto qualified_name = DD->getQualifiedNameAsString();
-									static const std::string mse_namespace_str1 = "mse::";
-									static const std::string mse_namespace_str2 = "::mse::";
-									if ((0 == qualified_name.compare(0, mse_namespace_str1.size(), mse_namespace_str1))
-											|| (0 == qualified_name.compare(0, mse_namespace_str2.size(), mse_namespace_str2))) {
-										return;
-									}
-
-									if (!is_an_indirect_type(DD->getType())) {
-										return;
-									}
-
-									auto res1 = (*this).m_state1.m_ddecl_conversion_state_map.insert(*DD);
-									auto ddcs_map_iter = res1.first;
-									auto& ddcs_ref = (*ddcs_map_iter).second;
-									bool update_declaration_flag = res1.second;
-
-									bool lhs_has_been_determined_to_be_an_array = false;
-									if ("native pointer" == ddcs_ref.m_indirection_state_stack.at(0).current()) {
-										ddcs_ref.set_indirection_current(0, "malloc target");
-									} else if ("inferred array" == ddcs_ref.m_indirection_state_stack.at(0).current()) {
-										ddcs_ref.set_indirection_current(0, "dynamic array");
-										lhs_has_been_determined_to_be_an_array = true;
-										//update_declaration_flag = true;
-										m_state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, 0));
-									} else if ("dynamic array" == ddcs_ref.m_indirection_state_stack.at(0).current()) {
-										lhs_has_been_determined_to_be_an_array = true;
-									} else {
-										assert("native array" != ddcs_ref.m_indirection_state_stack.at(0).current());
-									}
-
-									const clang::Type* TP = QT.getTypePtr();
-									auto lhs_type_str = QT.getAsString();
-
-									std::string element_type_str;
-									if (TP->isArrayType()) {
-										auto ATP = llvm::cast<const clang::ArrayType>(TP);
-										assert(nullptr != ATP);
-										auto element_type = ATP->getElementType();
-										auto type_str = element_type.getAsString();
-										if (("char" != type_str) && ("const char" != type_str)) {
-											element_type_str = type_str;
-										}
-									} else if (TP->isPointerType()) {
-										auto TPP = llvm::cast<const clang::PointerType>(TP);
-										assert(nullptr != TPP);
-										auto target_type = TPP->getPointeeType();
-										auto type_str = target_type.getAsString();
-										if (("char" != type_str) && ("const char" != type_str)) {
-											element_type_str = type_str;
-										}
-									}
-									if ("" != element_type_str) {
-										num_elements_text = "(";
-										num_elements_text += arg_source_text;
-										if (true || (("void" != element_type_str) && ("const void" != element_type_str))) {
-											num_elements_text += ") / sizeof(";
-											num_elements_text += element_type_str;
-										} else {
-											/* todo: something */
-										}
-										num_elements_text += ")";
-
-										std::string initializer_info_str = "(" + num_elements_text + ")";
-
-										auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
-										std::string decl_source_text;
-										if (decl_source_range.isValid()) {
-											decl_source_text = Rewrite.getRewrittenText(decl_source_range);
-										} else {
-											return;
-										}
-
-										auto DSSR = clang::SourceRange(DSSL, DSSLE);
-										if (ConvertToSCPP && decl_source_range.isValid() && (DSSR.isValid())) {
-											auto cr_shptr = std::make_shared<CInitializerArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, 0/*indirection_level*/), DS, initializer_info_str);
-
-											if (lhs_has_been_determined_to_be_an_array) {
-												(*cr_shptr).do_replacement(m_state1);
-											} else {
-												m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
-											}
-
-											int q = 3;
-										} else {
-											int q = 7;
-										}
-									}
-								}
-								int q = 5;
-							}
-						} else {
-							int q = 5;
+					std::string element_type_str;
+					if (TP->isArrayType()) {
+						auto ATP = llvm::cast<const clang::ArrayType>(TP);
+						assert(nullptr != ATP);
+						auto element_type = ATP->getElementType();
+						auto type_str = element_type.getAsString();
+						if (("char" != type_str) && ("const char" != type_str)) {
+							element_type_str = type_str;
 						}
-						int q = 5;
+					} else if (TP->isPointerType()) {
+						auto TPP = llvm::cast<const clang::PointerType>(TP);
+						assert(nullptr != TPP);
+						auto target_type = TPP->getPointeeType();
+						auto type_str = target_type.getAsString();
+						if (("char" != type_str) && ("const char" != type_str)) {
+							element_type_str = type_str;
+						}
+					}
+					if ("" != element_type_str) {
+						num_elements_text = "(";
+						num_elements_text += alloc_function_info1.m_num_bytes_arg_source_text;
+						if (true || (("void" != element_type_str) && ("const void" != element_type_str))) {
+							num_elements_text += ") / sizeof(";
+							num_elements_text += element_type_str;
+						} else {
+							/* todo: something */
+						}
+						num_elements_text += ")";
+
+						std::string initializer_info_str = "(" + num_elements_text + ")";
+
+						auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
+						std::string decl_source_text;
+						if (decl_source_range.isValid()) {
+							decl_source_text = Rewrite.getRewrittenText(decl_source_range);
+						} else {
+							return;
+						}
+
+						auto DSSR = clang::SourceRange(DSSL, DSSLE);
+						if (ConvertToSCPP && decl_source_range.isValid() && (DSSR.isValid())) {
+							auto cr_shptr = std::make_shared<CInitializerArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, 0/*indirection_level*/), DS, initializer_info_str);
+
+							if (lhs_has_been_determined_to_be_an_array) {
+								(*cr_shptr).do_replacement(m_state1);
+							} else {
+								m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
+							}
+
+							int q = 3;
+						} else {
+							int q = 7;
+						}
 					}
 				}
-
+				int q = 5;
 			}
 		}
 	}
@@ -3635,7 +3594,7 @@ public:
 			}
 
 			Expr::NullPointerConstantKind kind = RHS->IgnoreParenCasts()->isNullPointerConstant(*ASTC, Expr::NullPointerConstantValueDependence());
-			if (clang::Expr::NPCK_NotNull != kind) {
+			if (false && clang::Expr::NPCK_NotNull != kind) {
 				if (true) {
 					{
 						if (true) {
@@ -3825,8 +3784,8 @@ public:
 							if ("" != arg_element_type_str) {
 								if (ConvertToSCPP && (arg_res2.ddecl_conversion_state_ptr) && arg_is_an_indirect_type) {
 									auto arg_source_text = Rewrite.getRewrittenText(arg_source_range);
-									std::string ce_replacement_code = "(" + arg_source_text + ")";
-									ce_replacement_code += ".resize(0)";
+									//std::string ce_replacement_code = "(" + arg_source_text + ").resize(0)";
+									std::string ce_replacement_code = "MSE_LH_FREE(" + arg_source_text + ")";
 
 									auto cr_shptr = std::make_shared<CFreeDynamicArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*(arg_res2.ddecl_cptr), arg_res2.indirection_level), CE, ce_replacement_code);
 
@@ -6114,6 +6073,100 @@ private:
 };
 
 /**********************************************************************************************************************/
+
+struct CFirstIncludeInfo {
+	CFirstIncludeInfo(const SourceLocation &beginning_of_file_loc) : m_beginning_of_file_loc(beginning_of_file_loc),
+			m_beginning_of_file_loc_is_valid(true) {}
+
+	bool m_legacyhelpers_include_directive_found = false;
+
+  bool m_first_include_directive_loc_is_valid = false;
+  SourceLocation m_first_include_directive_loc;
+
+  bool m_first_macro_directive_ptr_is_valid = false;
+  const MacroDirective* m_first_macro_directive_ptr = nullptr;
+
+  SourceLocation m_beginning_of_file_loc;
+  bool m_beginning_of_file_loc_is_valid = false;
+};
+
+class MyPPCallbacks : public PPCallbacks
+{
+public:
+	MyPPCallbacks(Rewriter& Rewriter_ref) : m_Rewriter_ref(Rewriter_ref) {}
+
+	void InclusionDirective(
+    SourceLocation hash_loc,
+    const Token &include_token,
+    StringRef file_name,
+    bool is_angled,
+    CharSourceRange filename_range,
+    const FileEntry *file,
+    StringRef search_path,
+    StringRef relative_path,
+    const clang::Module *imported) override {
+
+  	if (current_fii_shptr()) {
+  		if (!(current_fii_shptr()->m_first_include_directive_loc_is_valid)) {
+  			current_fii_shptr()->m_first_include_directive_loc = hash_loc;
+  			current_fii_shptr()->m_first_include_directive_loc_is_valid = true;
+  		}
+
+  		std::string file_name_str = file_name;
+  		if ("mselegacyhelpers.h" == file_name_str) {
+  			current_fii_shptr()->m_legacyhelpers_include_directive_found = true;
+  		}
+  		int q = 5;
+  	}
+  }
+
+  void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD) override {
+  	if (current_fii_shptr()) {
+  		if (!(current_fii_shptr()->m_first_macro_directive_ptr_is_valid)) {
+  			if (MD) {
+  				current_fii_shptr()->m_first_macro_directive_ptr = MD;
+  				current_fii_shptr()->m_first_macro_directive_ptr_is_valid = true;
+  			} else { assert(false); }
+  		}
+  	}
+  }
+
+  void FileChanged(SourceLocation Loc, FileChangeReason Reason,
+                           SrcMgr::CharacteristicKind FileType,
+                           FileID PrevFID = FileID()) override {
+
+  	bool filename_is_invalid = false;
+  	std::string full_path_name = m_Rewriter_ref.getSourceMgr().getBufferName(Loc, &filename_is_invalid);
+
+  	if (PPCallbacks::FileChangeReason::EnterFile == Reason) {
+  		auto fii_iter = m_first_include_info_map.find(Loc);
+			if (m_first_include_info_map.end() == fii_iter) {
+				std::map<SourceLocation, std::shared_ptr<CFirstIncludeInfo>>::value_type item(Loc, std::make_shared<CFirstIncludeInfo>(Loc));
+				fii_iter = (m_first_include_info_map.insert(item)).first;
+			}
+			m_current_fii_shptr_stack.push_back((*fii_iter).second);
+  	} else if (PPCallbacks::FileChangeReason::ExitFile == Reason) {
+  		if (1 <= m_current_fii_shptr_stack.size()) {
+  			m_current_fii_shptr_stack.pop_back();
+  		} else {
+  			assert(false);
+  		}
+  	}
+  }
+
+  std::shared_ptr<CFirstIncludeInfo> current_fii_shptr() {
+  	std::shared_ptr<CFirstIncludeInfo> retval = nullptr;
+  	if (1 <= m_current_fii_shptr_stack.size()) {
+  		retval = m_current_fii_shptr_stack.back();
+  	}
+  	return retval;
+  }
+
+  std::map<SourceLocation, std::shared_ptr<CFirstIncludeInfo>> m_first_include_info_map;
+  std::vector<std::shared_ptr<CFirstIncludeInfo>> m_current_fii_shptr_stack;
+  Rewriter& m_Rewriter_ref;
+};
+
 class MyFrontendAction : public ASTFrontendAction 
 {
 public:
@@ -6125,8 +6178,52 @@ public:
 	  }
   }
 
+  bool BeginSourceFileAction(CompilerInstance &ci, StringRef) override {
+    std::unique_ptr<MyPPCallbacks> my_pp_callbacks_ptr(new MyPPCallbacks(TheRewriter));
+
+    clang::Preprocessor &pp = ci.getPreprocessor();
+    pp.addPPCallbacks(std::move(my_pp_callbacks_ptr));
+
+    return true;
+  }
+
   void EndSourceFileAction() override {
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+
+    {
+    	clang::CompilerInstance &ci = getCompilerInstance();
+    	clang::Preprocessor &pp = ci.getPreprocessor();
+      MyPPCallbacks *my_pp_callbacks_ptr = static_cast<MyPPCallbacks *>(pp.getPPCallbacks());
+
+      assert(my_pp_callbacks_ptr);
+      if (my_pp_callbacks_ptr) {
+      	// do whatever you want with the callback now
+
+      	for (auto& item_ref : my_pp_callbacks_ptr->m_first_include_info_map) {
+      		auto& fii_ref = *(item_ref.second);
+        	assert(fii_ref.m_beginning_of_file_loc_is_valid);
+
+        	bool filename_is_invalid = false;
+        	std::string full_path_name = TheRewriter.getSourceMgr().getBufferName(fii_ref.m_beginning_of_file_loc, &filename_is_invalid);
+
+        	if (filtered_out_by_location(TheRewriter.getSourceMgr(), fii_ref.m_beginning_of_file_loc)) {
+      			continue;
+      		}
+
+      		if (!(fii_ref.m_legacyhelpers_include_directive_found)) {
+      			assert(fii_ref.m_first_include_directive_loc_is_valid);
+      			TheRewriter.InsertTextBefore(fii_ref.m_first_include_directive_loc,
+      					"#include \"mselegacyhelpers.h\"\n");
+      		} else if (fii_ref.m_first_macro_directive_ptr_is_valid) {
+      			TheRewriter.InsertTextAfterToken(fii_ref.m_first_macro_directive_ptr->getLocation(),
+      					"#include \"mselegacyhelpers.h\"\n");
+      		} else if (fii_ref.m_beginning_of_file_loc_is_valid) {
+      			TheRewriter.InsertTextBefore(fii_ref.m_beginning_of_file_loc,
+      					"#include \"mselegacyhelpers.h\"\n");
+      		}
+      	}
+      } else { assert(false); }
+    }
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
