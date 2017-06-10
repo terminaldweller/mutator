@@ -92,8 +92,8 @@ std::vector<std::string> BRUISR_COMMANDS =
 std::vector<std::string> LUA_FUNCS = 
   {
   "help()",
-  "quit",
-  "exit",
+  "quit()",
+  "exit()",
   "history()",
   "version()",
   "clear()",
@@ -106,6 +106,8 @@ std::vector<std::string> LUA_FUNCS =
   "Unions()",
   "Classes()",
   "hijackmain()",
+  "make",
+  "historysize",
   "_G",
   "_VERSION",
   "assert",
