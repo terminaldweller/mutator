@@ -7,6 +7,7 @@ CXX_FLAGS+=-I/usr/include
 EXTRA_LD_FLAGS+=-L$(shell pwd)/lua-5.3.4/src/ -llua -ldl
 BRUISER=bruiser
 LIB_LUA=./lua-5.3.4/src/liblua.a
+LIB_LUA_JIT=./LuaJIT/src/libluajit.a
 HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
 ######################################RULES####################################
 .DEFAULT: all
@@ -24,12 +25,16 @@ linenoise.o:
 $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4 linux
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o $(LIB_LUA)
+$(LIB_LUA_JIT):
+	$(MAKE) -C LuaJIT
+
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o $(LIB_LUA) $(LIB_LUA_JIT)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
 	rm -f *.o *~ $(BRUISER)
 	$(MAKE) -C lua-5.3.4 clean
+	$(MAKE) -C LuaJIT clean
 
 help:
 	@echo 'there is help.'
