@@ -73,6 +73,7 @@ bruiser::BruiserReport BruiseRep;
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 class LuaEngine
 {
@@ -158,6 +159,26 @@ class LuaEngine
 
   private:
     lua_State* LS;
+};
+/**********************************************************************************************************************/
+class CompilationDatabaseProcessor
+{
+  public:
+  CompilationDatabaseProcessor(CompilationDatabase &__cdb) : CDB(__cdb) {}
+
+  void CalcMakePath(void)
+  {
+    std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
+  }
+
+  std::string GetMakePath(void)
+  {
+    return this->MakePath;
+  }
+
+  private:
+  CompilationDatabase &CDB;
+  std::string MakePath;
 };
 /**********************************************************************************************************************/
 /*the implementation of the bruiser logger.*/
@@ -835,6 +856,7 @@ class LuaWrapper
   public:
     LuaWrapper(ClangTool &__CT) : CT(__CT) {}
 
+    /*print out the history*/
     int BruiserLuaHistory(lua_State* __ls)
     {
       std::ifstream historyfile;
@@ -853,6 +875,7 @@ class LuaWrapper
       return tempint;
     }
 
+    /*print the help menu*/
     int BruiserLuaHelp(lua_State* __ls)
     {
       unsigned int argcount = 0U;
@@ -868,6 +891,7 @@ class LuaWrapper
       return argcount;
     }
 
+    /*hijakcs the main main*/
     int BruiserLuaHijackMain(lua_State* __ls)
     {
         int RunResult = this->GetClangTool().run(newFrontendActionFactory<BruiserFrontendAction>().get());
@@ -878,6 +902,7 @@ class LuaWrapper
         return 1;
     }
 
+    /*print out bruiser version*/
     int BruiserLuaVersion(lua_State* __ls)
     {
         PRINT_WITH_COLOR_LB(GREEN, "bruiser experimental version something.");
@@ -888,12 +913,14 @@ class LuaWrapper
         return 1;
     }
 
+    /*clear the screen*/
     int BruiserLuaClear(lua_State* _ls)
     {
       linenoiseClearScreen();
       return 0;
     }
 
+    /*read the m0 report*/
     int BruiserLuaM0(lua_State* __ls)
     {
         BruiseRep.PrintToLog("bruiser exited with:");
@@ -919,6 +946,58 @@ class LuaWrapper
         bruiser::SearchM0(M0Rep.getRootPointer());
 
         return 1;
+    }
+
+    /*quit*/
+    int BruiserLuaQuit(lua_State* __ls)
+    {
+      dostring(__ls, "os.exit()", "test");
+      return 0;
+    }
+
+    /*quit*/
+    int BruiserLuaExit(lua_State* __ls)
+    {
+      dostring(__ls, "os.exit()", "test");
+      return 0;
+    }
+
+    int BruiserLuaRunMake(lua_State* __ls)
+    {
+      unsigned int result = 0U;
+      unsigned int args = 0U;
+
+      if ((args = lua_gettop(__ls)) != 1U)
+      {
+        PRINT_WITH_COLOR_LB(RED, "function was not called by one argument. Run help().");
+        return 0;
+      }
+
+      const char *makepath;
+      makepath = lua_tostring(__ls, 1);
+
+      result = dostring(__ls, makepath, "make");
+
+      lua_pushnumber(__ls, result);
+      free((char*)makepath);
+      return 1;
+    }
+
+    int BruiserLuaChangeHistorySize(lua_State* __ls)
+    {
+      unsigned int args = 0U;
+
+      if ((args = lua_gettop(__ls)) != 1U)
+      {
+        PRINT_WITH_COLOR_LB(RED, "function was not called by one argument. Run help().");
+        return 0;
+      }
+      
+      unsigned int historysize = lua_tonumber(__ls, 1);
+
+      linenoiseHistorySetMaxLen(historysize);
+
+      return 0;
     }
 
 #define LIST_GENERATOR(__x1) \
@@ -983,6 +1062,12 @@ int main(int argc, const char **argv)
   /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+
+  CompilationDatabase &CDB = op.getCompilations();
+  std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
+
+  CompilationDatabaseProcessor CDBP(CDB);
+
   /*initialize the LuaWrapper class so we can register and run them from lua.*/
   LuaWrapper LW(Tool);
 
@@ -1008,6 +1093,11 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "hijackmain", &LuaDispatch<&LuaWrapper::BruiserLuaHijackMain>);
     lua_register(LE.GetLuaState(), "version", &LuaDispatch<&LuaWrapper::BruiserLuaVersion>);
     lua_register(LE.GetLuaState(), "clear", &LuaDispatch<&LuaWrapper::BruiserLuaClear>);
+    lua_register(LE.GetLuaState(), "m0", &LuaDispatch<&LuaWrapper::BruiserLuaM0>);
+    lua_register(LE.GetLuaState(), "quit", &LuaDispatch<&LuaWrapper::BruiserLuaQuit>);
+    lua_register(LE.GetLuaState(), "exit", &LuaDispatch<&LuaWrapper::BruiserLuaExit>);
+    lua_register(LE.GetLuaState(), "make", &LuaDispatch<&LuaWrapper::BruiserLuaRunMake>);
+    lua_register(LE.GetLuaState(), "historysize", &LuaDispatch<&LuaWrapper::BruiserLuaChangeHistorySize>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
