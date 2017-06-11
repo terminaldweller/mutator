@@ -26,3 +26,17 @@ bruiser looks at your code, learns your code and then decides how to mutate your
 
 ### How?
 I'm going to wrire about it as soon as I get my thoughts organized. In the meantime you can look at the source code for some hints.<br/>
+
+### Example
+First you should clone the mutator repo and run `git submodule init` and `git submodule update` to get the cool third-party repos that enable mutator to run.<br/>
+To build bruiser you can either run the makefile in bruiser's directory, then run `make` or just run the makefile at mutator's root directory and run `make bruiser`.<br/>
+After building bruiser, you can run it like any other mutator tool. So for example if you want to run bruiser on its test file run:<br/>
+
+```bash
+
+./bruiser ../test/bruisertest/test.cpp
+
+```
+
+After that you can just run your commands.<br/>
+bruiser, like any other libtooling tool will need it's entire compile command or a compilation databse. If you don't have a compilation database, take a look at [Bear](https://github.com/rizsotto/Bear).<br/>
