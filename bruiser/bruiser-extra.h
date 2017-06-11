@@ -108,6 +108,7 @@ std::vector<std::string> LUA_FUNCS =
   "hijackmain()",
   "make",
   "historysize",
+  "showsource",
   "_G",
   "_VERSION",
   "assert",
