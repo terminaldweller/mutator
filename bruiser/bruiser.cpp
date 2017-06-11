@@ -65,11 +65,24 @@ using namespace clang::tooling;
 #endif
 /**********************************************************************************************************************/
 /*global vars*/
-static llvm::cl::OptionCategory BruiserCategory("Empty");
-std::vector<std::string> PushToLua;
+namespace
+{
+  static llvm::cl::OptionCategory BruiserCategory("Empty");
+  std::vector<std::string> PushToLua;
 
-bruiser::M0_ERR m0_err;
-bruiser::BruiserReport BruiseRep;
+  bruiser::M0_ERR m0_err;
+  bruiser::BruiserReport BruiseRep;
+
+  struct ShellGlobal
+  {
+    ShellGlobal() = default;
+
+    std::vector<std::string> PATH;
+    std::vector<std::string> SOURCE_FILES;
+  };
+
+  ShellGlobal ShellGlobalInstance;
+}
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
@@ -168,7 +181,15 @@ class CompilationDatabaseProcessor
 
   void CalcMakePath(void)
   {
+    std::vector<std::string> Paths;
     std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
+
+    for(auto &iter : CCV)
+    {
+      SourceFiles.push_back(iter.Directory + "/" + iter.Filename);
+    }
+
+    MakePath = CCV[0].Directory;
   }
 
   std::string GetMakePath(void)
@@ -176,9 +197,15 @@ class CompilationDatabaseProcessor
     return this->MakePath;
   }
 
+  std::vector<std::string> GetSourceFiles(void)
+  {
+    return this->SourceFiles;
+  }
+
   private:
   CompilationDatabase &CDB;
   std::string MakePath;
+  std::vector<std::string> SourceFiles;
 };
 /**********************************************************************************************************************/
 /*the implementation of the bruiser logger.*/
@@ -1000,6 +1027,11 @@ class LuaWrapper
       return 0;
     }
 
+    int BruiserLuaShowSourcecode(lua_State* __ls)
+    {
+      return 0;
+    }
+
 #define LIST_GENERATOR(__x1) \
     int List##__x1(lua_State* __ls)\
     {\
@@ -1044,9 +1076,9 @@ typedef int (LuaWrapper::*mem_func)(lua_State* L);
 /**
  * @brief A template function to wrap LuaWrapper members into somehting that lua accepts.
  *
- * @param __ls
+ * @param __ls lua state
  *
- * @return 
+ * @return returns a pointer to the member function wrapped the way lua accepts it.
  */
 template<mem_func func>
 int LuaDispatch(lua_State* __ls)
@@ -1098,6 +1130,7 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "exit", &LuaDispatch<&LuaWrapper::BruiserLuaExit>);
     lua_register(LE.GetLuaState(), "make", &LuaDispatch<&LuaWrapper::BruiserLuaRunMake>);
     lua_register(LE.GetLuaState(), "historysize", &LuaDispatch<&LuaWrapper::BruiserLuaChangeHistorySize>);
+    lua_register(LE.GetLuaState(), "showsource", &LuaDispatch<&LuaWrapper::BruiserLuaShowSourcecode>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
