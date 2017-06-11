@@ -186,10 +186,12 @@ class CompilationDatabaseProcessor
 
     for(auto &iter : CCV)
     {
-      SourceFiles.push_back(iter.Directory + "/" + iter.Filename);
+      SourceFiles.push_back(iter.Filename);
+      //PRINT_WITH_COLOR_LB(RED, SourceFiles.back().c_str());
     }
 
     MakePath = CCV[0].Directory;
+    //PRINT_WITH_COLOR_LB(RED, MakePath.c_str());
   }
 
   std::string GetMakePath(void)
@@ -200,6 +202,19 @@ class CompilationDatabaseProcessor
   std::vector<std::string> GetSourceFiles(void)
   {
     return this->SourceFiles;
+  }
+
+  void PopulateGPATH(void)
+  {
+    ShellGlobalInstance.PATH.push_back(MakePath);
+  }
+
+  void PopulateGSOURCEFILES(void)
+  {
+    for (auto &iter : SourceFiles)
+    {
+      ShellGlobalInstance.SOURCE_FILES.push_back(iter);
+    }
   }
 
   private:
@@ -1029,7 +1044,35 @@ class LuaWrapper
 
     int BruiserLuaShowSourcecode(lua_State* __ls)
     {
-      return 0;
+      unsigned int args = 0U;
+
+      if ((args = lua_gettop(__ls)) != 3U)
+      {
+        PRINT_WITH_COLOR_LB(RED, "function called with the wrong number of arguments. Run help().");
+        return 0;
+      }
+
+      unsigned int linebegin = lua_tonumber(__ls, 1);
+      unsigned int lineend = lua_tonumber(__ls, 2);
+      std::string filename = lua_tostring(__ls, 3);
+      std::fstream targetfile;
+
+      for(auto &iter : ShellGlobalInstance.SOURCE_FILES)
+      {
+        if (iter.rfind(filename) == iter.size() - filename.size())
+        {
+          targetfile.open(iter);
+        }
+      }
+
+      std::string line;
+      while(getline(targetfile, line))
+      {
+        lua_pushstring(__ls, line.c_str());
+      }
+
+      targetfile.close();
+      return lineend - linebegin + 1U;
     }
 
 #define LIST_GENERATOR(__x1) \
@@ -1098,7 +1141,11 @@ int main(int argc, const char **argv)
   CompilationDatabase &CDB = op.getCompilations();
   std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
 
+  /*populating the shellglobalinstance*/
   CompilationDatabaseProcessor CDBP(CDB);
+  CDBP.CalcMakePath();
+  CDBP.PopulateGPATH();
+  CDBP.PopulateGSOURCEFILES();
 
   /*initialize the LuaWrapper class so we can register and run them from lua.*/
   LuaWrapper LW(Tool);
