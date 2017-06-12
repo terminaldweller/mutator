@@ -1,5 +1,3 @@
-include ../../macros.mk
-
 BRUISER_TEST=test
 
 .DEFAULT:all clean
