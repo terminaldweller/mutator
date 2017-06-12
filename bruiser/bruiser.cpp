@@ -194,6 +194,18 @@ class CompilationDatabaseProcessor
     //PRINT_WITH_COLOR_LB(RED, MakePath.c_str());
   }
 
+  bool CompilationDatabseIsEmpty(void)
+  {
+    std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
+
+    if(CCV.empty())
+    {
+      return true;
+    }
+
+    return false;
+  }
+
   std::string GetMakePath(void)
   {
     return this->MakePath;
@@ -1143,9 +1155,19 @@ int main(int argc, const char **argv)
 
   /*populating the shellglobalinstance*/
   CompilationDatabaseProcessor CDBP(CDB);
-  CDBP.CalcMakePath();
-  CDBP.PopulateGPATH();
-  CDBP.PopulateGSOURCEFILES();
+
+  /*checking whether the compilation database is found and not empty*/
+  if (CDBP.CompilationDatabseIsEmpty())
+  {
+    PRINT_WITH_COLOR_LB(RED, "bruiser could not find the compilation database.");
+    //return 1;
+  }
+  else
+  {
+    CDBP.CalcMakePath();
+    CDBP.PopulateGPATH();
+    CDBP.PopulateGSOURCEFILES();
+  }
 
   /*initialize the LuaWrapper class so we can register and run them from lua.*/
   LuaWrapper LW(Tool);
