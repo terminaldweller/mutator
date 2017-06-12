@@ -1,6 +1,6 @@
 [
     {
-        "command": "c++ -c -v -o test test.cpp", 
+        "command": "c++ -c -o test test.cpp", 
         "directory": "/home/bloodstalker/devi/hell2/test/bruisertest", 
         "file": "/home/bloodstalker/devi/hell2/test/bruisertest/test.cpp"
     }
