@@ -39,4 +39,12 @@ After building bruiser, you can run it like any other mutator tool. So for examp
 ```
 
 After that you can just run your commands.<br/>
-bruiser, like any other libtooling tool will need it's entire compile command or a compilation databse. If you don't have a compilation database, take a look at [Bear](https://github.com/rizsotto/Bear).<br/>
+To run you commands from a lua file, you can just use `dofile()` to call your script. bruiser has an embedded lua interpreter with the bruiser functions registered in it, so you do have full access to all lua libraries and functionalities plus the added bruiser functionality.<br/>
+For example you can run one of the example scripts that come with bruiser like this:<br/>
+
+```lua
+
+dofile("./lua-scripts/testfile1.lua")
+
+```
+bruiser requires a compilation database to run. If you don't have a compilation database, take a look at [Bear](https://github.com/rizsotto/Bear).<br/>
