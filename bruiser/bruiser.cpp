@@ -1074,6 +1074,11 @@ class LuaWrapper
         if (iter.rfind(filename) == iter.size() - filename.size())
         {
           targetfile.open(iter);
+
+          if(targetfile.rdstate() != std::ios_base::goodbit)
+          {
+            PRINT_WITH_COLOR_LB(RED, "could not open the file.");
+          }
         }
       }
 
