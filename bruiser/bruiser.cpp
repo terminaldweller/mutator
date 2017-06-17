@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "CompletionHints.h"
 #include "../mutator_aux.h"
 /*standard headers*/
-#include "fstream"
+#include <fstream>
 #include <string>
 #include <cassert>
 #include <iostream>
@@ -739,11 +739,16 @@ public:
   virtual ~BruiserFrontendAction()
   {
     delete BDCProto;
+    delete tee;
   }
 
-  void EndSourceFileAction() override 
+  void EndSourceFileAction() override
   {
+    std::error_code EC;
+    std::string OutputFilename = "./libtooling-tee";
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+    tee = new raw_fd_ostream(StringRef(OutputFilename), EC, sys::fs::F_None);
+    TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(*tee);
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override 
@@ -757,6 +762,7 @@ public:
 private:
   Rewriter TheRewriter;
   BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
+  raw_ostream *tee = &llvm::outs();
 };
 /**********************************************************************************************************************/
 class LiveActionListVars : public ASTFrontendAction
@@ -949,9 +955,19 @@ class LuaWrapper
     int BruiserLuaHijackMain(lua_State* __ls)
     {
         int RunResult = this->GetClangTool().run(newFrontendActionFactory<BruiserFrontendAction>().get());
-        //std::cout << CYAN <<"hijacking main returned " << RunResult << "\n" << NORMAL;
         printf(CYAN"hijacking main returned %d", RunResult);
         printf(NORMAL"\n");
+
+        std::ifstream libtooling_tee("../test/bruisertest/libtooling-tee");
+        std::string luaoutstr;
+        std::string dummy;
+
+        while(std::getline(libtooling_tee, dummy))
+        {
+          luaoutstr = luaoutstr + dummy + "\n";
+        }
+
+        lua_pushstring(__ls, luaoutstr.c_str());
 
         return 1;
     }
