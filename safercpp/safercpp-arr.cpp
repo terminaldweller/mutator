@@ -1386,6 +1386,7 @@ class CTypeIndirectionPrefixAndSuffixItem {
 public:
 	std::string m_prefix_str;
 	std::string m_suffix_str;
+	std::string m_post_name_suffix_str;
 	std::string m_action_species;
 	bool m_direct_type_must_be_non_const = false;
 };
@@ -1398,6 +1399,7 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 	std::string replacement_code;
 	std::string prefix_str;
 	std::string suffix_str;
+	std::string post_name_suffix_str;
 
 	if (true) {
 		for (size_t i = 0; i < indirection_state_stack.size(); i += 1) {
@@ -1458,7 +1460,11 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 					/* We're assuming this is a null terminated string. We'll just leave it as a
 					 * char[] for now. At some point we'll replace it with an mse::string or whatever. */
 					//prefix_str = prefix_str + "";
-					suffix_str = "[" + size_text + "]" + suffix_str;
+					if (1 == indirection_state_stack.size()) {
+						post_name_suffix_str = post_name_suffix_str + "[" + size_text + "]";
+					} else {
+						suffix_str = "[" + size_text + "]" + suffix_str;
+					}
 				} else {
 					if (is_a_function_parameter) {
 						prefix_str = prefix_str + "mse::TNullableAnyRandomAccessIterator<";
@@ -1700,6 +1706,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 	std::string replacement_code;
 	std::string prefix_str;
 	std::string suffix_str;
+	std::string post_name_suffix_str;
 
 	auto res4 = generate_type_indirection_prefix_and_suffix(ddcs_ref.m_indirection_state_stack,
 			direct_type_is_char_type, direct_type_is_function_type, is_a_function_parameter);
@@ -1710,6 +1717,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 	}
 	prefix_str = res4.m_prefix_str;
 	suffix_str = res4.m_suffix_str;
+	post_name_suffix_str = res4.m_post_name_suffix_str;
 
 	bool discard_initializer_option_flag = (std::string::npos != options_str.find("[discard-initializer]"));
 	std::string initializer_append_str;
@@ -1720,7 +1728,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 		}
 	}
 
-	if (("" != prefix_str) || ("" != suffix_str)) {
+	if (("" != prefix_str) || ("" != suffix_str)/* || ("" != post_name_suffix_str)*/) {
 		changed_from_original = true;
 	} else if (("" != ddcs_ref.m_initializer_info_str) ||
 			(discard_initializer_option_flag)) {
@@ -1751,6 +1759,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 			replacement_code += prefix_str + direct_qtype_str + suffix_str;
 			replacement_code += " ";
 			replacement_code += variable_name;
+			replacement_code += post_name_suffix_str;
 
 			replacement_code += initializer_append_str;
 		} else {
@@ -2954,6 +2963,102 @@ private:
 
 /**********************************************************************************************************************/
 
+struct CAllocFunctionInfo {
+	bool m_seems_to_be_some_kind_of_malloc_or_realloc = false;
+	bool m_seems_to_be_some_kind_of_realloc = false;
+	clang::CallExpr::const_arg_iterator m_num_bytes_arg_iter;
+	std::string m_num_bytes_arg_source_text;
+};
+CAllocFunctionInfo analyze_malloc_resemblance(const clang::CallExpr& call_expr, Rewriter &Rewrite) {
+	CAllocFunctionInfo retval;
+
+	auto CE = &call_expr;
+	auto function_decl = CE->getDirectCallee();
+	auto num_args = CE->getNumArgs();
+	if (function_decl && ((1 == num_args) || (2 == num_args))) {
+		std::string function_name = function_decl->getNameAsString();
+		static const std::string alloc_str = "alloc";
+		static const std::string realloc_str = "realloc";
+		auto lc_function_name = tolowerstr(function_name);
+		bool ends_with_alloc = ((lc_function_name.size() >= alloc_str.size())
+				&& (0 == lc_function_name.compare(lc_function_name.size() - alloc_str.size(), alloc_str.size(), alloc_str)));
+		bool ends_with_realloc = (ends_with_alloc && (lc_function_name.size() >= realloc_str.size())
+				&& (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
+		bool still_potentially_valid1 = (ends_with_alloc && (1 == num_args)) || (ends_with_realloc && (2 == num_args));
+		if (still_potentially_valid1) {
+			auto arg_iter = CE->arg_begin();
+			if (ends_with_realloc) {
+				arg_iter++;
+			}
+			bool argIsIntegerType = false;
+			if (*arg_iter) {
+				argIsIntegerType = (*arg_iter)->getType().split().asPair().first->isIntegerType();
+			}
+			if (argIsIntegerType) {
+				auto arg_source_range = nice_source_range((*arg_iter)->getSourceRange(), Rewrite);
+				std::string arg_source_text;
+				if (arg_source_range.isValid()) {
+					arg_source_text = Rewrite.getRewrittenText(arg_source_range);
+					//auto arg_source_text_sans_ws = with_whitespace_removed(arg_source_text);
+
+					bool asterisk_found = false;
+					auto sizeof_start_index = arg_source_text.find("sizeof(");
+					if (std::string::npos != sizeof_start_index) {
+						auto sizeof_end_index = arg_source_text.find(")", sizeof_start_index);
+						if (std::string::npos != sizeof_end_index) {
+							assert(sizeof_end_index > sizeof_start_index);
+							std::string before_str = arg_source_text.substr(0, sizeof_start_index);
+							std::string after_str;
+							if (sizeof_end_index + 1 < arg_source_text.size()) {
+								after_str = arg_source_text.substr(sizeof_end_index + 1);
+							}
+
+							auto index = before_str.size() - 1;
+							while (0 <= index) {
+								if ('*' == before_str[index]) {
+									asterisk_found = true;
+								}
+								if (!std::isspace(before_str[index])) {
+									break;
+								}
+
+								index -= 1;
+							}
+							if (asterisk_found) {
+								before_str = before_str.substr(0, index);
+							} else {
+								size_t index2 = 0;
+								while (after_str.size() > index2) {
+									if ('*' == after_str[index2]) {
+										asterisk_found = true;
+									}
+									if (!std::isspace(after_str[index2])) {
+										break;
+									}
+
+									index2 += 1;
+								}
+								if (asterisk_found) {
+									after_str = after_str.substr(index2 + 1);
+								}
+							}
+						}
+					}
+					if (true || asterisk_found) {
+						retval.m_num_bytes_arg_iter = arg_iter;
+						retval.m_seems_to_be_some_kind_of_malloc_or_realloc = true;
+						retval.m_num_bytes_arg_source_text = arg_source_text;
+						if (ends_with_realloc) {
+							retval.m_seems_to_be_some_kind_of_realloc = true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return retval;
+}
+
 class MCSSSVarDecl2 : public MatchFinder::MatchCallback
 {
 public:
@@ -2963,6 +3068,10 @@ public:
 	virtual void run(const MatchFinder::MatchResult &MR)
 	{
 		const DeclaratorDecl* DD = MR.Nodes.getNodeAs<clang::DeclaratorDecl>("mcsssvardecl");
+		const Expr* RHS = MR.Nodes.getNodeAs<clang::Expr>("mcsssvardecl2");
+		const clang::CStyleCastExpr* CCE = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcsssvardecl3");
+		//const DeclStmt* DS = MR.Nodes.getNodeAs<clang::DeclStmt>("mcsssvardecl4");
+
 		if ((DD != nullptr))
 		{
 			auto SR = nice_source_range(DD->getSourceRange(), Rewrite);
@@ -3014,6 +3123,140 @@ public:
 			}
 
 			update_declaration(*DD, Rewrite, m_state1);
+
+			if (nullptr != RHS) {
+				auto rhs_res2 = infer_array_type_info_from_stmt(*RHS, "", (*this).m_state1);
+				bool lhs_is_an_indirect_type = is_an_indirect_type(DD->getType());
+				bool rhs_is_an_indirect_type = is_an_indirect_type(RHS->getType());
+				assert(lhs_is_an_indirect_type == rhs_is_an_indirect_type);
+
+				if (rhs_res2.ddecl_cptr && rhs_res2.update_declaration_flag) {
+					update_declaration(*(rhs_res2.ddecl_cptr), Rewrite, m_state1);
+				}
+
+				if ((nullptr != CCE) && (rhs_res2.ddecl_conversion_state_ptr)) {
+					auto cce_QT = CCE->getType();
+					auto rhs_QT = RHS->getType();
+					if (cce_QT == rhs_QT) {
+						CIndirectionStateStack rhs_qtype_indirection_state_stack;
+						auto direct_rhs_qtype = populateQTypeIndirectionStack(rhs_qtype_indirection_state_stack, rhs_QT);
+						auto direct_rhs_qtype_str = direct_rhs_qtype.getAsString();
+						auto casted_expr_ptr = CCE->IgnoreCasts();
+						if (llvm::isa<const clang::CallExpr>(casted_expr_ptr->IgnoreParenCasts())) {
+							auto CE = llvm::cast<const clang::CallExpr>(casted_expr_ptr->IgnoreParenCasts());
+							auto alloc_function_info1 = analyze_malloc_resemblance(*CE, Rewrite);
+							if (alloc_function_info1.m_seems_to_be_some_kind_of_malloc_or_realloc) {
+								/* This seems to be some kind of malloc/realloc function. These case should not be
+								 * handled here. They are handled elsewhere. */
+								return;
+							}
+						}
+
+						if ((rhs_qtype_indirection_state_stack.size() + rhs_res2.indirection_level
+								== (*(rhs_res2.ddecl_conversion_state_ptr)).m_indirection_state_stack.size())
+								&& (1 <= (*rhs_res2.ddecl_conversion_state_ptr).m_indirection_state_stack.size())
+								&& (nullptr != casted_expr_ptr)) {
+
+							std::string rhs_ddecl_current_direct_qtype_str = (*rhs_res2.ddecl_conversion_state_ptr).m_current_direct_qtype_str;
+							auto casted_expr_SR = nice_source_range(casted_expr_ptr->getSourceRange(), Rewrite);
+							auto CCESR = nice_source_range(CCE->getSourceRange(), Rewrite);
+							auto cast_operation_SR = clang::SourceRange(CCE->getLParenLoc(), CCE->getRParenLoc());
+
+							if (cast_operation_SR.isValid()
+									&& (("void" == rhs_ddecl_current_direct_qtype_str) || ("const void" == rhs_ddecl_current_direct_qtype_str))) {
+								if (ConvertToSCPP) {
+									(*rhs_res2.ddecl_conversion_state_ptr).set_current_direct_qtype(direct_rhs_qtype);
+
+									auto cast_operation_text = Rewrite.getRewrittenText(cast_operation_SR);
+									/* This is not the proper way to modify an expression. See the function
+									 * CConditionalOperatorReconciliation2ReplacementAction::do_replacement() for an example of
+									 * the proper way to do it. But for now this is good enough. */
+									auto res2 = Rewrite.ReplaceText(cast_operation_SR, "");
+
+									static const std::string void_str = "void";
+									auto void_pos = (*rhs_res2.ddecl_conversion_state_ptr).m_initializer_info_str.find(void_str);
+									if (std::string::npos != void_pos) {
+										(*rhs_res2.ddecl_conversion_state_ptr).m_initializer_info_str.replace(void_pos, void_str.length(), direct_rhs_qtype_str);
+									}
+
+									update_declaration(*(rhs_res2.ddecl_cptr), Rewrite, m_state1);
+								}
+							} else {
+								if (ConvertToSCPP) {
+									if (false) {
+										(*rhs_res2.ddecl_conversion_state_ptr).set_current_direct_qtype(direct_rhs_qtype);
+									}
+								}
+							}
+						} else {
+							int q = 7;
+						}
+					} else {
+						int q = 7;
+					}
+				}
+
+				int lhs_indirection_level_adjustment = 0;
+				auto rhs_res3 = leading_addressof_operator_info_from_stmt(*RHS);
+				if (rhs_res3.without_leading_addressof_operator_expr_cptr) {
+					assert(rhs_res3.leading_addressof_operator_detected && rhs_res3.addressof_unary_operator_cptr);
+
+					RHS = rhs_res3.without_leading_addressof_operator_expr_cptr;
+					rhs_res2 = infer_array_type_info_from_stmt(*RHS, "", (*this).m_state1);
+					lhs_indirection_level_adjustment += 1;
+
+					const clang::ArraySubscriptExpr* array_subscript_expr_cptr = nullptr;
+					if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(rhs_res3.without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
+						assert(llvm::isa<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr));
+						array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr);
+					}
+					if (ConvertToSCPP && array_subscript_expr_cptr) {
+						std::shared_ptr<CArray2ReplacementAction> cr_shptr = std::make_shared<CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction>(Rewrite, MR,
+								CDDeclIndirection(*DD, 0), *(rhs_res3.addressof_unary_operator_cptr), *array_subscript_expr_cptr);
+
+						if (ddcs_ref.has_been_determined_to_be_an_array()) {
+							(*cr_shptr).do_replacement(m_state1);
+						} else {
+							m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+						}
+					}
+				}
+
+				if (ConvertToSCPP && (rhs_res2.ddecl_conversion_state_ptr) && lhs_is_an_indirect_type) {
+					for (size_t i = 0; (rhs_res2.indirection_level + i < ddcs_ref.m_indirection_state_stack.size())
+												&& (rhs_res2.indirection_level + i < (*(rhs_res2.ddecl_conversion_state_ptr)).m_indirection_state_stack.size()); i += 1) {
+						{
+							/* Here we're establishing and "enforcing" the constraint that the rhs value must
+							 * be of an (array) type that can be assigned to the lhs. */
+							auto cr_shptr = std::make_shared<CAssignmentTargetConstrainsSourceArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, 0 + i), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
+							auto cr_shptr2 = std::make_shared<CAssignmentTargetConstrainsSourceDynamicArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*DD, 0 + i), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
+
+							if (ddcs_ref.has_been_determined_to_be_an_array(0 + i)) {
+								(*cr_shptr).do_replacement(m_state1);
+								if (ddcs_ref.has_been_determined_to_be_a_dynamic_array(0 + i)) {
+									(*cr_shptr2).do_replacement(m_state1);
+								} else {
+									m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr2);
+								}
+							} else {
+								m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+								m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr2);
+							}
+						}
+						{
+							/* Here we're establishing the constraint in the opposite direction as well. */
+							auto cr_shptr = std::make_shared<CAssignmentSourceConstrainsTargetArray2ReplacementAction>(Rewrite, MR, CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i), CDDeclIndirection(*DD, 0 + i));
+
+							if ((*(rhs_res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_an_array(rhs_res2.indirection_level + i)) {
+								(*cr_shptr).do_replacement(m_state1);
+							} else {
+								m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+							}
+						}
+					}
+				}
+
+			}
 		}
 	}
 
@@ -3118,102 +3361,6 @@ private:
 };
 
 /**********************************************************************************************************************/
-
-struct CAllocFunctionInfo {
-	bool m_seems_to_be_some_kind_of_malloc_or_realloc = false;
-	bool m_seems_to_be_some_kind_of_realloc = false;
-	clang::CallExpr::const_arg_iterator m_num_bytes_arg_iter;
-	std::string m_num_bytes_arg_source_text;
-};
-CAllocFunctionInfo analyze_malloc_resemblance(const clang::CallExpr& call_expr, Rewriter &Rewrite) {
-	CAllocFunctionInfo retval;
-
-	auto CE = &call_expr;
-	auto function_decl = CE->getDirectCallee();
-	auto num_args = CE->getNumArgs();
-	if (function_decl && ((1 == num_args) || (2 == num_args))) {
-		std::string function_name = function_decl->getNameAsString();
-		static const std::string alloc_str = "alloc";
-		static const std::string realloc_str = "realloc";
-		auto lc_function_name = tolowerstr(function_name);
-		bool ends_with_alloc = ((lc_function_name.size() >= alloc_str.size())
-				&& (0 == lc_function_name.compare(lc_function_name.size() - alloc_str.size(), alloc_str.size(), alloc_str)));
-		bool ends_with_realloc = (ends_with_alloc && (lc_function_name.size() >= realloc_str.size())
-				&& (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
-		bool still_potentially_valid1 = (ends_with_alloc && (1 == num_args)) || (ends_with_realloc && (2 == num_args));
-		if (still_potentially_valid1) {
-			auto arg_iter = CE->arg_begin();
-			if (ends_with_realloc) {
-				arg_iter++;
-			}
-			bool argIsIntegerType = false;
-			if (*arg_iter) {
-				argIsIntegerType = (*arg_iter)->getType().split().asPair().first->isIntegerType();
-			}
-			if (argIsIntegerType) {
-				auto arg_source_range = nice_source_range((*arg_iter)->getSourceRange(), Rewrite);
-				std::string arg_source_text;
-				if (arg_source_range.isValid()) {
-					arg_source_text = Rewrite.getRewrittenText(arg_source_range);
-					//auto arg_source_text_sans_ws = with_whitespace_removed(arg_source_text);
-
-					bool asterisk_found = false;
-					auto sizeof_start_index = arg_source_text.find("sizeof(");
-					if (std::string::npos != sizeof_start_index) {
-						auto sizeof_end_index = arg_source_text.find(")", sizeof_start_index);
-						if (std::string::npos != sizeof_end_index) {
-							assert(sizeof_end_index > sizeof_start_index);
-							std::string before_str = arg_source_text.substr(0, sizeof_start_index);
-							std::string after_str;
-							if (sizeof_end_index + 1 < arg_source_text.size()) {
-								after_str = arg_source_text.substr(sizeof_end_index + 1);
-							}
-
-							auto index = before_str.size() - 1;
-							while (0 <= index) {
-								if ('*' == before_str[index]) {
-									asterisk_found = true;
-								}
-								if (!std::isspace(before_str[index])) {
-									break;
-								}
-
-								index -= 1;
-							}
-							if (asterisk_found) {
-								before_str = before_str.substr(0, index);
-							} else {
-								size_t index2 = 0;
-								while (after_str.size() > index2) {
-									if ('*' == after_str[index2]) {
-										asterisk_found = true;
-									}
-									if (!std::isspace(after_str[index2])) {
-										break;
-									}
-
-									index2 += 1;
-								}
-								if (asterisk_found) {
-									after_str = after_str.substr(index2 + 1);
-								}
-							}
-						}
-					}
-					if (true || asterisk_found) {
-						retval.m_num_bytes_arg_iter = arg_iter;
-						retval.m_seems_to_be_some_kind_of_malloc_or_realloc = true;
-						retval.m_num_bytes_arg_source_text = arg_source_text;
-						if (ends_with_realloc) {
-							retval.m_seems_to_be_some_kind_of_realloc = true;
-						}
-					}
-				}
-			}
-		}
-	}
-	return retval;
-}
 
 class MCSSSMalloc2 : public MatchFinder::MatchCallback
 {
@@ -3594,8 +3741,8 @@ public:
 			}
 
 			Expr::NullPointerConstantKind kind = RHS->IgnoreParenCasts()->isNullPointerConstant(*ASTC, Expr::NullPointerConstantValueDependence());
-			if (false && clang::Expr::NPCK_NotNull != kind) {
-				if (true) {
+			if (clang::Expr::NPCK_NotNull != kind) {
+				if (false) {
 					{
 						if (true) {
 							if (true) {
@@ -4896,6 +5043,10 @@ public:
 					auto fdecl_source_range = nice_source_range(function_decl->getSourceRange(), Rewrite);
 					auto fdecl_source_location_str = fdecl_source_range.getBegin().printToString(*MR.SourceManager);
 
+					if (filtered_out_by_location(MR, fdecl_source_range.getBegin())) {
+						return void();
+					}
+
 					for (size_t arg_index = 0; (CE->getNumArgs() > arg_index) && (function_decl->getNumParams() > arg_index); arg_index += 1) {
 						auto param_VD = function_decl->getParamDecl(arg_index);
 						auto arg_EX = CE->getArg(arg_index);
@@ -5859,7 +6010,14 @@ public:
 
 	  Matcher.addMatcher(castExpr(allOf(hasCastKind(CK_ArrayToPointerDecay), unless(hasParent(arraySubscriptExpr())))).bind("mcsssarraytopointerdecay"), &HandlerForSSSArrayToPointerDecay);
 
-	  Matcher.addMatcher(clang::ast_matchers::declaratorDecl().bind("mcsssvardecl"), &HandlerForSSSVarDecl2);
+	  //Matcher.addMatcher(clang::ast_matchers::declaratorDecl().bind("mcsssvardecl"), &HandlerForSSSVarDecl2);
+	  Matcher.addMatcher(varDecl(anyOf(
+	  		hasInitializer(anyOf(
+	  				expr(cStyleCastExpr(hasDescendant(declRefExpr().bind("mcsssvardecl5"))).bind("mcsssvardecl3")).bind("mcsssvardecl2"),
+	  				expr(hasDescendant(declRefExpr().bind("mcsssvardecl5"))).bind("mcsssvardecl2")
+	  				)),
+				clang::ast_matchers::anything()
+				)).bind("mcsssvardecl"), &HandlerForSSSVarDecl2);
 
 	  Matcher.addMatcher(expr(allOf(
 	  		hasParent(expr(anyOf(
@@ -6211,15 +6369,16 @@ public:
       		}
 
       		if (!(fii_ref.m_legacyhelpers_include_directive_found)) {
-      			assert(fii_ref.m_first_include_directive_loc_is_valid);
-      			TheRewriter.InsertTextBefore(fii_ref.m_first_include_directive_loc,
-      					"#include \"mselegacyhelpers.h\"\n");
-      		} else if (fii_ref.m_first_macro_directive_ptr_is_valid) {
-      			TheRewriter.InsertTextAfterToken(fii_ref.m_first_macro_directive_ptr->getLocation(),
-      					"#include \"mselegacyhelpers.h\"\n");
-      		} else if (fii_ref.m_beginning_of_file_loc_is_valid) {
-      			TheRewriter.InsertTextBefore(fii_ref.m_beginning_of_file_loc,
-      					"#include \"mselegacyhelpers.h\"\n");
+      			if (fii_ref.m_first_include_directive_loc_is_valid) {
+      				TheRewriter.InsertTextBefore(fii_ref.m_first_include_directive_loc,
+      						"\n#include \"mselegacyhelpers.h\"\n");
+      			} else if (fii_ref.m_first_macro_directive_ptr_is_valid) {
+      				TheRewriter.InsertTextAfterToken(fii_ref.m_first_macro_directive_ptr->getLocation(),
+      						"\n#include \"mselegacyhelpers.h\"\n");
+      			} else if (fii_ref.m_beginning_of_file_loc_is_valid) {
+      				TheRewriter.InsertTextBefore(fii_ref.m_beginning_of_file_loc,
+      						"\n#include \"mselegacyhelpers.h\"\n");
+      			}
       		}
       	}
       } else { assert(false); }
