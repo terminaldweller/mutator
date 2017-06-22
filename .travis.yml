@@ -1,6 +1,5 @@
 dist: trusty
 sudo: required
-group: edge
 language: cpp
 env:
   global:
