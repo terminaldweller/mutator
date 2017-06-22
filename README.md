@@ -315,8 +315,16 @@ Misra 2012 support will be added in the future.<br/>
 Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if youre going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
 The master branch is the dev version. Release versions will be forked.<br/>
 Doxygen comments will be added later on.<br/>
-The XML reports use [TinyXML-2](https://github.com/leethomason/tinyxml2). It is lighweight and fast and the license suits the mutator project.<br/>
-The JSON reports use [JSON](https://github.com/nlohmann/json) by [nlohmann](https://github.com/nlohmann).<br/>
+
+### Acknowledgements
+Project mutator uses the following cool libraries:
+* [SaferCPP](https://github.com/duneroadrunner/SaferCPlusPlus)
+* [TinyXML2](https://github.com/leethomason/tinyxml2)
+* [JSON](https://github.com/nlohmann/json)
+* [LLVM/Clang](http://llvm.org)
+* [Linenoise](https://github.com/antirez/linenoise)
+* [Lua](https://github.com/lua/lua)
+* [LuaJIT](https://github.com/LuaJIT/LuaJIT)
 
 ### Feedback
 If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any).<br/>
