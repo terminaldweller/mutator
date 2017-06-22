@@ -925,7 +925,8 @@ class LuaWrapper
       unsigned int tempint = 0;
       while(std::getline(historyfile, tempstring))
       {
-        printf(GREEN"%d - %s", tempint, tempstring.c_str());
+        printf(BLUE"%d ", tempint);
+        printf(CYAN"%s", tempstring.c_str());
         printf(NORMAL"\n");
 
         tempint++;
