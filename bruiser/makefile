@@ -9,6 +9,7 @@ LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
 LIB_LUA_JIT=./LuaJIT/src/libluajit.a
 HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
+EXTRA_LD_FLAGS+=-ldl
 ######################################RULES####################################
 .DEFAULT: all
 
