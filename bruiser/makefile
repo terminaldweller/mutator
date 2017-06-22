@@ -4,8 +4,8 @@ include ../macros.mk
 
 #######################################VARS####################################
 CXX_FLAGS+=-I/usr/include
-EXTRA_LD_FLAGS+=-L$(shell pwd)/lua-5.3.4/src/ -llua -ldl
 BRUISER=bruiser
+LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
 LIB_LUA_JIT=./LuaJIT/src/libluajit.a
 HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
@@ -24,14 +24,19 @@ linenoise.o:
 
 $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4 linux
+	@echo "building with vanilla"
 
 $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
+	@echo "building with jit"
 
 $(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o $(LIB_LUA) $(LIB_LUA_JIT)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
+	rm -f *.o *~ $(BRUISER)
+
+deepclean:
 	rm -f *.o *~ $(BRUISER)
 	$(MAKE) -C lua-5.3.4 clean
 	$(MAKE) -C LuaJIT clean
