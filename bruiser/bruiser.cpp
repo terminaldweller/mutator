@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "bruiser.h"
 #include "CompletionHints.h"
 #include "../mutator_aux.h"
+#include "mutagen.h"
 /*standard headers*/
 #include <fstream>
 #include <string>
@@ -47,8 +48,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*other*/
 #include "linenoise/linenoise.h"
 #include "lua-5.3.4/src/lua.hpp"
-#include "lua-5.3.4/src/lualib.h"
-#include "lua-5.3.4/src/lauxlib.h"
 
 #include "luadummy.h"
 /**********************************************************************************************************************/
@@ -942,7 +941,16 @@ class LuaWrapper
 
       for (auto &iter : bruiser::CMDHelp)
       {
-        printf(GREEN"%s:%s:%s",iter.name.c_str(),iter.proto.c_str(),iter.descr.c_str());
+        printf(GREEN"name: ");
+        printf(CYAN"%s ", iter.name.c_str());
+        printf(GREEN"proto: ");
+        printf(CYAN"%s ", iter.proto.c_str());
+        printf(GREEN"description: ");
+        printf(CYAN"%s ", iter.descr.c_str());
+        printf(GREEN"prototype: ");
+        printf(CYAN"%s ", iter.protoprefix.c_str());
+        printf(GREEN"return value: ");
+        printf(CYAN"%s ", iter.retval.c_str());
         printf(NORMAL"\n");
         argcount++;
       }
@@ -993,8 +1001,6 @@ class LuaWrapper
     /*read the m0 report*/
     int BruiserLuaM0(lua_State* __ls)
     {
-        BruiseRep.PrintToLog("bruiser exited with:");
-
         bruiser::ReadM0 M0Rep;
         tinyxml2::XMLError XMLErr;
 
@@ -1016,6 +1022,46 @@ class LuaWrapper
         bruiser::SearchM0(M0Rep.getRootPointer());
 
         return 1;
+    }
+
+    int BruiserLuaReadXMLReport(lua_State* __ls)
+    {
+      int numargs = lua_gettop(__ls);
+      std::string xml_address;
+
+      if (numargs == 1)
+      {
+        xml_address = lua_tostring(__ls, 1);
+      }
+      else
+      {
+        xml_address = bruiser::M0REP;
+      }
+
+      bruiser::ReadM0 MutagenRep(xml_address.c_str());
+      tinyxml2::XMLError error;
+
+      error = MutagenRep.LoadXMLDoc();
+      if (error != XML_SUCCESS)
+      {
+        PRINT_WITH_COLOR_LB(RED, "could not load report.");
+        PRINT_WITH_COLOR(RED, "tinyxml2 returned ");
+        std::cout << RED << error << NORMAL;
+        lua_pushnumber(__ls, (double)error);
+        return 1;
+      }
+
+      error = MutagenRep.ReadFirstElement();
+      if (error != XML_SUCCESS)
+      {
+        PRINT_WITH_COLOR_LB(RED, "could not read first element of xml report.");
+        lua_pushnumber(__ls, (double)error);
+        return 1;
+      }
+
+      bruiser::SearchM0(MutagenRep.getRootPointer());
+
+      return 1;
     }
 
     /*quit*/
@@ -1181,7 +1227,7 @@ int main(int argc, const char **argv)
   if (CDBP.CompilationDatabseIsEmpty())
   {
     PRINT_WITH_COLOR_LB(RED, "bruiser could not find the compilation database.");
-    //return 1;
+    return 1;
   }
   else
   {
@@ -1216,6 +1262,7 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "version", &LuaDispatch<&LuaWrapper::BruiserLuaVersion>);
     lua_register(LE.GetLuaState(), "clear", &LuaDispatch<&LuaWrapper::BruiserLuaClear>);
     lua_register(LE.GetLuaState(), "m0", &LuaDispatch<&LuaWrapper::BruiserLuaM0>);
+    lua_register(LE.GetLuaState(), "readxmlfile", &LuaDispatch<&LuaWrapper::BruiserLuaReadXMLReport>);
     lua_register(LE.GetLuaState(), "quit", &LuaDispatch<&LuaWrapper::BruiserLuaQuit>);
     lua_register(LE.GetLuaState(), "exit", &LuaDispatch<&LuaWrapper::BruiserLuaExit>);
     lua_register(LE.GetLuaState(), "make", &LuaDispatch<&LuaWrapper::BruiserLuaRunMake>);
