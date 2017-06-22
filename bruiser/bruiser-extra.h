@@ -109,6 +109,7 @@ std::vector<std::string> LUA_FUNCS =
   "make",
   "historysize",
   "showsource",
+  "readxmlfile",
   "_G",
   "_VERSION",
   "assert",
