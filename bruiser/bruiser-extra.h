@@ -110,6 +110,7 @@ std::vector<std::string> LUA_FUNCS =
   "historysize",
   "showsource",
   "readxmlfile",
+  "extractmutagen",
   "_G",
   "_VERSION",
   "assert",
