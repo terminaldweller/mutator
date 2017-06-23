@@ -31,6 +31,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <cassert>
 #include <iostream>
 #include <regex>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/wait.h>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -80,7 +84,14 @@ namespace
     std::vector<std::string> SOURCE_FILES;
   };
 
+  struct ShellCache
+  {
+    std::string LastFileUsed;
+    std::string LastFileUsedShort;
+  };
+
   ShellGlobal ShellGlobalInstance;
+  ShellCache ShellCacheInstance;
 }
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
@@ -1136,6 +1147,9 @@ class LuaWrapper
       {
         if (iter.rfind(filename) == iter.size() - filename.size())
         {
+          ShellCacheInstance.LastFileUsed = iter;
+          ShellCacheInstance.LastFileUsedShort = filename;
+
           targetfile.open(iter);
 
           if(targetfile.rdstate() != std::ios_base::goodbit)
@@ -1153,6 +1167,57 @@ class LuaWrapper
 
       targetfile.close();
       return lineend - linebegin + 1U;
+    }
+
+    int BruiserLuaMutagenExtraction(lua_State* __ls)
+    {
+      int numargs = lua_gettop(__ls);
+      std::string extractiontarget;
+
+      if (numargs == 1)
+      {
+        extractiontarget = lua_tostring(__ls, 1);
+      }
+
+      pid_t pid = fork();
+
+      if (pid < 0)
+      {
+        /*bruiser could not spawn a child*/
+        PRINT_WITH_COLOR_LB(RED, "could not fork a child process(m0).");
+        lua_pushnumber(__ls, EXIT_FAILURE);
+      }
+
+      /*only the child process runs this*/
+      if (pid == 0)
+      {
+        for(auto &iter : ShellGlobalInstance.SOURCE_FILES)
+        {
+          if (iter.rfind(extractiontarget) == iter.size() - extractiontarget.size())
+          {
+            ShellCacheInstance.LastFileUsedShort = extractiontarget;
+            ShellCacheInstance.LastFileUsed = iter;
+            std::cout << BLUE << "running: " << CYAN << "../mutator-lvl0 " << iter.c_str() << NORMAL << "\n";
+            //int retval = execl("../", "mutator-lvl0", iter.c_str(), NULL);
+            int retval = execl("../mutator-lvl0", "mutator-lvl0", iter.c_str(), NULL);
+            std::cout << BLUE << "child process retuned " << retval << NORMAL << "\n";
+            lua_pushnumber(__ls, retval);
+            exit(EXIT_SUCCESS);
+          }
+        }
+      }
+
+      /*only the parent process runs this*/
+      if (pid > 0)
+      {
+        /*the parent-bruiser- will need to wait on the child. the child will run m0.*/
+        int status;
+        pid_t returned;
+        returned =  waitpid(pid, &status, 0);
+        lua_pushnumber(__ls, returned);
+      }
+      
+      return 1;
     }
 
 #define LIST_GENERATOR(__x1) \
@@ -1269,6 +1334,7 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "make", &LuaDispatch<&LuaWrapper::BruiserLuaRunMake>);
     lua_register(LE.GetLuaState(), "historysize", &LuaDispatch<&LuaWrapper::BruiserLuaChangeHistorySize>);
     lua_register(LE.GetLuaState(), "showsource", &LuaDispatch<&LuaWrapper::BruiserLuaShowSourcecode>);
+    lua_register(LE.GetLuaState(), "extractmutagen", &LuaDispatch<&LuaWrapper::BruiserLuaMutagenExtraction>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
