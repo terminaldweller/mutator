@@ -63,7 +63,7 @@ namespace Devi {
 
     if (XMLErrorResult != XML_SUCCESS)
     {
-      std::cerr << "could not write xml misra report.\n";
+      std::cerr << "could not write xml misra report(base).\n";
     }
   }
 /************************************************end of XMLReportBase*************************************************/
@@ -185,7 +185,7 @@ void XMLReport::SaveReport(void)
 
   XMLReportDoc.InsertEndChild(RootPointer);
 
-  XMLError XMLErrorResult = XMLReportDoc.SaveFile("./test/misrareport.xml");
+  XMLError XMLErrorResult = XMLReportDoc.SaveFile("./misrareport.xml");
 
   if (XMLErrorResult != XML_SUCCESS)
   {
