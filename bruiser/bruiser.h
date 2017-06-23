@@ -133,7 +133,8 @@ help CMDHelp[] = {
   {"Unions()", "", "lists all available union declarations", "none", "returns a string array of the union declarations"},
   {"make()", "", "runs your make command", "", ""},
   {"historysize()", "historysize(200)", "sets the history size", "[uint history_size]", ""},
-  {"showsource()", "showsource(1,5,\"test.cpp\")", "shows the source code for the given range and filename", "[uint beginline, uint endline, string filename]", "returns a string array of the returned source file"}
+  {"showsource()", "showsource(1,5,\"test.cpp\")", "shows the source code for the given range and filename", "[uint beginline, uint endline, string filename]", "returns a string array of the returned source file"},
+  {"extractmutagen()", "extractmutagen(\"test.cpp\")", "runs m0 on the source(s)", "[string]", "pid"}
 };
 /**********************************************************************************************************************/
 /**
