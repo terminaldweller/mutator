@@ -337,6 +337,9 @@ public:
 	const std::string& current() const {
 		return m_current;
 	}
+	const std::string& original() const {
+		return m_original;
+	}
 
 private:
 	std::string m_original;
@@ -799,6 +802,7 @@ public:
 	std::string m_initializer_info_str;
 	bool m_original_initialization_has_been_noted = false;
 	std::string m_original_initialization_expr_str;
+	bool m_original_initialization_expr_is_a_constructor_call = false;
 	bool m_original_source_text_has_been_noted = false;
 	std::string m_original_source_text_str;
 
@@ -1389,6 +1393,7 @@ public:
 	std::string m_post_name_suffix_str;
 	std::string m_action_species;
 	bool m_direct_type_must_be_non_const = false;
+	bool m_changed_from_original = false;
 };
 
 static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_suffix(CIndirectionStateStack& indirection_state_stack,
@@ -1403,11 +1408,15 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 
 	if (true) {
 		for (size_t i = 0; i < indirection_state_stack.size(); i += 1) {
+			bool l_changed_from_original = (indirection_state_stack[i].current() != indirection_state_stack[i].original());
+
 			bool is_char_star = false;
 			bool is_function_pointer = false;
 			bool is_last_indirection = (indirection_state_stack.size() == (i+1));
 			if (is_last_indirection && (direct_type_is_char_type)) {
 				is_char_star = true;
+				/* For the moment, we  leave "char *" types alone. This will changeat some point. */
+				l_changed_from_original = ("native pointer" != indirection_state_stack[i].original());
 			} else if (is_last_indirection && direct_type_is_function_type) {
 				is_function_pointer = true;
 			} else if ((!is_last_indirection) && indirection_state_stack[i+1].current_is_function_type()) {
@@ -1466,6 +1475,7 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 						suffix_str = "[" + size_text + "]" + suffix_str;
 					}
 				} else {
+					l_changed_from_original = true;
 					if (is_a_function_parameter) {
 						prefix_str = prefix_str + "mse::TNullableAnyRandomAccessIterator<";
 						suffix_str = ", " + size_text + "> " + suffix_str;
@@ -1487,11 +1497,13 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 					suffix_str = "* " + suffix_str;
 					retval.m_action_species = "char*";
 				} else if (is_function_pointer) {
+					l_changed_from_original = true;
 					prefix_str = prefix_str + "std::function<";
 					suffix_str = "> " + suffix_str;
 					retval.m_action_species = "function pointer to std::function";
 				} else {
 					if (false/*for now*/) {
+						l_changed_from_original = true;
 						prefix_str = prefix_str + "mse::TAnyPointer<";
 						suffix_str = "> " + suffix_str;
 						retval.m_action_species = "native pointer to TAnyPointer";
@@ -1503,14 +1515,23 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 				}
 			} else if ("malloc target" == indirection_state_stack[i].current()) {
 				/* We'll just leaving it as a native pointer for now. Ultimately, this won't be the case. */
+				if ("native pointer" == indirection_state_stack[i].original()) {
+					l_changed_from_original = false;
+				}
 				//prefix_str = prefix_str + "";
 				suffix_str = "* " + suffix_str;
 				retval.m_action_species = "malloc target";
+			} else {
+				int q = 5;
 			}
+
+			changed_from_original |= l_changed_from_original;
 		}
 	}
 	retval.m_prefix_str = prefix_str;
 	retval.m_suffix_str = suffix_str;
+	retval.m_post_name_suffix_str = post_name_suffix_str;
+	retval.m_changed_from_original = changed_from_original;
 
 	return retval;
 }
@@ -1558,7 +1579,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 	}
 	if ("" == variable_name) {
 		int q = 7;
-	} else if ("bitlen_ll" == variable_name) {
+	} else if ("out" == variable_name) {
 		int q = 5;
 	}
 
@@ -1572,6 +1593,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 	bool is_member = false;
 	bool is_vardecl = false;
 	std::string initialization_expr_str;
+	bool initialization_expr_is_a_constructor_call = false;
 	bool is_function = DD->isFunctionOrFunctionTemplate();
 
 	auto VD = dynamic_cast<const clang::VarDecl *>(DD);
@@ -1601,10 +1623,15 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 					auto init_expr_source_range = nice_source_range(pInitExpr->getSourceRange(), Rewrite);
 					if (init_expr_source_range.isValid()) {
 						initialization_expr_str = Rewrite.getRewrittenText(init_expr_source_range);
-						if (variable_name == initialization_expr_str) {
-							/* We encountered a weird bug where the initialization expression sometimes
-							 * was indicated as being present and the source range set to the variable name
-							 * when actually no initialization expression was present in the original source. */
+						if (pInitExpr->IgnoreImplicit()->getStmtClass() == pInitExpr->CXXConstructExprClass) {
+							initialization_expr_is_a_constructor_call = true;
+							if (string_begins_with(initialization_expr_str, variable_name)) {
+								initialization_expr_str = initialization_expr_str.substr(variable_name.length());
+							} else {
+								int q = 5;
+							}
+						} else if (variable_name == initialization_expr_str) {
+							/* Does this ever occur? */
 							initialization_expr_str = "";
 						}
 					} else {
@@ -1614,6 +1641,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 					int q = 3;
 				}
 				ddcs_ref.m_original_initialization_expr_str = initialization_expr_str;
+				ddcs_ref.m_original_initialization_expr_is_a_constructor_call = initialization_expr_is_a_constructor_call;
 			}
 			ddcs_ref.m_original_initialization_has_been_noted = true;
 		}
@@ -1724,14 +1752,18 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 	if (!discard_initializer_option_flag) {
 		initializer_append_str = ddcs_ref.m_initializer_info_str;
 		if (("" == initializer_append_str) && ("" != initialization_expr_str)) {
-			initializer_append_str = " = " + initialization_expr_str;
+			if (ddcs_ref.m_original_initialization_expr_is_a_constructor_call) {
+				initializer_append_str = initialization_expr_str;
+			} else {
+				initializer_append_str = " = " + initialization_expr_str;
+			}
 		}
 	}
 
-	if (("" != prefix_str) || ("" != suffix_str)/* || ("" != post_name_suffix_str)*/) {
+	//if (("" != prefix_str) || ("" != suffix_str)/* || ("" != post_name_suffix_str)*/)
+	if (res4.m_changed_from_original) {
 		changed_from_original = true;
-	} else if (("" != ddcs_ref.m_initializer_info_str) ||
-			(discard_initializer_option_flag)) {
+	} else if (("" != ddcs_ref.m_initializer_info_str) || (discard_initializer_option_flag)) {
 		changed_from_original = true;
 	} else if (2 <= IndividualDeclaratorDecls(DD, Rewrite).size()) {
 		/* There is more than one declaration in the declaration statement. We split
@@ -2968,6 +3000,7 @@ struct CAllocFunctionInfo {
 	bool m_seems_to_be_some_kind_of_realloc = false;
 	clang::CallExpr::const_arg_iterator m_num_bytes_arg_iter;
 	std::string m_num_bytes_arg_source_text;
+	std::string m_realloc_pointer_arg_source_text;
 };
 CAllocFunctionInfo analyze_malloc_resemblance(const clang::CallExpr& call_expr, Rewriter &Rewrite) {
 	CAllocFunctionInfo retval;
@@ -2986,8 +3019,15 @@ CAllocFunctionInfo analyze_malloc_resemblance(const clang::CallExpr& call_expr, 
 				&& (0 == lc_function_name.compare(lc_function_name.size() - realloc_str.size(), realloc_str.size(), realloc_str)));
 		bool still_potentially_valid1 = (ends_with_alloc && (1 == num_args)) || (ends_with_realloc && (2 == num_args));
 		if (still_potentially_valid1) {
+			std::string realloc_pointer_arg_source_text;
 			auto arg_iter = CE->arg_begin();
+
 			if (ends_with_realloc) {
+				auto arg_source_range = nice_source_range((*arg_iter)->getSourceRange(), Rewrite);
+				if (arg_source_range.isValid()) {
+					realloc_pointer_arg_source_text = Rewrite.getRewrittenText(arg_source_range);
+				}
+
 				arg_iter++;
 			}
 			bool argIsIntegerType = false;
@@ -3050,6 +3090,7 @@ CAllocFunctionInfo analyze_malloc_resemblance(const clang::CallExpr& call_expr, 
 						retval.m_num_bytes_arg_source_text = arg_source_text;
 						if (ends_with_realloc) {
 							retval.m_seems_to_be_some_kind_of_realloc = true;
+							retval.m_realloc_pointer_arg_source_text = realloc_pointer_arg_source_text;
 						}
 					}
 				}
@@ -3219,6 +3260,16 @@ public:
 						} else {
 							m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
 						}
+					}
+				}
+
+				if (llvm::isa<const clang::CallExpr>(RHS->IgnoreParenCasts())) {
+					auto CE = llvm::cast<const clang::CallExpr>(RHS->IgnoreParenCasts());
+					auto alloc_function_info1 = analyze_malloc_resemblance(*CE, Rewrite);
+					if (alloc_function_info1.m_seems_to_be_some_kind_of_malloc_or_realloc) {
+						/* This seems to be some kind of malloc/realloc function. These case should not be
+						 * handled here. They are handled elsewhere. */
+						return;
 					}
 				}
 
@@ -3655,17 +3706,24 @@ public:
 						}
 					}
 					if ("" != element_type_str) {
-						num_elements_text = "(";
-						num_elements_text += alloc_function_info1.m_num_bytes_arg_source_text;
-						if (true || (("void" != element_type_str) && ("const void" != element_type_str))) {
-							num_elements_text += ") / sizeof(";
-							num_elements_text += element_type_str;
-						} else {
-							/* todo: something */
-						}
-						num_elements_text += ")";
+						std::string initializer_info_str;
 
-						std::string initializer_info_str = "(" + num_elements_text + ")";
+						if (alloc_function_info1.m_seems_to_be_some_kind_of_realloc) {
+							initializer_info_str = " = MSE_LH_REALLOC(" + element_type_str + ", " + alloc_function_info1.m_realloc_pointer_arg_source_text;
+							initializer_info_str += ", " + alloc_function_info1.m_num_bytes_arg_source_text + ")";
+						} else {
+							num_elements_text = "(";
+							num_elements_text += alloc_function_info1.m_num_bytes_arg_source_text;
+							if (true || (("void" != element_type_str) && ("const void" != element_type_str))) {
+								num_elements_text += ") / sizeof(";
+								num_elements_text += element_type_str;
+							} else {
+								/* todo: something */
+							}
+							num_elements_text += ")";
+
+							initializer_info_str = "(" + num_elements_text + ")";
+						}
 
 						auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
 						std::string decl_source_text;
@@ -4150,10 +4208,15 @@ public:
 
 					if ("" != lhs_element_type_str) {
 						if (ConvertToSCPP && (lhs_res2.ddecl_conversion_state_ptr) && lhs_is_an_indirect_type) {
+							std::string bo_replacement_code;
+
 							std::string opcode_str = BO->getOpcodeStr();
+							if ("==" == opcode_str) {
+								bo_replacement_code += "!";
+							} else { assert("!=" == opcode_str); }
 
 							auto lhs_source_text = Rewrite.getRewrittenText(lhs_source_range);
-							std::string bo_replacement_code = "bool(" + lhs_source_text + ")";
+							bo_replacement_code += "bool(" + lhs_source_text + ")";
 
 							auto cr_shptr = std::make_shared<CExprTextReplacementAction>(Rewrite, MR, CDDeclIndirection(*(lhs_res2.ddecl_cptr), lhs_res2.indirection_level), BO, bo_replacement_code);
 
@@ -4922,6 +4985,16 @@ public:
 				}
 			}
 
+			if (llvm::isa<const clang::CallExpr>(RHS->IgnoreParenCasts())) {
+				auto CE = llvm::cast<const clang::CallExpr>(RHS->IgnoreParenCasts());
+				auto alloc_function_info1 = analyze_malloc_resemblance(*CE, Rewrite);
+				if (alloc_function_info1.m_seems_to_be_some_kind_of_malloc_or_realloc) {
+					/* This seems to be some kind of malloc/realloc function. These case should not be
+					 * handled here. They are handled elsewhere. */
+					return;
+				}
+			}
+
 			if (ConvertToSCPP && (lhs_res2.ddecl_conversion_state_ptr) && (rhs_res2.ddecl_conversion_state_ptr) && lhs_is_an_indirect_type) {
 				for (size_t i = 0; (rhs_res2.indirection_level + i < (*(lhs_res2.ddecl_conversion_state_ptr)).m_indirection_state_stack.size())
 											&& (rhs_res2.indirection_level + i < (*(rhs_res2.ddecl_conversion_state_ptr)).m_indirection_state_stack.size()); i += 1) {
@@ -5029,7 +5102,7 @@ public:
 					return void();
 				}
 
-				if ("zlib_decompress" == function_name) {
+				if ("decode" == function_name) {
 					int q = 5;
 				}
 
@@ -5201,61 +5274,63 @@ public:
 								update_declaration(*(ddcs_ref.m_ddecl_cptr), Rewrite, m_state1);
 							}
 
-							if (ConvertToSCPP && (rhs_res2.ddecl_conversion_state_ptr) && lhs_is_an_indirect_type) {
-								int max_indirection_level1 = int((*(rhs_res2.ddecl_conversion_state_ptr)).m_indirection_state_stack.size())
-										- int(rhs_res2.indirection_level);
-								int int_max_indirection_level = std::min(int(ddcs_ref.m_indirection_state_stack.size()) - int(lhs_indirection_level_adjustment), max_indirection_level1);
-								size_t szt_max_indirection_level = 0;
-								if (0 <= int_max_indirection_level) {
-									szt_max_indirection_level = size_t(int_max_indirection_level);
-								}
-
-								for (size_t i = 0; (i < szt_max_indirection_level); i += 1) {
-									{
-										/* Here we're establishing and "enforcing" the constraint that the rhs value must
-										 * be of an (array) type that can be assigned to the lhs. */
-										std::shared_ptr<CArray2ReplacementAction> cr_shptr;
-										if (1 > (i + lhs_indirection_level_adjustment)) {
-											cr_shptr = std::make_shared<CAssignmentTargetConstrainsSourceArray2ReplacementAction>(Rewrite, MR,
-													CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
-										} else {
-											/* Levels of indirection beyond the first one must be of the same type,
-											 * not just of "compatible" types. */
-											cr_shptr = std::make_shared<CSameTypeArray2ReplacementAction>(Rewrite, MR,
-													CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
-										}
-
-										if (ddcs_ref.has_been_determined_to_be_an_array(i + lhs_indirection_level_adjustment)) {
-											(*cr_shptr).do_replacement(m_state1);
-											if (!(ddcs_ref.has_been_determined_to_be_a_dynamic_array(i + lhs_indirection_level_adjustment))) {
-												m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
-											}
-										} else {
-											m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
-											m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
-										}
+							if (ConvertToSCPP && lhs_is_an_indirect_type) {
+								if (rhs_res2.ddecl_conversion_state_ptr) {
+									int max_indirection_level1 = int((*(rhs_res2.ddecl_conversion_state_ptr)).m_indirection_state_stack.size())
+												- int(rhs_res2.indirection_level);
+									int int_max_indirection_level = std::min(int(ddcs_ref.m_indirection_state_stack.size()) - int(lhs_indirection_level_adjustment), max_indirection_level1);
+									size_t szt_max_indirection_level = 0;
+									if (0 <= int_max_indirection_level) {
+										szt_max_indirection_level = size_t(int_max_indirection_level);
 									}
-									{
-										/* Here we're establishing the constraint in the opposite direction as well. */
-										std::shared_ptr<CArray2ReplacementAction> cr_shptr;
-										if (1 > (i + lhs_indirection_level_adjustment)) {
-											cr_shptr = std::make_shared<CAssignmentSourceConstrainsTargetArray2ReplacementAction>(Rewrite, MR,
-													CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i), CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment));
-										} else {
-											/* Levels of indirection beyond the first one must be of the same type,
-											 * not just of "compatible" types. */
-											cr_shptr = std::make_shared<CSameTypeArray2ReplacementAction>(Rewrite, MR,
-													CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i), CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment));
-										}
 
-										if ((*(rhs_res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_an_array(rhs_res2.indirection_level + i)) {
-											(*cr_shptr).do_replacement(m_state1);
-											if (!((*(rhs_res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_a_dynamic_array(rhs_res2.indirection_level + i))) {
+									for (size_t i = 0; (i < szt_max_indirection_level); i += 1) {
+										{
+											/* Here we're establishing and "enforcing" the constraint that the rhs value must
+											 * be of an (array) type that can be assigned to the lhs. */
+											std::shared_ptr<CArray2ReplacementAction> cr_shptr;
+											if (1 > (i + lhs_indirection_level_adjustment)) {
+												cr_shptr = std::make_shared<CAssignmentTargetConstrainsSourceArray2ReplacementAction>(Rewrite, MR,
+														CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
+											} else {
+												/* Levels of indirection beyond the first one must be of the same type,
+												 * not just of "compatible" types. */
+												cr_shptr = std::make_shared<CSameTypeArray2ReplacementAction>(Rewrite, MR,
+														CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment), CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i));
+											}
+
+											if (ddcs_ref.has_been_determined_to_be_an_array(i + lhs_indirection_level_adjustment)) {
+												(*cr_shptr).do_replacement(m_state1);
+												if (!(ddcs_ref.has_been_determined_to_be_a_dynamic_array(i + lhs_indirection_level_adjustment))) {
+													m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
+												}
+											} else {
+												m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
 												m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
 											}
-										} else {
-											m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
-											m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
+										}
+										{
+											/* Here we're establishing the constraint in the opposite direction as well. */
+											std::shared_ptr<CArray2ReplacementAction> cr_shptr;
+											if (1 > (i + lhs_indirection_level_adjustment)) {
+												cr_shptr = std::make_shared<CAssignmentSourceConstrainsTargetArray2ReplacementAction>(Rewrite, MR,
+														CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i), CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment));
+											} else {
+												/* Levels of indirection beyond the first one must be of the same type,
+												 * not just of "compatible" types. */
+												cr_shptr = std::make_shared<CSameTypeArray2ReplacementAction>(Rewrite, MR,
+														CDDeclIndirection(*(rhs_res2.ddecl_cptr), rhs_res2.indirection_level + i), CDDeclIndirection(*param_VD, i + lhs_indirection_level_adjustment));
+											}
+
+											if ((*(rhs_res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_an_array(rhs_res2.indirection_level + i)) {
+												(*cr_shptr).do_replacement(m_state1);
+												if (!((*(rhs_res2.ddecl_conversion_state_ptr)).has_been_determined_to_be_a_dynamic_array(rhs_res2.indirection_level + i))) {
+													m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
+												}
+											} else {
+												m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
+												m_state1.m_dynamic_array2_contingent_replacement_map.insert(cr_shptr);
+											}
 										}
 									}
 								}
@@ -6295,6 +6370,9 @@ public:
 
   	bool filename_is_invalid = false;
   	std::string full_path_name = m_Rewriter_ref.getSourceMgr().getBufferName(Loc, &filename_is_invalid);
+  	if (string_begins_with(full_path_name, "/home")) {
+  		int q = 5;
+  	}
 
   	if (PPCallbacks::FileChangeReason::EnterFile == Reason) {
   		auto fii_iter = m_first_include_info_map.find(Loc);
@@ -6328,7 +6406,9 @@ public:
 class MyFrontendAction : public ASTFrontendAction 
 {
 public:
-  MyFrontendAction() {}
+  MyFrontendAction() {
+  	int q = 5;
+  }
   ~MyFrontendAction() {
 	  if (ConvertToSCPP) {
 		  auto res = overwriteChangedFiles();
