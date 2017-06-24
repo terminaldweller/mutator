@@ -1902,6 +1902,35 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 	}
 }
 
+void note_array_determination(Rewriter &Rewrite, CState1& state1, const CDDeclIndirection& ddecl_indirection) {
+
+	auto res1 = state1.m_ddecl_conversion_state_map.insert(*(ddecl_indirection.m_ddecl_cptr));
+	auto ddcs_map_iter = res1.first;
+	auto& ddcs_ref = (*ddcs_map_iter).second;
+	bool update_declaration_flag = res1.second;
+
+	if (ddcs_ref.m_indirection_state_stack.size() >= ddecl_indirection.m_indirection_level) {
+		if ("native pointer" == ddcs_ref.m_indirection_state_stack.at(ddecl_indirection.m_indirection_level).current()) {
+			ddcs_ref.set_indirection_current(ddecl_indirection.m_indirection_level, "inferred array");
+			update_declaration_flag |= true;
+			state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, ddecl_indirection);
+		} else if ("malloc target" == ddcs_ref.m_indirection_state_stack.at(ddecl_indirection.m_indirection_level).current()) {
+			ddcs_ref.set_indirection_current(ddecl_indirection.m_indirection_level, "dynamic array");
+			update_declaration_flag |= true;
+			state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, ddecl_indirection);
+			state1.m_dynamic_array2_contingent_replacement_map.do_and_dispose_matching_replacements(state1, ddecl_indirection);
+		} else {
+			int q = 3;
+		}
+	} else {
+		int q = 7;
+	}
+
+	if (update_declaration_flag) {
+		update_declaration(*(ddecl_indirection.m_ddecl_cptr), Rewrite, state1);
+	}
+}
+
 struct CLeadingAddressofOperatorInfo {
 	bool leading_addressof_operator_detected = false;
 	const clang::Expr* without_leading_addressof_operator_expr_cptr = nullptr;
@@ -3032,7 +3061,7 @@ CAllocFunctionInfo analyze_malloc_resemblance(const clang::CallExpr& call_expr, 
 			}
 			bool argIsIntegerType = false;
 			if (*arg_iter) {
-				argIsIntegerType = (*arg_iter)->getType().split().asPair().first->isIntegerType();
+				argIsIntegerType = (*arg_iter)->getType()->isIntegerType();
 			}
 			if (argIsIntegerType) {
 				auto arg_source_range = nice_source_range((*arg_iter)->getSourceRange(), Rewrite);
@@ -5102,7 +5131,7 @@ public:
 					return void();
 				}
 
-				if ("decode" == function_name) {
+				if ("insert" == function_name) {
 					int q = 5;
 				}
 
@@ -5116,8 +5145,15 @@ public:
 					auto fdecl_source_range = nice_source_range(function_decl->getSourceRange(), Rewrite);
 					auto fdecl_source_location_str = fdecl_source_range.getBegin().printToString(*MR.SourceManager);
 
+					bool std_vector_insert_flag = false;
+					bool std_vector_insert_range_flag = false;
 					if (filtered_out_by_location(MR, fdecl_source_range.getBegin())) {
-						return void();
+						std::string qualified_function_name = function_decl1->getQualifiedNameAsString();
+						if (string_begins_with(qualified_function_name, "std::vector") && ("insert" == function_name)) {
+							std_vector_insert_flag = true;
+						} else {
+							return void();
+						}
 					}
 
 					for (size_t arg_index = 0; (CE->getNumArgs() > arg_index) && (function_decl->getNumParams() > arg_index); arg_index += 1) {
@@ -5167,6 +5203,20 @@ public:
 								} else if ("const char" == type_str) {
 									lhs_element_type_is_const_char = true;
 								}
+							}
+
+							bool aux_arg_has_been_determined_to_be_array = false;
+							if (std_vector_insert_flag) {
+								if ((3 == CE->getNumArgs()) && (1 == arg_index) && (!(lhs_QT->isIntegerType()))) {
+									std_vector_insert_range_flag = true;
+								}
+								if ((0 == arg_index) || std_vector_insert_range_flag) {
+									aux_arg_has_been_determined_to_be_array = true;
+									//note_array_determination(Rewrite, m_state1, CDDeclIndirection(*param_VD, 0));
+								}
+							}
+							if (("iterator" == lhs_type_str) || ("const_iterator" == lhs_type_str)) {
+								aux_arg_has_been_determined_to_be_array = true;
 							}
 
 							Expr::NullPointerConstantKind kind = arg_EX->isNullPointerConstant(*ASTC, Expr::NullPointerConstantValueDependence());
@@ -5219,8 +5269,10 @@ public:
 								if (special_case1_flag) {
 									auto casted_expr_SR = nice_source_range(casted_expr->getSourceRange(), Rewrite);
 									std::string casted_expr_text = Rewrite.getRewrittenText(casted_expr_SR);
-									std::string replacement_casted_expr_text = "std::addressof(" + casted_expr_text + "[0])";
-									Rewrite.ReplaceText(casted_expr_SR, replacement_casted_expr_text);
+									if (ConvertToSCPP) {
+										std::string replacement_casted_expr_text = "std::addressof(" + casted_expr_text + "[0])";
+										Rewrite.ReplaceText(casted_expr_SR, replacement_casted_expr_text);
+									}
 									return;
 								} else {
 									auto CSCE = llvm::cast<const clang::CStyleCastExpr>(argii_EX);
@@ -5257,7 +5309,7 @@ public:
 									std::shared_ptr<CArray2ReplacementAction> cr_shptr = std::make_shared<CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction>(Rewrite, MR,
 											CDDeclIndirection(*param_VD, 0), *(rhs_res3.addressof_unary_operator_cptr), *array_subscript_expr_cptr);
 
-									if (ddcs_ref.has_been_determined_to_be_an_array()) {
+									if (ddcs_ref.has_been_determined_to_be_an_array() || aux_arg_has_been_determined_to_be_array) {
 										(*cr_shptr).do_replacement(m_state1);
 									} else {
 										m_state1.m_array2_contingent_replacement_map.insert(cr_shptr);
