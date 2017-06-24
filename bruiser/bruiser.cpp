@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <thread>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -82,6 +83,7 @@ namespace
 
     std::vector<std::string> PATH;
     std::vector<std::string> SOURCE_FILES;
+    std::string MAKEPATH;
   };
 
   struct ShellCache
@@ -1092,22 +1094,49 @@ class LuaWrapper
 
     int BruiserLuaRunMake(lua_State* __ls)
     {
-      unsigned int result = 0U;
       unsigned int args = 0U;
 
       if ((args = lua_gettop(__ls)) != 1U)
       {
         PRINT_WITH_COLOR_LB(RED, "function was not called by one argument. Run help().");
-        return 0;
+        lua_pushnumber(__ls, 1);
+        return 1;
       }
 
-      const char *makepath;
-      makepath = lua_tostring(__ls, 1);
+      std::string makearg = lua_tostring(__ls , 1);
 
-      result = dostring(__ls, makepath, "make");
+      if (ShellGlobalInstance.MAKEPATH == "")
+      {
+        PRINT_WITH_COLOR_LB(RED, "MAKEPATH is not set. set it using setmakepath or type help.");
+        lua_pushnumber(__ls, 1);
+        return 1;
+      }
 
-      lua_pushnumber(__ls, result);
-      free((char*)makepath);
+      pid_t pid = fork();
+
+      if (pid < 0)
+      {
+        PRINT_WITH_COLOR_LB(RED, "could not fork...");
+        lua_pushnumber(__ls, EXIT_FAILURE);
+      }
+
+      if (pid == 0)
+      {
+        std::cout << BLUE << "MAKEPATH: " << ShellGlobalInstance.MAKEPATH << NORMAL << "\n";
+        std::cout << BLUE << "Running: " << "make -C " << ShellGlobalInstance.MAKEPATH << " " << makearg << NORMAL << "\n";
+        int retval = execl("/usr/bin/make", "make", "-C", ShellGlobalInstance.MAKEPATH.c_str(), makearg.c_str(), NULL);
+        lua_pushnumber(__ls, retval);
+        exit(EXIT_SUCCESS);
+      }
+
+      if (pid > 0)
+      {
+        int status;
+        pid_t returned;
+        returned = waitpid(pid, &status, 0);
+        lua_pushnumber(__ls, returned);
+      }
+
       return 1;
     }
 
@@ -1218,6 +1247,28 @@ class LuaWrapper
       }
       
       return 1;
+    }
+
+    int BruiserLuaStrainRecognition(lua_State* __ls)
+    {
+      unsigned int numthreads = std::thread::hardware_concurrency();
+      lua_pushnumber(__ls, numthreads);
+      return 1;
+    }
+
+    int BruiserLuaSetMakePath(lua_State* __ls)
+    {
+      int numargs = lua_gettop(__ls);
+
+      if (numargs != 1)
+      {
+        PRINT_WITH_COLOR_LB(RED, "wrong number of args. run help.");
+        return 0;
+      }
+
+      ShellGlobalInstance.MAKEPATH = lua_tostring(__ls, 1);
+
+      return 0;
     }
 
 #define LIST_GENERATOR(__x1) \
@@ -1335,6 +1386,8 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "historysize", &LuaDispatch<&LuaWrapper::BruiserLuaChangeHistorySize>);
     lua_register(LE.GetLuaState(), "showsource", &LuaDispatch<&LuaWrapper::BruiserLuaShowSourcecode>);
     lua_register(LE.GetLuaState(), "extractmutagen", &LuaDispatch<&LuaWrapper::BruiserLuaMutagenExtraction>);
+    lua_register(LE.GetLuaState(), "strainrecognition", &LuaDispatch<&LuaWrapper::BruiserLuaStrainRecognition>);
+    lua_register(LE.GetLuaState(), "setmakepath", &LuaDispatch<&LuaWrapper::BruiserLuaSetMakePath>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
