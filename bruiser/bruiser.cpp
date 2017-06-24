@@ -84,6 +84,7 @@ namespace
     std::vector<std::string> PATH;
     std::vector<std::string> SOURCE_FILES;
     std::string MAKEPATH;
+    std::string BINPATH;
   };
 
   struct ShellCache
@@ -1271,6 +1272,82 @@ class LuaWrapper
       return 0;
     }
 
+    int BruiserLuaRun(lua_State* __ls)
+    {
+      int numargs = lua_gettop(__ls);
+
+      if (numargs != 1)
+      {
+        PRINT_WITH_COLOR_LB(RED, "wrong number of args. run help().");
+        lua_pushnumber(__ls, 1);
+        return 1;
+      }
+
+      if (ShellGlobalInstance.BINPATH == "")
+      {
+        PRINT_WITH_COLOR_LB(RED, "BINPATH is not set. use setbinpath() to set it.");
+        lua_pushnumber(__ls, 1);
+        return 1;
+      }
+
+      std::string binname = lua_tostring(__ls, 1);
+
+      pid_t pid = fork();
+
+      if (pid < 0)
+      {
+        PRINT_WITH_COLOR_LB(RED, "could not fork...");
+        lua_pushnumber(__ls, 1);
+        return 1;
+      }
+
+      if (pid == 0)
+      {
+        int retval = execl(ShellGlobalInstance.BINPATH.c_str(), binname.c_str(), NULL);
+        lua_pushnumber(__ls, retval);
+        exit(EXIT_SUCCESS);
+      }
+
+      if (pid > 0)
+      {
+        unsigned int current_time = 0U;
+        while (current_time < GLOBAL_TIME_OUT)
+        {
+          int status;
+          int returned;
+          returned = waitpid(-1, &status, WNOHANG);
+
+          if (returned < 0)
+          {
+            lua_pushnumber(__ls, 1);
+            return 1;
+          }
+
+          if (WIFEXITED(status) || WIFSIGNALED(status))
+          {
+            lua_pushnumber(__ls, 0);
+            return 1;
+          }
+        }
+      }
+
+      return 1;
+    }
+
+    int BruiserLuaSetBinPath(lua_State* __ls)
+    {
+      int numargs = lua_gettop(__ls);
+
+      if (numargs != 1)
+      {
+        PRINT_WITH_COLOR_LB(RED, "wrong number of args. should be one string. see help().");
+      }
+
+      ShellGlobalInstance.BINPATH = lua_tostring(__ls, 1);
+      
+      return 0;
+    }
+
 #define LIST_GENERATOR(__x1) \
     int List##__x1(lua_State* __ls)\
     {\
@@ -1388,6 +1465,8 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "extractmutagen", &LuaDispatch<&LuaWrapper::BruiserLuaMutagenExtraction>);
     lua_register(LE.GetLuaState(), "strainrecognition", &LuaDispatch<&LuaWrapper::BruiserLuaStrainRecognition>);
     lua_register(LE.GetLuaState(), "setmakepath", &LuaDispatch<&LuaWrapper::BruiserLuaSetMakePath>);
+    lua_register(LE.GetLuaState(), "run", &LuaDispatch<&LuaWrapper::BruiserLuaRun>);
+    lua_register(LE.GetLuaState(), "setbinpath", &LuaDispatch<&LuaWrapper::BruiserLuaSetBinPath>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
