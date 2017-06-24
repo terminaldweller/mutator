@@ -112,6 +112,8 @@ std::vector<std::string> LUA_FUNCS =
   "extractmutagen",
   "strainrecognition()",
   "setmakepath",
+  "run",
+  "setbinpath",
   "_G",
   "_VERSION",
   "assert",
