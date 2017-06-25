@@ -1,4 +1,5 @@
 setmakepath("../test/bruisertest")
+setbinpath("../test/bruisertest")
 make("clean")
 text = hijackmain()
 file = io.open("../test/bruisertest/mutatant.cpp", "w")
