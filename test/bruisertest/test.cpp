@@ -1,4 +1,7 @@
 
+#include <fstream>
+#include <iostream>
+
 namespace devi
 {
   class LOCO
@@ -17,5 +20,10 @@ namespace devi
 
 int main(int argc, const char **argv)
 {
+  std::ofstream myfile;
+  myfile.open("./touch");
+  myfile << "line one.\n";
+  myfile.close();
 
+  return 0;
 }
