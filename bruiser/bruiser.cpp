@@ -74,7 +74,7 @@ namespace
   static llvm::cl::OptionCategory BruiserCategory("Empty");
   std::vector<std::string> PushToLua;
 
-  bruiser::M0_ERR m0_err;
+  bruiser::M0_ERR m0_err [[maybe_unused]];
   bruiser::BruiserReport BruiseRep;
 
   struct ShellGlobal
@@ -321,7 +321,7 @@ class AbstractMatcherHandler : public virtual MatchFinder::MatchCallback
     }
 
   private:
-    Rewriter &R;
+    Rewriter &R [[maybe_unused]];
 };
 /**********************************************************************************************************************/
 class MatcherHandlerLVL0 : public AbstractMatcherHandler
@@ -1303,14 +1303,15 @@ class LuaWrapper
 
       if (pid == 0)
       {
-        int retval = execl(ShellGlobalInstance.BINPATH.c_str(), binname.c_str(), NULL);
+        int retval = execl((ShellGlobalInstance.BINPATH + "/" + binname).c_str(), binname.c_str(), NULL);
         lua_pushnumber(__ls, retval);
         exit(EXIT_SUCCESS);
       }
 
       if (pid > 0)
       {
-        unsigned int current_time = 0U;
+        unsigned int current_time [[maybe_unused]] = 0U;
+
         while (current_time < GLOBAL_TIME_OUT)
         {
           int status;
@@ -1320,14 +1321,16 @@ class LuaWrapper
           if (returned < 0)
           {
             lua_pushnumber(__ls, 1);
-            return 1;
+            break;
           }
 
           if (WIFEXITED(status) || WIFSIGNALED(status))
           {
             lua_pushnumber(__ls, 0);
-            return 1;
+            break;
           }
+
+          current_time++;
         }
       }
 
@@ -1348,6 +1351,47 @@ class LuaWrapper
       return 0;
     }
 
+    int BruiserLuaGetBinPath(lua_State* __ls)
+    {
+      lua_pushstring(__ls, ShellGlobalInstance.BINPATH.c_str());
+      std::cout << BLUE << ShellGlobalInstance.BINPATH << NORMAL << "\n";
+      return 1;
+    }
+
+    int BruiserLuaGetMakePath(lua_State* __ls)
+    {
+      lua_pushstring(__ls, ShellGlobalInstance.MAKEPATH.c_str());
+      std::cout << BLUE << ShellGlobalInstance.MAKEPATH << NORMAL << "\n";
+      return 1;
+    }
+
+    int BruiserLuaGetPath(lua_State* __ls)
+    {
+      unsigned int returncount = 0;
+
+      for (auto &iter : ShellGlobalInstance.PATH)
+      {
+        lua_pushstring(__ls, iter.c_str());
+        std::cout << BLUE << iter.c_str() << NORMAL << "\n";
+        returncount++;
+      }
+
+      return returncount;
+    }
+
+    int BruiserLuaGetSourceFiles(lua_State* __ls)
+    {
+      unsigned int returncount = 0;
+
+      for (auto &iter : ShellGlobalInstance.SOURCE_FILES)
+      {
+        lua_pushstring(__ls, iter.c_str());
+        std::cout << BLUE << iter.c_str() << NORMAL << "\n";
+        returncount++;
+      }
+
+      return returncount;
+    }
 #define LIST_GENERATOR(__x1) \
     int List##__x1(lua_State* __ls)\
     {\
@@ -1467,6 +1511,10 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "setmakepath", &LuaDispatch<&LuaWrapper::BruiserLuaSetMakePath>);
     lua_register(LE.GetLuaState(), "run", &LuaDispatch<&LuaWrapper::BruiserLuaRun>);
     lua_register(LE.GetLuaState(), "setbinpath", &LuaDispatch<&LuaWrapper::BruiserLuaSetBinPath>);
+    lua_register(LE.GetLuaState(), "getbinpath", &LuaDispatch<&LuaWrapper::BruiserLuaGetBinPath>);
+    lua_register(LE.GetLuaState(), "getmakepath", &LuaDispatch<&LuaWrapper::BruiserLuaGetMakePath>);
+    lua_register(LE.GetLuaState(), "getpaths", &LuaDispatch<&LuaWrapper::BruiserLuaGetPath>);
+    lua_register(LE.GetLuaState(), "getsourcefiles", &LuaDispatch<&LuaWrapper::BruiserLuaGetSourceFiles>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
@@ -1475,7 +1523,7 @@ int main(int argc, const char **argv)
 #undef X
 #undef LIST_LIST_GENERATORS
 
-    while((command = linenoise("bruiser>>")) != NULL)
+    while((command = linenoise(">>>")) != NULL)
     {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
