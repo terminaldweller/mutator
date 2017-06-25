@@ -140,7 +140,11 @@ help CMDHelp[] = {
   {"strainrecognition()", "", "", "", ""},
   {"setmakepath()", "setmakepath(\"../../myproject\")", "tells bruiser where to execute the make command run from make()", "string", "none"},
   {"run()", "run(\"myexecutable\")", "runs the mutant", "string", "return value"},
-  {"setbinpath()", "setbinpath(\"bin_path\")", "sets the binary path for mutant executable", "string", "none"}
+  {"setbinpath()", "setbinpath(\"bin_path\")", "sets the binary path for mutant executable", "string", "none"},
+  {"getbinpath()", "getbinpath()", "gets the binary path for mutant executable", "none", "string"},
+  {"getmakepath()", "getmakepath()", "gets the make path for mutant executable", "none", "string"},
+  {"getpaths()", "getpaths()", "gets the currently loaded paths that bruiser looks through", "none", "array of strings"},
+  {"getsourcefiles()", "getsourcefiles()", "gets the currently loaded source files that bruiser will look through", "none", "array of strings"}
 };
 /**********************************************************************************************************************/
 /**
