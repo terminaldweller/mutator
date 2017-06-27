@@ -9,6 +9,7 @@ LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
 LIB_LUA_JIT=./LuaJIT/src/libluajit.a
 HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
+#for some reason without ld the build fails on ubuntu trusty on travis
 EXTRA_LD_FLAGS+=-ldl
 ######################################RULES####################################
 .DEFAULT: all
@@ -31,7 +32,7 @@ $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
 	@echo "building with jit"
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
