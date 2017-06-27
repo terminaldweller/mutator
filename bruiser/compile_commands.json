@@ -15,6 +15,16 @@
         "file": "/home/bloodstalker/devi/hell2/bruiser/CompletionHints.cpp"
     }, 
     {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Werror=date-time -std=c++11 -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -ffunction-sections -fdata-sections -O2 -fno-exceptions -DLLVM_BUILD_GLOBAL_ISEL -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -I/usr/include -o mutagen.o mutagen.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/mutagen.cpp"
+    }, 
+    {
+        "command": "c++ -c -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Werror=date-time -std=c++11 -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -ffunction-sections -fdata-sections -O2 -fno-exceptions -DLLVM_BUILD_GLOBAL_ISEL -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions -I/usr/include -o ORCmutation.o ORCmutation.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2/bruiser", 
+        "file": "/home/bloodstalker/devi/hell2/bruiser/ORCmutation.cpp"
+    }, 
+    {
         "command": "cc -c -std=gnu99 -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -DLUA_USE_LINUX -o lapi.o lapi.c", 
         "directory": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src", 
         "file": "/home/bloodstalker/devi/hell2/bruiser/lua-5.3.4/src/lapi.c"
