@@ -61,7 +61,7 @@ static llvm::cl::OptionCategory MatcherSampleCategory("TBD");
 cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("safercpp will run through System Headers"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 cl::opt<bool> MainFileOnly("MainOnly", cl::desc("safercpp will only report the results that reside in the main file"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 cl::opt<bool> SafeSubset("SafeSubset", cl::desc("safercpp will check for elements outside of the (memory) safe subset of the language"), cl::init(true), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
-cl::opt<bool> ConvertToSCPP("ConvertToSCPP", cl::desc("safercpp will translate the source to a (memory) safe subset of the language"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> ConvertToSCPP("ConvertToSCPP", cl::desc("safercpp will translate the source to a (memory) safe subset of the language"), cl::init(true), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 
 SourceRange nice_source_range(const SourceRange& sr, Rewriter &Rewrite) {
@@ -6133,9 +6133,9 @@ public:
 	HandlerForSSSConditionalInitializer(R, m_state1), HandlerForSSSAssignment(R, m_state1), HandlerForSSSParameterPassing(R, m_state1),
 	HandlerForSSSReturnValue(R, m_state1), HandlerForSSSFRead(R, m_state1), HandlerForSSSFWrite(R, m_state1)
   {
-	  Matcher.addMatcher(varDecl(hasType(pointerType())).bind("mcsssnativepointer"), &HandlerForSSSNativePointer);
+	  //Matcher.addMatcher(varDecl(hasType(pointerType())).bind("mcsssnativepointer"), &HandlerForSSSNativePointer);
 
-	  Matcher.addMatcher(castExpr(allOf(hasCastKind(CK_ArrayToPointerDecay), unless(hasParent(arraySubscriptExpr())))).bind("mcsssarraytopointerdecay"), &HandlerForSSSArrayToPointerDecay);
+	  //Matcher.addMatcher(castExpr(allOf(hasCastKind(CK_ArrayToPointerDecay), unless(hasParent(arraySubscriptExpr())))).bind("mcsssarraytopointerdecay"), &HandlerForSSSArrayToPointerDecay);
 
 	  //Matcher.addMatcher(clang::ast_matchers::declaratorDecl().bind("mcsssvardecl"), &HandlerForSSSVarDecl2);
 	  Matcher.addMatcher(varDecl(anyOf(
