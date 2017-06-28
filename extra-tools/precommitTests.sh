@@ -15,21 +15,21 @@ function RelicKeeper
 {
   cd ./reliquary/bruiser
   RELIC_CNT=$(ls | gawk 'END{print NR}')
-  if (( $RELIC_CNT > 10 )); then
+  if (( $RELIC_CNT > $RELIC_COUNT )); then
     rm "$(ls -t | tail -1)"
     printf "${Orange}RelicKeeper removed the oldest bruiser relic.\n${NC}" | tee -a ../../test/precommit.rep
   fi
 
   cd ../m0
   RELIC_CNT=$(ls | gawk 'END{print NR}')
-  if (( $RELIC_CNT > 10 )); then
+  if (( $RELIC_CNT > $RELIC_COUNT )); then
     rm "$(ls -t | tail -1)"
     printf "${Orange}RelicKeeper removed the oldest m0 relic.\n${NC}" | tee -a ../../test/precommit.rep
   fi
 
   cd ../safercpp
   RELIC_CNT=$(ls | gawk 'END{print NR}')
-  if (( $RELIC_CNT > 10 )); then
+  if (( $RELIC_CNT > $RELIC_COUNT )); then
     rm "$(ls -t | tail -1)"
     printf "${Orange}RelicKeeper removed the oldest safercpp relic.\n${NC}" | tee -a ../../test/precommit.rep
   fi
