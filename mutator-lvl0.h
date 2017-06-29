@@ -374,7 +374,7 @@ class mutagenAncestryReport// : public Devi::XMLReportBase
     mutagenAncestryReport(std::vector<std::vector<std::string>> __dss, std::vector<WeakPoint> __wps) : DoomedStrains(__dss), WeakPoints(__wps) 
     {
       RootPointer = Doc.NewElement("mutagen:Report");
-      RootPointer->SetAttribute("xmlns:mutator", "http://www.w3.org/2001/XMLSchema");
+      RootPointer->SetAttribute("xmlns:mutagen", "http://www.w3.org/2001/XMLSchema");
     }
 
     ~mutagenAncestryReport() 
