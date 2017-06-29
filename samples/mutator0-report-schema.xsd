@@ -4,29 +4,29 @@
 
 <mutator:schema xmlns:mutator="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/2001/XMLSchema">
 
-	<mutator:attributeGroup name="MisraCReport">
-		<mutator:attribute name="Misra-C-2004Rule" use="required"></mutator:attribute>
-		<mutator:attribute name="FileName" use="required"></mutator:attribute>
-		<mutator:attribute name="SpellingLineNumber" use="optional"></mutator:attribute>
-		<mutator:attribute name="SpellingColumnNumber" use="optional"></mutator:attribute>
-	</mutator:attributeGroup>
+  <mutator:attributeGroup name="MisraCReport">
+    <mutator:attribute name="Misra-C-2004Rule" use="required"></mutator:attribute>
+    <mutator:attribute name="FileName" use="required"></mutator:attribute>
+    <mutator:attribute name="SpellingLineNumber" use="optional"></mutator:attribute>
+    <mutator:attribute name="SpellingColumnNumber" use="optional"></mutator:attribute>
+  </mutator:attributeGroup>
 
-	<mutator:element name="MisraDiag">
-		<mutator:complexType>
-			<mutator:simpleContent>
-				<mutator:extension base="mutator:string">
-					<mutator:attributeGroup ref="MisraCReport"/>
-				</mutator:extension>
-			</mutator:simpleContent>
-		</mutator:complexType>
-	</mutator:element>
+  <mutator:element name="MisraDiag">
+    <mutator:complexType>
+      <mutator:simpleContent>
+        <mutator:extension base="mutator:string">
+          <mutator:attributeGroup ref="MisraCReport"/>
+        </mutator:extension>
+      </mutator:simpleContent>
+    </mutator:complexType>
+  </mutator:element>
 
-	<mutator:element name="Report">
-		<mutator:complexType>
-			<mutator:sequence>
-				<mutator:element name="MisraDiag" maxOccurs="unbounded"/>
-			</mutator:sequence>
-		</mutator:complexType>
-	</mutator:element>
+  <mutator:element name="Report">
+    <mutator:complexType>
+      <mutator:sequence>
+        <mutator:element name="MisraDiag" maxOccurs="unbounded"/>
+      </mutator:sequence>
+    </mutator:complexType>
+  </mutator:element>
 
 </mutator:schema>

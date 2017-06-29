@@ -4,10 +4,10 @@
 
 <mutagen:schema xmlns:mutagen="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/2001/XMLSchema">
 
-  <mutagen:element name="Report">
+  <mutagen:element name="DoomedStrain">
     <mutagen:complexType>
       <mutagen:sequence>
-        <mutagen:element name="DoomedStrains" maxOccurs="1"/>
+        <mutagen:element name="Strain" maxOccurs="unbounded"/>
       </mutagen:sequence>
     </mutagen:complexType>
   </mutagen:element>
@@ -20,10 +20,13 @@
     </mutagen:complexType>
   </mutagen:element>
 
-  <mutagen:element name="DoomedStrain">
+  <mutagen:element name="WeakStrains"/>
+
+  <mutagen:element name="Report">
     <mutagen:complexType>
       <mutagen:sequence>
-        <mutagen:element name="Strain" maxOccurs="unbounded"/>
+        <mutagen:element name="DoomedStrains" maxOccurs="unbounded"/>
+        <mutagen:element name="WeakStrains" maxOccurs="unbounded"/>
       </mutagen:sequence>
     </mutagen:complexType>
   </mutagen:element>
