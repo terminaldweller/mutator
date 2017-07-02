@@ -118,6 +118,7 @@ std::vector<std::string> LUA_FUNCS =
   "getmakepath",
   "getsourcefiles",
   "getpaths",
+  "changedirectory",
   "_G",
   "_VERSION",
   "assert",
