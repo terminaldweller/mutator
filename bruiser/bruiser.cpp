@@ -101,6 +101,7 @@ namespace
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactiv mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
 /**********************************************************************************************************************/
 class LuaEngine
 {
@@ -1493,6 +1494,9 @@ int LuaDispatch(lua_State* __ls)
 /*Main*/
 int main(int argc, const char **argv)
 {
+  /*initializing the log*/
+  bruiser::BruiserReport BruiserLog;
+
   /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
@@ -1566,6 +1570,26 @@ int main(int argc, const char **argv)
 #undef X
 #undef LIST_LIST_GENERATORS
 
+    /*The non-cli execution loop*/
+    if (NonCLILuaScript != "")
+    {
+      std::ifstream lua_script_noncli;
+      lua_script_noncli.open(NonCLILuaScript);
+      std::string line;
+
+      while(std::getline(lua_script_noncli, line))
+      {
+        BruiserLog.PrintToLog("running in non-cli mode...");
+        BruiserLog.PrintToLog(line + "\n");
+        LE.RunChunk((char*)line.c_str());
+      }
+
+      LE.Cleanup();
+
+      return 0;
+    }
+
+    /*cli execution loop*/
     while((command = linenoise(">>>")) != NULL)
     {
       linenoiseHistoryAdd(command);
