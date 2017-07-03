@@ -41,7 +41,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 struct WeakPoint
 {
-  WeakPoint(std::string  __psft, std::string __file, unsigned int __ln, unsigned int __cn) 
+  WeakPoint(std::string  __psft, std::string __file, unsigned int __ln, unsigned int __cn)
   {
     PlaceHolderStringForType = __psft;
     File = __file;
@@ -371,13 +371,13 @@ class MutatorLVL0Tests
 class mutagenAncestryReport// : public Devi::XMLReportBase
 {
   public:
-    mutagenAncestryReport(std::vector<std::vector<std::string>> __dss, std::vector<WeakPoint> __wps) : DoomedStrains(__dss), WeakPoints(__wps) 
+    mutagenAncestryReport(std::vector<std::vector<std::string>> __dss, std::vector<WeakPoint> __wps) : DoomedStrains(__dss), WeakPoints(__wps)
     {
       RootPointer = Doc.NewElement("mutagen:Report");
       RootPointer->SetAttribute("xmlns:mutagen", "http://www.w3.org/2001/XMLSchema");
     }
 
-    ~mutagenAncestryReport() 
+    ~mutagenAncestryReport()
     {
       Doc.InsertEndChild(RootPointer);
     }
@@ -396,7 +396,7 @@ class mutagenAncestryReport// : public Devi::XMLReportBase
           Child->SetText(iterer.c_str());
           NodeDoomedStrain->InsertEndChild(Child);
         }
-        
+
         MGene->InsertEndChild(NodeDoomedStrain);
       }
 
@@ -448,7 +448,7 @@ class mutagenAncestryReport// : public Devi::XMLReportBase
 #endif
 };
 /**********************************************************************************************************************/
-#define EXTRACT_MUTAGEN 
+#define EXTRACT_MUTAGEN
 
 class MutagenExtraction
 {
@@ -461,7 +461,7 @@ class MutagenExtraction
     {
       clang::ASTContext::DynTypedNodeList DNL = __astx.getParents(__dtn);
 
-      /*FIXME-a LastStrain. obviously well end up losing some parents in cpp if we're just picking up the 
+      /*FIXME-a LastStrain. obviously well end up losing some parents in cpp if we're just picking up the
        * first parent from the list.*/
       LastStrain.push_back(DNL[0].getNodeKind().asStringRef().str());
       clang::ast_type_traits::DynTypedNode DTN = DNL[0];
