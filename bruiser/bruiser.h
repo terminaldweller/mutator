@@ -36,9 +36,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/AST/Type.h"
 #include "clang/AST/ASTTypeTraits.h"
 /*llvm headers*/
-
-/*boost*/
-#include "boost/circular_buffer.hpp"
 /**********************************************************************************************************************/
 /*using*/
 using namespace tinyxml2;
@@ -259,7 +256,7 @@ class SearchM0
 
     ~SearchM0() {};
 
-    void Debug(void) 
+    void Debug(void)
     {
       if (!RootPointer->NoChildren())
       {
@@ -270,13 +267,6 @@ class SearchM0
 
   private:
     XMLNode* RootPointer;
-};
-/**********************************************************************************************************************/
-class ShellHistory
-{
-  public:
-    ShellHistory() {}
-    boost::circular_buffer<std::string> History{SHELL_HISTORY_SIZE};
 };
 /**********************************************************************************************************************/
 class Daemonize
