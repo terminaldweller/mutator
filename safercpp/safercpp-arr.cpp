@@ -1394,6 +1394,8 @@ public:
 	std::string m_action_species;
 	bool m_direct_type_must_be_non_const = false;
 	bool m_changed_from_original = false;
+	bool m_just_a_native_array = false;
+	std::string m_native_array_size_text;
 };
 
 static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_suffix(CIndirectionStateStack& indirection_state_stack,
@@ -1438,9 +1440,9 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 					if (is_last_indirection) {
 						//retval.m_direct_type_must_be_non_const = true;
 					}
-					prefix_str = prefix_str + "mse::TNullableAnyRandomAccessIterator<";
-					suffix_str = "> " + suffix_str;
-					retval.m_action_species = "native pointer to TNullableAnyRandomAccessIterator";
+					prefix_str = prefix_str + "MSE_LH_ARRAY_ITERATOR_TYPE(";
+					suffix_str = ") " + suffix_str;
+					retval.m_action_species = "native pointer to MSE_LH_ARRAY_ITERATOR_TYPE";
 				}
 			} else if ("dynamic array" == indirection_state_stack[i].current()) {
 				if (is_char_star) {
@@ -1453,13 +1455,14 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 					if (is_last_indirection) {
 						retval.m_direct_type_must_be_non_const = true;
 					}
-					prefix_str = prefix_str + "mse::lh::TIPointerWithBundledVector<";
+					//prefix_str = prefix_str + "mse::lh::TIPointerWithBundledVector<";
+					prefix_str = prefix_str + "MSE_LH_DYNAMIC_ARRAY_ITERATOR_TYPE(";
 					if (is_a_function_parameter) {
-						suffix_str = "> " + suffix_str;
-						retval.m_action_species = "native pointer parameter to TIPointerWithBundledVector";
+						suffix_str = ") " + suffix_str;
+						retval.m_action_species = "native pointer parameter to DYNAMIC_ARRAY_ITERATOR_TYPE";
 					} else {
-						suffix_str = "> " + suffix_str;
-						retval.m_action_species = "native pointer to TIPointerWithBundledVector";
+						suffix_str = ") " + suffix_str;
+						retval.m_action_species = "native pointer to DYNAMIC_ARRAY_ITERATOR_TYPE";
 					}
 				}
 			} else if ("native array" == indirection_state_stack[i].current()) {
@@ -1477,16 +1480,21 @@ static CTypeIndirectionPrefixAndSuffixItem generate_type_indirection_prefix_and_
 				} else {
 					l_changed_from_original = true;
 					if (is_a_function_parameter) {
-						prefix_str = prefix_str + "mse::TNullableAnyRandomAccessIterator<";
-						suffix_str = ", " + size_text + "> " + suffix_str;
-						retval.m_action_species = "native array parameter to TNullableAnyRandomAccessIterator";
+						prefix_str = prefix_str + "MSE_LH_ARRAY_ITERATOR_TYPE(";
+						suffix_str = ") " + suffix_str;
+						retval.m_action_species = "native array parameter to MSE_LH_ARRAY_ITERATOR_TYPE";
 					} else {
 						if (is_last_indirection) {
 							retval.m_direct_type_must_be_non_const = true;
 						}
-						prefix_str = prefix_str + "mse::lh::TNativeArrayReplacement<";
-						suffix_str = ", " + size_text + "> " + suffix_str;
-						retval.m_action_species = "native array to TNativeArrayReplacement";
+						prefix_str = prefix_str + "MSE_LH_FIXED_ARRAY_TYPE_PREFIX(" + size_text + ") ";
+						suffix_str = "MSE_LH_FIXED_ARRAY_TYPE_SUFFIX(" + size_text + ") " + suffix_str;
+						post_name_suffix_str = post_name_suffix_str + " MSE_LH_FIXED_ARRAY_TYPE_POST_NAME_SUFFIX(" + size_text + ")";
+						retval.m_action_species = "native array to MSE_LH_FIXED_ARRAY_TYPE";
+						if (1 == indirection_state_stack.size()) {
+							retval.m_just_a_native_array = true;
+							retval.m_native_array_size_text = size_text;
+						}
 					}
 				}
 			} else if ("native pointer" == indirection_state_stack[i].current()) {
@@ -1788,10 +1796,16 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 			} else if (is_static) {
 				replacement_code += "static ";
 			}
-			replacement_code += prefix_str + direct_qtype_str + suffix_str;
-			replacement_code += " ";
-			replacement_code += variable_name;
-			replacement_code += post_name_suffix_str;
+			if (res4.m_just_a_native_array) {
+				replacement_code += "MSE_LH_FIXED_ARRAY_DECLARATION(" + direct_qtype_str;
+				replacement_code += ", " + res4.m_native_array_size_text;
+				replacement_code += ", " + variable_name + ")";
+			} else {
+				replacement_code += prefix_str + direct_qtype_str + suffix_str;
+				replacement_code += " ";
+				replacement_code += variable_name;
+				replacement_code += post_name_suffix_str;
+			}
 
 			replacement_code += initializer_append_str;
 		} else {
@@ -3741,17 +3755,22 @@ public:
 							initializer_info_str = " = MSE_LH_REALLOC(" + element_type_str + ", " + alloc_function_info1.m_realloc_pointer_arg_source_text;
 							initializer_info_str += ", " + alloc_function_info1.m_num_bytes_arg_source_text + ")";
 						} else {
-							num_elements_text = "(";
-							num_elements_text += alloc_function_info1.m_num_bytes_arg_source_text;
-							if (true || (("void" != element_type_str) && ("const void" != element_type_str))) {
-								num_elements_text += ") / sizeof(";
-								num_elements_text += element_type_str;
-							} else {
-								/* todo: something */
-							}
-							num_elements_text += ")";
+							if (false) {
+								num_elements_text = "(";
+								num_elements_text += alloc_function_info1.m_num_bytes_arg_source_text;
+								if (true || (("void" != element_type_str) && ("const void" != element_type_str))) {
+									num_elements_text += ") / sizeof(";
+									num_elements_text += element_type_str;
+								} else {
+									/* todo: something */
+								}
+								num_elements_text += ")";
 
-							initializer_info_str = "(" + num_elements_text + ")";
+								initializer_info_str = "(" + num_elements_text + ")";
+							} else {
+								initializer_info_str = " = MSE_LH_ALLOC_DYN_ARRAY1(MSE_LH_DYNAMIC_ARRAY_ITERATOR_TYPE(" + element_type_str + ")";
+								initializer_info_str += ", " + alloc_function_info1.m_num_bytes_arg_source_text + ")";
+							}
 						}
 
 						auto decl_source_location_str = decl_source_range.getBegin().printToString(*MR.SourceManager);
