@@ -14,8 +14,8 @@ matrix:
           name: "bloodstalker/mutator"
           description: "Build submitted via Travis CI"
         notification_email: thabogre@gmail.com
-        build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-4.0"
-        build_command:   "make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG"
+        build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-5.0"
+        build_command:   "make mutator-lvl0 bruiser mutatord mutatorclient CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG"
         branch_pattern: master
 
 before_install:
@@ -27,9 +27,11 @@ before_script:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -y
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
+  - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
   - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - travis_retry sudo apt-get install clang-4.0 libclang-4.0-dev libclang-common-4.0-dev libllvm4.0 llvm-4.0-dev llvm-4.0 llvm-4.0-runtime libclang1-4.0-dbg libllvm4.0-dbg lldb-4.0 -y
+  - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
   - sudo apt-get install libboost-dev
@@ -37,7 +39,9 @@ before_script:
   - git submodule update
 
 script: 
-  - make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG -j2
+  - make safercpp-arr CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG -j2
+  - make mutator-lvl0 CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
+  - make bruiser CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
   - make -C daemon
 
 after_failure:
@@ -45,10 +49,11 @@ after_failure:
 
 after_success:
   - llvm-config-4.0 --has-rtti
+  - llvm-config-5.0 --has-rtti
   - gcc -v
   - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -I/usr/include/linux -Wall > /dev/null
   - make clean
-  - make mutator-lvl0 CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_GNU -j2
+  - make mutator-lvl0 CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_GNU -j2
     #- echo "deb http://old-releases.ubuntu.com/ubuntu/ hardy universe" | sudo tee -a /etc/apt/sources.list
     #- sudo apt-get update -y
   #- sudo apt-get install gcc-4.2 g++-4.2
