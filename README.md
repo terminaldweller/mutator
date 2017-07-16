@@ -7,7 +7,6 @@
 </a>
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
 [![Coverage Status](https://coveralls.io/repos/github/bloodstalker/mutator/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/mutator?branch=master)
-<a href="https://twitter.com/xashmith" class="twitter-follow-button" data-show-count="false">Follow @xashmith</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 
 Here's the elevator pitch: mutator is a suite of tools aimed at analysis and automation of C/C++ code development.<br/>
@@ -95,11 +94,9 @@ All the as-of-yet implemented features of the project are very much buildable an
 * project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
 * `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
 * The Implementation of the automatic refactoring facilities of `mutator` has begun. The UI is not yet capable of accomodating the current features so I'll try to add them as soon as possible.<br/>
-* LLVM has bumped to 5.0 so mutator has also changed to using that(trunk:292415). Everything is in working order.<br/>
 * The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9.<br/> 
 * There are no plans in regards to keeping or dropping LLVM 3.9 support but do keep in mind the libraries mutator uses are not guaranteed to keep backwards-compatibility by their developers as they are still under development.<br/>
 * There are only 4 actual defects on mutator's Coverity scan that belong to mutator's source code and not the library. 4 are potential defects which are not really defects.<br/>
-* I will be taking a break of sorts for the next two weeks (probably less but still) starting from 1.25.2017.<br/>
 
 ## Building and Running
 
@@ -117,7 +114,7 @@ git submodule update
 
 ```
 
-To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:301395.<br/>
+To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:307814.<br/>
 Here Are the build options:<br/>
 
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
@@ -346,3 +343,4 @@ If the company/organization you represent wants to sponsor mutator, let me know.
 
 ### Contact
 You can email me at thabogre@gmail.com, there is also the twitter account for the mutator project, @xashmith and there is the mutator maillist, mutator-repost@freelists.org. You need to be a member though to be able to send mail on the maillist. The maillist is moderated.<br/>
+<a href="https://twitter.com/xashmith" class="twitter-follow-button" data-show-count="false">Follow @xashmith</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
