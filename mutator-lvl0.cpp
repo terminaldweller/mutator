@@ -7220,7 +7220,11 @@ public:
     {
       /*@DEVI-Macro args are passed twice. first they are expanded and then the whole macro,
       including the args is checked again for expansion, so args are passed twice.*/
+#if __clang_major__ == 4
       if (MI->getNumArgs() != Args->getNumArguments() - MI->getNumArgs())
+#elif __clang_major__ == 5
+      if (MI->getNumArgs() != Args->getNumMacroArguments() - MI->getNumArgs())
+#endif
       {
         if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
         {
@@ -7231,7 +7235,11 @@ public:
           if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
           {
             std::cout << "19.8:" << "Funciton-like macro invoked with wrong number of arguments:";
+#if __clang_major__ == 4
             std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumArguments() << " " << MI->getNumArgs() << ":" << "\n";
+#elif __clang_major__ == 5
+            std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumMacroArguments() << " " << MI->getNumArgs() << ":" << "\n";
+#endif
 
             XMLDocOut.XMLAddNode(SM, SL, "19.8", "Funciton-like macro invoked with wrong number of arguments:");
             JSONDocOUT.JSONAddElement(SM, SL, "19.8", "Funciton-like macro invoked with wrong number of arguments:");
