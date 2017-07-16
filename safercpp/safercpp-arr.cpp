@@ -6487,7 +6487,11 @@ public:
 	  }
   }
 
+#if __clang_major__ == 4
   bool BeginSourceFileAction(CompilerInstance &ci, StringRef) override {
+#elif __clang_major__ == 5
+  bool BeginSourceFileAction(CompilerInstance &ci) override {
+#endif
     std::unique_ptr<MyPPCallbacks> my_pp_callbacks_ptr(new MyPPCallbacks(TheRewriter));
 
     clang::Preprocessor &pp = ci.getPreprocessor();
