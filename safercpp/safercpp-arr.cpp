@@ -51,7 +51,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*LLVM Headers*/
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
-#include "llvm/Config/llvm-config.h" // for LLVM_VERSION_STRING
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -6680,8 +6679,19 @@ public:
   CompilerInstance &CI;
 };
 
+/* The number of parameters ASTFrontendAction::BeginSourceFileAction() has depends
+ * on the version of the llvm library being used. Using ASTFrontendActionCompatibilityWrapper1
+ * in place of ASTFrontendAction insulates you from this difference based on the
+ * library version being used. */
+class ASTFrontendActionCompatibilityWrapper1 : public ASTFrontendAction {
+public:
+	virtual bool BeginSourceFileAction(CompilerInstance &ci) = 0;
+	virtual bool BeginSourceFileAction(CompilerInstance &ci, StringRef) {
+		return BeginSourceFileAction(ci);
+	}
+};
 
-class MyFrontendAction : public ASTFrontendAction 
+class MyFrontendAction : public ASTFrontendActionCompatibilityWrapper1
 {
 public:
   MyFrontendAction() {
@@ -6694,16 +6704,7 @@ public:
 	  }
   }
 
-#if 5 > LLVM_VERSION_MAJOR
-#define LLVM_OLDER_THAN_r305045
-#endif
-
-#ifdef LLVM_OLDER_THAN_r305045
-  bool BeginSourceFileAction(CompilerInstance &ci, StringRef) override {
-#else
   bool BeginSourceFileAction(CompilerInstance &ci) override {
-#endif
-
     std::unique_ptr<MyPPCallbacks> my_pp_callbacks_ptr(new MyPPCallbacks(TheRewriter, ci));
 
     clang::Preprocessor &pp = ci.getPreprocessor();
