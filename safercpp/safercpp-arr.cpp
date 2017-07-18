@@ -6680,20 +6680,6 @@ public:
   CompilerInstance &CI;
 };
 
-//from this post: https://stackoverflow.com/questions/2335888/how-to-compare-string-in-c-conditional-preprocessor-directives
-// compares two strings in compile time constant fashion
-constexpr int c_strcmp( char const* lhs, char const* rhs )
-{
-	return (('\0' == lhs[0]) && ('\0' == rhs[0])) ? 0
-			:  (lhs[0] != rhs[0]) ? (lhs[0] - rhs[0])
-					: c_strcmp( lhs+1, rhs+1 );
-}
-// some compilers may require ((int)lhs[0] - (int)rhs[0])
-
-// The API seems to have been (breaking) changed in commit r305045.
-// See: https://github.com/llvm-mirror/clang/commit/772553c418344b6943a468b79e043180840eb255
-constexpr int DIFF_FROM_r305045 = c_strcmp(LLVM_VERSION_STRING, "5.0.0svn-r305045");
-constexpr int DIFF_FROM_VERSION_ZERO = c_strcmp(LLVM_VERSION_STRING, "0");
 
 class MyFrontendAction : public ASTFrontendAction 
 {
@@ -6708,7 +6694,11 @@ public:
 	  }
   }
 
-#if (0 > DIFF_FROM_r305045) && (0 < DIFF_FROM_ZERO)
+#if 5 > LLVM_VERSION_MAJOR
+#define LLVM_OLDER_THAN_r305045
+#endif
+
+#ifdef LLVM_OLDER_THAN_r305045
   bool BeginSourceFileAction(CompilerInstance &ci, StringRef) override {
 #else
   bool BeginSourceFileAction(CompilerInstance &ci) override {
