@@ -93,9 +93,25 @@ else
   printf "${Red}mutator-lvl0 C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
 
+printf "${Lblue}running bruiser smoke tests...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+
 printf "${Lblue}running make clean...\n${NC}" | tee -a ./test/precommit.rep
 "make" clean
-
+########################################################################################################################
 printf "${Lblue}testing the build in C++1z mode...\n${NC}" | tee -a ./test/precommit.rep
 "make" CXX=clang++ BUILD_MODE=COV_NO_CLANG_1Z -j2
 echo ""
@@ -151,12 +167,28 @@ else
   printf "${Red}mutator-lvl0 C++1z smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
 
+printf "${Lblue}running bruiser smoke tests...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++1z smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++1z smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++1z smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++1z smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+
 printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ./test/precommit.rep
 "make" clean
 
 printf "${Lblue}running make clean...\n${NC}" | tee -a ./test/precommit.rep
 "make" clean
-
+########################################################################################################################
 printf "${Lblue}testing the build in C++14 mode...\n${NC}" | tee -a ./test/precommit.rep
 "make" CXX=clang++ BUILD_MODE=COV_NO_CLANG_14 -j2
 echo ""
@@ -205,9 +237,25 @@ else
   printf "${Red}mutator-lvl0 C++14 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
 
+printf "${Lblue}running bruiser smoke tests...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++14 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++14 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++14 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++14 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+
 printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ./test/precommit.rep
 "make" clean
-
+########################################################################################################################
 cd daemon
 printf "${Lblue}changing to the daemon directory\n${NC}" | tee -a ../test/precommit.rep
 
