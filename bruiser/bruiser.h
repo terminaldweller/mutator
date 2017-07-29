@@ -142,7 +142,8 @@ help CMDHelp[] = {
   {"getmakepath()", "getmakepath()", "gets the make path for mutant executable", "none", "string"},
   {"getpaths()", "getpaths()", "gets the currently loaded paths that bruiser looks through", "none", "array of strings"},
   {"getsourcefiles()", "getsourcefiles()", "gets the currently loaded source files that bruiser will look through", "none", "array of strings"},
-  {"changedirectory()", "changedirectory()", "changes bruiser's working directory. only use it when you know what you are doing.", "destination directory, [string]", "return value"}
+  {"changedirectory()", "changedirectory()", "changes bruiser's working directory. only use it when you know what you are doing.", "destination directory, [string]", "return value"},
+  {"pwd()", "pwd()", "pwd", "", ""}
 };
 /**********************************************************************************************************************/
 /**
