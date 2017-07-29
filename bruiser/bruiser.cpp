@@ -86,6 +86,7 @@ namespace
     std::vector<std::string> SOURCE_FILES;
     std::string MAKEPATH;
     std::string BINPATH;
+    unsigned int HISTORY_SIZE = SHELL_HISTORY_SIZE;
   };
 
   struct ShellCache
@@ -99,6 +100,8 @@ namespace
 }
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("bruiser will run through System Headers"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<bool> MainFileOnly("MainOnly", cl::desc("bruiser will only report the results that reside in the main file"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
@@ -463,6 +466,11 @@ public:
       CheckSLValidity(SLE);
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite);
 
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL) || Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+      {
+        return void();
+      }
+
       SourceRange SR(SL, SLE);
 
       std::string MainSig = Rewrite.getRewrittenText(SR);
@@ -495,17 +503,22 @@ class LiveListFuncs : public MatchFinder::MatchCallback
       {
         const clang::FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("livelistfuncs");
 
+        SourceLocation SL = FD->getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, R);
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL) || Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
+
         if (FD->hasBody())
         {
           Stmt* Body = FD->getBody();
           SourceLocation SLBody = Body->getLocStart();
           SourceLocation SLShebang = FD->getLocStart();
-          //PRINT_WITH_COLOR_LB(GREEN, "begin");
-          //printf(CYAN"%s",  R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
-          //printf(NORMAL "\n");
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
           PushToLua.push_back(R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))));
-          //PRINT_WITH_COLOR_LB(GREEN, "end");
         }
         else
         {
@@ -531,6 +544,15 @@ class LiveListVars : public MatchFinder::MatchCallback
       if (MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars") != nullptr)
       {
         const clang::VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars");
+
+        SourceLocation SL = VD->getLocStart();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, R);
+
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL) || Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
+        {
+          return void();
+        }
 
         PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())).c_str());
         PushToLua.push_back(R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())));
@@ -1156,6 +1178,7 @@ class LuaWrapper
       unsigned int historysize = lua_tonumber(__ls, 1);
 
       linenoiseHistorySetMaxLen(historysize);
+      ShellGlobalInstance.HISTORY_SIZE = historysize;
 
       return 0;
     }
@@ -1435,6 +1458,11 @@ class LuaWrapper
       return 1;
     }
 
+    int BrluiserLuaYolo(lua_State* __ls)
+    {
+      return 0;
+    }
+
 #define LIST_GENERATOR(__x1) \
     int List##__x1(lua_State* __ls)\
     {\
@@ -1562,6 +1590,7 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "getpaths", &LuaDispatch<&LuaWrapper::BruiserLuaGetPath>);
     lua_register(LE.GetLuaState(), "getsourcefiles", &LuaDispatch<&LuaWrapper::BruiserLuaGetSourceFiles>);
     lua_register(LE.GetLuaState(), "changedirectory", &LuaDispatch<&LuaWrapper::BruiserLuaChangeDirectory>);
+    lua_register(LE.GetLuaState(), "yolo", &LuaDispatch<&LuaWrapper::BrluiserLuaYolo>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
@@ -1594,6 +1623,20 @@ int main(int argc, const char **argv)
     {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
+      if (std::string(command).find("!", 0) == 0)
+      {
+        std::string histnumber_str = std::string(command).substr(1, std::string::npos);
+        unsigned int history_num = std::stoi(histnumber_str, 0, 10);
+        if (history_num >= ShellGlobalInstance.HISTORY_SIZE)
+        {
+          PRINT_WITH_COLOR_LB(RED, "invalid history number passed.");
+          continue;
+        }
+        else
+        {
+
+        }
+      }
       LE.RunChunk(command);
       linenoiseFree(command);
     }
