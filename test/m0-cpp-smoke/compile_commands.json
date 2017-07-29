@@ -1,0 +1,7 @@
+[
+    {
+        "command": "c++ -c -I/usr/lib/gcc/x86_64-redhat-linux/6.3.1/include -std=c++14 -o m0-cpp-smoke.o m0-cpp-smoke.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2/test/m0-cpp-smoke", 
+        "file": "/home/bloodstalker/devi/hell2/test/m0-cpp-smoke/m0-cpp-smoke.cpp"
+    }
+]
