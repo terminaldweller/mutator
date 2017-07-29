@@ -38,6 +38,7 @@ function RelicKeeper
   cd ../..
 }
 ########################################################################################################################
+#c++11#
 printf "${Lblue}switching to mutator root...\n${NC}" | tee ../test/precommit.rep
 cd ..
 
@@ -108,10 +109,28 @@ if [[ $? == 0 ]]; then
 else
   printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+
+printf "${Lblue}running cpp smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}./mutator-lvl0 ./test/m0-cpp-smoke/m0-cpp-smoke.cpp\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -./test/m0-cpp-smoke/m0-cpp-smoke.cpp
+
+if [[ $? == 0 ]]; then
+  printf "${Green}mutator-lvl0 C++11 cpp std headers smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}mutator-lvl0 C++11 cpp std haders smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
 
 printf "${Lblue}running make clean...\n${NC}" | tee -a ./test/precommit.rep
 "make" clean
 ########################################################################################################################
+#c++17#
 printf "${Lblue}testing the build in C++1z mode...\n${NC}" | tee -a ./test/precommit.rep
 "make" CXX=clang++ BUILD_MODE=COV_NO_CLANG_1Z -j2
 echo ""
@@ -182,13 +201,28 @@ if [[ $? == 0 ]]; then
 else
   printf "${Red}bruiser C++1z smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
 
-printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ./test/precommit.rep
-"make" clean
+printf "${Lblue}running cpp smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}./mutator-lvl0 ./test/m0-cpp-smoke/m0-cpp-smoke.cpp\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -./test/m0-cpp-smoke/m0-cpp-smoke.cpp
+
+if [[ $? == 0 ]]; then
+  printf "${Green}mutator-lvl0 C++1z cpp std headers smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}mutator-lvl0 C++1z cpp std haders smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
 
 printf "${Lblue}running make clean...\n${NC}" | tee -a ./test/precommit.rep
 "make" clean
 ########################################################################################################################
+#c++14#
 printf "${Lblue}testing the build in C++14 mode...\n${NC}" | tee -a ./test/precommit.rep
 "make" CXX=clang++ BUILD_MODE=COV_NO_CLANG_14 -j2
 echo ""
@@ -251,6 +285,23 @@ if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++14 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++14 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
+
+printf "${Lblue}running cpp smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}./mutator-lvl0 ./test/m0-cpp-smoke/m0-cpp-smoke.cpp\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -./test/m0-cpp-smoke/m0-cpp-smoke.cpp
+
+if [[ $? == 0 ]]; then
+  printf "${Green}mutator-lvl0 C++14 cpp std headers smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}mutator-lvl0 C++14 cpp std haders smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
 
 printf "${Lblue}cleaning the objects and exexutables...\n${NC}" | tee -a ./test/precommit.rep
