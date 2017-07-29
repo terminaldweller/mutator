@@ -9,6 +9,7 @@ LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
 LIB_LUA_JIT=./LuaJIT/src/libluajit.a
 HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
+SRCS=bruiser.cpp, CompletionHints.cpp, ORCmutation.cpp, mutagen.cpp
 #for some reason without ld the build fails on ubuntu trusty on travis
 EXTRA_LD_FLAGS+=-ldl
 ######################################RULES####################################
@@ -18,7 +19,15 @@ EXTRA_LD_FLAGS+=-ldl
 
 all: $(BRUISER)
 
-.cpp.o:
+depend: .bruiser.d
+
+.bruiser.d: $(SRCS)
+	rm -f ./.bruisr.d
+	$(CXX) $(CXX_FLAGS) -MMD $^ -MF ./.bruiser.d;
+
+-include ./.bruiser.d
+
+.cpp.o: depend
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 linenoise.o:
