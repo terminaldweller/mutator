@@ -1458,9 +1458,37 @@ class LuaWrapper
       return 1;
     }
 
-    int BrluiserLuaYolo(lua_State* __ls)
+    int BruiserLuaYolo(lua_State* __ls)
     {
       return 0;
+    }
+
+    int BruiserLuaPWD(lua_State* __ls)
+    {
+      pid_t pid = fork();
+
+      if (pid < 0)
+      {
+        PRINT_WITH_COLOR_LB(RED, "could not fork...");
+        lua_pushnumber(__ls, EXIT_FAILURE);
+        return 1;
+      }
+
+      if (pid == 0)
+      {
+        int retval = execl("/usr/bin/pwd", "pwd", NULL);
+        std::cout << BLUE << "child returned " << retval << NORMAL << "\n";
+      }
+
+      if (pid > 0)
+      {
+        int status;
+        pid_t returned;
+        returned =  waitpid(pid, &status, 0);
+        lua_pushnumber(__ls, returned);
+      }
+
+      return 1;
     }
 
 #define LIST_GENERATOR(__x1) \
@@ -1590,7 +1618,8 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "getpaths", &LuaDispatch<&LuaWrapper::BruiserLuaGetPath>);
     lua_register(LE.GetLuaState(), "getsourcefiles", &LuaDispatch<&LuaWrapper::BruiserLuaGetSourceFiles>);
     lua_register(LE.GetLuaState(), "changedirectory", &LuaDispatch<&LuaWrapper::BruiserLuaChangeDirectory>);
-    lua_register(LE.GetLuaState(), "yolo", &LuaDispatch<&LuaWrapper::BrluiserLuaYolo>);
+    lua_register(LE.GetLuaState(), "yolo", &LuaDispatch<&LuaWrapper::BruiserLuaYolo>);
+    lua_register(LE.GetLuaState(), "pwd", &LuaDispatch<&LuaWrapper::BruiserLuaPWD>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
