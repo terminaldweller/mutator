@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <algorithm>
 #include <locale>
 /*Clang Headers*/
@@ -61,10 +62,11 @@ using namespace clang::tooling;
 /**********************************************************************************************************************/
 static llvm::cl::OptionCategory MatcherSampleCategory("TBD");
 
-cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("safercpp will run through System Headers"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
-cl::opt<bool> MainFileOnly("MainOnly", cl::desc("safercpp will only report the results that reside in the main file"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
-cl::opt<bool> SafeSubset("SafeSubset", cl::desc("safercpp will check for elements outside of the (memory) safe subset of the language"), cl::init(true), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
-cl::opt<bool> ConvertToSCPP("ConvertToSCPP", cl::desc("safercpp will translate the source to a (memory) safe subset of the language"), cl::init(true), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("process system headers also"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> MainFileOnly("MainOnly", cl::desc("process the main file only"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> ConvertToSCPP("ConvertToSCPP", cl::desc("translate the source to a (memory) safe subset of the language"), cl::init(true), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> CTUAnalysis("CTUAnalysis", cl::desc("cross translation unit analysis"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> EnableNamespaceImport("EnableNamespaceImport", cl::desc("enable importing of namespaces from other translation units"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 
 SourceRange nice_source_range(const SourceRange& sr, Rewriter &Rewrite) {
@@ -2943,7 +2945,7 @@ public:
 
 	virtual void run(const MatchFinder::MatchResult &MR)
 	{
-		if (/*SafeSubset && */(MR.Nodes.getNodeAs<clang::CastExpr>("mcsssarraytopointerdecay") != nullptr))
+		if ((MR.Nodes.getNodeAs<clang::CastExpr>("mcsssarraytopointerdecay") != nullptr))
 		{
 			const CastExpr* CE = MR.Nodes.getNodeAs<clang::CastExpr>("mcsssarraytopointerdecay");
 
@@ -2993,7 +2995,7 @@ public:
 
 	virtual void run(const MatchFinder::MatchResult &MR)
 	{
-		if (SafeSubset && (MR.Nodes.getNodeAs<clang::VarDecl>("mcsssnativepointer") != nullptr))
+		if ((MR.Nodes.getNodeAs<clang::VarDecl>("mcsssnativepointer") != nullptr))
 		{
 			const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcsssnativepointer");
 
@@ -3019,7 +3021,7 @@ public:
 			else
 			{
 				{
-					if (false && SafeSubset) {
+					if (false) {
 						std::cout << "sss1.1:" << "native pointer:";
 						std::cout << SL.printToString(*MR.SourceManager) << ":" << std::endl;
 
@@ -6187,7 +6189,7 @@ void import_decl(ASTImporter& Importer, clang::Decl& decl_ref, clang::Rewriter& 
 	}
 }
 
-void import_other_TUs(CMultiTUState* multi_tu_state_ptr, CompilerInstance &CI) {
+void import_other_TUs(CMultiTUState* multi_tu_state_ptr, CompilerInstance &CI, int current_tu_num = 0) {
   if (multi_tu_state_ptr) {
     errs() << "EXECUTE ACTION\n";
     //CompilerInstance &CI = getCompilerInstance();
@@ -6213,6 +6215,9 @@ void import_other_TUs(CMultiTUState* multi_tu_state_ptr, CompilerInstance &CI) {
 
   	errs() << multi_tu_state_ptr->ast_units.size() << "\n";
     for (unsigned I = 0, N = multi_tu_state_ptr->ast_units.size(); I != N; ++I) {
+    	if (current_tu_num - 1 == int(I)) {
+    		continue;
+    	}
     	errs() << "LOOP\n";
     	//IntrusiveRefCntPtr<DiagnosticsEngine> DiagEngine(new DiagnosticsEngine(DiagIDs, &CI.getDiagnosticOpts(),
     	//		new ForwardingDiagnosticConsumer(*CI.getDiagnostics().getClient()),/*ShouldOwnClient=*/true));
@@ -6293,9 +6298,11 @@ void import_other_TUs(CMultiTUState* multi_tu_state_ptr, CompilerInstance &CI) {
     						int q = 7;
     					}
 
-    					for (auto *D : NSD->decls()) {
-    						D->dump();
-    						//import_decl(Importer, *D, localRewriter, CI);
+    					if (EnableNamespaceImport) {
+    						for (auto *D : NSD->decls()) {
+    							D->dump();
+    							import_decl(Importer, *D, localRewriter, CI);
+    						}
     					}
     					continue;
     				} else {
@@ -6319,13 +6326,20 @@ void import_other_TUs(CMultiTUState* multi_tu_state_ptr, CompilerInstance &CI) {
 class Misc1 : public MatchFinder::MatchCallback
 {
 public:
-	Misc1 (Rewriter &Rewrite, CState1& state1, CompilerInstance &CI_ref) :
-		Rewrite(Rewrite), m_state1(state1), CI(CI_ref) {}
+	Misc1 (Rewriter &Rewrite, CState1& state1, CompilerInstance &CI_ref, int current_tu_num = 0) :
+		Rewrite(Rewrite), m_state1(state1), CI(CI_ref), m_current_tu_num(current_tu_num) {
+		s_current_tu_num += 1;
+		if (0 == m_current_tu_num) {
+			m_current_tu_num = s_current_tu_num;
+		}
+	}
 
 	virtual void run(const MatchFinder::MatchResult &MR)
 	{
 		if (!m_other_TUs_imported) {
-			import_other_TUs(&s_multi_tu_state, CI);
+			if (CTUAnalysis) {
+				import_other_TUs(&s_multi_tu_state, CI, m_current_tu_num);
+			}
 			m_other_TUs_imported = true;
 		}
 	}
@@ -6336,11 +6350,14 @@ private:
 	Rewriter &Rewrite;
 	CState1& m_state1;
   CompilerInstance &CI;
+  int m_current_tu_num = 0;
 
   bool m_other_TUs_imported = false;
   static CMultiTUState s_multi_tu_state;
+  static int s_current_tu_num;
 };
 CMultiTUState Misc1::s_multi_tu_state;
+int Misc1::s_current_tu_num = 0;
 
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
@@ -6705,6 +6722,7 @@ public:
   }
 
   bool BeginSourceFileAction(CompilerInstance &ci) override {
+  	s_source_file_action_num += 1;
     std::unique_ptr<MyPPCallbacks> my_pp_callbacks_ptr(new MyPPCallbacks(TheRewriter, ci));
 
     clang::Preprocessor &pp = ci.getPreprocessor();
@@ -6723,9 +6741,7 @@ public:
 
       assert(my_pp_callbacks_ptr);
       if (my_pp_callbacks_ptr) {
-      	// do whatever you want with the callback now
-
-      	for (auto& item_ref : my_pp_callbacks_ptr->m_first_include_info_map) {
+         	for (auto& item_ref : my_pp_callbacks_ptr->m_first_include_info_map) {
       		auto& fii_ref = *(item_ref.second);
         	assert(fii_ref.m_beginning_of_file_loc_is_valid);
 
@@ -6759,12 +6775,84 @@ public:
   }
 
   bool overwriteChangedFiles() {
-	  return TheRewriter.overwriteChangedFiles();
+		std::set<std::pair<std::string, std::string> > filename_info_set;
+  	{
+  		for (auto  I = TheRewriter.buffer_begin(), E = TheRewriter.buffer_end(); I != E; ++I) {
+  			const FileEntry *Entry = TheRewriter.getSourceMgr().getFileEntryForID(I->first);
+
+  			std::string pathname = Entry->tryGetRealPathName();
+  			auto found_pos = pathname.find_last_of("/\\");
+  			std::string path;
+  			std::string filename;
+  			if (std::string::npos != found_pos) {
+  				path = pathname.substr(0, found_pos);
+  				if (pathname.length() > found_pos) {
+  					filename = pathname.substr(found_pos + 1);
+  				}
+  			} else {
+  				filename = pathname;
+  			}
+  			std::pair<std::string, std::string> item(path, filename);
+  			filename_info_set.insert(item);
+
+  			int q = 5;
+  		}
+  		std::set<std::pair<std::string, std::string> > unbackupable_filename_info_set;
+  		for (const auto& filename_info_ref : filename_info_set) {
+  			std::string backup_pathname = filename_info_ref.first + "/" + filename_info_ref.second + ".bak.tmp";
+  			std::string tmp_pathname = filename_info_ref.first + "/" + filename_info_ref.second + ".tmp";
+  			std::string src_pathname = filename_info_ref.first + "/" + filename_info_ref.second;
+
+  			std::ifstream src;
+  			src.open(src_pathname, std::ios::binary);
+  			std::ofstream dst;
+  			dst.open(tmp_pathname, std::ios::binary);
+  			if (((src.rdstate() & std::ifstream::failbit ) != 0)
+  					|| ((dst.rdstate() & std::ofstream::failbit ) != 0)) {
+  				unbackupable_filename_info_set.insert(filename_info_ref);
+  			} else {
+  				dst << src.rdbuf();
+  				src.close();
+  				dst.close();
+  				std::remove(backup_pathname.c_str());
+  				std::rename(src_pathname.c_str(), backup_pathname.c_str());
+  				std::rename(tmp_pathname.c_str(), src_pathname.c_str());
+  			}
+  		}
+  		for (const auto& filename_info_ref : unbackupable_filename_info_set) {
+  			filename_info_set.erase(filename_info_ref);
+  		}
+  	}
+
+    bool retval = TheRewriter.overwriteChangedFiles();
+
+  	{
+  		for (const auto& filename_info_ref : filename_info_set) {
+  			{
+  				std::string converted_version_filename = filename_info_ref.second + ".converted_" + std::to_string(s_source_file_action_num);
+  				std::string converted_version_pathname = filename_info_ref.first + "/" + converted_version_filename;
+  				std::string src_pathname = filename_info_ref.first + "/" + filename_info_ref.second;
+  				std::remove(converted_version_pathname.c_str());
+  				std::rename(src_pathname.c_str(), converted_version_pathname.c_str());
+  			}
+  			{
+    			std::string backup_filename = filename_info_ref.second + ".bak.tmp";
+    			std::string backup_pathname = filename_info_ref.first + "/" + backup_filename;
+  				std::string dst_pathname = filename_info_ref.first + "/" + filename_info_ref.second;
+  				//std::remove(dst_pathname.c_str());
+  				std::rename(backup_pathname.c_str(), dst_pathname.c_str());
+  			}
+  		}
+  	}
+
+  	return retval;
   }
 
 private:
   Rewriter TheRewriter;
+  static int s_source_file_action_num;
 };
+int MyFrontendAction::s_source_file_action_num = 0;
 
 /**********************************************************************************************************************/
 /*Main*/
