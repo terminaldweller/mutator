@@ -89,7 +89,9 @@ SourceRange nice_source_range(const SourceRange& sr, Rewriter &Rewrite) {
 bool filtered_out_by_location(const SourceManager &SM, SourceLocation SL) {
 	bool retval = false;
 
-	if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
+	if (!(SL.isValid())) {
+		retval = true;
+	} else if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
 		retval = true;
 	} else if (!Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
 		retval = true;
@@ -1875,7 +1877,6 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 			}
 		}
 	} else {
-
 		/* There may be multiple declarations in the same declaration statement. Replacing
 		 * one of them requires replacing all of them together. */
 		auto ddecls = IndividualDeclaratorDecls(DD, Rewrite);
@@ -3178,15 +3179,20 @@ public:
 			SourceManager &SM = ASTC->getSourceManager();
 
 			auto source_location_str = SL.printToString(*MR.SourceManager);
+
+			if (filtered_out_by_location(MR, SL)) {
+				return void();
+			}
+
+			if (std::string::npos != source_location_str.find("163")) {
+				int q = 5;
+			}
+
 			std::string source_text;
 			if (SR.isValid()) {
 				source_text = Rewrite.getRewrittenText(SR);
 			} else {
 				return;
-			}
-
-			if (filtered_out_by_location(MR, SL)) {
-				return void();
 			}
 
 			std::string variable_name = DD->getNameAsString();
@@ -3210,8 +3216,6 @@ public:
 					m_state1.m_array2_contingent_replacement_map.do_and_dispose_matching_replacements(m_state1, CDDeclIndirection(*DD, i));
 				}
 			}
-
-			update_declaration(*DD, Rewrite, m_state1);
 
 			if (nullptr != RHS) {
 				auto rhs_res2 = infer_array_type_info_from_stmt(*RHS, "", (*this).m_state1);
@@ -3295,9 +3299,10 @@ public:
 					lhs_indirection_level_adjustment += 1;
 
 					const clang::ArraySubscriptExpr* array_subscript_expr_cptr = nullptr;
-					if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(rhs_res3.without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
-						assert(llvm::isa<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr));
-						array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr);
+					auto without_leading_addressof_operator_expr_cptr = rhs_res3.without_leading_addressof_operator_expr_cptr->IgnoreParenCasts();
+					if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
+						assert(llvm::isa<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr));
+						array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr);
 					}
 					if (ConvertToSCPP && array_subscript_expr_cptr) {
 						std::shared_ptr<CArray2ReplacementAction> cr_shptr = std::make_shared<CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction>(Rewrite, MR,
@@ -3354,8 +3359,9 @@ public:
 						}
 					}
 				}
-
 			}
+
+			update_declaration(*DD, Rewrite, m_state1);
 		}
 	}
 
@@ -5022,9 +5028,10 @@ public:
 				lhs_indirection_level_adjustment += 1;
 
 				const clang::ArraySubscriptExpr* array_subscript_expr_cptr = nullptr;
-				if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(rhs_res3.without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
-					assert(llvm::isa<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr));
-					array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr);
+				auto without_leading_addressof_operator_expr_cptr = rhs_res3.without_leading_addressof_operator_expr_cptr->IgnoreParenCasts();
+				if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
+					assert(llvm::isa<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr));
+					array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr);
 				}
 				if (ConvertToSCPP && array_subscript_expr_cptr) {
 					std::shared_ptr<CArray2ReplacementAction> cr_shptr = std::make_shared<CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction>(Rewrite, MR,
@@ -5330,9 +5337,10 @@ public:
 								lhs_indirection_level_adjustment += 1;
 
 								const clang::ArraySubscriptExpr* array_subscript_expr_cptr = nullptr;
-								if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(rhs_res3.without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
-									assert(llvm::isa<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr));
-									array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr);
+								auto without_leading_addressof_operator_expr_cptr = rhs_res3.without_leading_addressof_operator_expr_cptr->IgnoreParenCasts();
+								if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
+									assert(llvm::isa<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr));
+									array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr);
 								}
 								if (ConvertToSCPP && array_subscript_expr_cptr) {
 									std::shared_ptr<CArray2ReplacementAction> cr_shptr = std::make_shared<CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction>(Rewrite, MR,
@@ -5651,9 +5659,10 @@ public:
 
 					if (rhs_res3.without_leading_addressof_operator_expr_cptr) {
 						const clang::ArraySubscriptExpr* array_subscript_expr_cptr = nullptr;
-						if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(rhs_res3.without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
-							assert(llvm::isa<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr));
-							array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(rhs_res3.without_leading_addressof_operator_expr_cptr);
+						auto without_leading_addressof_operator_expr_cptr = rhs_res3.without_leading_addressof_operator_expr_cptr->IgnoreParenCasts();
+						if (clang::Stmt::StmtClass::ArraySubscriptExprClass == (*(without_leading_addressof_operator_expr_cptr)).getStmtClass()) {
+							assert(llvm::isa<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr));
+							array_subscript_expr_cptr = llvm::cast<const clang::ArraySubscriptExpr>(without_leading_addressof_operator_expr_cptr);
 						}
 						if (array_subscript_expr_cptr) {
 							std::shared_ptr<CArray2ReplacementAction> cr_shptr = std::make_shared<CAssignmentTargetConstrainsAddressofArraySubscriptExprArray2ReplacementAction>(Rewrite, MR,
