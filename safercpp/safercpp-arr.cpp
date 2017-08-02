@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <algorithm>
 #include <locale>
@@ -279,9 +280,11 @@ static std::vector<const DeclaratorDecl*> IndividualDeclaratorDecls(const Declar
 			auto l_DD = dyn_cast<const DeclaratorDecl>(decl);
 			if (l_DD) {
 				auto DDSR = nice_source_range(l_DD->getSourceRange(), Rewrite);
-				SourceLocation l_SL = DDSR.getBegin();
-				if (l_SL == SL) {
-					retval.push_back(l_DD);
+				if (DDSR.isValid()) {
+					SourceLocation l_SL = DDSR.getBegin();
+					if (l_SL == SL) {
+						retval.push_back(l_DD);
+					}
 				}
 			}
 		}
@@ -818,7 +821,7 @@ public:
 	std::string m_function_return_type_original_source_text_str;
 };
 
-class CDDeclConversionStateMap : public std::map<const clang::DeclaratorDecl*, CDDeclConversionState> {
+class CDDeclConversionStateMap : public std::unordered_map<const clang::DeclaratorDecl*, CDDeclConversionState> {
 public:
 	std::pair<iterator, bool> insert(const clang::DeclaratorDecl& ddecl) {
 		std::string variable_name = ddecl.getNameAsString();
@@ -826,7 +829,55 @@ public:
 			int q = 5;
 		}
 		value_type item(&ddecl, CDDeclConversionState(ddecl));
-		return std::map<const clang::DeclaratorDecl*, CDDeclConversionState>::insert(item);
+		return std::unordered_map<const clang::DeclaratorDecl*, CDDeclConversionState>::insert(item);
+	}
+};
+
+class CRecordDeclConversionState {
+public:
+	CRecordDeclConversionState(const clang::RecordDecl& recdecl, Rewriter &Rewrite) : m_recdecl_ptr(&recdecl), Rewrite(Rewrite) {
+		m_original_source_text_str = Rewrite.getRewrittenText(nice_source_range());
+		m_current_text_str = m_original_source_text_str;
+	}
+
+	clang::SourceRange source_range() const {
+		return m_recdecl_ptr->getSourceRange();
+	}
+	clang::SourceRange nice_source_range() const {
+		return ::nice_source_range(source_range(), Rewrite);
+	}
+
+	const clang::RecordDecl *recdecl_ptr() const {
+		return m_recdecl_ptr;
+	}
+
+	const clang::RecordDecl *m_recdecl_ptr;
+	std::string m_original_source_text_str;
+	std::string m_current_text_str;
+	Rewriter &Rewrite;
+};
+
+class CRecordDeclConversionStateMap : public std::unordered_map<const clang::RecordDecl*, CRecordDeclConversionState> {
+public:
+	std::pair<iterator, bool> insert(const clang::RecordDecl& recdecl, Rewriter &Rewrite) {
+		value_type item(&recdecl, CRecordDeclConversionState(recdecl, Rewrite));
+		return std::unordered_map<const clang::RecordDecl*, CRecordDeclConversionState>::insert(item);
+	}
+};
+
+class CLocationToRecordDeclMap : public std::map<clang::SourceLocation, const clang::RecordDecl*> {
+public:
+	std::pair<iterator, bool> insert(const clang::SourceLocation& SL, const clang::RecordDecl& recdecl) {
+		value_type item(SL, &(recdecl));
+		return std::map<clang::SourceLocation, const clang::RecordDecl*>::insert(item);
+	}
+	std::pair<iterator, bool> insert(const clang::RecordDecl& recdecl, Rewriter &Rewrite) {
+		auto SR = nice_source_range(recdecl.getSourceRange(), Rewrite);
+		if (!(SR.isValid())) {
+			return std::pair<iterator, bool>((*this).end(), false);
+		}
+		auto SL = nice_source_range(recdecl.getSourceRange(), Rewrite).getBegin();
+		return insert(SL, recdecl);
 	}
 };
 
@@ -911,7 +962,6 @@ public:
 	}
 
 	clang::SourceRange source_range() const {
-		clang::SourceRange retval;
 		return m_expr_cptr->getSourceRange();
 	}
 	clang::SourceRange nice_source_range() const {
@@ -1053,9 +1103,9 @@ private:
 	const clang::ArraySubscriptExpr* m_arraysubscriptexpr_cptr = nullptr;
 };
 
-class CExprConversionStateMap : public std::map<const clang::Expr*, std::shared_ptr<CExprConversionState>> {
+class CExprConversionStateMap : public std::unordered_map<const clang::Expr*, std::shared_ptr<CExprConversionState>> {
 public:
-	typedef std::map<const clang::Expr*, std::shared_ptr<CExprConversionState>> base_class;
+	typedef std::unordered_map<const clang::Expr*, std::shared_ptr<CExprConversionState>> base_class;
 	iterator insert( const std::shared_ptr<CExprConversionState>& cr_shptr ) {
 		iterator retval(end());
 		if (!cr_shptr) { assert(false); } else {
@@ -1388,6 +1438,14 @@ public:
 	 * type it might be converted to.  */
 	CDDeclConversionStateMap m_ddecl_conversion_state_map;
 
+	/* This container maps "clang::SourceLocation"s to "clang::RecordDecl"s at that
+	 * location. */
+	CLocationToRecordDeclMap m_recdecl_map;
+
+	/* This container holds information about all the "clang::RecordDecl"s (i.e.
+	 * declarations and definitions of structs, classes, etc.). */
+	CRecordDeclConversionStateMap m_recdecl_conversion_state_map;
+
 	/* This container holds information about selected expressions' original text and
 	 * any modifications we might have made.  */
 	CExprConversionStateMap m_expr_conversion_state_map;
@@ -1555,6 +1613,8 @@ class CDeclarationReplacementCodeItem {
 public:
 	std::string m_replacement_code;
 	std::string m_action_species;
+	bool m_changed_from_original_type = false;
+	bool m_individual_from_compound_declaration = false;
 };
 
 static CDeclarationReplacementCodeItem generate_declaration_replacement_code(const DeclaratorDecl* DD,
@@ -1745,7 +1805,7 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 	}
 
 	bool direct_type_is_char_type = (("char" == direct_qtype_str) || ("const char" == direct_qtype_str));
-	bool changed_from_original = false;
+	bool changed_from_original_type = false;
 	std::string replacement_code;
 	std::string prefix_str;
 	std::string suffix_str;
@@ -1775,27 +1835,28 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 		}
 	}
 
+	bool individual_from_compound_declaration = false;
 	//if (("" != prefix_str) || ("" != suffix_str)/* || ("" != post_name_suffix_str)*/)
 	if (res4.m_changed_from_original) {
-		changed_from_original = true;
+		changed_from_original_type = true;
 	} else if (("" != ddcs_ref.m_initializer_info_str) || (discard_initializer_option_flag)) {
-		changed_from_original = true;
-	} else if (2 <= IndividualDeclaratorDecls(DD, Rewrite).size()) {
+		changed_from_original_type = true;
+	} else if (true && (2 <= IndividualDeclaratorDecls(DD, Rewrite).size())) {
 		/* There is more than one declaration in the declaration statement. We split
 		 * them so that each has their own separate declaration statement. This counts
 		 * as a change from the original source code. */
-		changed_from_original = true;
+		individual_from_compound_declaration = true;
 	}
 
 	if (FND) {
 		assert(type_is_function_type);
-		if (changed_from_original) {
+		if (changed_from_original_type || individual_from_compound_declaration) {
 			replacement_code += prefix_str + direct_qtype_str + suffix_str;
 		} else {
 			replacement_code = ddcs_ref.m_function_return_type_original_source_text_str;
 		}
 	} else {
-		if (changed_from_original) {
+		if (changed_from_original_type || individual_from_compound_declaration) {
 			if (is_extern) {
 				if ("" == ddcs_ref.m_original_initialization_expr_str) {
 					replacement_code += "extern ";
@@ -1821,6 +1882,8 @@ static CDeclarationReplacementCodeItem generate_declaration_replacement_code(con
 	}
 
 	retval.m_replacement_code = replacement_code;
+	retval.m_changed_from_original_type = changed_from_original_type;
+	retval.m_individual_from_compound_declaration = individual_from_compound_declaration;
 	return retval;
 }
 
@@ -1848,6 +1911,8 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 		return;
 	}
 
+	bool changed_from_original_type = false;
+
 	assert(ddecl.isFunctionOrFunctionTemplate() == QT->isFunctionType());
 	if ((TP->isFunctionType()) || (false)) {
 		const clang::FunctionDecl* FND = dyn_cast<const clang::FunctionDecl>(DD);
@@ -1861,6 +1926,7 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 				return;
 			}
 			auto res = generate_declaration_replacement_code(&ddecl, Rewrite, state1.m_ddecl_conversion_state_map, options_str);
+			changed_from_original_type |= res.m_changed_from_original_type;
 
 			static const std::string const_space_str = "const ";
 			if (string_begins_with(res.m_replacement_code, const_space_str)) {
@@ -1870,13 +1936,37 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 				res.m_replacement_code = res.m_replacement_code.substr(const_space_str.length());
 			}
 
-			if (ConvertToSCPP && return_type_source_range.isValid() && (1 <= res.m_replacement_code.size())) {
+			if (ConvertToSCPP && return_type_source_range.isValid() && (1 <= res.m_replacement_code.size())
+					&& changed_from_original_type) {
 				auto res2 = Rewrite.ReplaceText(return_type_source_range, res.m_replacement_code);
 			} else {
 				int q = 7;
 			}
 		}
 	} else {
+		std::string replacement_code;
+
+		auto rd_map_iter = state1.m_recdecl_map.find(SR.getBegin());
+		if (state1.m_recdecl_map.end() != rd_map_iter) {
+			auto RD = (*rd_map_iter).second;
+
+			auto res1 = state1.m_recdecl_conversion_state_map.insert(*RD, Rewrite);
+			auto rdcs_map_iter = res1.first;
+			auto& rdcs_ref = (*rdcs_map_iter).second;
+			//bool update_declaration_flag = res1.second;
+
+			std::string rd_name = rdcs_ref.recdecl_ptr()->getNameAsString();
+			if ("" != rd_name) {
+				if (rdcs_ref.recdecl_ptr()->isThisDeclarationADefinition()) {
+					replacement_code += rdcs_ref.m_current_text_str + "; \n";
+				}
+			} else {
+				/* We are unable to handle this case at the moment. */
+				return;
+			}
+			int q = 5;
+		}
+
 		/* There may be multiple declarations in the same declaration statement. Replacing
 		 * one of them requires replacing all of them together. */
 		auto ddecls = IndividualDeclaratorDecls(DD, Rewrite);
@@ -1885,9 +1975,10 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 				int q = 5;
 			}
 			std::vector<std::string> action_species_list;
-			std::string replacement_code;
 			for (const auto& ddecl_cref : ddecls) {
 				auto res = generate_declaration_replacement_code(ddecl_cref, Rewrite, state1.m_ddecl_conversion_state_map, options_str);
+				changed_from_original_type |= res.m_changed_from_original_type;
+
 				action_species_list.push_back(res.m_action_species);
 				replacement_code += res.m_replacement_code;
 				replacement_code += "; \n";
@@ -1911,7 +2002,8 @@ static void update_declaration(const DeclaratorDecl& ddecl, Rewriter &Rewrite, C
 				return;
 			}
 
-			if (ConvertToSCPP && last_decl_source_range.isValid() && (3 <= replacement_code.size())) {
+			if (ConvertToSCPP && last_decl_source_range.isValid() && (3 <= replacement_code.size())
+					&& changed_from_original_type) {
 				auto res2 = Rewrite.ReplaceText(last_decl_source_range, replacement_code);
 			} else {
 				int q = 7;
@@ -3040,6 +3132,96 @@ public:
 
 private:
 	Rewriter &Rewrite;
+};
+
+/**********************************************************************************************************************/
+
+class MCSSSRecordDecl : public MatchFinder::MatchCallback
+{
+public:
+	MCSSSRecordDecl (Rewriter &Rewrite, CState1& state1) :
+		Rewrite(Rewrite), m_state1(state1) {}
+
+	virtual void run(const MatchFinder::MatchResult &MR)
+	{
+		const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsssrecorddecl");
+		//const DeclaratorDecl* DD = MR.Nodes.getNodeAs<clang::DeclaratorDecl>("mcsssrecorddecl");
+		//const Expr* RHS = MR.Nodes.getNodeAs<clang::Expr>("mcsssrecorddecl2");
+		//const clang::CStyleCastExpr* CCE = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcsssrecorddecl3");
+		//const DeclStmt* DS = MR.Nodes.getNodeAs<clang::DeclStmt>("mcsssrecorddecl4");
+
+		if ((RD != nullptr))
+		{
+			auto SR = nice_source_range(RD->getSourceRange(), Rewrite);
+			auto decl_source_range = SR;
+			SourceLocation SL = SR.getBegin();
+			SourceLocation SLE = SR.getEnd();
+
+			ASTContext *const ASTC = MR.Context;
+			FullSourceLoc FSL = ASTC->getFullLoc(SL);
+
+			SourceManager &SM = ASTC->getSourceManager();
+
+			auto source_location_str = SL.printToString(*MR.SourceManager);
+
+			if (filtered_out_by_location(MR, SL)) {
+				return void();
+			}
+
+			if (std::string::npos != source_location_str.find("163")) {
+				int q = 5;
+			}
+
+			std::string source_text;
+			if (SR.isValid()) {
+				source_text = Rewrite.getRewrittenText(SR);
+			} else {
+				return;
+			}
+
+			std::string name = RD->getNameAsString();
+
+			auto qualified_name = RD->getQualifiedNameAsString();
+			static const std::string mse_namespace_str1 = "mse::";
+			static const std::string mse_namespace_str2 = "::mse::";
+			if ((0 == qualified_name.compare(0, mse_namespace_str1.size(), mse_namespace_str1))
+					|| (0 == qualified_name.compare(0, mse_namespace_str2.size(), mse_namespace_str2))) {
+				int q = 5;
+				//return;
+			}
+
+			if (RD->isThisDeclarationADefinition()) {
+				if (false) {
+					auto res1 = (*this).m_state1.m_recdecl_conversion_state_map.insert(*RD, Rewrite);
+					auto rdcs_map_iter = res1.first;
+					if ((*this).m_state1.m_recdecl_conversion_state_map.end() == rdcs_map_iter) {
+						return;
+					}
+					auto& rdcs_ref = (*rdcs_map_iter).second;
+					//bool update_declaration_flag = res1.second;
+				}
+				{
+					auto res1 = (*this).m_state1.m_recdecl_map.insert(*RD, Rewrite);
+					auto rdcs_map_iter = res1.first;
+					if ((*this).m_state1.m_recdecl_map.end() == rdcs_map_iter) {
+						return;
+					}
+					auto& rdcs_ref = (*rdcs_map_iter).second;
+					//bool update_declaration_flag = res1.second;
+				}
+
+			}
+
+		}
+	}
+
+	virtual void onEndOfTranslationUnit()
+	{
+	}
+
+private:
+	Rewriter &Rewrite;
+	CState1& m_state1;
 };
 
 /**********************************************************************************************************************/
@@ -6373,7 +6555,7 @@ class MyASTConsumer : public ASTConsumer {
 
 public:
   MyASTConsumer(Rewriter &R, CompilerInstance &CI) : HandlerForSSSNativePointer(R), HandlerForSSSArrayToPointerDecay(R, m_state1),
-	HandlerForSSSVarDecl2(R, m_state1), HandlerForSSSPointerArithmetic2(R, m_state1), HandlerForSSSMalloc2(R, m_state1),
+	HandlerForSSSRecordDecl(R, m_state1), HandlerForSSSVarDecl2(R, m_state1), HandlerForSSSPointerArithmetic2(R, m_state1), HandlerForSSSMalloc2(R, m_state1),
 	HandlerForSSSMallocInitializer2(R, m_state1), HandlerForSSSNullInitializer(R, m_state1), HandlerForSSSFree2(R, m_state1),
 	HandlerForSSSSetToNull2(R, m_state1), HandlerForSSSCompareWithNull2(R, m_state1), HandlerForSSSMemset(R, m_state1), HandlerForSSSMemcpy(R, m_state1),
 	HandlerForSSSConditionalInitializer(R, m_state1), HandlerForSSSAssignment(R, m_state1), HandlerForSSSParameterPassing(R, m_state1),
@@ -6384,6 +6566,8 @@ public:
 	  //Matcher.addMatcher(castExpr(allOf(hasCastKind(CK_ArrayToPointerDecay), unless(hasParent(arraySubscriptExpr())))).bind("mcsssarraytopointerdecay"), &HandlerForSSSArrayToPointerDecay);
 
 	  Matcher.addMatcher(DeclarationMatcher(anything()), &HandlerMisc1);
+
+	  Matcher.addMatcher(clang::ast_matchers::recordDecl().bind("mcsssrecorddecl"), &HandlerForSSSRecordDecl);
 
 	  //Matcher.addMatcher(clang::ast_matchers::declaratorDecl().bind("mcsssvardecl"), &HandlerForSSSVarDecl2);
 	  Matcher.addMatcher(varDecl(anyOf(
@@ -6585,6 +6769,7 @@ private:
 
   MCSSSNativePointer HandlerForSSSNativePointer;
   MCSSSArrayToPointerDecay HandlerForSSSArrayToPointerDecay;
+  MCSSSRecordDecl HandlerForSSSRecordDecl;
   MCSSSVarDecl2 HandlerForSSSVarDecl2;
   MCSSSPointerArithmetic2 HandlerForSSSPointerArithmetic2;
   MCSSSMalloc2 HandlerForSSSMalloc2;
