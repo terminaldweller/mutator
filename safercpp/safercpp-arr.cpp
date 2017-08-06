@@ -35,6 +35,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <set>
 #include <algorithm>
 #include <locale>
+
+#include <cstdio>
+#include <memory>
+#include <array>
+
 /*Clang Headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -68,7 +73,24 @@ cl::opt<bool> MainFileOnly("MainOnly", cl::desc("process the main file only"), c
 cl::opt<bool> ConvertToSCPP("ConvertToSCPP", cl::desc("translate the source to a (memory) safe subset of the language"), cl::init(true), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 cl::opt<bool> CTUAnalysis("CTUAnalysis", cl::desc("cross translation unit analysis"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 cl::opt<bool> EnableNamespaceImport("EnableNamespaceImport", cl::desc("enable importing of namespaces from other translation units"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> SuppressPrompts("SuppressPrompts", cl::desc("suppress prompts before replacing source files"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<bool> DoNotReplaceOriginalSource("DoNotReplaceOriginalSource", cl::desc("prevent replacement/modification of the original source files"), cl::init(false), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
+cl::opt<std::string> MergeCommand("MergeCommand", cl::desc("specify an alternate merge tool to be used"), cl::init(""), cl::cat(MatcherSampleCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
+
+/* Execute a shell command. */
+std::pair<std::string, bool> exec(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    //if (!pipe) throw std::runtime_error("popen() failed!");
+    if (!pipe) { return std::pair<std::string, bool>(result, true); }
+    while (!feof(pipe.get())) {
+        if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+            result += buffer.data();
+    }
+    return std::pair<std::string, bool>(result, false);
+}
 
 SourceRange nice_source_range(const SourceRange& sr, Rewriter &Rewrite) {
 	SourceLocation SL = sr.getBegin();
@@ -6902,6 +6924,14 @@ public:
 	}
 };
 
+struct CFileConversionRecord {
+public:
+	std::string m_path;
+	std::string m_original_filename;
+	std::string m_target_filename;
+	std::vector<size_t> m_converted_version_tu_numbers;
+};
+
 class MyFrontendAction : public ASTFrontendActionCompatibilityWrapper1
 {
 public:
@@ -7023,7 +7053,33 @@ public:
   	{
   		for (const auto& filename_info_ref : filename_info_set) {
   			{
-  				std::string converted_version_filename = filename_info_ref.second + ".converted_" + std::to_string(s_source_file_action_num);
+  				std::string converted_version_filename = filename_info_ref.second;
+
+  				static const std::string dot_c_str = ".c";
+  				bool ends_with_dot_c = ((converted_version_filename.size() >= dot_c_str.size())
+  						&& (0 == converted_version_filename.compare(converted_version_filename.size() - dot_c_str.size(), dot_c_str.size(), dot_c_str)));
+  				if (ends_with_dot_c) {
+  					converted_version_filename = converted_version_filename.substr(0, converted_version_filename.size() - 2);
+  					converted_version_filename += ".cpp";
+  				}
+
+  				{
+  					auto found_it = s_file_conversion_record_map.find(filename_info_ref.second);
+  					if (s_file_conversion_record_map.end() == found_it) {
+    					CFileConversionRecord file_conversion_record;
+    	  			file_conversion_record.m_path = filename_info_ref.first;
+    	  			file_conversion_record.m_original_filename = filename_info_ref.second;
+    					file_conversion_record.m_target_filename = converted_version_filename;
+    					std::map<std::string, CFileConversionRecord>::value_type item(filename_info_ref.second, file_conversion_record);
+    					found_it = s_file_conversion_record_map.insert(item).first;
+    					assert(s_file_conversion_record_map.end() != found_it);
+  					}
+  					CFileConversionRecord& file_conversion_record_ref = (*found_it).second;
+  					file_conversion_record_ref.m_converted_version_tu_numbers.push_back(s_source_file_action_num);
+  				}
+
+  				converted_version_filename += ".converted_" + std::to_string(s_source_file_action_num);
+
   				std::string converted_version_pathname = filename_info_ref.first + "/" + converted_version_filename;
   				std::string src_pathname = filename_info_ref.first + "/" + filename_info_ref.second;
   				std::remove(converted_version_pathname.c_str());
@@ -7042,11 +7098,14 @@ public:
   	return retval;
   }
 
+  static std::map<std::string, CFileConversionRecord> s_file_conversion_record_map;
+
 private:
   Rewriter TheRewriter;
   static int s_source_file_action_num;
 };
 int MyFrontendAction::s_source_file_action_num = 0;
+std::map<std::string, CFileConversionRecord> MyFrontendAction::s_file_conversion_record_map;
 
 /**********************************************************************************************************************/
 /*Main*/
@@ -7060,7 +7119,64 @@ int main(int argc, const char **argv)
 
   Tool.buildASTs(Misc1::s_multi_tu_state_ref().ast_units);
 
-  return Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+  auto retval = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+
+  std::cout << "\nThe specified and dependent source files will be replaced/modified. Make sure you have appropriate backup copies before proceeding. \n";
+  std::cout << "Continue [y/n]? \n";
+  int ich = 0;
+  if (SuppressPrompts) {
+  	ich = int('Y');
+  } else {
+  	do {
+  		ich = std::getchar();
+  		//std::putchar(ich);
+  	} while ((int('y') != ich) && (int('n') != ich) && (int('Y') != ich) && (int('N') != ich));
+  }
+  if (((int('y') != ich) && (int('Y') != ich)) || (DoNotReplaceOriginalSource)) {
+  	std::cout << "\n\nThe original source files were not replaced/modified. \n";
+  } else {
+  	for (auto& item_ref : MyFrontendAction::s_file_conversion_record_map) {
+  		CFileConversionRecord& file_conversion_record_ref = item_ref.second;
+  		const std::string& original_filename_cref = item_ref.first;
+  		std::string original_pathname = file_conversion_record_ref.m_path + "/" + original_filename_cref;
+  		if (1 <= file_conversion_record_ref.m_converted_version_tu_numbers.size()) {
+  			std::vector<size_t> converted_version_tu_numbers = file_conversion_record_ref.m_converted_version_tu_numbers;
+  			std::reverse(converted_version_tu_numbers.begin(), converted_version_tu_numbers.end());
+  			auto first_tu_num = converted_version_tu_numbers.back();
+  			converted_version_tu_numbers.pop_back();
+  			std::string first_converted_version_filename = file_conversion_record_ref.m_target_filename
+  					+ ".converted_" + std::to_string(first_tu_num);
+  			std::string first_converted_version_pathname = file_conversion_record_ref.m_path + "/" + first_converted_version_filename;
+
+  			std::string merge_target_filename = file_conversion_record_ref.m_target_filename + ".converted";
+  			std::string merge_target_pathname = file_conversion_record_ref.m_path + "/" + merge_target_filename;
+  			std::rename(first_converted_version_pathname.c_str(), merge_target_pathname.c_str());
+
+  			for (auto tu_num : converted_version_tu_numbers) {
+  				std::string converted_version_filename = file_conversion_record_ref.m_target_filename
+  						+ ".converted_" + std::to_string(tu_num);
+  				std::string converted_version_pathname = file_conversion_record_ref.m_path + "/" + converted_version_filename;
+
+  				std::string merge_command_str = "merge ";
+  				if ("" != MergeCommand) {
+  					merge_command_str = MergeCommand + " ";
+  				}
+  				merge_command_str += merge_target_pathname + " ";
+  				merge_command_str += original_pathname + " ";
+  				merge_command_str += converted_version_pathname;
+  				exec(merge_command_str.c_str());
+  				std::remove(converted_version_pathname.c_str());
+  			}
+  			std::remove(original_pathname.c_str());
+  			std::rename(merge_target_pathname.c_str(), original_pathname.c_str());
+  		} else {
+  			int q = 7;
+  		}
+  	}
+  	std::cout << "\n\nThe specified and dependent source files have been replaced. \n";
+  }
+
+  return retval;
 }
 /*last line intentionally left blank*/
 
