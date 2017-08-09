@@ -33,14 +33,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/AST/ASTConsumer.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/Basic/LLVM.h"
+#include "clang/CodeGen/CodeGenAction.h"
+#include "clang/CodeGen/BackendUtil.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/Lexer.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
-#include "llvm/Support/raw_ostream.h"
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
+#include "llvm/IR/Function.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Linker/Linker.h"
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -117,7 +127,7 @@ class MyFrontendAction : public ASTFrontendAction {
 public:
   MyFrontendAction() {}
   void EndSourceFileAction() override {
-    TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+    //TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
@@ -129,11 +139,43 @@ private:
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
+#if 0
+class mutatorBEConsumer : public ASTConsumer {
+  public:
+    using LinkModule = CodeGenAction::LinkModule;
+    mutatorBEConsumer(clang::BackendAction Backend_EmitObj, DiagnosticsEngine &diags, const HeaderSearchOptions &HSO, 
+        const PreprocessorOptions &PPO, const CodeGenOptions &CGO, const clang::TargetOptions &TO, 
+        const LangOptions &LO, bool TimePasses, const std::string &InFile, llvm::SmallVector<LinkModule, 4> LinkModules, 
+        std::unique_ptr<raw_pwrite_stream> OS, LLVMContext &C) {}
+
+    virtual void HandleTranslationUnit(ASTContext &astc) {}
+};
+#endif
+/**********************************************************************************************************************/
+class mutatorEmitObjAction : public EmitObjAction {
+  public:
+    mutatorEmitObjAction() {}
+};
+/**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, MatcherSampleCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+  std::vector<std::unique_ptr<ASTUnit>> ASTs;
+  auto buildASTRes [[maybe_unused]] = Tool.buildASTs(ASTs);
+
+  for (auto &iter : ASTs)
+  {
+    if (iter->hasSema())
+    {
+      std::cout << "sema acquired\n";
+      iter->Save("./TU.save");
+      clang::Sema &selfSema [[maybe_unused]] = iter->getSema();
+    }
+  }
+
 
   return Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
 }
 /*last line intentionally left blank.*/
+
