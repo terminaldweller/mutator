@@ -13,8 +13,8 @@ Here's the elevator pitch: mutator is a suite of tools aimed at analysis and aut
 Here's a detailed list of what's currently available:<br/>
 mutator-lvl0(m0) will run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
 Safercpp runs the automatic refactoring sets on your source code, automatically changing your code to use the SaferCpp libraries.<br/>
-mutator-lvl1 and mutator-lvl2 currently only have a few simple refactorings mostly related to code formatting.<br/>
-bruiser is an exciting yet experimental feature. You can read about the idea in bruiser's directory.<br/>
+mutator-lvl1 is an experimental tool that builds your code as a shared object library and keep it in the memory, later to be used by bruiser to dynamically link against or even run.<br/>
+bruiser is an interactive shell-like tool used to mutate the source code plus run the mutants. You can read about the idea in bruiser's directory.<br/>
 mutatord, the mutator server and the client are also provided as optional features.<br/>
 
 #### So why should I choose to use m0 over another static analysis tool?
@@ -34,14 +34,14 @@ You can follow Project `mutator` on twitter, @xashmith.
 mutator is a suite of tools aimed at analysis and automation of C/C++ code development with thin client-server architectur written using the Clang front-end(LibTooling) as a stand-alone in C++. It consists of three(well so far) executables and a UI written in bash. You can run executables like any other CLI tool or just run them through the UI which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
 
 <br/>
-**mutator-lvl0** will run the Misra-C checks.<br/>
-**mutator** will run the level-1 implementers and mutators.<br/>
-**mutator-lvl2** will run the level-2 implementers and mutators.<br/>
+**mutator-lvl0** or `m0` checks for a number of rules(currently mostly Misra-c) on the source code, generating two reports. The first one is mostly a Misra-c report, the second one is the nodes and their ancestries that are hot spots for mutation.<br/>
+**mutator** or `m1` will run the level-1 implementers and mutators. `m1` is deprecated.<br/>
+**mutator-lvl2** or `m2` will be repurposed into an experiment. the idea is simple. to cut down on the mutant run-time, m2 will build the original source code as a shared library object. due to ASLR(Adress Space Randomization Layout) the real difference between an executable and an `.so` is one single bit in the file header. we will keep the shared object in the memory, use it as a library to link against and even call thorugh the dynamic linker and see how much we can cut down on the execution time of the mutants.<br/>
 Mutation levels have nothing to do with the order of mutants.<br/>
 **mutatord** is the mutator daemon that runs the server.<br/>
 **mutatorclient** is the thin client that sends commands to the server.<br/>
 **safercpp-arr** is SaferCPP's automatic refactoring tool for arrays.<br/>
-**bruiser** the short explanation is that bruiser is an interactive shell that mutates code on demand, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
+**bruiser** the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
 <br/>
 
 ## How To get project mutator

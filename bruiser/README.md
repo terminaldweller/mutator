@@ -22,7 +22,11 @@ The current implementation loads all lua libraries which also includes it's `os`
 Also like `mutatord` and `mutatorclient`, bruiser does not need any sudo access.<br/>
 
 ### Non-blind Selective mutation?
-bruiser looks at your code, learns your code and then decides how to mutate your code. That's non-blind selective mutation.<br/>
+bruiser looks at your code, learns your code and then decides how to mutate your code. That's non-blind selective mutation. now onto a real explanation:<br/>
+`m0` generates two sets of reports. one is the rules it checks on code which is for the better part, at the time of writing this very similar to Misra-c. The second report is the ancestry of the node that caused `m0` to tag a node in the first report. the second report is an experimental first attempt at narrowing down the parts of the code that would be better targets for mutation.<br/>
+The second point concerns the mutation opertors. The classical mutation operators are blind. Let me demonstrate with an example:<br/>
+Imagine we have a classical mutation operator that mutates all `+` operators to `-`. This mutation operator is blind. To put it in simple terms, it takes in text and spits out text with no regards to syntax or semantics.<br/>
+`bruiser` will not be using classical blind mutation operators.<br/>
 
 ### How?
 I'm going to wrire about it as soon as I get my thoughts organized. In the meantime you can look at the source code for some hints.<br/>
