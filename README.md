@@ -114,7 +114,7 @@ git submodule update
 
 ```
 
-To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:307814.<br/>
+To build the project, you need to have the LLVM libraries 4.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:312884.<br/>
 Here Are the build options:<br/>
 
 * Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
