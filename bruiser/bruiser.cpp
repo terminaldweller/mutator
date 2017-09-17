@@ -1556,6 +1556,8 @@ int main(int argc, const char **argv)
   /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+  std::vector<std::unique_ptr<ASTUnit>> ASTs;
+  auto buildASTRes = Tool.buildASTs(ASTs);
 
   CompilationDatabase &CDB = op.getCompilations();
   std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
