@@ -6753,7 +6753,11 @@ public:
     assert(SL->isValid(), "the SourceLocation for MacroDefined is not valid.");
 #endif
 
+#if __clang_major__ <= 5
     unsigned MacroNumArgs = MI->getNumArgs();
+#elif __clang_major__ >= 6
+    unsigned MacroNumArgs = MI->getNumParams();
+#endif
 
     /*start of 19.5*/
     if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL))
@@ -6818,7 +6822,11 @@ public:
     /*end of 20.1*/
 
     ArrayRef<Token> TokenArrayRef = MI->tokens();
+#if __clang_major__ <= 5
     ArrayRef<const IdentifierInfo*> MacroArgsArrRef = MI->args();
+#elif __clang_major__ >= 6
+    ArrayRef<const IdentifierInfo*> MacroArgsArrRef = MI->params();
+#endif
 
     unsigned NumOfTokens = MI->getNumTokens();
 
