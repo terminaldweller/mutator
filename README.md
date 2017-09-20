@@ -8,6 +8,35 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
 [![Coverage Status](https://coveralls.io/repos/github/bloodstalker/mutator/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/mutator?branch=master)
 
+## Table of Contents
+
+- [Overview](#overview)
+  - [What is SaferCpp?](#whats-safercpp)
+- [mutator](#mutator)
+- [How to get project mutator](#get-mutator)
+- [Dev Status](#dev-status)
+- [Dev Plans](#dev-plans)
+- [Test Plans](#test-plans)
+- [Announcements](#announcements)
+- [Buillding and Running](#building-n-running)
+  - [Building](#building)
+    - [Linux and Mac](#lin-n-mac)
+    - [Windows](#windows)
+  - [Running](#running)
+    - [Note](#note)
+    - [The Action File](#action-file)
+- [Implementation Notes](#impl-notes)
+  - [mutator-lvl0](#m0)
+- [Acknowledgements](#ackg)
+- [Feedback](#feedback)
+- [Suggestions and Feature Requests](#sug-n-faet)
+- [TODO List](#todo-list)
+- [Contributions](#contr)
+- [Support](#support)
+- [Contact](#contact)
+
+
+## Overview
 
 Here's the elevator pitch: mutator is a suite of tools aimed at analysis and automation of C/C++ code development.<br/>
 Here's a detailed list of what's currently available:<br/>
@@ -16,9 +45,6 @@ Safercpp runs the automatic refactoring sets on your source code, automatically 
 mutator-lvl1 is an experimental tool that builds your code as a shared object library and keep it in the memory, later to be used by bruiser to dynamically link against or even run.<br/>
 bruiser is an interactive shell-like tool used to mutate the source code plus run the mutants. You can read about the idea in bruiser's directory.<br/>
 mutatord, the mutator server and the client are also provided as optional features.<br/>
-
-#### So why should I choose to use m0 over another static analysis tool?
-That would be because m0's requirement set is different. m0's tests are aimed at lowering the bug-count(bug prevention, not finding bugs), increasing portablity and maintainability across different architectures and environments.<br/>
 
 #### What is SaferCpp?
 SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more [here](https://github.com/duneroadrunner/SaferCPlusPlus).<br/>
@@ -44,7 +70,7 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 **bruiser** the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
 <br/>
 
-## How To get project mutator
+## How to get project mutator
 
 Assuming you already have the LLVM/Clang libraries, just run :
 
@@ -102,7 +128,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ### Building
 
-#### Linux
+#### Linux and Mac
 
 First clone the repo and then initialize and update the submodule in it:<br/>
 
