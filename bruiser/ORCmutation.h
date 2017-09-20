@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*inclusion guard*/
 #ifndef ORC_MUTATION_H
 #define ORC_MUTATION_H
-#if __clang_major__ == 5
+#if __clang_major__ >= 5
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/

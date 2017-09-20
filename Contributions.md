@@ -14,3 +14,7 @@ For discussions regarding the implementations or feature requests or enhancement
 
 ### Labels
 We have quite a varied range of labels for issues. please use them.<br/>
+
+
+### Contributers.md
+Don't forget to add your name to the `Contributers.md` file in the repo root.<br/>

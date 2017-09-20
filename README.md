@@ -362,6 +362,9 @@ Besides that, If you have any suggestions or have any feature requests for proje
 * Using Appveyor to test windows builds<br/>
 * Have the server capture stderr<br/>
 
+### Contributions
+For a full description please read `Contributions.md` in the repo root.<br/>
+
 ### Support
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>
 If the company/organization you represent wants to sponsor mutator, let me know.<br/>

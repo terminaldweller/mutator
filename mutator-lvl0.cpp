@@ -7232,6 +7232,8 @@ public:
       if (MI->getNumArgs() != Args->getNumArguments() - MI->getNumArgs())
 #elif __clang_major__ == 5
       if (MI->getNumArgs() != Args->getNumMacroArguments() - MI->getNumArgs())
+#elif __clang_major__ == 6
+      if (MI->getNumParams() != Args->getNumMacroArguments() - MI->getNumParams())
 #endif
       {
         if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
@@ -7247,6 +7249,8 @@ public:
             std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumArguments() << " " << MI->getNumArgs() << ":" << "\n";
 #elif __clang_major__ == 5
             std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumMacroArguments() << " " << MI->getNumArgs() << ":" << "\n";
+#elif __clang_major__ == 6
+            std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumMacroArguments() << " " << MI->getNumParams() << ":" << "\n";
 #endif
 
             XMLDocOut.XMLAddNode(SM, SL, "19.8", "Funciton-like macro invoked with wrong number of arguments:");
