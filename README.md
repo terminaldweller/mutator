@@ -353,7 +353,8 @@ Project mutator uses the following cool libraries:
 If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any).<br/>
 
 ### Suggestions and Feature Requests
-If you have any suggestions or have any feature requests for project mutator, you can send them to `bloodstalker@zoho.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/> 
+You can make a new issue for requests and suggestion. label them with "Feauture Request".<br/>
+Besides that, If you have any suggestions or have any feature requests for project mutator, you can send them to `thabogre@gmail.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/> 
 
 ### TODO List
 * Misra-c:2012 and 98 check support<br/>
