@@ -6761,9 +6761,9 @@ public:
     assert(SL->isValid(), "the SourceLocation for MacroDefined is not valid.");
 #endif
 
-#if __clang_major__ <= 5
+#if __clang_major__ < 5
     unsigned MacroNumArgs = MI->getNumArgs();
-#elif __clang_major__ >= 6
+#elif __clang_major__ >= 5
     unsigned MacroNumArgs = MI->getNumParams();
 #endif
 
@@ -6830,9 +6830,9 @@ public:
     /*end of 20.1*/
 
     ArrayRef<Token> TokenArrayRef = MI->tokens();
-#if __clang_major__ <= 5
+#if __clang_major__ < 5
     ArrayRef<const IdentifierInfo*> MacroArgsArrRef = MI->args();
-#elif __clang_major__ >= 6
+#elif __clang_major__ >= 5
     ArrayRef<const IdentifierInfo*> MacroArgsArrRef = MI->params();
 #endif
 
@@ -7239,7 +7239,7 @@ public:
 #if __clang_major__ == 4
       if (MI->getNumArgs() != Args->getNumArguments() - MI->getNumArgs())
 #elif __clang_major__ == 5
-      if (MI->getNumArgs() != Args->getNumMacroArguments() - MI->getNumArgs())
+      if (MI->getNumParams() != Args->getNumMacroArguments() - MI->getNumParams())
 #elif __clang_major__ == 6
       if (MI->getNumParams() != Args->getNumMacroArguments() - MI->getNumParams())
 #endif
@@ -7256,7 +7256,7 @@ public:
 #if __clang_major__ == 4
             std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumArguments() << " " << MI->getNumArgs() << ":" << "\n";
 #elif __clang_major__ == 5
-            std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumMacroArguments() << " " << MI->getNumArgs() << ":" << "\n";
+            std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumMacroArguments() << " " << MI->getNumParams() << ":" << "\n";
 #elif __clang_major__ == 6
             std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumMacroArguments() << " " << MI->getNumParams() << ":" << "\n";
 #endif
