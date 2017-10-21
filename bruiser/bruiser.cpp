@@ -188,6 +188,15 @@ class LuaEngine
       lua_close(LS);
     }
 
+    void HandleLuaErrorGeneric(lua_State* LS, const char* fmt, ...) {
+      va_list argp;
+      va_start(argp, fmt);
+      std::vfprintf(stderr, fmt, argp);
+      va_end(argp);
+      lua_close(LS);
+      exit(EXIT_FAILURE);
+    }
+
   private:
     lua_State* LS;
 };
@@ -1644,8 +1653,7 @@ int main(int argc, const char **argv)
         LE.RunChunk((char*)line.c_str());
       }
 
-      LE.Cleanup();
-
+      dostring(LE.GetLuaState(), "os.exit()", "test");
       return 0;
     }
 
@@ -1671,6 +1679,8 @@ int main(int argc, const char **argv)
       LE.RunChunk(command);
       linenoiseFree(command);
     }
+
+    LE.Cleanup();
 
     /*end of bruiser main*/
     return 0;
