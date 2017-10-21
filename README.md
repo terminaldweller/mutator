@@ -35,6 +35,7 @@
 - [Support](#support)
 - [Contact](#contact)
 
+/<./bruiser/README.md>
 
 ## Overview
 
