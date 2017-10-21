@@ -14,8 +14,8 @@ matrix:
           name: "bloodstalker/mutator"
           description: "Build submitted via Travis CI"
         notification_email: thabogre@gmail.com
-        build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-4.0"
-        build_command:   "make CXX=clang-4.0 LLVM_CONF=llvm-config-4.0 BUILD_MODE=COV_NO_CLANG"
+        build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-5.0"
+        build_command:   "make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG"
         branch_pattern: master
 
 before_install:
@@ -28,7 +28,7 @@ before_script:
   - sudo apt-get update -y
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
   - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
-  - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" | sudo tee -a /etc/apt/sources.list
+  - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
   - sudo apt-get install gcc-4.9 g++-4.9
@@ -39,7 +39,6 @@ before_script:
 
 script: 
   - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
-  - make -C daemon
 
 after_failure:
   - find . -maxdepth 1 -name "core*"
