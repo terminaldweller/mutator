@@ -683,9 +683,12 @@ public:
       ASTContext *const ASTC = MR.Context;
 
       ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*CS);
+      
+      ast_type_traits::DynTypedNode ParentNode;
 
       /*@DEVI-assumptions:nothing has more than one parent in C.*/
-      ast_type_traits::DynTypedNode ParentNode = NodeList[0];
+      if (!NodeList.empty()) ParentNode = NodeList[0];
+      else return void();
 
       ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
 
@@ -3488,9 +3491,11 @@ public:
       if (TP->isIntegerType())
       {
         ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*EXP);
-
+        
+        ast_type_traits::DynTypedNode ParentNode;
         /*assumptions:nothing has more than one parent in C.*/
-        ast_type_traits::DynTypedNode ParentNode = NodeList[0];
+        if (!NodeList.empty()) ParentNode = NodeList[0];
+        else return void();
 
         ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
 
@@ -5341,12 +5346,15 @@ public:
         {
           /*@DEVI-assumes there is only one parent for every node which is true only for C, not Cpp*/
           ASTContext::DynTypedNodeList NodeList = ASTC->getParents(DynOpNode);
-
-          const ast_type_traits::DynTypedNode &ParentNode = NodeList[0U];
+          ast_type_traits::DynTypedNode ParentNode;
+          if (!NodeList.empty()) ParentNode = NodeList[0U];
+          else return void();
 
           ASTContext::DynTypedNodeList AncestorNodeList = ASTC->getParents(ParentNode);
 
-          const ast_type_traits::DynTypedNode AncestorNode = AncestorNodeList[0U];
+          ast_type_traits::DynTypedNode AncestorNode;
+          if (!AncestorNodeList.empty()) AncestorNode = AncestorNodeList[0U];
+          else return void();
 
           ast_type_traits::ASTNodeKind ParentNodeKind = ParentNode.getNodeKind();
           ast_type_traits::ASTNodeKind AncestorNodeKind = AncestorNode.getNodeKind();
@@ -8506,7 +8514,9 @@ public:
 
     Info.FormatDiagnostic(DiagBuffer);
 
+#if 0
     std::cout << "ClangDiag:" << DiagBuffer.str().str() << ":" << SL.printToString(SM) << ":" << Info.getID() << ":" << "\n";
+#endif
 
     XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());
     JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());

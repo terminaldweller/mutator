@@ -460,6 +460,7 @@ class MutagenExtraction
     void ExtractAncestry(clang::ast_type_traits::DynTypedNode __dtn, clang::ASTContext &__astx)
     {
       clang::ASTContext::DynTypedNodeList DNL = __astx.getParents(__dtn);
+      if (DNL.empty()) return void();
 
       /*FIXME-a LastStrain. obviously well end up losing some parents in cpp if we're just picking up the
        * first parent from the list.*/
@@ -470,6 +471,7 @@ class MutagenExtraction
       while (DTN.getNodeKind().asStringRef().str() != "FunctionDecl")
       {
         DNL = __astx.getParents(DTN);
+        if (DNL.empty()) return void();
         DTN = DNL[0];
         LastStrain.push_back(DTN.getNodeKind().asStringRef().str());
       }

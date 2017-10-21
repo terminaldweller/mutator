@@ -106,9 +106,15 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+class BlankDiagConsumer : public clang::DiagnosticConsumer
+{
+  public:
+    BlankDiagConsumer() = default;
+    virtual ~BlankDiagConsumer() {}
+    virtual void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel, const Diagnostic &Info) override {}
+};
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
-
 public:
   MyASTConsumer(Rewriter &R) : HandlerForIfElse(R) {
     Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mrifelse"), &HandlerForIfElse);
@@ -131,11 +137,14 @@ public:
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
+    DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+    DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
   }
 
 private:
+  BlankDiagConsumer* BDCProto = new BlankDiagConsumer;
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/

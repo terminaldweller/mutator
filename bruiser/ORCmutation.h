@@ -23,7 +23,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*inclusion guard*/
 #ifndef ORC_MUTATION_H
 #define ORC_MUTATION_H
-#if __clang_major__ >= 5
+//#if __clang_major__ >= 5
+#if 0
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
@@ -151,7 +152,7 @@ class MutatorJIT
 
 class runMainOnJit
 {
-#if 0
+#if 1
   std::unique_ptr<llvm::Module> M = buildModule();
   MutatorJIT jit;
   Handle H = jit.addModule(*M);

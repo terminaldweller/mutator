@@ -1,5 +1,5 @@
 
-#if 1
+#if 0
 #include <fstream>
 #include <iostream>
 #endif
@@ -22,7 +22,7 @@ namespace devi
 
 int main(int argc, const char **argv)
 {
-#if 1
+#if 0
   std::ofstream myfile;
   myfile.open("./touch");
   myfile << "line one.\n";

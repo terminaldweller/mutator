@@ -57,8 +57,8 @@ fi
 
 printf "${Lblue}running mutator-lvl0 on the tdd sources...\n${NC}" | tee -a ./test/precommit.rep
 
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}" | tee -a ./test/precommit.rep
@@ -85,8 +85,8 @@ else
 fi
 
 printf "${Lblue}running smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
@@ -119,7 +119,7 @@ fi
 
 printf "${Lblue}running cpp smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
 printf "${Orange}./mutator-lvl0 ./test/m0-cpp-smoke/m0-cpp-smoke.cpp\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -./test/m0-cpp-smoke/m0-cpp-smoke.cpp
+"./mutator-lvl0" ./test/m0-cpp-smoke/m0-cpp-smoke.cpp --
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++11 cpp std headers smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
@@ -149,8 +149,8 @@ else
 fi
 
 printf "${Lblue}running mutator-lvl0 on the tdd sources...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}" | tee -a ./test/precommit.rep
@@ -177,8 +177,8 @@ else
 fi
 
 printf "${Lblue}running smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++1z smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
@@ -211,7 +211,7 @@ fi
 
 printf "${Lblue}running cpp smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
 printf "${Orange}./mutator-lvl0 ./test/m0-cpp-smoke/m0-cpp-smoke.cpp\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -./test/m0-cpp-smoke/m0-cpp-smoke.cpp
+"./mutator-lvl0" ./test/m0-cpp-smoke/m0-cpp-smoke.cpp --
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++1z cpp std headers smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
@@ -234,8 +234,8 @@ else
 fi
 
 printf "${Lblue}running mutator-lvl0 on the tdd sources...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}" | tee -a ./test/precommit.rep
@@ -262,8 +262,8 @@ else
 fi
 
 printf "${Lblue}running smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.3.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++14 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
@@ -296,7 +296,7 @@ fi
 
 printf "${Lblue}running cpp smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
 printf "${Orange}./mutator-lvl0 ./test/m0-cpp-smoke/m0-cpp-smoke.cpp\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -./test/m0-cpp-smoke/m0-cpp-smoke.cpp
+"./mutator-lvl0" ./test/m0-cpp-smoke/m0-cpp-smoke.cpp --
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++14 cpp std headers smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
