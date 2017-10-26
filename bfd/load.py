@@ -153,7 +153,8 @@ class ELF(object):
         self.phdr = []
         self.shhdr = []
         self.size = int()
-        self.ste = []
+        self.string_tb_e = []
+        self.string_tb_e_dyn = []
 
     def init(self, size):
         self.size = size
@@ -166,7 +167,34 @@ class ELF(object):
         shnum = int.from_bytes(self.elfhdr.e_shnum, byteorder="little", signed=False)
         for i in range(0, shnum):
             self.read_SHDR(size)
-        self.read_SHDR(size)
+        #self.read_SHDR(size)
+        for i in range(0, shnum):
+            type = int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False)
+            if type == sh_type_e.SHT_SYMTAB:
+                print("size: " + repr(int.from_bytes(self.shhdr[i].sh_size, byteorder="little")))
+                print("offset: " + repr(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little")))
+                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
+                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+                #print(symbol_tb)
+                offset = 0
+                num = int(int.from_bytes(self.shhdr[i].sh_size, byteorder="little") / 24)
+                print(num)
+                for j in range(0, num):
+                    self.read_st_entry(symbol_tb[offset:offset + 24], self.string_tb_e)
+                    offset += 8*24
+            if type == sh_type_e.SHT_DYNSYM:
+                print("found dyn")
+                print("size: " + repr(int.from_bytes(self.shhdr[i].sh_size, byteorder="little")))
+                print("offset: " + repr(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little")))
+                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
+                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+                #print(symbol_tb)
+                offset = 0
+                num = int(int.from_bytes(self.shhdr[i].sh_size, byteorder="little") / 24)
+                print(num)
+                for j in range(0, num):
+                    self.read_st_entry(symbol_tb[offset:offset + 24], self.string_tb_e_dyn)
+                    offset += 8*24
 
     # 32 or 64
     def read_ELF_H(self, size):
@@ -234,14 +262,37 @@ class ELF(object):
         elif size == 64: dummy.sh_entsize = self.so.read(8)
         self.shhdr.append(dummy)
 
-    def read_st_entry(self, st):
-        dummy = Symbol_Table_Entry()
+    def read_st_entry(self, st, entry_list):
+        dummy = Symbol_Table_Entry64(0,0,0,0,0,0)
         dummy.st_name = st[0:4]
         dummy.st_info = st[4:5]
         dummy.st_other = st[5:6]
         dummy.st_shndx = st[6:8]
         dummy.st_value = st[8:16]
         dummy.st_size = st[16:24]
+        entry_list.append(dummy)
+
+    def dump_symbol_idx(self):
+        for iter in self.string_tb_e:
+            print("symbol:")
+            print("-----------------------------------------------------------------")
+            print("name: " + repr(int.from_bytes(iter.st_name, byteorder="little")))
+            print("size: " + repr(int.from_bytes(iter.st_size, byteorder="little")))
+            print("value: " + repr(int.from_bytes(iter.st_value, byteorder="little")))
+            print("info: " + repr(int.from_bytes(iter.st_info, byteorder="little")))
+            print("other: " + repr(int.from_bytes(iter.st_other, byteorder="little")))
+            print("shndx: " + repr(int.from_bytes(iter.st_shndx, byteorder="little")))
+            print("-----------------------------------------------------------------")
+        for iter in self.string_tb_e_dyn:
+            print("dyn symbol:")
+            print("-----------------------------------------------------------------")
+            print("name: " + repr(int.from_bytes(iter.st_name, byteorder="little")))
+            print("size: " + repr(int.from_bytes(iter.st_size, byteorder="little")))
+            print("value: " + repr(int.from_bytes(iter.st_value, byteorder="little")))
+            print("info: " + repr(int.from_bytes(iter.st_info, byteorder="little")))
+            print("other: " + repr(int.from_bytes(iter.st_other, byteorder="little")))
+            print("shndx: " + repr(int.from_bytes(iter.st_shndx, byteorder="little")))
+            print("-----------------------------------------------------------------")
 
     def dump_header(self):
         print("------------------------------------------------------------------------------")
@@ -341,9 +392,10 @@ def main():
     elf = ELF(so)
     elf.init(64)
     #elf.dump_header()
-    elf.dump_symbol_tb()
+    #elf.dump_symbol_tb()
     #elf.dump_phdrs()
     #elf.dump_shdrs()
+    elf.dump_symbol_idx()
     '''
     so.close()
     ch_so_to_exe("./test/test.so")
