@@ -35,7 +35,6 @@
 - [Support](#support)
 - [Contact](#contact)
 
-/<./bruiser>
 
 ## Overview
 

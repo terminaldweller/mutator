@@ -1,0 +1,7 @@
+[
+    {
+        "command": "cc -c -o main.o main.c", 
+        "directory": "/home/bloodstalker/devi/hell2/bfd", 
+        "file": "/home/bloodstalker/devi/hell2/bfd/main.c"
+    }
+]
