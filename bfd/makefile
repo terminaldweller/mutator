@@ -1,15 +1,15 @@
 
 ##################################VARS#################################
 CC=clang
-CC_FLAGS=
+CC_FLAGS=-fpic
 LD_FLAGS= -l bfd
 TARGET=main
 ##################################RULES################################
 .DEFAULT:all
 
-.PHONY:all clean help $(TARGET)
+.PHONY:all clean help $(TARGET) $(TARGET).so test
 
-all:$(TARGET)
+all:$(TARGET) $(TARGET).so test
 
 .c.o:
 	$(CC) $(CC_FLAGS) -c $< -o $@
@@ -17,14 +17,19 @@ all:$(TARGET)
 $(TARGET): $(TARGET).o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
+$(TARGET).so: $(TARGET).o
+	$(CC) $^ $(LD_FLAGS) -shared -o $@
+
+test:
+	$(MAKE) -C ./test
+
 clean:
-	rm -f *.o *~ $(TARGET)
+	rm -f *.o *~ $(TARGET) $(TARGET).so
+	$(MAKE) -C ./test clean
+
 
 help:
-	@echo 'all builds the daemon, the server and the client. all is the default.'
-	@echo 'mutatord builds the daemon with the server'
-	@echo 'mutatorc builds the client'
-	@echo 'mutators builds the standalone server'
+	@echo 'all builds so and exe. all is the default.'
 	@echo 'clean runs clean.'
 	@echo 'help runs help.'
 
