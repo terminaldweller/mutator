@@ -1,4 +1,59 @@
 #!/bin/python3
+from enum import Enum
+
+
+class sh_type_e:
+    SHT_NULL = 0x0
+    SHT_PROGBITS = 0x1
+    SHT_SYMTAB = 0x2
+    SHT_STRTAB = 0x3
+    SHT_RELA = 0x4
+    SHT_HASH = 0x5
+    SHT_DYNAMIC = 0x6
+    SHT_NOTE = 0x7
+    SHT_NOBITS = 0x8
+    SHT_REL = 0x9
+    SHT_SHLIB = 0xa
+    SHT_DYNSYM = 0xb
+    SHT_INIT_ARRAY = 0xe
+    SHT_FINI_ARRAY = 0xf
+    SHT_PREINIT = 0x10
+    SHT_GROUP = 0x11
+    SHT_SYMTAB_SHNDX = 0x12
+    SHT_NUM = 0x13
+    SHT_LOOS = 0x60000000
+
+
+class sh_flags_e:
+    SHF_WRITE = 0x1
+    SHF_ALLOC = 0x2
+    SHF_EXECINSTR = 0x4
+    SHF_MERGE = 0x10
+    SHF_STRINGS = 0x20
+    SHF_INFO_LINK = 0x40
+    SHF_LINK_ORDER = 0x80
+    SHF_OS_NONCONFORMING = 0x100
+    SHF_GROUP = 0x200
+    SHF_TLS = 0x400
+    SHF_MASKOS = 0x0ff00000
+    SHF_MASKPROC = 0xf0000000
+    SHF_ORDERED = 0x4000000
+    SHF_EXCLUDE = 0x8000000
+
+
+class p_type_e:
+    PT_NULL = 0x0
+    PT_LOAD = 0x1
+    PT_DYNAMIC = 0x2
+    PT_INTERP = 0x3
+    PT_NOTE = 0x4
+    PT_SHLIB = 0x5
+    PT_PHDR = 0x6
+    PT_LOOS = 0x60000000
+    PT_HIOS = 0x6FFFFFFF
+    PT_LOPROC = 0x70000000
+    PT_HIPROC = 0x7FFFFFFF
+
 
 class Colors:
     purple = '\033[95m'
@@ -80,6 +135,16 @@ class SHDR():
         self.sh_entsize = sh_entsize
 
 
+class Symbol_Table_Entry64():
+    def __init__(self, st_name, st_info, st_other, st_shndx, st_value, st_size):
+        self.st_name = st_name
+        self.st_info = st_info
+        self.st_other = st_other
+        self.st_shndx = st_shndx
+        self.st_value = st_value
+        self.st_size = st_size
+
+
 class ELF(object):
     def __init__(self, so):
         self.so = so
@@ -88,6 +153,7 @@ class ELF(object):
         self.phdr = []
         self.shhdr = []
         self.size = int()
+        self.ste = []
 
     def init(self, size):
         self.size = size
@@ -131,7 +197,7 @@ class ELF(object):
     def read_PHDR(self, size):
         dummy = PHDR(0,0,0,0,0,0,0,0,0)
         dummy.p_type = self.so.read(4)
-        dummy.p_flags = self.so.read(4)
+        if size == 64: dummy.p_flags = self.so.read(4)
         if size == 32: dummy.p_offset = self.so.read(4)
         elif size == 64: dummy.p_offset = self.so.read(8)
         if size == 32: dummy.p_vaddr = self.so.read(4)
@@ -160,15 +226,22 @@ class ELF(object):
         elif size == 64: dummy.sh_offset = self.so.read(8)
         if size == 32: dummy.sh_size = self.so.read(4)
         elif size == 64: dummy.sh_size = self.so.read(8)
-        if size == 32: dummy.sh_link = self.so.read(4)
-        elif size == 64: pass
-        if size == 32: dummy.sh_info = self.so.read(4)
-        elif size == 64: pass
+        dummy.sh_link = self.so.read(4)
+        dummy.sh_info = self.so.read(4)
         if size == 32: dummy.sh_addralign = self.so.read(4)
         elif size == 64: dummy.sh_addralign = self.so.read(8)
         if size == 32: dummy.sh_entsize = self.so.read(4)
         elif size == 64: dummy.sh_entsize = self.so.read(8)
         self.shhdr.append(dummy)
+
+    def read_st_entry(self, st):
+        dummy = Symbol_Table_Entry()
+        dummy.st_name = st[0:4]
+        dummy.st_info = st[4:5]
+        dummy.st_other = st[5:6]
+        dummy.st_shndx = st[6:8]
+        dummy.st_value = st[8:16]
+        dummy.st_size = st[16:24]
 
     def dump_header(self):
         print("------------------------------------------------------------------------------")
@@ -226,6 +299,27 @@ class ELF(object):
             print(Colors.blue + "sh_entsize: " + Colors.cyan + repr(self.shhdr[i].sh_entsize) + Colors.ENDC)
             print("------------------------------------------------------------------------------")
 
+    def dump_symbol_tb(self):
+        for i in range(0, int.from_bytes(self.elfhdr.e_shnum, byteorder="little", signed=False)):
+            #print(repr(int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False)) + " : ", end='')
+            #print(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+            if int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False) == sh_type_e.SHT_SYMTAB:
+                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
+                #print(self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False)))
+                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+            if int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False) == sh_type_e.SHT_DYNSYM:
+                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
+                #print(self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False)))
+                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+            if int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False) == sh_type_e.SHT_STRTAB:
+                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
+                #print(self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False)))
+                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+                #print(symbol_tb.decode("utf-8"))
+                for byte in symbol_tb:
+                    print(chr(byte), end='')
+                    if chr(byte) == '\0': print()
+
 
 def ch_so_to_exe(path):
     so = open(path, "r+b")
@@ -237,8 +331,8 @@ def ch_so_to_exe(path):
 
 def ch_exe_to_so(path):
     so = open(path, "r+b")
-    so.seek(16, 0)
-    so.write(bytes(3))
+    so.seek(16)
+    so.write(bytes([3]))
     print(Colors.purple + "changed exe to so" + Colors.ENDC)
 
 
@@ -246,15 +340,18 @@ def main():
     so = openSO_r("./test/test.so")
     elf = ELF(so)
     elf.init(64)
-    elf.dump_header()
+    #elf.dump_header()
+    elf.dump_symbol_tb()
     #elf.dump_phdrs()
     #elf.dump_shdrs()
+    '''
     so.close()
     ch_so_to_exe("./test/test.so")
     so = openSO_r("./test/test.so")
     elf2 = ELF(so)
     elf2.init(64)
     elf.dump_header()
+    '''
 
 if __name__ == "__main__":
     main()
