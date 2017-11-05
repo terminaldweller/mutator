@@ -38,6 +38,7 @@ before_script:
   - git submodule update
   - sudo apt-get install python3-all-dev -y
   - sudo apt-get install libpython3-all-dev -y
+  - sudo apt-get source python -y
 
 script: 
   - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
