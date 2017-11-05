@@ -3,7 +3,7 @@
 include ../macros.mk
 
 #######################################VARS####################################
-CXX_FLAGS+=-I/usr/include -I/usr/include/python3.5m
+CXX_FLAGS+=-I/usr/include $(shell python3-config --includes)
 BRUISER=bruiser
 LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
