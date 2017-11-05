@@ -1,6 +1,14 @@
 #!/bin/python3
-from enum import Enum
+import argparse
+import sys
 
+class CLIArgParser(object):
+    def __init__(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--obj", type=str, help="path to the executbale, shared object or object you want to load in bruiser")
+        self.args = parser.parse_args()
+        if self.args.obj is None:
+            raise Exception("no object file provided. please specify an object with --obj.")
 
 class sh_type_e:
     SHT_NULL = 0x0
@@ -171,6 +179,7 @@ class ELF(object):
         for i in range(0, shnum):
             type = int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False)
             if type == sh_type_e.SHT_SYMTAB:
+                print(Colors.green, end="")
                 print("size: " + repr(int.from_bytes(self.shhdr[i].sh_size, byteorder="little")))
                 print("offset: " + repr(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little")))
                 self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
@@ -182,8 +191,9 @@ class ELF(object):
                 for j in range(0, num):
                     self.read_st_entry(symbol_tb[offset:offset + 24], self.string_tb_e)
                     offset += 8*24
+                print(Colors.ENDC)
             if type == sh_type_e.SHT_DYNSYM:
-                print("found dyn")
+                print(Colors.green, end="")
                 print("size: " + repr(int.from_bytes(self.shhdr[i].sh_size, byteorder="little")))
                 print("offset: " + repr(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little")))
                 self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
@@ -195,6 +205,7 @@ class ELF(object):
                 for j in range(0, num):
                     self.read_st_entry(symbol_tb[offset:offset + 24], self.string_tb_e_dyn)
                     offset += 8*24
+                print(Colors.ENDC)
 
     # 32 or 64
     def read_ELF_H(self, size):
@@ -272,27 +283,36 @@ class ELF(object):
         dummy.st_size = st[16:24]
         entry_list.append(dummy)
 
-    def dump_symbol_idx(self):
+    def dump_objs(self):
         for iter in self.string_tb_e:
-            print("symbol:")
-            print("-----------------------------------------------------------------")
-            print("name: " + repr(int.from_bytes(iter.st_name, byteorder="little")))
-            print("size: " + repr(int.from_bytes(iter.st_size, byteorder="little")))
-            print("value: " + repr(int.from_bytes(iter.st_value, byteorder="little")))
-            print("info: " + repr(int.from_bytes(iter.st_info, byteorder="little")))
-            print("other: " + repr(int.from_bytes(iter.st_other, byteorder="little")))
-            print("shndx: " + repr(int.from_bytes(iter.st_shndx, byteorder="little")))
-            print("-----------------------------------------------------------------")
+            self.so.seek(int.from_bytes(iter.st_value, byteorder="little"))
+            obj = self.so.read(int.from_bytes(iter.st_size, byteorder="little"))
+            for byte in obj:
+                print(chr(byte))
+
+    def dump_symbol_idx(self):
+        print(Colors.green + "symbol:" + Colors.ENDC)
+        for iter in self.string_tb_e:
+            if not int.from_bytes(iter.st_size, byteorder="little") == 0:
+                print("-----------------------------------------------------------------")
+                print(Colors.blue + "name: " + Colors.cyan + repr(int.from_bytes(iter.st_name, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "size: " + Colors.cyan + repr(int.from_bytes(iter.st_size, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "value: " + Colors.cyan +  repr(int.from_bytes(iter.st_value, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "info: " + Colors.cyan +  repr(int.from_bytes(iter.st_info, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "other: " + Colors.cyan +  repr(int.from_bytes(iter.st_other, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "shndx: " + Colors.cyan +  repr(int.from_bytes(iter.st_shndx, byteorder="little")) + Colors.ENDC)
+                print("-----------------------------------------------------------------")
+        print(Colors.green + "dyn symbol:" + Colors.ENDC)
         for iter in self.string_tb_e_dyn:
-            print("dyn symbol:")
-            print("-----------------------------------------------------------------")
-            print("name: " + repr(int.from_bytes(iter.st_name, byteorder="little")))
-            print("size: " + repr(int.from_bytes(iter.st_size, byteorder="little")))
-            print("value: " + repr(int.from_bytes(iter.st_value, byteorder="little")))
-            print("info: " + repr(int.from_bytes(iter.st_info, byteorder="little")))
-            print("other: " + repr(int.from_bytes(iter.st_other, byteorder="little")))
-            print("shndx: " + repr(int.from_bytes(iter.st_shndx, byteorder="little")))
-            print("-----------------------------------------------------------------")
+            if not int.from_bytes(iter.st_size, byteorder="little") == 0:
+                print("-----------------------------------------------------------------")
+                print(Colors.blue + "name: " + Colors.cyan +  repr(int.from_bytes(iter.st_name, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "size: " + Colors.cyan +  repr(int.from_bytes(iter.st_size, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "value: " + Colors.cyan +  repr(int.from_bytes(iter.st_value, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "info: " + Colors.cyan +  repr(int.from_bytes(iter.st_info, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "other: " + Colors.cyan +  repr(int.from_bytes(iter.st_other, byteorder="little")) + Colors.ENDC)
+                print(Colors.blue + "shndx: " + Colors.cyan +  repr(int.from_bytes(iter.st_shndx, byteorder="little")) + Colors.ENDC)
+                print("-----------------------------------------------------------------")
 
     def dump_header(self):
         print("------------------------------------------------------------------------------")
@@ -372,6 +392,15 @@ class ELF(object):
                     if chr(byte) == '\0': print()
 
 
+class obj_loader():
+    def __init__(self, bytes):
+        self.memory = bytes()
+
+    def load(self, obj):
+        for byte in obj:
+            self.memory.append(byte)
+
+
 def ch_so_to_exe(path):
     so = open(path, "r+b")
     so.seek(16)
@@ -388,14 +417,18 @@ def ch_exe_to_so(path):
 
 
 def main():
-    so = openSO_r("./test/test.so")
+    #argparser = CLIArgParser()
+    #if argparser.args.obj is None: so = openSO_r("./test/test.so")
+    #else: so = openSO_r(argparser.args.obj)
+    so = openSO_r(sys.argv[1])
     elf = ELF(so)
     elf.init(64)
-    #elf.dump_header()
-    #elf.dump_symbol_tb()
+    elf.dump_header()
+    elf.dump_symbol_tb()
     #elf.dump_phdrs()
     #elf.dump_shdrs()
     elf.dump_symbol_idx()
+    #elf.dump_objs()
     '''
     so.close()
     ch_so_to_exe("./test/test.so")
@@ -404,6 +437,7 @@ def main():
     elf2.init(64)
     elf.dump_header()
     '''
+    return 0;
 
 if __name__ == "__main__":
     main()

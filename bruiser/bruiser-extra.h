@@ -121,6 +121,7 @@ std::vector<std::string> LUA_FUNCS =
   "changedirectory",
   "yolo",
   "pwd()",
+  "objload",
   "_G",
   "_VERSION",
   "assert",

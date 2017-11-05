@@ -84,6 +84,13 @@ make install
 
 ```
 
+mutator is also being hosted using [IPFS](https://github.com/ipfs/ipfs). To get it from IPFS just run:<br/>
+```bash
+
+git clone https://ipfs.io/ipfs/QmdBBG76K5rNSWB4iK4ZhTtiZAkSsyDpiWzcPsPfnHY2ZA/mutator
+
+```
+
 If you don't have them, you can build them or get them from a repo.<br/>
 To build LLVM/Clang from source take a look at [here](https://clang.llvm.org/get_started.html) and [here](http://llvm.org/docs/GettingStarted.html).<br/>
 To build `safercpp-arr` you to need to build Clang with RTTI enabled.<br/>
@@ -373,4 +380,5 @@ If the company/organization you represent wants to sponsor mutator, let me know.
 
 ### Contact
 You can email me at thabogre@gmail.com, there is also the twitter account for the mutator project, @xashmith and there is the mutator maillist, mutator-repost@freelists.org. You need to be a member though to be able to send mail on the maillist. The maillist is moderated.<br/>
+
 <a href="https://twitter.com/xashmith" class="twitter-follow-button" data-show-count="false">Follow @xashmith</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>

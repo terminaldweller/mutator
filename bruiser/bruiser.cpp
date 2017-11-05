@@ -54,6 +54,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*other*/
 #include "linenoise/linenoise.h"
 #include "lua-5.3.4/src/lua.hpp"
+#include <Python.h>
 
 #include "luadummy.h"
 /**********************************************************************************************************************/
@@ -199,6 +200,80 @@ class LuaEngine
 
   private:
     lua_State* LS;
+};
+/**********************************************************************************************************************/
+class PyExec {
+  public:
+    PyExec(std::string __py_script_name, std::string __py_func_name, std::string __obj_path ) : 
+      py_script_name(__py_script_name), py_func_name(__py_func_name), obj_path(__obj_path) {}
+
+    int run(void) {
+      //std::wstring py_sys_path = L"../bfd";
+      Py_Initialize();
+      int argc = 2;
+      //std::wstring argv[2];
+      wchar_t* argv[2];
+      argv[0] = Py_DecodeLocale((char*)py_script_name.c_str(), 0);
+      argv[1] = Py_DecodeLocale((char*)obj_path.c_str(), 0);
+      PySys_SetArgv(argc, argv);
+      pName = PyUnicode_DecodeFSDefault(py_script_name.c_str());
+      PyRun_SimpleString("import sys\nsys.path.append(\"../bfd\")\n");
+      pModule = PyImport_Import(pName);
+      Py_DECREF(pName);
+
+      if (pModule != nullptr) {
+        pFunc = PyObject_GetAttrString(pModule, py_func_name.c_str());
+        if (pFunc && PyCallable_Check(pFunc)) {
+          std::cout << GREEN << "function is callable." << NORMAL << "\n";
+          pArgs = PyTuple_New(1);
+          pValue = PyUnicode_FromString(obj_path.c_str());
+          PyTuple_SetItem(pArgs, 0, pValue);
+          pArgs = nullptr;
+          std::cout << BLUE << "calling python function..." << NORMAL << "\n";
+          pValue = PyObject_CallObject(pFunc, pArgs);
+          std::cout << BLUE << "i made it here" << NORMAL << "\n";
+          //Py_DECREF(pArgs);
+          if (pValue != nullptr) {
+            std::cout << GREEN << "call finished successfully." << NORMAL << "\n";
+            printf("Result of call: %ld\n", PyLong_AsLong(pValue));
+            Py_DECREF(pValue);
+          } else {
+            Py_DECREF(pFunc);
+            Py_DECREF(pModule);
+            PyErr_Print();
+            std::cout << RED << "call failed." << NORMAL << "\n";
+            fprintf(stderr, "Call failed\n");
+            return EXIT_FAILURE;
+          }
+        }
+      else {
+        if (PyErr_Occurred()) PyErr_Print();
+        fprintf(stderr, "Cannot find function\"%s\"\n", py_func_name.c_str());
+      }
+      Py_XDECREF(pFunc);
+      Py_DECREF(pModule);
+    }
+    else {
+      PyErr_Print();
+      fprintf(stderr, "Failed to load \"%ls\"\n", argv[0]);
+      return 1;
+    }
+    Py_Finalize();
+    return 0;
+    }
+
+  private:
+    std::string py_script_name;
+    std::string py_func_name;
+    std::string obj_path;
+    PyObject *pName;
+    PyObject *pModule;
+    PyObject *pDict;
+    PyObject *pFunc;
+    PyObject *pArgs;
+    PyObject *pValue;
+    int argc;
+    char** argv;
 };
 /**********************************************************************************************************************/
 class CompilationDatabaseProcessor
@@ -1040,10 +1115,59 @@ class LuaWrapper
     }
 
     /*clear the screen*/
-    int BruiserLuaClear(lua_State* _ls)
+    int BruiserLuaClear(lua_State* __ls)
     {
       linenoiseClearScreen();
       return 0;
+    }
+
+    int BruiserPyLoader(lua_State* __ls ) {
+      int numargs = lua_gettop(__ls);
+      //std::string filename = "../bfd/load.py";
+      std::string filename = "load";
+      std::string funcname;
+      std::string objjpath;
+
+      if (numargs == 2) {
+        std::cout << CYAN << "got args." << NORMAL << "\n";
+        funcname = lua_tostring(__ls, 1);
+        objjpath = lua_tostring(__ls, 2);
+      }
+      else {
+        std::cout << RED << "wrong number of arguments provided. should give the python script name, python func name and its args.\n" << NORMAL;
+        return EXIT_FAILURE;
+      }
+
+      std::cout << CYAN << "initing the py embed class...\n" << NORMAL;
+      PyExec py(filename.c_str(), funcname.c_str(), objjpath.c_str());
+
+      std::cout << CYAN << "forking python script...\n" << NORMAL;
+      pid_t pid = fork();
+
+      if (pid < 0)
+      {
+        PRINT_WITH_COLOR_LB(RED, "could not fork...");
+        lua_pushnumber(__ls, EXIT_FAILURE);
+      }
+
+      if (pid == 0)
+      {
+        std::cout << BLUE << "running load.py: " << NORMAL << "\n";
+        py.run();
+        lua_pushnumber(__ls, 0);
+        exit(EXIT_SUCCESS);
+      }
+
+      if (pid > 0)
+      {
+        int status;
+        pid_t returned;
+        returned = waitpid(pid, &status, 0);
+        lua_pushnumber(__ls, returned);
+      }
+
+      lua_pushnumber(__ls, 0);
+      return 1;
     }
 
     /*read the m0 report*/
@@ -1631,6 +1755,7 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "changedirectory", &LuaDispatch<&LuaWrapper::BruiserLuaChangeDirectory>);
     lua_register(LE.GetLuaState(), "yolo", &LuaDispatch<&LuaWrapper::BruiserLuaYolo>);
     lua_register(LE.GetLuaState(), "pwd", &LuaDispatch<&LuaWrapper::BruiserLuaPWD>);
+    lua_register(LE.GetLuaState(), "objload", &LuaDispatch<&LuaWrapper::BruiserPyLoader>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 

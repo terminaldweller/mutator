@@ -143,7 +143,8 @@ help CMDHelp[] = {
   {"getpaths()", "getpaths()", "gets the currently loaded paths that bruiser looks through", "none", "array of strings"},
   {"getsourcefiles()", "getsourcefiles()", "gets the currently loaded source files that bruiser will look through", "none", "array of strings"},
   {"changedirectory()", "changedirectory()", "changes bruiser's working directory. only use it when you know what you are doing.", "destination directory, [string]", "return value"},
-  {"pwd()", "pwd()", "pwd", "", ""}
+  {"pwd()", "pwd()", "pwd", "", ""},
+  {"objload()", "objload(\"main\", \"../bfd/test/test.so\")", "load the compiled functions into bruiser", "string", "success or failure"}
 };
 /**********************************************************************************************************************/
 /**
