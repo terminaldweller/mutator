@@ -1,6 +1,7 @@
 #MACRO DEFINITIONS FOR MUTATOR BUILDS
 
 CXX=clang++
+PY_CONF?=python3-config
 CXX?=clang++
 CC?=clang
 LLVM_CONF?=llvm-config

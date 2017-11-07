@@ -4,7 +4,7 @@ include ../macros.mk
 
 #######################################VARS####################################
 CXX_FLAGS+=-I/usr/include
-CXX_FLAGS+=$(shell python3-config --includes)
+CXX_FLAGS+=$(shell $(PY_CONF) --includes)
 BRUISER=bruiser
 LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
@@ -13,7 +13,7 @@ HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
 SRCS=bruiser.cpp, CompletionHints.cpp, ORCmutation.cpp, mutagen.cpp
 #for some reason without ld the build fails on ubuntu trusty on travis
 #EXTRA_LD_FLAGS+=-lpthread -ldl -lutil -lm -Xlinker -lpython3
-EXTRA_LD_FLAGS+=$(shell python3-config --ldflags)
+EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags)
 ######################################RULES####################################
 .DEFAULT: all
 

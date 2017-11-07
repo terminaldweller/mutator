@@ -15,7 +15,7 @@ matrix:
           description: "Build submitted via Travis CI"
         notification_email: thabogre@gmail.com
         build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-5.0"
-        build_command:   "make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG"
+        build_command:   "make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG"
         branch_pattern: master
 
 before_install:
@@ -45,7 +45,7 @@ before_script:
   - python3-config --ldflags
 
 script: 
-  - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
+  - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
 
 after_failure:
   - find . -maxdepth 1 -name "core*"
