@@ -4,7 +4,7 @@ include ../macros.mk
 
 #######################################VARS####################################
 override CXX_FLAGS+:=-I/usr/include
-override CXX_FLAGS+:=$(shell python3-config --includes)
+override CXX_FLAGS+::=$(shell python3-config --includes)
 BRUISER=bruiser
 LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
@@ -30,8 +30,6 @@ depend: .bruiser.d
 -include ./.bruiser.d
 
 .cpp.o: depend
-	@echo 'fuck right off'
-	echo 'fuck right off'
 	$(CXX) $(CXX_FLAGS) -I/usr/include/python3.5m -c $< -o $@
 
 linenoise.o:

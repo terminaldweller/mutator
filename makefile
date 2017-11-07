@@ -31,15 +31,15 @@ $(TARGET1): $(TARGET1).o mutator_aux.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 $(TARGET2): $(TARGET2).o mutator_aux.o
-	$(CXX) $^ $(LD_FLAGS) -o $@	
+	$(CXX) $^ $(LD_FLAGS) -o $@
 
 $(TARGET0): $(TARGET0).o mutator_aux.o mutator_report.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
-$(SFCPP01): ./safercpp/$(SFCPP01).o mutator_aux.o
+$(SFCPP01):
 	$(MAKE) -C safercpp CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
-$(BRUISER): ./bruiser/$(BRUISER).o mutator_aux.o
+$(BRUISER):
 	$(MAKE) -C bruiser CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
 $(TARGETC):
