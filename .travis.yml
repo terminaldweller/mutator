@@ -25,6 +25,7 @@ before_install:
 before_script: 
   - ulimit -c unlimited -s
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo add-apt-repository ppa:fkrull/deadsnakes
   - sudo apt-get update -y
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
   - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
@@ -36,9 +37,10 @@ before_script:
   - sudo apt-get install libboost-dev
   - git submodule init
   - git submodule update
-  - sudo apt-get install python3-all-dev -y
-  - sudo apt-get install libpython3-all-dev -y
-  - sudo apt-get source python -y
+    #- sudo apt-get install python3-all-dev -y
+    #- sudo apt-get install libpython3-all-dev -y
+    #- sudo apt-get source python -y
+  - sudo apt-get install python3.5-dev
   - python3-config --includes
   - python3-config --ldflags
 
