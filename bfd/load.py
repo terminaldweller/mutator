@@ -163,6 +163,7 @@ class ELF(object):
         self.size = int()
         self.string_tb_e = []
         self.string_tb_e_dyn = []
+        self.symbols = []
 
     def init(self, size):
         self.size = size
@@ -423,11 +424,11 @@ def main():
     so = openSO_r(sys.argv[1])
     elf = ELF(so)
     elf.init(64)
-    elf.dump_header()
-    elf.dump_symbol_tb()
+    #elf.dump_header()
+    #elf.dump_symbol_tb()
     #elf.dump_phdrs()
-    #elf.dump_shdrs()
-    elf.dump_symbol_idx()
+    elf.dump_shdrs()
+    #elf.dump_symbol_idx()
     #elf.dump_objs()
     '''
     so.close()

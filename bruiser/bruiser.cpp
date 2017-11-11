@@ -231,7 +231,7 @@ class PyExec {
           pArgs = nullptr;
           std::cout << BLUE << "calling python function..." << NORMAL << "\n";
           pValue = PyObject_CallObject(pFunc, pArgs);
-          std::cout << BLUE << "i made it here" << NORMAL << "\n";
+          //std::cout << BLUE << "i made it here" << NORMAL << "\n";
           //Py_DECREF(pArgs);
           if (pValue != nullptr) {
             std::cout << GREEN << "call finished successfully." << NORMAL << "\n";

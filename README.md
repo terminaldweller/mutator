@@ -45,6 +45,7 @@ Safercpp runs the automatic refactoring sets on your source code, automatically 
 mutator-lvl1 is an experimental tool that builds your code as a shared object library and keep it in the memory, later to be used by bruiser to dynamically link against or even run.<br/>
 bruiser is an interactive shell-like tool used to mutate the source code plus run the mutants. You can read about the idea in bruiser's directory.<br/>
 mutatord, the mutator server and the client are also provided as optional features.<br/>
+obfuscator is a C/C++ source code obfuscator.<br/>
 
 #### What is SaferCpp?
 SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more [here](https://github.com/duneroadrunner/SaferCPlusPlus).<br/>
@@ -71,6 +72,12 @@ Mutation levels have nothing to do with the order of mutants.<br/>
 <br/>
 
 ## How to get project mutator
+
+Before you run make, make sure you have all the dependencies:<br/>
+* You need LLVM 4.0<.<br/>
+* For `safercpp` you will need to have LLVM rtti also.<br/>
+* For `bruiser` you will need the python 3.5< dev package.<br/>
+* The other libraries used are either submodules or copied inside.<br/>
 
 Assuming you already have the LLVM/Clang libraries, just run :
 
@@ -161,6 +168,7 @@ Here Are the build options:<br/>
 	* `WIN_BUILD` will later be used to support Windows builds. It assumes there is a llvm-config and it's in windows path.<br/>
 	* `GNU_MODE` will build the executable with no source code coverage instrumentation for `g++`. Can only be used to build with `g++`.<br/>
 * The `LLVM_CONF` option is used to tell the compiler which `llvm-config` to use. The default value is `llvm-config`.<br/>
+* The `PY_CONF` option tells make which `python-config` to use. The default is `python3-config`.<br/>
 
 So for example if you want to build the code with `clang++` without any coverage, and you only want to build the Misra-C rule checker, you should run:<br/>
 <br/>
@@ -172,7 +180,7 @@ Note: if you are building the llvm and clang libraries from source, then the llv
 <br/>
 Also do note that building the llvm libraries from source in Debug mode will require big space on your harddrive and will need more than 4GB of RAM. Release mode is less resource-greedy, of course.<br/>
 Finally if you are having problems with the build, you could take a look at `.travis.yml` or under `CITPreBuildDep.sh` under `extra-tools` for some hints or help apart from asking for help, of course.<br/>
-As a general rule, if you have Clang and LLVM libraries 3.9 or up on your platform, you can build `mutator`. If there are any problems with builds on platforms other than the ones in `.travis.yml` let me know.<br/>
+As a general rule, if you have Clang and LLVM libraries 4.0 or up on your platform, you can build `mutator`. If there are any problems with builds on platforms other than the ones in `.travis.yml` let me know.<br/>
 
 After building the executables, you need to run:<br/>
 
@@ -189,7 +197,7 @@ Let me know if you decide to try this and/or have any problems with it.<br/>
 
 ### Running
 
-To run any of the tree executables, just give a filename or a whitespace-separated list of files. The executables will print out the results to stdout.<br/>
+To run any of the executables, just give a filename or a whitespace-separated list of files. The executables will print out the results to stdout.<br/>
 To run the executables with the mutator UI, you can use `mutator.sh`. For a list of available options, you can type `./mutator.sh -h`.<br/>
 
 * `-h, --help` prints out the help.<br/>

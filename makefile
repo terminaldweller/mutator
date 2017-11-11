@@ -14,13 +14,14 @@ TARGETD=mutatord
 TARGETS=mutatorserver
 SFCPP01=safercpp-arr
 BRUISER=bruiser
+OBSC=obfuscator
 
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS $(SFCPP01) $(BRUISER)
+.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS $(SFCPP01) $(BRUISER) $(OBSC)
 
-all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER)
+all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC)
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -42,6 +43,9 @@ $(SFCPP01):
 $(BRUISER):
 	$(MAKE) -C bruiser CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
+$(OBSC):
+	$(MAKE) -C obfuscator CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
+
 $(TARGETC):
 	$(MAKE) -C daemon mutatorclient
 
@@ -61,6 +65,7 @@ clean:
 	$(MAKE) -C daemon clean
 	$(MAKE) -C safercpp clean
 	$(MAKE) -C bruiser clean
+	$(MAKE) -C obfuscator clean
 
 install:
 	chmod +x ./mutator.sh
