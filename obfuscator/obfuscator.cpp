@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <vector>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -63,6 +64,61 @@ using namespace clang::tooling;
 
 static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
 /**********************************************************************************************************************/
+//#define DBG
+/**********************************************************************************************************************/
+// kill all comments
+/**********************************************************************************************************************/
+// kill all whitespace, add , and ;
+/**********************************************************************************************************************/
+class CalledFunc : public MatchFinder::MatchCallback {
+  public:
+    CalledFunc(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      if (MR.Nodes.getNodeAs<clang::CallExpr>("calledfunc") != nullptr) {
+        const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("calledfunc");
+        std::string name = CE->getDirectCallee()->getNameInfo().getAsString();
+        std::size_t hash = std::hash<std::string>{}(name);
+        std::string newname = "ID" + std::to_string(hash);
+#ifdef DBG
+        std::cout << "CallExpr name: "  << name << " Hash: " << hash << " New ID: " << newname << "\n";
+#endif
+
+        auto dummy = Rewrite.getRewrittenText(SourceRange(CE->getLocStart(), CE->getRParenLoc()));
+        auto LParenOffset = dummy.find("(");
+        dummy = Rewrite.getRewrittenText(SourceRange(CE->getLocStart(), CE->getLocStart().getLocWithOffset(LParenOffset - 1U)));
+        Rewrite.ReplaceText(SourceRange(CE->getLocStart(), CE->getLocStart().getLocWithOffset(LParenOffset - 1U)), StringRef(newname));
+      }
+    }
+
+  private:
+    Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
+class CalledVar : public MatchFinder::MatchCallback {
+  public:
+    CalledVar (Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("calledvar") != nullptr) {
+        const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("calledvar");
+        auto name = DRE->getNameInfo().getAsString();
+        std::size_t hash = std::hash<std::string>{}(name);
+        std::string newname = "ID" + std::to_string(hash);
+#ifdef DBG
+        std::cout << "DeclRefExpr name: "  << name << " Hash: " << hash << " New ID: " << newname << "\n";
+#endif
+      SourceLocation SL = DRE->getNameInfo().getBeginLoc();
+      SourceLocation SLE = DRE->getNameInfo().getEndLoc();
+
+      Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
+      }
+    }
+
+  private:
+    Rewriter &Rewrite;
+};
+/**********************************************************************************************************************/
 class FuncDecl : public MatchFinder::MatchCallback
 {
 public:
@@ -73,11 +129,17 @@ public:
     if (MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl") != nullptr) {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl");
       std::string funcname = FD->getNameInfo().getAsString();
+      if (funcname == "main") return void();
       std::size_t hash = std::hash<std::string>{}(funcname);
       std::string newname = "ID" + std::to_string(hash);
+#ifdef DBG
       std::cout << "Function name: "  << funcname << " Hash: " << hash << " New ID: " << newname << "\n";
+#endif
 
-      SourceRange SR = FD->getSourceRange();
+      SourceLocation SL = FD->getNameInfo().getBeginLoc();
+      SourceLocation SLE = FD->getNameInfo().getEndLoc();
+
+      Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
     }
   }
 
@@ -97,9 +159,14 @@ public:
       std::string varname = VD->getIdentifier()->getName().str();
       std::size_t hash = std::hash<std::string>{}(varname);
       std::string newname = "ID" + std::to_string(hash);
+#ifdef DBG
       std::cout << "Var name: "  << varname << " Hash: " << hash << " New ID: " << newname << "\n";
+#endif
 
-      SourceRange SR = VD->getSourceRange();
+      SourceLocation SL = VD->getLocation();
+      SourceLocation SLE = VD->getLocEnd();
+
+      Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
     }
   }
 
@@ -114,6 +181,22 @@ class ClassDecl : public MatchFinder::MatchCallback {
     virtual void run(const MatchFinder::MatchResult &MR) {
       if (MR.Nodes.getNodeAs<clang::RecordDecl>("classdecl") != nullptr) {
         const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("classdecl");
+        if (RD->isAnonymousStructOrUnion()) return void();
+        if (RD->isInjectedClassName()) {}
+        else {return void();}
+        auto TD = RD->getCanonicalDecl();
+        std::string varname = RD->getIdentifier()->getName().str();
+        std::size_t hash = std::hash<std::string>{}(varname);
+        std::string newname = "ID" + std::to_string(hash);
+#ifdef DBG
+        std::cout << "Record name: "  << varname << " Hash: " << hash << " New ID: " << newname << "\n";
+#endif
+
+        SourceLocation SL = RD->getLocation();
+        SourceLocation SLE = RD->getLocEnd();
+
+        std::string dummy = Rewrite.getRewrittenText(SourceRange(SL, SLE));
+        Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
       }
     }
 
@@ -124,21 +207,30 @@ class ClassDecl : public MatchFinder::MatchCallback {
 class PPInclusion : public PPCallbacks
 {
 public:
-  explicit PPInclusion (SourceManager *SM) : SM(*SM) {}
+  explicit PPInclusion (SourceManager *SM, Rewriter *Rewrite) : SM(*SM), Rewrite(*Rewrite) {}
 
   virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD) {
     const MacroInfo* MI = MD->getMacroInfo();
 
     SourceLocation SL = MacroNameTok.getLocation(); 
+    if (!SM.isInMainFile(SL)) return void();
+    if (!SM.isWrittenInMainFile(SL)) return void();
     CheckSLValidity(SL);
     std::string macroname = MacroNameTok.getIdentifierInfo()->getName().str();
     std::size_t hash = std::hash<std::string>{}(macroname);
     std::string newname = "ID" + std::to_string(hash);
+#ifdef DBG
     std::cout << "Macro name: " << macroname << " Hash: " << hash << " New ID: " << newname << "\n";
+#endif
+
+    //std::string dummy = Rewrite.getRewrittenText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())));
+    //std::cout << dummy << "\n";
+    Rewrite.ReplaceText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())), newname);
   }
 
 private:
   const SourceManager &SM;
+  Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
 class BlankDiagConsumer : public clang::DiagnosticConsumer
@@ -151,10 +243,12 @@ class BlankDiagConsumer : public clang::DiagnosticConsumer
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 public:
-  MyASTConsumer(Rewriter &R) : funcDeclHandler(R), HandlerForVar(R), HandlerForClass(R) {
+  MyASTConsumer(Rewriter &R) : funcDeclHandler(R), HandlerForVar(R), HandlerForClass(R), HandlerForCalledFunc(R), HandlerForCalledVar(R) {
     Matcher.addMatcher(functionDecl().bind("funcdecl"), &funcDeclHandler);
     Matcher.addMatcher(varDecl().bind("vardecl"), &HandlerForVar);
     Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"), &HandlerForClass);
+    //Matcher.addMatcher(callExpr().bind("calledfunc"), &HandlerForCalledFunc);
+    Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -165,19 +259,21 @@ private:
   FuncDecl funcDeclHandler;
   VDecl HandlerForVar;
   ClassDecl HandlerForClass;
+  CalledFunc HandlerForCalledFunc;
+  CalledVar HandlerForCalledVar;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
 class ObfFrontendAction : public ASTFrontendAction {
 public:
   ObfFrontendAction() {}
-  ~ObfFrontendAction() {}
+  ~ObfFrontendAction() {delete BDCProto;}
   void EndSourceFileAction() override {
-    //TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+    TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
-    CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
+    CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager(), &TheRewriter));
     DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
     DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());

@@ -4,6 +4,17 @@
 #include <iostream>
 #endif
 
+int return123(void) {
+  return 123;
+}
+
+int retret(int s, int w) {
+  return s + w;
+}
+
+#define loco 1
+#define puta int
+
 namespace devi
 {
   class LOCO
@@ -28,6 +39,10 @@ int main(int argc, const char **argv)
   myfile << "line one.\n";
   myfile.close();
 #endif
+  int aa = 100;
+  int bb = 28;
 
-  return 0;
+  return retret(aa, bb);
+
+  //return return123();
 }
