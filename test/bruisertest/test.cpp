@@ -33,6 +33,16 @@ namespace devi
 
 int main(int argc, const char **argv)
 {
+  /***hya**/
+  /*
+   *
+   * */
+  // /**/
+  int bubba; // this one
+  int hubba; /*
+  *
+  */
+  //std::cout << "//" << "/**/" << "\n";
 #if 0
   std::ofstream myfile;
   myfile.open("./touch");

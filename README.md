@@ -127,16 +127,13 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ## Announcements
 
+* announcing `obfuscator`, the newest mutator family member. it's a C/C++ source obfuscation tool.<br/>
 * mutator has a new experimental member, bruiser. The idea is that we are already inside the code, so why not break it?<br/>
 * mutator now has a daemon,a server and a client. It works, but we all know how much weight we can put on "it just works", don't we?  I'll be polishing it over the coming days. For more info and detail see `README.md` under `daemon` in project root. Also, please do note that you don't have to use the server feature. You can just run mutator like before. It's an added functionality. It does not modify previous functionality.<br/>
 * mutator will be implementing [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) rule checks and automatic refactoring of code bases to use SaferCPlusPlus libraries. The first phase will begin with implementing the compliancy checks. You can read more about SaferCPlusPlus [here](http://duneroadrunner.github.io/SaferCPlusPlus/).<br/>
 * mutator's first website is up: [project mutator](https://bloodstalker.github.io/mutator/).<br/>
 * project mutator has changed licenses from LGPLv3 to GPLv2.<br/>
-* `mutator-lvl0` has reached a release candidate. I will branch a release candidate for it and then we can start the unit tests.<br/>
-* The Implementation of the automatic refactoring facilities of `mutator` has begun. The UI is not yet capable of accomodating the current features so I'll try to add them as soon as possible.<br/>
-* The Travis build is now using 4.0 for build checks. LLVM 3.9 is still supported minus rule check 8.8 which uses a non-existant matcher in 3.9.<br/> 
 * There are no plans in regards to keeping or dropping LLVM 3.9 support but do keep in mind the libraries mutator uses are not guaranteed to keep backwards-compatibility by their developers as they are still under development.<br/>
-* There are only 4 actual defects on mutator's Coverity scan that belong to mutator's source code and not the library. 4 are potential defects which are not really defects.<br/>
 
 ## Building and Running
 
@@ -363,6 +360,10 @@ Project mutator uses the following cool libraries:
 * [Linenoise](https://github.com/antirez/linenoise)
 * [Lua](https://github.com/lua/lua)
 * [LuaJIT](https://github.com/LuaJIT/LuaJIT)
+* Thanks to [Jonathan Brossard](https://github.com/endrazine) for [WCC](https://github.com/endrazine/wcc), specifically `wsh` which is the inspiration for `bruiser`.<br/>
+
+All mutator source code is provided under GPL-2.0.<br/>
+All libraries have their respective licences. for more info you can just visit their respective links.<br/>
 
 ### Feedback
 If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any).<br/>
@@ -372,10 +373,7 @@ You can make a new issue for requests and suggestion. label them with "Feauture 
 Besides that, If you have any suggestions or have any feature requests for project mutator, you can send them to `thabogre@gmail.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/> 
 
 ### TODO List
-* Misra-c:2012 and 98 check support<br/>
-* Ability to turn off some rule checks<br/>
-* Using Appveyor to test windows builds<br/>
-* Have the server capture stderr<br/>
+For a list of things that need to be done, take a look at the list of issues.<br/>
 
 ### Contributions
 For a full description please read `Contributions.md` in the repo root.<br/>
