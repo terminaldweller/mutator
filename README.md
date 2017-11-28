@@ -59,23 +59,23 @@ You can follow Project `mutator` on twitter, @xashmith.
 ## mutator
 
 mutator is a suite of tools aimed at analysis and automation of C/C++ code development with thin client-server architectur written using the Clang front-end(LibTooling) as a stand-alone in C++. It consists of three(well so far) executables and a UI written in bash. You can run executables like any other CLI tool or just run them through the UI which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
-
 <br/>
-**mutator-lvl0** or `m0` checks for a number of rules(currently mostly Misra-c) on the source code, generating two reports. The first one is mostly a Misra-c report, the second one is the nodes and their ancestries that are hot spots for mutation.<br/>
-**mutator** or `m1` will run the level-1 implementers and mutators. `m1` is deprecated.<br/>
-**mutator-lvl2** or `m2` will be repurposed into an experiment. the idea is simple. to cut down on the mutant run-time, m2 will build the original source code as a shared library object. due to ASLR(Adress Space Randomization Layout) the real difference between an executable and an `.so` is one single bit in the file header. we will keep the shared object in the memory, use it as a library to link against and even call thorugh the dynamic linker and see how much we can cut down on the execution time of the mutants.<br/>
+* mutator-lvl0 or `m0` checks for a number of rules(currently mostly Misra-c) on the source code, generating two reports. The first one is mostly a Misra-c report, the second one is the nodes and their ancestries that are hot spots for mutation.<br/>
+* mutator or `m1` will run the level-1 implementers and mutators. `m1` is deprecated.<br/>
+* mutator-lvl2 or `m2` will be repurposed into an experiment. The idea is simple. To cut down on the mutant run-time, m2 will build the original source code as a shared library object. Due to ASLR(Adress Space Randomization Layout) the real difference between an executable and an `.so` is one single bit in the file header. We will keep the shared object in the memory, use it as a library to link against and even call through the dynamic linker and see how much we can cut down on the execution time of the mutants.<br/>
 Mutation levels have nothing to do with the order of mutants.<br/>
-**mutatord** is the mutator daemon that runs the server.<br/>
-**mutatorclient** is the thin client that sends commands to the server.<br/>
-**safercpp-arr** is SaferCPP's automatic refactoring tool for arrays.<br/>
-**bruiser** the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
+* [daemon/README.md](mutatord) is the mutator daemon that runs the server.<br/>
+* [daemon/README.md](mutatorclient) is the thin client that sends commands to the server.<br/>
+* [safercpp/README.md](safercpp-arr) is SaferCPP's automatic refactoring tool for arrays.<br/>
+* [bruiser/README.md](bruiser) the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
+* [obfuscator/README.md](obfuscator) is a C/C++ source-level translation tool.<br/>
 <br/>
 
 ## How to get project mutator
 
 Before you run make, make sure you have all the dependencies:<br/>
 * You need LLVM 4.0<.<br/>
-* For `safercpp` you will need to have LLVM rtti also.<br/>
+* For `safercpp` you will need to have LLVM RTTI also.<br/>
 * For `bruiser` you will need the python 3.5< dev package.<br/>
 * The other libraries used are either submodules or copied inside.<br/>
 
@@ -107,7 +107,7 @@ On Fedora you can just get the Requirements by dnf. For Ubuntu and Debian either
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase on the master branch. If something's not working properly let me know.<br/>
 
 * `mutator-lvl0` is the executable responsible for the Misra-C rule checks. Currently it has reached a release candidate, soon to be branched and have unit tests written for it.<br/>
-* `mutator-lvl1` and **`mutator-lvl2`** are collectively the code muatation and code transformation(automatic-refactoring) executables. Currently the automatic code transformations implemented are only limited to adding braces to blocks that are missing it, fixing SwitchStmts with adding a default clause if missing and breaks, swapping the RHS and LHS when the RHS is a constant and adding `else` if an if-else is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
+* `mutator-lvl1` and **`mutator-lvl2`** are collectively the code mutation and code transformation(automatic-refactoring) executables. Currently the automatic code transformations implemented are only limited to adding braces to blocks that are missing it, fixing SwitchStmts with adding a default clause if missing and breaks, swapping the RHS and LHS when the RHS is a constant and adding `else` if an if-else is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
 
 ### Dev Plans
 * Bruiser
@@ -120,7 +120,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 #### For a detailed list, you can view `tests.md` under `docs`.<br/>
 
 * The Dev method is TDD so of course, we currently have TDD tests.
-* For static analysis tools, mutator uses [Coverity](https://scan.coverity.com/projects/bloodstalker-mutator) which is integrated with [Travic CI](https://travis-ci.org/bloodstalker/mutator) so it runs everytime on every commit.<br/>
+* For static analysis tools, mutator uses [Coverity](https://scan.coverity.com/projects/bloodstalker-mutator) which is integrated with [Travic CI](https://travis-ci.org/bloodstalker/mutator) so it runs every time on every commit.<br/>
 * For dynamic analysis tools, currently mutator is using [Valgrind](http://valgrind.org). You can run it using `./mutator.sh -test mutator-lvl0 valgrind`. You do need to have `valgrind` installed.<br/>
 * The code will be reviewed after the first pre-release version. I'm hoping to find some reviewers but if not, I'll have to do it myself.<br/>
 * There will be unit tests after a first pre-release version.<br/>
@@ -317,7 +317,7 @@ This part contains notes regarding the implementation of the mutator executables
 Here's a quick look into the project files and directories:<br/>
 
 * **mutator-lvl0.cpp** contains the Misra-C rules to check. The Executable named after it, will run the Misra-C rule checks.<br/>
-* **mutator-lvl1.cpp** contains the mutators which are not copiled for the time being since im working on Misra-C only for the time being, along with some Misra-C implementers.<br/>
+* **mutator-lvl1.cpp** contains the mutators which are not compiled for the time being since im working on Misra-C only for the time being, along with some Misra-C implementers.<br/>
 * **mutator-lvl2.cpp** contains some other Misra-C implementers. Rewriting the code in multiple stages allows for more simplistic rewrites and is also a check to see whether the output is actually buildable.<br/>
 * **mutator.sh** is the UI, which is supposed to work like just any other nix UI(option-wise).<br/>
 * The **utility** folder holds the C source and headers that are necessary to run the instrumented code(currently unused).<br/>
@@ -339,15 +339,15 @@ The code base uses Coverity for static analysis and CI Travis for checking the b
 
 ### Notes
 
-#### **The project will be updated everytime there is a major LLVM release and will use those libraries instead of the old ones.**<br/>
+#### **The project will be updated every time there is a major LLVM release and will use those libraries instead of the old ones.**<br/>
 
 #### **As soon as I manage to find a copy of the Misra-C:2012 document, I'll implement that. Currently the tool only supports Misra-C:2004.**<br/>
 Misra-C rule checker outputs a simple text or xml report. JSON support will be implemented in the future.<br/>
 I'm using **TDD**. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.Those tests will be added later.<br/>
-The project has been tested to biuld on Fedora25(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
+The project has been tested to build on Fedora25(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
 The project might, at a later point in time, start using **Cmake** for the build process. Currently the TDD tests use CMake as an extra check.<br/>
 Misra 2012 support will be added in the future.<br/>
-Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if youre going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
+Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if you're going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
 The master branch is the dev version. Release versions will be forked.<br/>
 Doxygen comments will be added later on.<br/>
 
@@ -363,13 +363,13 @@ Project mutator uses the following cool libraries:
 * Thanks to [Jonathan Brossard](https://github.com/endrazine) for [WCC](https://github.com/endrazine/wcc), specifically `wsh` which is the inspiration for `bruiser`.<br/>
 
 All mutator source code is provided under GPL-2.0.<br/>
-All libraries have their respective licences. for more info you can just visit their respective links.<br/>
+All libraries have their respective licences. For more info you can just visit their respective links.<br/>
 
 ### Feedback
 If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any).<br/>
 
 ### Suggestions and Feature Requests
-You can make a new issue for requests and suggestion. label them with "Feauture Request".<br/>
+You can make a new issue for requests and suggestion. Label them with "Feauture Request".<br/>
 Besides that, If you have any suggestions or have any feature requests for project mutator, you can send them to `thabogre@gmail.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/> 
 
 ### TODO List
