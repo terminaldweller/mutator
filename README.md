@@ -58,17 +58,17 @@ You can follow Project `mutator` on twitter, @xashmith.
 
 ## mutator
 
-mutator is a suite of tools aimed at analysis and automation of C/C++ code development with thin client-server architectur written using the Clang front-end(LibTooling) as a stand-alone in C++. It consists of three(well so far) executables and a UI written in bash. You can run executables like any other CLI tool or just run them through the UI which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
+mutator is a suite of tools aimed at analysis and automation of C/C++ code development with thin client-server architectur written using the Clang front-end(LibTooling) as a stand-alone in mostly C++. It consists of four(so far) executables and a driver. You can run executables like any other CLI tool or just run them through the driver or the client which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
 <br/>
 * mutator-lvl0 or `m0` checks for a number of rules(currently mostly Misra-c) on the source code, generating two reports. The first one is mostly a Misra-c report, the second one is the nodes and their ancestries that are hot spots for mutation.<br/>
 * mutator or `m1` will run the level-1 implementers and mutators. `m1` is deprecated.<br/>
 * mutator-lvl2 or `m2` will be repurposed into an experiment. The idea is simple. To cut down on the mutant run-time, m2 will build the original source code as a shared library object. Due to ASLR(Adress Space Randomization Layout) the real difference between an executable and an `.so` is one single bit in the file header. We will keep the shared object in the memory, use it as a library to link against and even call through the dynamic linker and see how much we can cut down on the execution time of the mutants.<br/>
 Mutation levels have nothing to do with the order of mutants.<br/>
-* [daemon/README.md](mutatord) is the mutator daemon that runs the server.<br/>
-* [daemon/README.md](mutatorclient) is the thin client that sends commands to the server.<br/>
-* [safercpp/README.md](safercpp-arr) is SaferCPP's automatic refactoring tool for arrays.<br/>
-* [bruiser/README.md](bruiser) the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
-* [obfuscator/README.md](obfuscator) is a C/C++ source-level translation tool.<br/>
+* mutatord is the mutator daemon that runs the server. [daemon/](README.md)<br/>
+* mutatorclient is the thin client that sends commands to the server.[daemon/](README.md)<br/>
+* safercpp-arr is SaferCPP's automatic refactoring tool for arrays.[bruiser/](README.md)<br/>
+* bruiser the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.[bruiser/](README.md)<br/>
+* obfuscator is a C/C++ source-level translation tool.[obfuscator/](README.md)<br/>
 <br/>
 
 ## How to get project mutator
