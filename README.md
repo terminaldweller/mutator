@@ -64,11 +64,11 @@ mutator is a suite of tools aimed at analysis and automation of C/C++ code devel
 * mutator or `m1` will run the level-1 implementers and mutators. `m1` is deprecated.<br/>
 * mutator-lvl2 or `m2` will be repurposed into an experiment. The idea is simple. To cut down on the mutant run-time, m2 will build the original source code as a shared library object. Due to ASLR(Adress Space Randomization Layout) the real difference between an executable and an `.so` is one single bit in the file header. We will keep the shared object in the memory, use it as a library to link against and even call through the dynamic linker and see how much we can cut down on the execution time of the mutants.<br/>
 Mutation levels have nothing to do with the order of mutants.<br/>
-* mutatord is the mutator daemon that runs the server. [daemon/](README.md)<br/>
+* mutatord is the mutator daemon that runs the server. [daemon](README.md)<br/>
 * mutatorclient is the thin client that sends commands to the server.[daemon/](README.md)<br/>
-* safercpp-arr is SaferCPP's automatic refactoring tool for arrays.[bruiser/](README.md)<br/>
+* safercpp-arr is SaferCPP's automatic refactoring tool for arrays.[safercpp](safercpp/README.md)<br/>
 * bruiser the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.[bruiser/](README.md)<br/>
-* obfuscator is a C/C++ source-level translation tool.[obfuscator/](README.md)<br/>
+* obfuscator is a C/C++ source-level translation tool.[obfuscator](obfuscator/README.md)<br/>
 <br/>
 
 ## How to get project mutator
