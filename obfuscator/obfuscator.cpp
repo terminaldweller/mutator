@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*code structure inspired by Eli Bendersky's tutorial on Rewriters.*/
 /**********************************************************************************************************************/
 /*FIXME-all classes should use replacements.*/
+//@DEVI-FIXME-will mess up macros
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/

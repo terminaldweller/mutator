@@ -28,7 +28,7 @@ class ArgParser(object):
         parser = argparse.ArgumentParser()
         parser.add_argument("-help", action='store_true', help="display the driver's help", default=False)
         parser.add_argument("-f", "--file", type=str, help="run an action file")
-        parser.add_argument("-c", "--command", type=str, help="run a command")
+        parser.add_argument("-c", "--command", nargs="+", type=str, help="run a command")
         parser.add_argument("-v", "--version", action='store_true', help="display version info", default=False)
         parser.add_argument("-i", "--input", type=str, help="the input file(s)")
         parser.add_argument("-o", "--output", type=str, help="the output file(s)")
@@ -41,6 +41,7 @@ class ArgParser(object):
     def run(self):
         if self.args.file  is not None:
             self.parseActionFile(self.args.file)
+            self.runActionFile()
         if self.args.command is not None:
             self.runCommand(self.args.command)
 
@@ -108,29 +109,29 @@ class ArgParser(object):
         pass
 
     def runCommand(self, command):
-        if command == "clean":
+        if command[0] == "clean":
             call(["make", "clean"])
-        elif command == "build":
-            call(["make", "all"])
-        elif command == "install":
+        elif command[0] == "make":
+            call(["make", self.args.command[1]])
+        elif command[0] == "install":
             call(["make", "install"])
-        elif command == "format":
+        elif command[0] == "format":
             pass
-        elif command == "test":
+        elif command[0] == "test":
             pass
-        elif command == "build-all":
-            call(["make", "build-all"])
-        elif command == "m0":
+        elif command[0] == "buildall" or command[0] == "makeall":
+            call(["make"])
+        elif command[0] == "m0":
             pass
-        elif command == "m1":
+        elif command[0] == "m1":
             pass
-        elif command == "m2":
+        elif command[0] == "m2":
             pass
-        elif command == "bruiser":
+        elif command[0] == "bruiser":
             pass
-        elif command == "obfuscator":
+        elif command[0] == "obfuscator":
             pass
-        elif command == "safercpp":
+        elif command[0] == "safercpp":
             pass
         else:
             raise Exception(Colors.red + "unknown command. for a list of valid commands run with -h." + Colors.ENDC);

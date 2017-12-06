@@ -144,7 +144,8 @@ help CMDHelp[] = {
   {"getsourcefiles()", "getsourcefiles()", "gets the currently loaded source files that bruiser will look through", "none", "array of strings"},
   {"changedirectory()", "changedirectory()", "changes bruiser's working directory. only use it when you know what you are doing.", "destination directory, [string]", "return value"},
   {"pwd()", "pwd()", "pwd", "", ""},
-  {"objload()", "objload(\"main\", \"../bfd/test/test.so\")", "load the compiled functions into bruiser", "string", "success or failure"}
+  {"objload()", "objload(\"main\", \"../bfd/test/test.so\")", "load the compiled functions into bruiser", "string", "success or failure"},
+  {"listObjects()", "listObjects(\"function\")", "lists the loaded objects of the given type", "string", "success or failure"}
 };
 /**********************************************************************************************************************/
 /**
@@ -263,7 +264,6 @@ class SearchM0
       if (!RootPointer->NoChildren())
       {
         const XMLElement* XMLE [[maybe_unused]] = RootPointer->FirstChildElement();
-
       }
     }
 
@@ -276,13 +276,126 @@ class Daemonize
   public:
     Daemonize (std::string __exe, std::string __opts) : Exe(__exe), Opts(__opts) {}
 
-
-
   private:
     std::string Exe;
     std::string Opts;
 };
 /**********************************************************************************************************************/
+/*structs to hold load.py's return values*/
+/*@DEVI-at some point in the future i might revert to using libbfd or libelf.*/
+
+/*elf*/
+#define ELF_EI_MAGIC =      0x000000000000ffff;
+#define ELF_EI_CLASS =      0x00000000000f0000;
+#define ELF_EI_DATA =       0x0000000000f00000;
+#define ELF_EI_VERSION =    0x000000000f000000;
+#define ELF_EI_OSABI =      0x00000000f0000000;
+#define ELF_EI_ABIVERSION = 0x0000000f00000000;
+#define ELF_EI_PAD =        0xfffffff000000000;
+
+// @DEVI-FIXME-using uint128 here
+struct ELFHDR_64 {
+  public:
+    ELFHDR_64() = default;
+    ELFHDR_64(__uint128_t _ident, uint16_t _type, uint16_t _machine, 
+        uint32_t _version, uint64_t _entry, uint64_t _phoff,  uint64_t _shoff, 
+        uint32_t _flags, uint16_t _ehsize, uint16_t _phentsize, 
+        uint16_t _phnum, uint16_t _shentsize, uint16_t _shnum, uint16_t _shstrndx) {
+      e_ident = _ident; e_type = _type; e_machine = _machine; e_version = _version; 
+      e_entry = _entry; e_phoff = _phoff; e_shoff = _shoff; e_flags = _flags;
+      e_ehsize = _ehsize; e_phentsize = _phentsize; e_phnum = _phnum;
+      e_shentsize = _shentsize; e_shnum = _shnum; e_shstrndx = _shstrndx;
+    }
+    __uint128_t e_ident; uint16_t e_type; uint16_t e_machine; uint32_t e_version; 
+    uint64_t e_entry; uint64_t e_phoff; uint64_t e_shoff; uint32_t e_flags; 
+    uint16_t e_ehsize; uint16_t e_phentsize; uint16_t e_phnum; uint16_t e_shentsize; 
+    uint16_t e_shnum; uint16_t e_shstrndx;
+};
+
+// @DEVI-FIXME-using uint128 here
+struct ELFHDR_32 {
+  public:
+    ELFHDR_32() = default;
+    ELFHDR_32(__uint128_t _ident, uint16_t _type, uint16_t _machine, uint32_t _version, 
+        uint32_t _entry, uint32_t _phoff, uint32_t _shoff, uint32_t _flags, 
+        uint16_t _ehsize, uint16_t _phentsize, uint16_t _phnum, uint16_t _shentsize, 
+        uint16_t _shnum, uint16_t _shstrndx) {
+      e_ident = _ident; e_type = _type; e_machine = _machine; e_version = _version; 
+      e_entry = _entry; e_phoff = _phoff; e_shoff = _shoff; e_flags = _flags;
+      e_ehsize = _ehsize; e_phentsize = _phentsize; e_phnum = _phnum;
+      e_shentsize = _shentsize; e_shnum = _shnum; e_shstrndx = _shstrndx;
+    }
+
+    __uint128_t e_ident; uint16_t e_type; uint16_t e_machine; uint32_t e_version;
+    uint32_t e_entry; uint32_t e_phoff; uint32_t e_shoff; uint32_t e_flags;
+    uint16_t e_ehsize; uint16_t e_phentsize; uint16_t e_phnum; uint16_t e_shentsize;
+    uint16_t e_shnum; uint16_t e_shstrndx;
+};
+/*program header*/
+struct PHDR_64 {
+  public:
+    PHDR_64() = default;
+    PHDR_64(uint32_t _type, uint32_t _flags, uint64_t _offset, uint64_t _vaddr, 
+        uint64_t _paddr, uint64_t _filesz, uint64_t _memsz, uint64_t _align) {
+      p_type = _type; p_flags = _flags; p_offset = _offset; p_vaddr = _vaddr;
+      p_paddr = _paddr; p_filesz = _filesz; p_memsz = _memsz; p_align = _align;
+    }
+
+    uint32_t p_type; uint32_t p_flags; uint64_t p_offset; uint64_t p_vaddr;
+    uint64_t p_paddr; uint64_t p_filesz; uint64_t p_memsz; uint64_t p_align;
+};
+struct PHDR_32 {
+  public:
+    PHDR_32() = default;
+    PHDR_32(uint32_t _type, uint32_t _offset, uint32_t _vaddr, uint32_t _paddr, 
+        uint32_t _filesz, uint32_t _memsz, uint32_t _flags, uint32_t _align) {
+      p_type = _type; p_flags = _flags; p_offset = _offset; p_vaddr = _vaddr;
+      p_paddr = _paddr; p_filesz = _filesz; p_memsz = _memsz; p_align = _align;
+    };
+
+    uint32_t p_type;
+    uint32_t p_offset;
+    uint32_t p_vaddr;
+    uint32_t p_paddr;
+    uint32_t p_filesz;
+    uint32_t p_memsz;
+    uint32_t p_flags;
+    uint32_t p_align;
+};
+/*section header*/
+struct SHDR_64 {
+  public:
+    SHDR_64() = default;
+    SHDR_64(uint32_t _name, uint32_t _type, uint64_t _flags, uint64_t _addr, 
+        uint64_t _offset, uint64_t _size, uint32_t _link, uint32_t _info, 
+        uint64_t _addralign, uint64_t _entsize) {
+      sh_name = _name; sh_type = _type; sh_flags = _flags; sh_addr = _addr;
+      sh_offset = _offset; sh_size = _size; sh_link = _link; sh_info = _info;
+      sh_addralign = _addralign; sh_entsize = _entsize;
+    };
+
+    uint32_t sh_name; uint32_t sh_type; uint64_t sh_flags; uint64_t sh_addr;
+    uint64_t sh_offset; uint64_t sh_size; uint32_t sh_link; uint32_t sh_info;
+    uint64_t sh_addralign; uint64_t sh_entsize;
+};
+struct SHDR_32 {
+  public:
+    SHDR_32() = default;
+    SHDR_32(uint32_t _name, uint32_t _type, uint32_t _flags, uint32_t _addr, 
+        uint32_t _offset, uint32_t _size, uint32_t _link, uint32_t _info, 
+        uint32_t _addralign, uint32_t _entsize) {
+      sh_name = _name; sh_type = _type; sh_flags = _flags; sh_addr = _addr;
+      sh_offset = _offset; sh_size = _size; sh_link = _link; sh_info = _info;
+      sh_addralign = _addralign; sh_entsize = _entsize;
+    };
+
+    uint32_t sh_name; uint32_t sh_type; uint32_t sh_flags; uint32_t sh_addr;
+    uint32_t sh_offset; uint32_t sh_size; uint32_t sh_link; uint32_t sh_info;
+    uint32_t sh_addralign; uint32_t sh_entsize;
+};
+/*symbol table entry*/
+struct ST_Entry_64 {};
+struct ST_Entry_32 {};
 /**********************************************************************************************************************/
 } // end of namespace bruiser
 #endif

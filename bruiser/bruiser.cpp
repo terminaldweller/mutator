@@ -231,12 +231,11 @@ class PyExec {
           pArgs = nullptr;
           std::cout << BLUE << "calling python function..." << NORMAL << "\n";
           pValue = PyObject_CallObject(pFunc, pArgs);
-          //std::cout << BLUE << "i made it here" << NORMAL << "\n";
           //Py_DECREF(pArgs);
           if (pValue != nullptr) {
             std::cout << GREEN << "call finished successfully." << NORMAL << "\n";
             printf("Result of call: %ld\n", PyLong_AsLong(pValue));
-            Py_DECREF(pValue);
+            //Py_DECREF(pValue);
           } else {
             Py_DECREF(pFunc);
             Py_DECREF(pModule);
@@ -262,18 +261,77 @@ class PyExec {
     return 0;
     }
 
+    int getAsCppStringVec(void) {
+      if (PyList_Check(pValue)) {
+        std::cout << GREEN << "got a python list\n" << NORMAL;
+        int list_length = PyList_Size(pValue);
+        std::cout << BLUE << "length of list: " << list_length << "\n" << NORMAL;
+        for (int i = 0; i < list_length; ++i) {
+          PyObject* pybytes = PyList_GetItem(pValue, i);
+          std::cout << CYAN << "bytes size: " << PyBytes_Size(pybytes) << "\n" << NORMAL;
+          PyObject* pyrepr = PyObject_Repr(pybytes);
+          PyObject* pyunicode = PyUnicode_AsEncodedString(pyrepr, "utf-8", "surrogateescape");
+          const char* dummy = PyBytes_AsString(pyunicode);
+          std::cout << RED << dummy << "\n" << NORMAL;
+          hexobj_str.push_back(std::string(dummy));
+        }
+      }
+      return 0;
+    }
+
+    int getAsCppByte(void) {
+      std::vector<uint8_t> tempvec;
+      if(PyList_Check(pValue)) {
+        int list_length = PyList_Size(pValue);
+        for(int i = 0; i < list_length; ++i) {
+          PyObject* pybytes = PyList_GetItem(pValue, i);
+          if(PyList_Check(pybytes)) {
+            int list_length_2 = PyList_Size(pybytes);
+            for(int j = 0; j < list_length_2; ++j) {
+              PyObject* dummy_int = PyList_GetItem(pybytes, j);
+              if (PyLong_Check(dummy_int)) {
+                unsigned char byte = PyLong_AsLong(dummy_int);
+                tempvec.push_back(int(byte));
+              }
+            }
+            hexobj.push_back(tempvec);
+          }
+        }
+      }
+      return 0;
+    }
+
+    void killPyObj(void) {
+      Py_DECREF(pValue);
+    }
+
+    void printHexObjs(void) {
+        for (auto &iter : hexobj) {
+          for (auto &iterer : iter) {
+            std::cout << RED << int(iterer) << " ";
+          }
+          std::cout << "\n" << NORMAL;
+        }
+    }
+
+    std::vector<std::vector<uint8_t>> exportObjs(void) {
+      return hexobj;
+    }
+
   private:
     std::string py_script_name;
     std::string py_func_name;
     std::string obj_path;
-    PyObject *pName;
-    PyObject *pModule;
-    PyObject *pDict;
-    PyObject *pFunc;
-    PyObject *pArgs;
-    PyObject *pValue;
+    PyObject* pName;
+    PyObject* pModule;
+    PyObject* pDict;
+    PyObject* pFunc;
+    PyObject* pArgs;
+    PyObject* pValue;
     int argc;
     char** argv;
+    std::vector<std::string> hexobj_str;
+    std::vector<std::vector<uint8_t>> hexobj;
 };
 /**********************************************************************************************************************/
 class CompilationDatabaseProcessor
@@ -1154,6 +1212,10 @@ class LuaWrapper
       {
         std::cout << BLUE << "running load.py: " << NORMAL << "\n";
         py.run();
+        //py.getAsCppStringVec();
+        py.getAsCppByte();
+        py.printHexObjs();
+        //py.killPyObj();
         lua_pushnumber(__ls, 0);
         exit(EXIT_SUCCESS);
       }
@@ -1596,6 +1658,11 @@ class LuaWrapper
       return 0;
     }
 
+    int BruiserLuaListObjects(lua_State* __ls) {
+      // @DEVI-has one string object to signify what kind of object to list
+      return 0;
+    }
+
     int BruiserLuaPWD(lua_State* __ls)
     {
       pid_t pid = fork();
@@ -1756,6 +1823,7 @@ int main(int argc, const char **argv)
     lua_register(LE.GetLuaState(), "yolo", &LuaDispatch<&LuaWrapper::BruiserLuaYolo>);
     lua_register(LE.GetLuaState(), "pwd", &LuaDispatch<&LuaWrapper::BruiserLuaPWD>);
     lua_register(LE.GetLuaState(), "objload", &LuaDispatch<&LuaWrapper::BruiserPyLoader>);
+    lua_register(LE.GetLuaState(), "listObjects", &LuaDispatch<&LuaWrapper::BruiserLuaListObjects>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
@@ -1812,5 +1880,6 @@ int main(int argc, const char **argv)
   } //end of cli block
 
 } //end of main
+/**********************************************************************************************************************/
 /*last line intentionally left blank.*/
 
