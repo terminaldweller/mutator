@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "../mutator_aux.h"
 #include "mutagen.h"
 #include "ORCmutation.h"
+#include "executioner.h"
 /*standard headers*/
 #include <fstream>
 #include <string>
