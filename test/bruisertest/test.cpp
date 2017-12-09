@@ -42,7 +42,9 @@ int main(int argc, const char **argv)
   int hubba; /*
   *
   */
+  /* "//" \\ \\\\ // */
   //std::cout << "//" << "/**/" << "\n";
+  int/***/ cucu;
 #if 0
   std::ofstream myfile;
   myfile.open("./touch");

@@ -234,8 +234,10 @@ public:
     std::cout << "Macro name: " << macroname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
 
-    //std::string dummy = Rewrite.getRewrittenText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())));
-    //std::cout << dummy << "\n";
+#ifdef DBG
+    std::string dummy = Rewrite.getRewrittenText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())));
+    std::cout << dummy << "\n";
+#endif
     Rewrite.ReplaceText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())), newname);
   }
 
@@ -310,35 +312,59 @@ class CommentWiper {
 
     int run(void) {
       for (auto &filepath : sourcelist) {
-        //std::regex comment1("//.+");
-        //std::regex comment2("/\\*.+\\*/");
-        //std::regex comment2("/\\*[^]+\\*/");
-        //std::regex multibegin("/\\*.+(?!\\*/)");
-        //std::regex multiend("(?<!/\\*).+\\*/");
-        //std::smatch result;
-        //bool multiline;
-        bool slash, backslash, quote, star, multiline;
-        unsigned int ch_prv;
-
         std::ifstream sourcefile;
         sourcefile.open("../test/bruisertest/obfuscator-tee");
         std::ofstream dupe;
         dupe.open("./dupe.cpp");
         std::string line;
+
+        int d_quote = 0;
+        bool skip = false;
+
         while (std::getline(sourcefile, line)) {
+          std::string dummy;
           line += "\n";
           for (unsigned int ch = 0; ch < line.length(); ++ch) {
-            if (line[ch] == atoi("/")) slash = true;
-            if (line[ch] == atoi("\\")) backslash = true;
-            if (line[ch] == atoi("\"")) quote = true;
-            if (line[ch] == atoi("*")) star = true;
-            ch_prv = ch;
+            if (!skip) {
+              if ((line[ch] == '\"' || line[ch] == '\'')) {
+                if (ch > 1) {
+                  if (line[ch - 1] != '\\') {
+                    d_quote++;
+                    if (d_quote % 1 == 1) {
+                      continue;
+                    }
+                  }
+                }
+              }
+            }
+            if (line[ch] == '/') {
+              if (ch > 1) {
+                if (line[ch - 1] == '/' && !skip) {
+                  if (dummy.length() > 1) {
+                    dummy.erase(dummy.length() - 1);
+                  }
+                  break;
+                }
+                if (line[ch - 1] == '*') {
+                  skip = false;
+                  continue;
+                }
+              }
+              if (ch < line.length() - 1) {
+                if (line[ch + 1] == '*' && !skip) {
+                  skip = true;
+                  continue;
+                }
+              }
+            }
+            if (!skip) dummy.push_back(line[ch]);
           }
-          //if (std::regex_search(line, result, comment1)) {std::cout << "11111" << result.str() << "\n";}
-          //if (std::regex_search(line, result, comment2)) {std::cout << "22222" << result.str() << "\n";}
-          //if (std::regex_search(line, result, multibegin)) {std::cout << "33333" << result.str() << "\n";}
-          //if (std::regex_search(line, result, multiend)) {std::cout << "44444" << result.str() << "\n";}
-          dupe << line << "\n";
+          d_quote = 0;
+          if (dummy.length() > 1) {
+            if (dummy[dummy.length() - 1] != '\n') {dummy.push_back('\n');}
+          }
+          dupe << dummy;
+          dummy.clear();
         }
         sourcefile.close();
         dupe.close();
@@ -350,6 +376,7 @@ class CommentWiper {
     std::vector<std::string> sourcelist;
 };
 /**********************************************************************************************************************/
+/*@DEVI-not in a hurry to implement this. reverting this is as simple as running something like clang-format.*/
 class WhitespaceWarper {
   public:
     WhitespaceWarper(std::vector<std::string> SourceList) : sourcelist(SourceList) {}
@@ -359,7 +386,7 @@ class WhitespaceWarper {
         std::ifstream sourcefile;
         sourcefile.open("../test/bruisertest/obfuscator-tee");
         std::ofstream dupe;
-        dupe.open("./dupe.cpp");
+        dupe.open("./dupe2.cpp");
         std::string line;
         while (std::getline(sourcefile, line)) {
           for (auto &character : line) {
