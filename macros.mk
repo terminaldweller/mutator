@@ -7,6 +7,7 @@ CC?=clang
 LLVM_CONF?=llvm-config
 BUILD_MODE?=COV_NO_CLANG_1Z
 SHELL:=/bin/bash
+MAKEFLAGS+=--warn-undefined-variables
 
 
 CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)

@@ -1,7 +1,8 @@
 
+/*first line intentionally left blank.*/
 /***************************************************Project Mutator****************************************************/
 //-*-c++-*-
-/*first line intentionally left blank.*/
+// a C/C++ source code obfuscator
 /*Copyright (C) 2017 Farzad Sadeghi
 
 This program is free software; you can redistribute it and/or
@@ -19,7 +20,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /*code structure inspired by Eli Bendersky's tutorial on Rewriters.*/
 /**********************************************************************************************************************/
-/*FIXME-all classes should use replacements.*/
 //@DEVI-FIXME-will mess up macros
 /**********************************************************************************************************************/
 /*included modules*/
@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <cassert>
 #include <vector>
 #include <fstream>
-#include <regex>
+#include <dirent.h>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -52,7 +52,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "llvm/IR/Module.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/Function.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Linker/Linker.h"
 /**********************************************************************************************************************/
@@ -64,14 +63,72 @@ using namespace clang::driver;
 using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
-
-static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
+static llvm::cl::OptionCategory ObfuscatorCat("Obfuscator custom options");
 /**********************************************************************************************************************/
 //#define DBG
 /**********************************************************************************************************************/
-// kill all comments
+class CryptoSponge {
+  public:
+    CryptoSponge() = default;
+    ~CryptoSponge() {}
+};
 /**********************************************************************************************************************/
-// kill all whitespace, add , and ;
+std::vector<std::string> listEverything(std::string _path) {
+  std::vector<std::string> dummy_;
+  DIR *dir_;
+  struct dirent* ent_;
+  if ((dir_ = opendir(_path.c_str())) != nullptr) {
+    while((ent_ = readdir(dir_)) != nullptr) {
+      std::cout << "name: "  << ent_->d_name << "\ttype:" << ent_->d_type << "\n";
+      if (ent_->d_type == DT_DIR) {std::cout << "ZZZ\n";}
+      dummy_.push_back(ent_->d_name);
+    }
+  }
+  else {
+    perror("could not open directory.");
+  }
+  return dummy_;
+}
+
+std::tuple<std::string, std::string, std::string> getNameFromPath(std::string _path) {
+  size_t pos = _path.rfind("/");
+  size_t pos2 = _path.rfind(".");
+  auto extension_ = _path.substr(pos2 + 1, std::string::npos);
+  auto name_ = _path.substr(pos + 1, pos2 - pos - 1);
+  auto path_ = _path.substr(0, pos);
+  return std::make_tuple(name_, extension_, path_);
+}
+
+std::string nameMaker(std::string _name, std::string _extension, std::string _extra = "obfusc") {
+  if (_extra == "") {
+    return _name + _extra + "." + _extension;
+  }
+  else {
+    return _name + "-" + _extra + "." + _extension;
+  }
+}
+
+std::string getHashedName(std::string _name) {
+  std::size_t hash = std::hash<std::string>{}(_name);
+  return "FILE" + std::to_string(hash);
+}
+
+std::unordered_map<std::string, std::string> hashFilenames(const std::vector<std::string>& _filenames) {
+  std::unordered_map<std::string, std::string> ret_map_;
+  for (auto &iter : _filenames) {
+    auto filename_ = getNameFromPath(iter);
+    std::size_t hash = std::hash<std::string>{}(std::get<0>(filename_));
+    auto new_name_ = "FILE" + std::to_string(hash);
+    ret_map_.insert(std::make_pair(iter, new_name_));
+  }
+  return ret_map_;
+}
+
+void dumpHashFilenames(std::unordered_map<std::string, std::string> _map) {
+  for (auto &iter : _map) {
+    std::cout << "Key: " << iter.first << "\t" << "Value: " << iter.second << "\n";
+  }
+}
 /**********************************************************************************************************************/
 class CalledFunc : public MatchFinder::MatchCallback {
   public:
@@ -195,7 +252,7 @@ class ClassDecl : public MatchFinder::MatchCallback {
         if (RD->isAnonymousStructOrUnion()) return void();
         if (RD->isInjectedClassName()) {}
         else {return void();}
-        auto TD = RD->getCanonicalDecl();
+        //auto TD = RD->getCanonicalDecl();
         std::string varname = RD->getIdentifier()->getName().str();
         std::size_t hash = std::hash<std::string>{}(varname);
         std::string newname = "ID" + std::to_string(hash);
@@ -221,7 +278,6 @@ public:
   explicit PPInclusion (SourceManager *SM, Rewriter *Rewrite) : SM(*SM), Rewrite(*Rewrite) {}
 
   virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD) {
-    const MacroInfo* MI = MD->getMacroInfo();
 
     SourceLocation SL = MacroNameTok.getLocation(); 
     if (!SM.isInMainFile(SL)) return void();
@@ -239,6 +295,12 @@ public:
     std::cout << dummy << "\n";
 #endif
     Rewrite.ReplaceText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())), newname);
+  }
+
+  virtual void  InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, 
+      StringRef FileName, bool IsAngled, CharSourceRange FilenameRange, const FileEntry *File, 
+      StringRef SearchPath, StringRef RelativePath, const clang::Module *Imported) {
+    std::cout << "Include filename: " << FileName.str() << "\n";
   }
 
 private:
@@ -315,7 +377,9 @@ class CommentWiper {
         std::ifstream sourcefile;
         sourcefile.open("../test/bruisertest/obfuscator-tee");
         std::ofstream dupe;
-        dupe.open("./dupe.cpp");
+        auto filename_ = getNameFromPath(filepath);
+        dupe.open(nameMaker(getHashedName(std::get<0>(filename_)), std::get<1>(filename_), ""));
+        //dupe.open("./dupe.cpp");
         std::string line;
 
         int d_quote = 0;
@@ -326,6 +390,7 @@ class CommentWiper {
           line += "\n";
           for (unsigned int ch = 0; ch < line.length(); ++ch) {
             if (!skip) {
+              /*@DEVI-FIXME-it coutns double qoutes and qoutes as one*/
               if ((line[ch] == '\"' || line[ch] == '\'')) {
                 if (ch > 1) {
                   if (line[ch - 1] != '\\') {
@@ -385,6 +450,7 @@ class WhitespaceWarper {
       for (auto &filepath : sourcelist) {
         std::ifstream sourcefile;
         sourcefile.open("../test/bruisertest/obfuscator-tee");
+        auto filename_ = getNameFromPath(filepath);
         std::ofstream dupe;
         dupe.open("./dupe2.cpp");
         std::string line;
@@ -412,16 +478,24 @@ class WhitespaceWarper {
     std::vector<std::string> sourcelist;
 };
 /**********************************************************************************************************************/
+/**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
-  CommonOptionsParser op(argc, argv, MatcherSampleCategory);
+  CommonOptionsParser op(argc, argv, ObfuscatorCat);
   const std::vector<std::string> &SourcePathList = op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<ObfFrontendAction>().get());
-  WhitespaceWarper WW(SourcePathList);
+  //WhitespaceWarper WW(SourcePathList);
   //WW.run();
   CommentWiper CW(SourcePathList);
   CW.run();
+  dumpHashFilenames(hashFilenames(SourcePathList));
+  listEverything("./");
+#if 0
+  for (auto &iter : SourcePathList) {
+    std::cout << "name: " << std::get<0>(getNameFromPath(iter)) << "\t" << "extension: " << std::get<1>(getNameFromPath(iter)) << "\tpath: " << std::get<2>(getNameFromPath(iter)) << "\n";
+  }
+#endif
   return ret;
 }
 /**********************************************************************************************************************/

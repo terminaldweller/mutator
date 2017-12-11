@@ -4,7 +4,7 @@ obfuscator is a C/C++ source-code obfuscation tool.<br/>
 
 ## Status
 You can find a list of the implemented features and the ones that will be implemented below.<br/>
-If you have suggestions or recommendations for features to add please make an issue with the `obfuscator` label.<br/>
+If you have suggestions or recommendations for features to add, please make an issue with the `obfuscator` label.<br/>
 
 ### Implemented Features
 * Identifier Obfuscation: Swaps the name of all identifiers with their hash. <br/>
