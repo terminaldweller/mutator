@@ -538,7 +538,6 @@ def main():
     #elf.dump_objs()
 
     return elf.dump_objs()
-    #return 0;
 
 if __name__ == "__main__":
     main()
