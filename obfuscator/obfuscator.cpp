@@ -20,8 +20,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /*code structure inspired by Eli Bendersky's tutorial on Rewriters.*/
 /**********************************************************************************************************************/
-//@DEVI-FIXME-will mess up macros
-/**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
 #include "../mutator_aux.h"
@@ -38,22 +36,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/LLVM.h"
-#include "clang/CodeGen/CodeGenAction.h"
-#include "clang/CodeGen/BackendUtil.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/Lexer.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
-#include "llvm/ADT/ArrayRef.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/BasicBlock.h"
-#include "llvm/IR/Function.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Linker/Linker.h"
 /**********************************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -319,6 +308,23 @@ public:
       StringRef FileName, bool IsAngled, CharSourceRange FilenameRange, const FileEntry *File, 
       StringRef SearchPath, StringRef RelativePath, const clang::Module *Imported) {
     std::cout << "Include filename: " << FileName.str() << "\n";
+    // name, extension, path
+    auto header_ = getNameFromPath(FileName.str());
+    std::string hashedName_ = getHashedName(std::get<0>(header_));
+    auto hashedNameX_ = nameMaker(hashedName_, std::get<1>(header_), "");
+
+    auto SL = Devi::getSLSpellingLoc(FilenameRange.getBegin(), Rewrite);
+    auto SLE = Devi::getSLSpellingLoc(FilenameRange.getEnd(), Rewrite);
+    auto SR = SourceRange(SL, SLE);
+
+    std::string new_name_;
+    if (IsAngled) {new_name_ = "<" + hashedNameX_ + ">";}
+    else {new_name_ = "\"" + hashedNameX_ + "\"";}
+
+    Rewrite.ReplaceText(SR, new_name_);
+#ifdef DBG
+    std::cout << hashedNameX_ << "\n";
+#endif
   }
 
 private:
@@ -340,7 +346,6 @@ public:
     Matcher.addMatcher(functionDecl().bind("funcdecl"), &funcDeclHandler);
     Matcher.addMatcher(varDecl(anyOf(unless(hasDescendant(expr(anything()))), hasDescendant(expr(anything()).bind("expr")))).bind("vardecl"), &HandlerForVar);
     Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"), &HandlerForClass);
-    //Matcher.addMatcher(callExpr().bind("calledfunc"), &HandlerForCalledFunc);
     Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
   }
 
@@ -366,7 +371,7 @@ public:
   }
   void EndSourceFileAction() override {
     std::error_code EC;
-    std::string OutputFilename = "./obfuscator-tee";
+    std::string OutputFilename = "/tmp/obfuscator-tee";
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
     tee = new raw_fd_ostream(StringRef(OutputFilename), EC, sys::fs::F_None);
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(*tee);
@@ -393,11 +398,10 @@ class CommentWiper {
     int run(void) {
       for (auto &filepath : sourcelist) {
         std::ifstream sourcefile;
-        sourcefile.open("./test/obfuscator-tee");
+        sourcefile.open("/tmp/obfuscator-tee");
         std::ofstream dupe;
         auto filename_ = getNameFromPath(filepath);
         dupe.open(nameMaker(getHashedName(std::get<0>(filename_)), std::get<1>(filename_), ""));
-        //dupe.open("./dupe.cpp");
         std::string line;
 
         int d_quote = 0;
@@ -467,7 +471,7 @@ class WhitespaceWarper {
     int run(void) {
       for (auto &filepath : sourcelist) {
         std::ifstream sourcefile;
-        sourcefile.open("../test/bruisertest/obfuscator-tee");
+        sourcefile.open("./test/obfuscator-tee");
         auto filename_ = getNameFromPath(filepath);
         std::ofstream dupe;
         dupe.open("./dupe2.cpp");
@@ -507,8 +511,8 @@ int main(int argc, const char **argv) {
   //WW.run();
   CommentWiper CW(SourcePathList);
   CW.run();
-  //dumpHashFilenames(hashFilenames(SourcePathList));
-  //dumpDirList(listDirs("./test"));
+  dumpHashFilenames(hashFilenames(SourcePathList));
+  dumpDirList(listDirs("./test"));
 #if 0
   for (auto &iter : SourcePathList) {
     std::cout << "name: " << std::get<0>(getNameFromPath(iter)) << "\t" << "extension: " << std::get<1>(getNameFromPath(iter)) << "\tpath: " << std::get<2>(getNameFromPath(iter)) << "\n";
