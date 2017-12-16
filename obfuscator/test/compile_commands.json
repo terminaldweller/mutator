@@ -1,0 +1,7 @@
+[
+    {
+        "command": "c++ -c -I/usr/lib/gcc/x86_64-redhat-linux/6.3.1/include -o test.o test.cpp", 
+        "directory": "/home/bloodstalker/devi/hell2/obfuscator/test", 
+        "file": "/home/bloodstalker/devi/hell2/obfuscator/test/test.cpp"
+    }
+]

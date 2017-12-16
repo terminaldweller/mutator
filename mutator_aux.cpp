@@ -77,6 +77,12 @@ SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite)
     return __sl;
   }
 }
+
+SourceLocation getSLSpellingLoc(SourceLocation __sl, Rewriter &__rewrite)
+{
+  if (__sl.isMacroID()) {return __rewrite.getSourceMgr().getSpellingLoc(__sl);}
+  else {return __sl;}
+}
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/

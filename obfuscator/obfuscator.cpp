@@ -73,14 +73,14 @@ class CryptoSponge {
     ~CryptoSponge() {}
 };
 /**********************************************************************************************************************/
-std::vector<std::string> listEverything(std::string _path) {
+std::vector<std::string> listDirs(std::string _path) {
   std::vector<std::string> dummy_;
-  DIR *dir_;
+  DIR* dir_;
   struct dirent* ent_;
   if ((dir_ = opendir(_path.c_str())) != nullptr) {
     while((ent_ = readdir(dir_)) != nullptr) {
-      std::cout << "name: "  << ent_->d_name << "\ttype:" << ent_->d_type << "\n";
-      if (ent_->d_type == DT_DIR) {std::cout << "ZZZ\n";}
+      std::cout << "name: "  << ent_->d_name << "\ttype:" << int(ent_->d_type) << "\n";
+      if (ent_->d_type == DT_DIR) {}
       dummy_.push_back(ent_->d_name);
     }
   }
@@ -88,6 +88,11 @@ std::vector<std::string> listEverything(std::string _path) {
     perror("could not open directory.");
   }
   return dummy_;
+}
+
+void dumpDirList(std::vector<std::string> _dirs) {
+  for (auto &iter : _dirs) {std::cout << iter << "\t";}
+  std::cout << "\n";
 }
 
 std::tuple<std::string, std::string, std::string> getNameFromPath(std::string _path) {
@@ -146,7 +151,9 @@ class CalledFunc : public MatchFinder::MatchCallback {
 
         auto dummy = Rewrite.getRewrittenText(SourceRange(CE->getLocStart(), CE->getRParenLoc()));
         auto LParenOffset = dummy.find("(");
-        dummy = Rewrite.getRewrittenText(SourceRange(CE->getLocStart(), CE->getLocStart().getLocWithOffset(LParenOffset - 1U)));
+        SourceLocation SL = Devi::getSLSpellingLoc(CE->getLocStart(), Rewrite);
+        SourceLocation SLE = Devi::getSLSpellingLoc(CE->getLocStart(), Rewrite).getLocWithOffset(LParenOffset - 0U);
+        dummy = Rewrite.getRewrittenText(SourceRange(SL, SLE));
         Rewrite.ReplaceText(SourceRange(CE->getLocStart(), CE->getLocStart().getLocWithOffset(LParenOffset - 1U)), StringRef(newname));
       }
     }
@@ -168,8 +175,8 @@ class CalledVar : public MatchFinder::MatchCallback {
 #ifdef DBG
         std::cout << "DeclRefExpr name: "  << name << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
-      SourceLocation SL = DRE->getNameInfo().getBeginLoc();
-      SourceLocation SLE = DRE->getNameInfo().getEndLoc();
+      SourceLocation SL = Devi::getSLSpellingLoc(DRE->getNameInfo().getBeginLoc(), Rewrite);
+      SourceLocation SLE = Devi::getSLSpellingLoc(DRE->getNameInfo().getEndLoc(), Rewrite);
 
       Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
       }
@@ -196,8 +203,8 @@ public:
       std::cout << "Function name: "  << funcname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
 
-      SourceLocation SL = FD->getNameInfo().getBeginLoc();
-      SourceLocation SLE = FD->getNameInfo().getEndLoc();
+      SourceLocation SL = Devi::getSLSpellingLoc(FD->getNameInfo().getBeginLoc(), Rewrite);
+      SourceLocation SLE = Devi::getSLSpellingLoc(FD->getNameInfo().getEndLoc(), Rewrite);
 
       Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
     }
@@ -222,15 +229,15 @@ public:
 #ifdef DBG
       std::cout << "Var name: "  << varname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
-      SourceLocation SL = VD->getLocation();
+      SourceLocation SL = Devi::getSLSpellingLoc(VD->getLocation(), Rewrite);
       SourceLocation SLE;
       const clang::Expr* EXP = nullptr;
 
       if (MR.Nodes.getNodeAs<clang::Expr>("expr") !=nullptr) {
         EXP = MR.Nodes.getNodeAs<clang::Expr>("expr");
-        SLE = EXP->getExprLoc();
+        SLE = Devi::getSLSpellingLoc(EXP->getExprLoc(), Rewrite);
       } else {
-        SLE = VD->getLocEnd();
+        SLE = Devi::getSLSpellingLoc(VD->getLocEnd(), Rewrite);
       }
 
       //@devi-FIXME-cluncky
@@ -260,8 +267,8 @@ class ClassDecl : public MatchFinder::MatchCallback {
         std::cout << "Record name: "  << varname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
 
-        SourceLocation SL = RD->getLocation();
-        SourceLocation SLE = RD->getLocEnd();
+        SourceLocation SL = Devi::getSLSpellingLoc(RD->getLocation(), Rewrite);
+        SourceLocation SLE = Devi::getSLSpellingLoc(RD->getLocEnd(), Rewrite);
 
         std::string dummy = Rewrite.getRewrittenText(SourceRange(SL, SLE));
         Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
@@ -278,8 +285,7 @@ public:
   explicit PPInclusion (SourceManager *SM, Rewriter *Rewrite) : SM(*SM), Rewrite(*Rewrite) {}
 
   virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD) {
-
-    SourceLocation SL = MacroNameTok.getLocation(); 
+    SourceLocation SL = Devi::getSLSpellingLoc(MacroNameTok.getLocation(), Rewrite);
     if (!SM.isInMainFile(SL)) return void();
     if (!SM.isWrittenInMainFile(SL)) return void();
     CheckSLValidity(SL);
@@ -294,7 +300,19 @@ public:
     std::string dummy = Rewrite.getRewrittenText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())));
     std::cout << dummy << "\n";
 #endif
-    Rewrite.ReplaceText(SourceRange(MacroNameTok.getLocation(), MacroNameTok.getLocation().getLocWithOffset(MacroNameTok.getLength())), newname);
+    Rewrite.ReplaceText(SourceRange(SL, SL.getLocWithOffset(MacroNameTok.getLength() - 1)), newname);
+  }
+
+  virtual void MacroExpands (const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range, const MacroArgs *Args) {
+    SourceLocation SL = Devi::getSLSpellingLoc(MacroNameTok.getLocation(), Rewrite);
+    if (!SM.isInMainFile(SL)) return void();
+    if (!SM.isWrittenInMainFile(SL)) return void();
+    CheckSLValidity(SL);
+    std::string macroname = MacroNameTok.getIdentifierInfo()->getName().str();
+    std::size_t hash = std::hash<std::string>{}(macroname);
+    std::string newname = "ID" + std::to_string(hash);
+
+    Rewrite.ReplaceText(SourceRange(SL, SL.getLocWithOffset(MacroNameTok.getLength() - 1)), newname);
   }
 
   virtual void  InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, 
@@ -375,7 +393,7 @@ class CommentWiper {
     int run(void) {
       for (auto &filepath : sourcelist) {
         std::ifstream sourcefile;
-        sourcefile.open("../test/bruisertest/obfuscator-tee");
+        sourcefile.open("./test/obfuscator-tee");
         std::ofstream dupe;
         auto filename_ = getNameFromPath(filepath);
         dupe.open(nameMaker(getHashedName(std::get<0>(filename_)), std::get<1>(filename_), ""));
@@ -489,8 +507,8 @@ int main(int argc, const char **argv) {
   //WW.run();
   CommentWiper CW(SourcePathList);
   CW.run();
-  dumpHashFilenames(hashFilenames(SourcePathList));
-  listEverything("./");
+  //dumpHashFilenames(hashFilenames(SourcePathList));
+  //dumpDirList(listDirs("./test"));
 #if 0
   for (auto &iter : SourcePathList) {
     std::cout << "name: " << std::get<0>(getNameFromPath(iter)) << "\t" << "extension: " << std::get<1>(getNameFromPath(iter)) << "\tpath: " << std::get<2>(getNameFromPath(iter)) << "\n";
