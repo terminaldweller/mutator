@@ -24,12 +24,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*project headers*/
 #include "../mutator_aux.h"
 /*standard headers*/
-#include <string>
-#include <iostream>
 #include <cassert>
-#include <vector>
-#include <fstream>
+#include <cstdlib>
 #include <dirent.h>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -51,17 +52,29 @@ using namespace clang::ast_matchers;
 using namespace clang::driver;
 using namespace clang::tooling;
 /**********************************************************************************************************************/
-/*global vars*/
-static llvm::cl::OptionCategory ObfuscatorCat("Obfuscator custom options");
+namespace {
+  static llvm::cl::OptionCategory ObfuscatorCat("Obfuscator custom options");
+  std::string TMP_FILE = "";
+}
 /**********************************************************************************************************************/
 //#define DBG
+// @DEVI-FIXME
+#if defined(__linux__)
+#define TEMP_FILE "/tmp/obfuscator-tee"
+#elif defined(__MACH__) && defined(__APPLE__)
+#define TEMP_FILE "/tmp/obfuscator-tee"
+#elif defined(__CYGWIN__) || defined(_WIN32) || defined(_WIN64)
+#define TEMP_FILE "C:\Temp\obfuscator-tee"
+#else
+#define TEMP_FILE "/tmp/obfuscator-tee"
+#endif
 /**********************************************************************************************************************/
-class CryptoSponge {
-  public:
-    CryptoSponge() = default;
-    ~CryptoSponge() {}
-};
-/**********************************************************************************************************************/
+/**
+ * @brief Gets the list of all directories and sub-directories starting from a base directory.
+ * @param _path where the the base directory is. 
+ * @return Returns the list of all found dirs.
+ * @warning WIP
+ */
 std::vector<std::string> listDirs(std::string _path) {
   std::vector<std::string> dummy_;
   DIR* dir_;
@@ -79,11 +92,20 @@ std::vector<std::string> listDirs(std::string _path) {
   return dummy_;
 }
 
+/**
+ * @brief Dumps a list of directories, meant as a debug options.
+ * @param _dirs The input to dump.
+ */
 void dumpDirList(std::vector<std::string> _dirs) {
   for (auto &iter : _dirs) {std::cout << iter << "\t";}
   std::cout << "\n";
 }
 
+/**
+ * @brief Extract the filename, the extension and the path to the file.
+ * @param _path The path to the file. Should include the file name also.
+ * @return Returns a tuple including the filename, the extension and the path in that order.
+ */
 std::tuple<std::string, std::string, std::string> getNameFromPath(std::string _path) {
   size_t pos = _path.rfind("/");
   size_t pos2 = _path.rfind(".");
@@ -93,6 +115,13 @@ std::tuple<std::string, std::string, std::string> getNameFromPath(std::string _p
   return std::make_tuple(name_, extension_, path_);
 }
 
+/**
+ * @brief Remakes the name of a file.
+ * @param _name The name.
+ * @param _extension The extension.
+ * @param _extra optional extra string to add to the name. Default value is "obfusc".
+ * @return Returns the newly made name.
+ */
 std::string nameMaker(std::string _name, std::string _extension, std::string _extra = "obfusc") {
   if (_extra == "") {
     return _name + _extra + "." + _extension;
@@ -102,11 +131,21 @@ std::string nameMaker(std::string _name, std::string _extension, std::string _ex
   }
 }
 
+/**
+ * @brief Return the hash digest of an identifier.
+ * @param _name the identifier name to hash.
+ * @return Returns the new name.
+ */
 std::string getHashedName(std::string _name) {
   std::size_t hash = std::hash<std::string>{}(_name);
   return "FILE" + std::to_string(hash);
 }
 
+/**
+ * @brief Hashes all the filenames.
+ * @param _filenames The input.
+ * @return Returns the map of the hashed identifiers.
+ */
 std::unordered_map<std::string, std::string> hashFilenames(const std::vector<std::string>& _filenames) {
   std::unordered_map<std::string, std::string> ret_map_;
   for (auto &iter : _filenames) {
@@ -118,12 +157,57 @@ std::unordered_map<std::string, std::string> hashFilenames(const std::vector<std
   return ret_map_;
 }
 
+/**
+ * @brief Dumps all the hashed filenames. Meant for debugging.
+ * @param _map The map containing the identifier and hash digest pair.
+ */
 void dumpHashFilenames(std::unordered_map<std::string, std::string> _map) {
   for (auto &iter : _map) {
     std::cout << "Key: " << iter.first << "\t" << "Value: " << iter.second << "\n";
   }
 }
+
+/**
+ * @brief Get the tmp directory address at compile-time.
+ * @return Return the address of the tmp directory.
+ */
+std::string getTempDir1() {
+  std::string tmpdir_;
+#if defined(__linux__)
+  tmpdir_ = "/tmp";
+#elif defined(__MACH__) && defined(__APPLE__)
+  // $TMPDIR
+  tmpdir_ = std::getenv("TMPDIR");
+#elif defined(__CYGWIN__) || defined(_WIN32) || defined(_WIN64)
+  // %TEMP%
+  tmpdir_ = std::getenv("TEMP");
+#else
+  // unix-posix
+  tmpdir_ = "/tmp";
+#endif
+  return tmpdir_;
+}
+
+/**
+ * @brief Get the path to the tmp directory at run-time.
+ * @return Returns the path to the tmp directory.
+ */
+std::string getTempDir2() {
+  std::string tmpdir_ = std::getenv("TMPDIR");
+  if (tmpdir_ == "") {
+    tmpdir_ = std::getenv("TEMP");
+    if (tmpdir_ == "") {
+      tmpdir_ = std::getenv("TEMP");
+      if (tmpdir_ == "") {tmpdir_ = "";}
+    }
+  }
+
+  return tmpdir_;
+}
 /**********************************************************************************************************************/
+/**
+ * @brief MatchCallback for CallExpr.
+ */
 class CalledFunc : public MatchFinder::MatchCallback {
   public:
     CalledFunc(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -137,7 +221,6 @@ class CalledFunc : public MatchFinder::MatchCallback {
 #ifdef DBG
         std::cout << "CallExpr name: "  << name << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
-
         auto dummy = Rewrite.getRewrittenText(SourceRange(CE->getLocStart(), CE->getRParenLoc()));
         auto LParenOffset = dummy.find("(");
         SourceLocation SL = Devi::getSLSpellingLoc(CE->getLocStart(), Rewrite);
@@ -151,6 +234,9 @@ class CalledFunc : public MatchFinder::MatchCallback {
     Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief MatchCallback for DeclRefExpr. changes the identifier with its hash digest.
+ */
 class CalledVar : public MatchFinder::MatchCallback {
   public:
     CalledVar (Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -175,6 +261,9 @@ class CalledVar : public MatchFinder::MatchCallback {
     Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief changes the identifier for function declarations with the hash digest of the identifier being defined.
+ */
 class FuncDecl : public MatchFinder::MatchCallback
 {
 public:
@@ -203,6 +292,9 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief changes the identifier for var declarations with the hash digest of the identifier being defined.
+ */
 class VDecl : public MatchFinder::MatchCallback
 {
 public:
@@ -222,6 +314,7 @@ public:
       SourceLocation SLE;
       const clang::Expr* EXP = nullptr;
 
+      // if the VarDecl also contains an initial value assignment.
       if (MR.Nodes.getNodeAs<clang::Expr>("expr") !=nullptr) {
         EXP = MR.Nodes.getNodeAs<clang::Expr>("expr");
         SLE = Devi::getSLSpellingLoc(EXP->getExprLoc(), Rewrite);
@@ -238,6 +331,9 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief Replaces the class name with its hash digest.
+ */
 class ClassDecl : public MatchFinder::MatchCallback {
   public:
     ClassDecl (Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -268,6 +364,9 @@ class ClassDecl : public MatchFinder::MatchCallback {
     Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief PPCallbacks for replacing Macro identifiers with their hash digest Along with changing the Header filenames.
+ */
 class PPInclusion : public PPCallbacks
 {
 public:
@@ -332,6 +431,9 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
+/**
+ * @brief A Clang Diagnostic Consumer that does nothing.
+ */
 class BlankDiagConsumer : public clang::DiagnosticConsumer
 {
   public:
@@ -371,7 +473,7 @@ public:
   }
   void EndSourceFileAction() override {
     std::error_code EC;
-    std::string OutputFilename = "/tmp/obfuscator-tee";
+    std::string OutputFilename = TEMP_FILE;
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
     tee = new raw_fd_ostream(StringRef(OutputFilename), EC, sys::fs::F_None);
     TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(*tee);
@@ -391,6 +493,9 @@ private:
   raw_ostream *tee = &llvm::outs();
 };
 /**********************************************************************************************************************/
+/**
+ * @brief Deletes all comment from source-code.
+ */
 class CommentWiper {
   public:
     CommentWiper(std::vector<std::string> SourceList) : sourcelist(SourceList) {}
@@ -398,7 +503,7 @@ class CommentWiper {
     int run(void) {
       for (auto &filepath : sourcelist) {
         std::ifstream sourcefile;
-        sourcefile.open("/tmp/obfuscator-tee");
+        sourcefile.open(TEMP_FILE);
         std::ofstream dupe;
         auto filename_ = getNameFromPath(filepath);
         dupe.open(nameMaker(getHashedName(std::get<0>(filename_)), std::get<1>(filename_), ""));
@@ -471,7 +576,7 @@ class WhitespaceWarper {
     int run(void) {
       for (auto &filepath : sourcelist) {
         std::ifstream sourcefile;
-        sourcefile.open("./test/obfuscator-tee");
+        sourcefile.open(TEMP_FILE);
         auto filename_ = getNameFromPath(filepath);
         std::ofstream dupe;
         dupe.open("./dupe2.cpp");
@@ -507,8 +612,6 @@ int main(int argc, const char **argv) {
   const std::vector<std::string> &SourcePathList = op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<ObfFrontendAction>().get());
-  //WhitespaceWarper WW(SourcePathList);
-  //WW.run();
   CommentWiper CW(SourcePathList);
   CW.run();
   dumpHashFilenames(hashFilenames(SourcePathList));

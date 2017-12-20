@@ -5,6 +5,7 @@ obfuscator is a C/C++ source-code obfuscation tool.<br/>
 ## Status
 You can find a list of the implemented features and the ones that will be implemented below.<br/>
 If you have suggestions or recommendations for features to add, please make an issue with the `obfuscator` label.<br/>
+When an alpha version is ready, `obfuscator` will be mirrored into its own repo.<br/>
 
 ### Implemented Features
 * Identifier Obfuscation: Swaps the name of all identifiers with their hash. <br/>
@@ -13,7 +14,8 @@ If you have suggestions or recommendations for features to add, please make an i
 ### Future Features
 * Obfuscation Exclusion List: obfuscator will accept a list of idenftifiers and their namespace and will not obfuscate those. This feature is added so the user can refrain from obfuscating the standard library.<br/>
 * Support directory-wide and multiple files as input.<br/>
-* Provide an option to choose which hashing function to use.<br/>
+* Provide an option to choose which hashing function to use. Ideally these alternative hashing algorithms would have variable length digests. Ther is also the idea of using different seeds to generate different digests for the same identifier names across each obfuscation.<br/>
+* Windows support<br/>
 
 ## Notes
 * Currently the hash function that is being used is `std::hash<>`. The GCC implementation will be probably the default option since the digest is shorter than 32 characters long. The decision was made since quite a few embedded C/C++ compilers can't correctly handle identifiers longer than 32 characters.<br/>
