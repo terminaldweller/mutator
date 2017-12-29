@@ -111,8 +111,7 @@ cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for
 class LuaEngine
 {
   public:
-    LuaEngine()
-    {
+    LuaEngine() {
       LS = luaL_newstate();
     }
 
@@ -131,62 +130,49 @@ class LuaEngine
 
 #undef OPEN_LUA_LIBS
 
-    void LoadAuxLibs(void)
-    {
+    void LoadAuxLibs(void) {
       luaL_requiref(LS, "table", luaopen_table, 1);
       luaL_requiref(LS, "io", luaopen_io, 1);
       luaL_requiref(LS, "string", luaopen_string, 1);
     }
 
-    void LoadEverylib(void)
-    {
+    void LoadEverylib(void) {
       luaL_openlibs(LS);
     }
 
-    void RunString(char* __lua_string)
-    {
+    void RunString(char* __lua_string) {}
 
-    }
-
-    void RunChunk(char* __lua_chunk)
-    {
+    void RunChunk(char* __lua_chunk) {
       dostring(LS, __lua_chunk, "test");
     }
 
-    int RunScript(char* __lua_script)
-    {
+    int RunScript(char* __lua_script) {
       return luaL_dofile(LS, __lua_script);
     }
 
-    void Test(void)
-    {
+    void Test(void) {
       luaL_dofile(LS, "./lua-scripts/test.lua");
       luaL_dofile(LS, "./lua-scripts/test1.lua");
       luaL_dofile(LS, "./lua-scripts/test2.lua");
     }
 
-    void Test2(void)
-    {
+    void Test2(void) {
       luaL_dofile(LS, "./lua-scripts/test1.lua");
     }
 
-    void Test3(void)
-    {
+    void Test3(void) {
       luaL_dofile(LS, "./lua-scripts/test2.lua");
     }
 
-    void Test4(void)
-    {
+    void Test4(void) {
       luaL_dofile(LS, "./lua-scripts/test3.lua");
     }
 
-    lua_State* GetLuaState(void)
-    {
+    lua_State* GetLuaState(void) {
       return this->LS;
     }
 
-    void Cleanup(void)
-    {
+    void Cleanup(void) {
       lua_close(LS);
     }
 
@@ -296,6 +282,7 @@ class PyExec {
               }
             }
             hexobj.push_back(tempvec);
+            tempvec.clear();
           }
         }
       }
@@ -1758,7 +1745,7 @@ int main(int argc, const char **argv)
   CommonOptionsParser op(argc, argv, BruiserCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   std::vector<std::unique_ptr<ASTUnit>> ASTs;
-  auto buildASTRes = Tool.buildASTs(ASTs);
+  //auto buildASTRes = Tool.buildASTs(ASTs);
 
   CompilationDatabase &CDB = op.getCompilations();
   std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();

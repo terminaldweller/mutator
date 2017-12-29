@@ -15,6 +15,13 @@ class CLIArgParser(object):
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("--obj", type=str, help="path to the executbale, shared object or object you want to load in bruiser")
+        parser.add_argument("--header", action='store_true', help="dump headers", default=False)
+        parser.add_argument("--symboltable", action='store_true', help="dump symbol table", default=False)
+        parser.add_argument("--phdrs", action='store_true', help="dump program haeders", default=False)
+        parser.add_argument("--shdrs", action='store_true', help="dump section haeders", default=False)
+        parser.add_argument("--symbolindex", action='store_true', help="dump symbol index", default=False)
+        parser.add_argument("--stentries", action='store_true', help="dump section table entries", default=False)
+        parser.add_argument("--objcode", action='store_true', help="dump objects", default=False)
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -122,6 +129,73 @@ def get_ph_type(value):
     elif value == p_type_e.GNU_RELRO: return "GNU_RELRO"
     else: return None
 
+class ELF_ST_BIND:
+    STB_LOCAL = 0
+    STB_GLOBAL = 1
+    STB_WEAK = 2
+    STB_LOOS = 10
+    STB_HIOS = 12
+    STB_LOPROC = 13
+    STB_HIPROC = 15
+
+def get_elf_st_bind_string(value):
+    if value == ELF_ST_BIND.STB_LOCAL: return "STB_LOCAL"
+    elif value == ELF_ST_BIND.STB_GLOBAL: return "STB_GLOBAL"
+    elif value == ELF_ST_BIND.STB_WEAK: return "STB_WEAK"
+    elif value == ELF_ST_BIND.STB_LOOS: return "STB_LOOS"
+    elif value == ELF_ST_BIND.STB_HIOS: return "STB_HIOS"
+    elif value == ELF_ST_BIND.STB_LOPROC: return "STB_LOPROC"
+    elif value == ELF_ST_BIND.STB_LOPROC: return "STB_HIPROC"
+    else: return None
+
+class ELF_ST_TYPE:
+    STT_NOTYPE = 0
+    STT_OBJECT = 1
+    STT_FUNC = 2
+    STT_SECTION = 3
+    STT_FILE = 4
+    STT_COMMON = 5
+    STT_TLS = 6
+    STT_LOOS = 10
+    STT_HIOS = 12
+    STT_LOPROC = 13
+    STT_SPARC_REGISTER = 13
+    STT_HIPROC = 15
+
+def get_elf_st_type_string(value):
+    if value == ELF_ST_TYPE.STT_NOTYPE: return "STT_NOTYPE"
+    elif value == ELF_ST_TYPE.STT_OBJECT: return "STT_OBJECT"
+    elif value == ELF_ST_TYPE.STT_FUNC: return "STT_FUNC"
+    elif value == ELF_ST_TYPE.STT_SECTION: return "STT_SECTION"
+    elif value == ELF_ST_TYPE.STT_FILE: return "STT_FILE"
+    elif value == ELF_ST_TYPE.STT_COMMON: return "STT_COMMON"
+    elif value == ELF_ST_TYPE.STT_TLS: return "STT_TLS"
+    elif value == ELF_ST_TYPE.STT_LOOS: return "STT_LOOS"
+    elif value == ELF_ST_TYPE.STT_HIOS: return "STT_HIOS"
+    elif value == ELF_ST_TYPE.STT_LOPROC: return "STT_LOPROC"
+    elif value == ELF_ST_TYPE.STT_SPARC_REGISTER: return "STT_SPARC_REGISTER"
+    elif value == ELF_ST_TYPE.STT_HIPROC: return "STT_HIPROC"
+    else: return None
+
+class ELF_VIS:
+    STV_DEFAULT = 0
+    STV_INTERNAL = 1
+    STV_HIDDEN = 2
+    STV_PROTECTED = 3
+    STV_EXPORTED = 4
+    STV_SINGLETON = 5
+    STV_ELIMINATE = 6
+
+def get_elf_vis_string(value):
+    if value == ELF_VIS.STV_DEFAULT: return "STV_DEFAULT"
+    elif value == ELF_VIS.STV_INTERNAL: return "STV_INTERNAL"
+    elif value == ELF_VIS.STV_HIDDEN: return "STV_HIDDEN"
+    elif value == ELF_VIS.STV_PROTECTED: return "STV_PROTECTED"
+    elif value == ELF_VIS.STV_EXPORTED: return "STV_EXPORTED"
+    elif value == ELF_VIS.STV_SINGLETON: return "STV_SINGLETON"
+    elif value == ELF_VIS.STV_ELIMINATE: return "STV_ELIMINATE"
+    else: return None
+
 class Colors:
     purple = '\033[95m'
     blue = '\033[94m'
@@ -197,13 +271,15 @@ class SHDR():
         self.sh_entsize = sh_entsize
 
 class Symbol_Table_Entry64():
-    def __init__(self, st_name, st_info, st_other, st_shndx, st_value, st_size):
+    def __init__(self, st_name, st_info, st_other, st_shndx, st_value, st_size, st_bind, st_type):
         self.st_name = st_name
         self.st_info = st_info
         self.st_other = st_other
         self.st_shndx = st_shndx
         self.st_value = st_value
         self.st_size = st_size
+        self.st_bind = st_bind
+        self.st_type = st_type
 
 class ELF(object):
     def __init__(self, so):
@@ -317,13 +393,15 @@ class ELF(object):
         self.shhdr.append(dummy)
 
     def read_st_entry(self, st, entry_list):
-        dummy = Symbol_Table_Entry64(0,0,0,0,0,0)
+        dummy = Symbol_Table_Entry64(0,0,0,0,0,0,0,0)
         dummy.st_name = st[0:4]
         dummy.st_info = st[4:5]
         dummy.st_other = st[5:6]
         dummy.st_shndx = st[6:8]
         dummy.st_value = st[8:16]
         dummy.st_size = st[16:24]
+        dummy.st_bind = byte2int(dummy.st_info) >> 4
+        dummy.st_type = byte2int(dummy.st_info) & 0x0f
         entry_list.append(dummy)
 
     def read_section_name(self, index):
@@ -338,12 +416,12 @@ class ELF(object):
             char = strings[index]
         return ''.join(name)
 
-    def dump_objs(self):
+    def dump_objs(self, dump_b):
         ret_list = []
         dummy = []
         ret_list_int = []
         for iter in self.string_tb_e:
-            if byte2int(iter.st_size) != 0:
+            if iter.st_type == ELF_ST_TYPE.STT_FUNC:
                 self.so.seek(int.from_bytes(iter.st_value, byteorder="little"))
                 obj = self.so.read(int.from_bytes(iter.st_size, byteorder="little"))
                 ret_list.append(obj)
@@ -351,6 +429,12 @@ class ELF(object):
                     dummy.append(int(byte))
                 ret_list_int.append(dummy)
                 dummy = []
+        if dump_b:
+            for obj in ret_list_int:
+                for byte in obj:
+                    print(format(byte, "02x") + " ", end="")
+                print("\n")
+
         return ret_list_int
 
     def dump_symbol_idx(self):
@@ -466,7 +550,9 @@ class ELF(object):
             print(Colors.green + " size: " + Colors.ENDC + repr(byte2int(entry.st_size)), end="")
             print(Colors.green + " info: " + Colors.ENDC + repr(byte2int(entry.st_info)), end="")
             print(Colors.green + " other: " + Colors.ENDC + repr(byte2int(entry.st_other)), end="")
-            print(Colors.green + " shndx: " + Colors.ENDC + repr(byte2int(entry.st_shndx)))
+            print(Colors.green + " shndx: " + Colors.ENDC + repr(byte2int(entry.st_shndx)), end="")
+            print(Colors.green + " bind: " + Colors.ENDC + get_elf_st_bind_string(entry.st_bind), end="")
+            print(Colors.green + " type: " + Colors.ENDC + get_elf_st_type_string(entry.st_type))
 
     def get_symbol_string_table(self, offset):
         symbol = []
@@ -522,22 +608,30 @@ def ch_exe_to_so(path):
     print(Colors.purple + "changed exe to so" + Colors.ENDC)
     so.close
 
-def main():
-    #argparser = CLIArgParser()
-    #if argparser.args.obj is None: so = openSO_r("./test/test.so")
-    #else: so = openSO_r(argparser.args.obj)
+def main2():
     so = openSO_r(sys.argv[1])
     elf = ELF(so)
     elf.init(64)
-    #elf.dump_header()
-    #elf.dump_symbol_tb()
-    #elf.dump_phdrs()
-    #elf.dump_shdrs()
-    #elf.dump_symbol_idx()
-    #elf.dump_st_entries()
-    #elf.dump_objs()
+    return elf.dump_objs(False)
 
-    return elf.dump_objs()
+def main():
+    variables = globals().copy()
+    variables.update(locals())
+    shell = code.InteractiveConsole(variables)
+    try:
+        argparser = CLIArgParser()
+        so = openSO_r(argparser.args.obj)
+        elf = ELF(so)
+        elf.init(64)
+        if argparser.args.header: elf.dump_header()
+        elif argparser.args.symboltable: elf.dump_symbol_tb()
+        elif argparser.args.phdrs: elf.dump_phdrs()
+        elif argparser.args.shdrs: elf.dump_shdrs()
+        elif argparser.args.symbolindex: elf.dump_symbol_idx()
+        elif argparser.args.stentries: elf.dump_st_entries()
+        elif argparser.args.objcode: elf.dump_objs(True)
+    except:
+        shell.interact(banner="PyElfDump REPL")
 
 if __name__ == "__main__":
     main()
