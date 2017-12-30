@@ -221,7 +221,7 @@ class PyExec {
           //Py_DECREF(pArgs);
           if (pValue != nullptr) {
             std::cout << GREEN << "call finished successfully." << NORMAL << "\n";
-            printf("Result of call: %ld\n", PyLong_AsLong(pValue));
+            //printf("Result of call: %ld\n", PyLong_AsLong(pValue));
             //Py_DECREF(pValue);
           } else {
             Py_DECREF(pFunc);
@@ -249,13 +249,13 @@ class PyExec {
     }
 
     int getAsCppStringVec(void) {
+      PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
       if (PyList_Check(pValue)) {
         std::cout << GREEN << "got a python list\n" << NORMAL;
         int list_length = PyList_Size(pValue);
         std::cout << BLUE << "length of list: " << list_length << "\n" << NORMAL;
         for (int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
-          std::cout << CYAN << "bytes size: " << PyBytes_Size(pybytes) << "\n" << NORMAL;
           PyObject* pyrepr = PyObject_Repr(pybytes);
           PyObject* pyunicode = PyUnicode_AsEncodedString(pyrepr, "utf-8", "surrogateescape");
           const char* dummy = PyBytes_AsString(pyunicode);
@@ -267,9 +267,11 @@ class PyExec {
     }
 
     int getAsCppByte(void) {
+      PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
       std::vector<uint8_t> tempvec;
       if(PyList_Check(pValue)) {
         int list_length = PyList_Size(pValue);
+        std::cout << BLUE << "length of list: " << list_length << "\n" << NORMAL;
         for(int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
           if(PyList_Check(pybytes)) {
@@ -281,7 +283,7 @@ class PyExec {
                 tempvec.push_back(int(byte));
               }
             }
-            hexobj.push_back(tempvec);
+            if (!tempvec.empty()) {hexobj.push_back(tempvec);}
             tempvec.clear();
           }
         }
@@ -294,6 +296,7 @@ class PyExec {
     }
 
     void printHexObjs(void) {
+        PRINT_WITH_COLOR_LB(YELLOW, "functions with a zero size will not be printed:");
         for (auto &iter : hexobj) {
           for (auto &iterer : iter) {
             std::cout << RED << int(iterer) << " ";
@@ -1173,11 +1176,13 @@ class LuaWrapper
       std::string filename = "load";
       std::string funcname;
       std::string objjpath;
+      std::string action;
 
-      if (numargs == 2) {
+      if (numargs == 3) {
         std::cout << CYAN << "got args." << NORMAL << "\n";
         funcname = lua_tostring(__ls, 1);
         objjpath = lua_tostring(__ls, 2);
+        action = lua_tostring(__ls, 3);
       }
       else {
         std::cout << RED << "wrong number of arguments provided. should give the python script name, python func name and its args.\n" << NORMAL;
@@ -1200,9 +1205,13 @@ class LuaWrapper
       {
         std::cout << BLUE << "running load.py: " << NORMAL << "\n";
         py.run();
-        //py.getAsCppStringVec();
-        py.getAsCppByte();
-        py.printHexObjs();
+        if (action == "code_list") {
+          py.getAsCppByte();
+          py.printHexObjs();
+        }
+        else if (action == "symbol_list") {
+          py.getAsCppStringVec();
+        }
         //py.killPyObj();
         lua_pushnumber(__ls, 0);
         exit(EXIT_SUCCESS);
@@ -1736,10 +1745,12 @@ int LuaDispatch(lua_State* __ls)
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 /*Main*/
-int main(int argc, const char **argv)
-{
+int main(int argc, const char **argv) {
   /*initializing the log*/
   bruiser::BruiserReport BruiserLog;
+
+  /*initing executioner*/
+  Executioner executioner;
 
   /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);

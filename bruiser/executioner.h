@@ -26,12 +26,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <cstdarg>
 #include <cstring>
 #include <sys/mman.h>
+#include <unistd.h>
 #include "lua-5.3.4/src/lua.hpp"
 /**********************************************************************************************************************/
 #ifndef EXECUTIONER_H
 #define EXECUTIONER_H
 /**********************************************************************************************************************/
-namespace {
+namespace { // start of anonymous namespace
   using XObject = void(*)(void);
   constexpr int MEMORY_SIZE = 32768;
   std::vector<uint8_t> memory(MEMORY_SIZE, 0);
@@ -52,7 +53,28 @@ namespace {
     }
     return 0;
   }
-}
+
+  int LuaGenericWrapper(lua_State* __ls, XObject __x) {
+    int numargs = lua_gettop(__ls);
+    std::vector<uint64_t> arg_vec;
+
+    for (int i = 0; i < numargs; ++i) {
+      arg_vec.push_back(lua_tonumber(__ls, i + 1));
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+      //PRINT_WITH_COLOR_LB(RED, "could not fork...");
+      lua_pushnumber(__ls, EXIT_FAILURE);
+    }
+    if (pid == 0) {}
+    if (pid > 0) {
+      __x;
+    }
+
+    return 0;
+  }
+} // end of anonymous namespace
 
 int getMemorySize(void) {return MEMORY_SIZE;}
 
@@ -102,12 +124,24 @@ class Executioner {
       for (auto &iter : _bytes) {this->emitByte(iter, _code);}
     }
 
-    void registerWithLua(lua_State* _lua_State) {}
+    void registerWithLua(lua_State* _lua_State) {
+      for (auto& iter : names) {
+        //lua_register(_lua_State, iter.c_str(), LuaGeneric);
+      }
+    }
+
+    void xobjsGetPtrs(void) {
+      for (auto& iter : obj_mem_ptrs) {
+        XObject dummy = (XObject)iter.first;
+        xobjs.push_back(dummy);
+      }
+    }
 
   private:
     std::vector<std::pair<void*, size_t>> obj_mem_ptrs;
     std::vector<std::vector<uint8_t>> objs;
     std::vector<std::string> names;
+    std::vector<XObject> xobjs;
 };
 /**********************************************************************************************************************/
 #endif

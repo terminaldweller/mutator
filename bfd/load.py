@@ -22,6 +22,7 @@ class CLIArgParser(object):
         parser.add_argument("--symbolindex", action='store_true', help="dump symbol index", default=False)
         parser.add_argument("--stentries", action='store_true', help="dump section table entries", default=False)
         parser.add_argument("--objcode", action='store_true', help="dump objects", default=False)
+        parser.add_argument("--test", action='store_true', help="test switch", default=False)
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -416,7 +417,7 @@ class ELF(object):
             char = strings[index]
         return ''.join(name)
 
-    def dump_objs(self, dump_b):
+    def dump_funcs(self, dump_b):
         ret_list = []
         dummy = []
         ret_list_int = []
@@ -436,6 +437,18 @@ class ELF(object):
                 print("\n")
 
         return ret_list_int
+
+    def dump_symbol_string(self, stt_type, dump_b):
+        ret_list = []
+        for entry in self.string_tb_e:
+            if entry.st_type == stt_type:
+                ret_list.append("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name))))
+        if dump_b:
+            for name in ret_list:
+                print(name)
+
+        return ret_list
+
 
     def dump_symbol_idx(self):
         print(Colors.green + "symbol:" + Colors.ENDC)
@@ -543,9 +556,11 @@ class ELF(object):
                     print(chr(byte), end='')
                     if chr(byte) == '\0': print()
 
+
     def dump_st_entries(self):
         for entry in self.string_tb_e:
-            print(Colors.green + "name: " + Colors.ENDC + repr(byte2int(entry.st_name)), end="")
+            print(Colors.green + "name index: " + Colors.ENDC + repr(byte2int(entry.st_name)), end="")
+            print(Colors.green + " name: " + Colors.ENDC + repr("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name)))), end="")
             print(Colors.green + " value: " + Colors.ENDC + repr(byte2int(entry.st_value)), end="")
             print(Colors.green + " size: " + Colors.ENDC + repr(byte2int(entry.st_size)), end="")
             print(Colors.green + " info: " + Colors.ENDC + repr(byte2int(entry.st_info)), end="")
@@ -553,6 +568,18 @@ class ELF(object):
             print(Colors.green + " shndx: " + Colors.ENDC + repr(byte2int(entry.st_shndx)), end="")
             print(Colors.green + " bind: " + Colors.ENDC + get_elf_st_bind_string(entry.st_bind), end="")
             print(Colors.green + " type: " + Colors.ENDC + get_elf_st_type_string(entry.st_type))
+
+    def get_st_entry_symbol_string(self, index):
+        symbol = []
+        for i in range(0, byte2int(self.elfhdr.e_shnum)):
+            name = self.read_section_name(byte2int(self.shhdr[i].sh_name))
+            if byte2int(self.shhdr[i].sh_type) == sh_type_e.SHT_STRTAB and name == ".strtab":
+                self.so.seek(byte2int(self.shhdr[i].sh_offset) + index, 0)
+                byte = self.so.read(1)
+                while chr(byte[0]) != "\0":
+                    if chr(byte[0]) != "\0": symbol.append(chr(byte[0]))
+                    byte = self.so.read(1)
+                return symbol
 
     def get_symbol_string_table(self, offset):
         symbol = []
@@ -608,11 +635,22 @@ def ch_exe_to_so(path):
     print(Colors.purple + "changed exe to so" + Colors.ENDC)
     so.close
 
+def elf_init():
+    so = openSO_r(sys.argv[1])
+    elf = ELF(so)
+    elf.init(64)
+
+def elf_get_func_names():
+    so = openSO_r(sys.argv[1])
+    elf = ELF(so)
+    elf.init(64)
+    return elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False)
+
 def main2():
     so = openSO_r(sys.argv[1])
     elf = ELF(so)
     elf.init(64)
-    return elf.dump_objs(False)
+    return elf.dump_funcs(False)
 
 def main():
     variables = globals().copy()
@@ -629,7 +667,8 @@ def main():
         elif argparser.args.shdrs: elf.dump_shdrs()
         elif argparser.args.symbolindex: elf.dump_symbol_idx()
         elif argparser.args.stentries: elf.dump_st_entries()
-        elif argparser.args.objcode: elf.dump_objs(True)
+        elif argparser.args.objcode: elf.dump_funcs(True)
+        elif argparser.args.test: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
     except:
         shell.interact(banner="PyElfDump REPL")
 
