@@ -299,7 +299,7 @@ class PyExec {
         PRINT_WITH_COLOR_LB(YELLOW, "functions with a zero size will not be printed:");
         for (auto &iter : hexobj) {
           for (auto &iterer : iter) {
-            std::cout << RED << int(iterer) << " ";
+            std::cout << RED << std::hex << int(iterer) << " ";
           }
           std::cout << "\n" << NORMAL;
         }
@@ -1588,8 +1588,7 @@ class LuaWrapper
       unsigned int returncount = 0;
 
       for (auto &iter : ShellGlobalInstance.PATH)
-      {
-        lua_pushstring(__ls, iter.c_str());
+      { lua_pushstring(__ls, iter.c_str());
         std::cout << BLUE << iter.c_str() << NORMAL << "\n";
         returncount++;
       }
@@ -1609,6 +1608,21 @@ class LuaWrapper
       }
 
       return returncount;
+    }
+
+    int BruiserLuaCallXFunc(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      std::string argtype;
+
+      if (numargs % 2 != 0) {
+        PRINT_WITH_COLOR_LB(RED, "Each arg should be accompanied with its type.");
+      }
+
+      for (int i = 0; i < numargs; i = i + 2) {
+        argtype = lua_tostring(__ls, i);
+      }
+
+      return 0;
     }
 
     int BruiserLuaChangeDirectory(lua_State* __ls)

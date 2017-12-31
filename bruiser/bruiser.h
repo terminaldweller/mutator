@@ -47,6 +47,9 @@ namespace bruiser
 /**********************************************************************************************************************/
   const char* M0REP = "../test/misrareport.xml";
 /**********************************************************************************************************************/
+#define JOIN2(x1, x2) x1##x2
+#define JOIN3(x1, x2, x3) x1##x2##x3
+
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
 #define GREEN "\033[1;32m"
@@ -145,7 +148,8 @@ help CMDHelp[] = {
   {"changedirectory()", "changedirectory()", "changes bruiser's working directory. only use it when you know what you are doing.", "destination directory, [string]", "return value"},
   {"pwd()", "pwd()", "pwd", "", ""},
   {"objload()", "objload(\"main\", \"../bfd/test/test.so\")", "load the compiled functions into bruiser", "string", "success or failure"},
-  {"listObjects()", "listObjects(\"function\")", "lists the loaded objects of the given type", "string", "success or failure"}
+  {"listObjects()", "listObjects(\"function\")", "lists the loaded objects of the given type", "string", "success or failure"},
+  {"xobjwrapper()", "xobjwrapper(\"function\")", "call an xobject", "", "success or failure"}
 };
 /**********************************************************************************************************************/
 /**

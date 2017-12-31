@@ -123,6 +123,7 @@ std::vector<std::string> LUA_FUNCS =
   "pwd()",
   "objload()",
   "listObjects",
+  "xobjwrapper",
   "_G",
   "_VERSION",
   "assert",

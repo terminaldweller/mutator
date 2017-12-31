@@ -14,5 +14,8 @@ int myvar3 = 3;
 int myvar4 = 4;
 
 int main(int argc, char** argv) {
+  int sum;
+  sum = myfunc7(10, 20);
   printf("i live!\n");
+  return myfunc7(10, 20);
 }

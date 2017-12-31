@@ -54,12 +54,45 @@ namespace { // start of anonymous namespace
     return 0;
   }
 
-  int LuaGenericWrapper(lua_State* __ls, XObject __x) {
-    int numargs = lua_gettop(__ls);
-    std::vector<uint64_t> arg_vec;
+  std::vector<uint8_t> arg_emitter(std::vector<uint8_t> _args) {}
 
-    for (int i = 0; i < numargs; ++i) {
-      arg_vec.push_back(lua_tonumber(__ls, i + 1));
+  int LuaXobjWrapper(lua_State* __ls) {
+    int numargs = lua_gettop(__ls);
+    std::vector<uint8_t> arg_vec;
+    std::string xfuncname;
+    std::vector<std::pair<intptr_t, int>> arg_ptr;
+    std::vector<std::pair<std::string, int>> arg_str;
+    std::vector<std::pair<double, int>> arg_double;
+    std::vector<std::pair<bool, int>> arg_bool;
+
+    if (lua_type(__ls, 1) == LUA_TSTRING) {
+      xfuncname = lua_tostring(__ls, 1);
+    } else {
+      //PRINT_WITH_COLOR_LB(RED, "the first argument should be a string that is the name of the xfunc to be called.");
+    }
+    
+    // detecting arg types
+    for (int i = 2; i <= numargs; ++i) {
+      if (lua_type(__ls, i) == LUA_TBOOLEAN) {
+        arg_bool.push_back(std::make_pair(!!lua_tonumber(__ls, i), i));
+      }
+      else if (lua_type(__ls, i) == LUA_TLIGHTUSERDATA) {
+      }
+      else if (lua_type(__ls, i) == LUA_TNUMBER) {
+      }
+      else if (lua_type(__ls, i) == LUA_TSTRING) {
+      }
+      else if (lua_type(__ls, i) == LUA_TTABLE) {
+      }
+      else if (lua_type(__ls, i) == LUA_TFUNCTION) {
+      }
+      else if (lua_type(__ls, i) == LUA_TUSERDATA) {
+      }
+      else if (lua_type(__ls, i) == LUA_TTHREAD) {
+      }
+      // type is Nil
+      else {
+      }
     }
 
     pid_t pid = fork();
@@ -69,7 +102,6 @@ namespace { // start of anonymous namespace
     }
     if (pid == 0) {}
     if (pid > 0) {
-      __x;
     }
 
     return 0;
@@ -125,9 +157,7 @@ class Executioner {
     }
 
     void registerWithLua(lua_State* _lua_State) {
-      for (auto& iter : names) {
-        //lua_register(_lua_State, iter.c_str(), LuaGeneric);
-      }
+      lua_register(_lua_State, "xobjwrapper", LuaXobjWrapper);
     }
 
     void xobjsGetPtrs(void) {
