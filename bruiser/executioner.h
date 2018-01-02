@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
+#include "./bruiser.h"
+#include "lua-5.3.4/src/lua.hpp"
+
 #include <iostream>
 #include <tuple>
 #include <vector>
@@ -27,7 +30,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <cstring>
 #include <sys/mman.h>
 #include <unistd.h>
-#include "lua-5.3.4/src/lua.hpp"
 /**********************************************************************************************************************/
 #ifndef EXECUTIONER_H
 #define EXECUTIONER_H
@@ -68,7 +70,7 @@ namespace { // start of anonymous namespace
     if (lua_type(__ls, 1) == LUA_TSTRING) {
       xfuncname = lua_tostring(__ls, 1);
     } else {
-      //PRINT_WITH_COLOR_LB(RED, "the first argument should be a string that is the name of the xfunc to be called.");
+      PRINT_WITH_COLOR_LB(RED, "the first argument should be a string that is the name of the xfunc to be called.");
     }
     
     // detecting arg types
@@ -79,8 +81,10 @@ namespace { // start of anonymous namespace
       else if (lua_type(__ls, i) == LUA_TLIGHTUSERDATA) {
       }
       else if (lua_type(__ls, i) == LUA_TNUMBER) {
+        arg_double.push_back(std::make_pair(lua_tonumber(__ls, i), i));
       }
       else if (lua_type(__ls, i) == LUA_TSTRING) {
+        arg_str.push_back(std::make_pair(lua_tostring(__ls, i), i));
       }
       else if (lua_type(__ls, i) == LUA_TTABLE) {
       }
@@ -92,12 +96,13 @@ namespace { // start of anonymous namespace
       }
       // type is Nil
       else {
+        PRINT_WITH_COLOR_LB(RED, "you passed a Nil argument...");
       }
     }
 
     pid_t pid = fork();
     if (pid < 0) {
-      //PRINT_WITH_COLOR_LB(RED, "could not fork...");
+      PRINT_WITH_COLOR_LB(RED, "could not fork...");
       lua_pushnumber(__ls, EXIT_FAILURE);
     }
     if (pid == 0) {}

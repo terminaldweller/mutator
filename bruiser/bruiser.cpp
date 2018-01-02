@@ -283,7 +283,8 @@ class PyExec {
                 tempvec.push_back(int(byte));
               }
             }
-            if (!tempvec.empty()) {hexobj.push_back(tempvec);}
+            //if (!tempvec.empty()) {hexobj.push_back(tempvec);}
+            hexobj.push_back(tempvec);
             tempvec.clear();
           }
         }
@@ -305,9 +306,8 @@ class PyExec {
         }
     }
 
-    std::vector<std::vector<uint8_t>> exportObjs(void) {
-      return hexobj;
-    }
+    std::vector<std::vector<uint8_t>> exportObjs(void) {return hexobj;}
+    std::vector<std::string> exportStrings(void) {return hexobj_str;}
 
   private:
     std::string py_script_name;
@@ -1183,6 +1183,7 @@ class LuaWrapper
         funcname = lua_tostring(__ls, 1);
         objjpath = lua_tostring(__ls, 2);
         action = lua_tostring(__ls, 3);
+        lua_pop(__ls, 3);
       }
       else {
         std::cout << RED << "wrong number of arguments provided. should give the python script name, python func name and its args.\n" << NORMAL;
@@ -1191,18 +1192,15 @@ class LuaWrapper
 
       std::cout << CYAN << "initing the py embed class...\n" << NORMAL;
       PyExec py(filename.c_str(), funcname.c_str(), objjpath.c_str());
-
       std::cout << CYAN << "forking python script...\n" << NORMAL;
       pid_t pid = fork();
 
-      if (pid < 0)
-      {
+      if (pid < 0) {
         PRINT_WITH_COLOR_LB(RED, "could not fork...");
         lua_pushnumber(__ls, EXIT_FAILURE);
       }
 
-      if (pid == 0)
-      {
+      if (pid == 0) {
         std::cout << BLUE << "running load.py: " << NORMAL << "\n";
         py.run();
         if (action == "code_list") {
@@ -1212,20 +1210,28 @@ class LuaWrapper
         else if (action == "symbol_list") {
           py.getAsCppStringVec();
         }
+
+        lua_newtable(__ls);
+        int tableindex = 0 ;
+        for (auto& iter : py.exportStrings()) {
+          lua_pushnumber(__ls, tableindex);
+          tableindex++;
+          lua_pushstring(__ls, iter.c_str());
+          lua_settable(__ls, 1);
+        }
         //py.killPyObj();
-        lua_pushnumber(__ls, 0);
+        //lua_pushnumber(__ls, 0);
         exit(EXIT_SUCCESS);
       }
 
-      if (pid > 0)
-      {
+      if (pid > 0) {
         int status;
         pid_t returned;
         returned = waitpid(pid, &status, 0);
-        lua_pushnumber(__ls, returned);
+        //lua_pushnumber(__ls, returned);
       }
 
-      lua_pushnumber(__ls, 0);
+      //lua_pushnumber(__ls, 0);
       return 1;
     }
 

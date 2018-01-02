@@ -23,6 +23,7 @@ class CLIArgParser(object):
         parser.add_argument("--stentries", action='store_true', help="dump section table entries", default=False)
         parser.add_argument("--objcode", action='store_true', help="dump objects", default=False)
         parser.add_argument("--test", action='store_true', help="test switch", default=False)
+        parser.add_argument("--dynsym", action='store_true', help="dump dynamic symbol table", default=False)
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -299,32 +300,32 @@ class ELF(object):
     def init(self, size):
         self.size = size
         self.read_ELF_H(size)
-        self.so.seek(int.from_bytes(self.elfhdr.e_phoff, byteorder="little", signed=False))
-        phnum = int.from_bytes(self.elfhdr.e_phnum, byteorder="little", signed=False)
+        self.so.seek(byte2int(self.elfhdr.e_phoff))
+        phnum = byte2int(self.elfhdr.e_phnum)
         for i in range(0, phnum):
             self.read_PHDR(size)
-        self.so.seek(int.from_bytes(self.elfhdr.e_shoff, byteorder="little", signed=False))
-        shnum = int.from_bytes(self.elfhdr.e_shnum, byteorder="little", signed=False)
+        self.so.seek(byte2int(self.elfhdr.e_shoff))
+        shnum = byte2int(self.elfhdr.e_shnum)
         for i in range(0, shnum):
             self.read_SHDR(size)
         for i in range(0, shnum):
-            type = int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False)
+            type = byte2int(self.shhdr[i].sh_type)
             if type == sh_type_e.SHT_SYMTAB:
-                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
-                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+                self.so.seek(byte2int(self.shhdr[i].sh_offset), 0)
+                symbol_tb = self.so.read(byte2int(self.shhdr[i].sh_size))
                 offset = 0
-                num = int(int.from_bytes(self.shhdr[i].sh_size, byteorder="little") / 24)
+                num = int(byte2int(self.shhdr[i].sh_size) / 24)
                 for j in range(0, num):
                     self.read_st_entry(symbol_tb[offset:offset + 24], self.string_tb_e)
-                    offset += 8*24
+                    offset += 24
             if type == sh_type_e.SHT_DYNSYM:
-                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
-                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
+                self.so.seek(byte2int(self.shhdr[i].sh_offset), 0)
+                symbol_tb = self.so.read(byte2int(self.shhdr[i].sh_size))
                 offset = 0
-                num = int(int.from_bytes(self.shhdr[i].sh_size, byteorder="little") / 24)
+                num = int(byte2int(self.shhdr[i].sh_size) / 24)
                 for j in range(0, num):
                     self.read_st_entry(symbol_tb[offset:offset + 24], self.string_tb_e_dyn)
-                    offset += 8*24
+                    offset += 24
         self.pop_data_section()
         self.pop_text_section()
 
@@ -442,13 +443,21 @@ class ELF(object):
         ret_list = []
         for entry in self.string_tb_e:
             if entry.st_type == stt_type:
-                ret_list.append("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name))))
+                ret_list.append("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name), ".strtab")))
         if dump_b:
             for name in ret_list:
                 print(name)
-
         return ret_list
 
+    def dump_obj_size(self, stt_type, dump_b):
+        ret_list = []
+        for entry in self.string_tb_e:
+            if entry.st_type == stt_type:
+                ret_list.append(byte2int(entry.st_size))
+        if dump_b:
+            for name in ret_list:
+                print(name)
+        return ret_list
 
     def dump_symbol_idx(self):
         print(Colors.green + "symbol:" + Colors.ENDC)
@@ -546,21 +555,22 @@ class ELF(object):
             print(Colors.blue + "sh_entsize: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_entsize)) + Colors.ENDC)
             counter += 1
 
-    def dump_symbol_tb(self):
-        for i in range(0, int.from_bytes(self.elfhdr.e_shnum, byteorder="little", signed=False)):
-            if int.from_bytes(self.shhdr[i].sh_type, byteorder="little", signed=False) == sh_type_e.SHT_STRTAB:
-                print(Colors.BOLD + Colors.yellow + "STRING TABLE:" + Colors.ENDC)
-                self.so.seek(int.from_bytes(self.shhdr[i].sh_offset, byteorder="little", signed=False), 0)
-                symbol_tb = self.so.read(int.from_bytes(self.shhdr[i].sh_size, byteorder="little", signed=False))
-                for byte in symbol_tb:
-                    print(chr(byte), end='')
-                    if chr(byte) == '\0': print()
+    def dump_symbol_tb(self, name, type):
+        for i in range(0, byte2int(self.elfhdr.e_shnum)):
+            if byte2int(self.shhdr[i].sh_type) == type:
+                if name == self.read_section_name(byte2int(self.shhdr[i].sh_name)):
+                    print(Colors.BOLD + Colors.yellow + "STRING TABLE:" + Colors.ENDC)
+                    self.so.seek(byte2int(self.shhdr[i].sh_offset), 0)
+                    symbol_tb = self.so.read(byte2int(self.shhdr[i].sh_size))
+                    for byte in symbol_tb:
+                        print(chr(byte), end='')
+                        if chr(byte) == '\0': print()
 
 
     def dump_st_entries(self):
         for entry in self.string_tb_e:
             print(Colors.green + "name index: " + Colors.ENDC + repr(byte2int(entry.st_name)), end="")
-            print(Colors.green + " name: " + Colors.ENDC + repr("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name)))), end="")
+            print(Colors.green + " name: " + Colors.ENDC + repr("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name), ".strtab"))), end="")
             print(Colors.green + " value: " + Colors.ENDC + repr(byte2int(entry.st_value)), end="")
             print(Colors.green + " size: " + Colors.ENDC + repr(byte2int(entry.st_size)), end="")
             print(Colors.green + " info: " + Colors.ENDC + repr(byte2int(entry.st_info)), end="")
@@ -569,11 +579,23 @@ class ELF(object):
             print(Colors.green + " bind: " + Colors.ENDC + get_elf_st_bind_string(entry.st_bind), end="")
             print(Colors.green + " type: " + Colors.ENDC + get_elf_st_type_string(entry.st_type))
 
-    def get_st_entry_symbol_string(self, index):
+    def dump_st_entries_dyn(self):
+        for entry in self.string_tb_e_dyn:
+            print(Colors.green + "name index: " + Colors.ENDC + repr(byte2int(entry.st_name)), end="")
+            print(Colors.green + " name: " + Colors.ENDC + repr("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name), ".dynstr"))), end="")
+            print(Colors.green + " value: " + Colors.ENDC + repr(byte2int(entry.st_value)), end="")
+            print(Colors.green + " size: " + Colors.ENDC + repr(byte2int(entry.st_size)), end="")
+            print(Colors.green + " info: " + Colors.ENDC + repr(byte2int(entry.st_info)), end="")
+            print(Colors.green + " other: " + Colors.ENDC + repr(byte2int(entry.st_other)), end="")
+            print(Colors.green + " shndx: " + Colors.ENDC + repr(byte2int(entry.st_shndx)), end="")
+            print(Colors.green + " bind: " + Colors.ENDC + get_elf_st_bind_string(entry.st_bind), end="")
+            print(Colors.green + " type: " + Colors.ENDC + get_elf_st_type_string(entry.st_type))
+
+    def get_st_entry_symbol_string(self, index, section_name):
         symbol = []
         for i in range(0, byte2int(self.elfhdr.e_shnum)):
             name = self.read_section_name(byte2int(self.shhdr[i].sh_name))
-            if byte2int(self.shhdr[i].sh_type) == sh_type_e.SHT_STRTAB and name == ".strtab":
+            if byte2int(self.shhdr[i].sh_type) == sh_type_e.SHT_STRTAB and name == section_name:
                 self.so.seek(byte2int(self.shhdr[i].sh_offset) + index, 0)
                 byte = self.so.read(1)
                 while chr(byte[0]) != "\0":
@@ -646,30 +668,48 @@ def elf_get_func_names():
     elf.init(64)
     return elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False)
 
-def main2():
+# obj here means variables or what the C standard means by objects
+def elf_get_obj_names():
+    so = openSO_r(sys.argv[1])
+    elf = ELF(so)
+    elf.init(64)
+    return elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, False)
+
+# obj here means variables or what the C standard means by objects
+def elf_get_obj_sizes():
+    so = openSO_r(sys.argv[1])
+    elf = ELF(so)
+    elf.init(64)
+    return elf.dump_obj_size(ELF_ST_TYPE.STT_OBJECT, False)
+
+def elf_get_func_code():
     so = openSO_r(sys.argv[1])
     elf = ELF(so)
     elf.init(64)
     return elf.dump_funcs(False)
 
 def main():
-    variables = globals().copy()
-    variables.update(locals())
-    shell = code.InteractiveConsole(variables)
     try:
         argparser = CLIArgParser()
         so = openSO_r(argparser.args.obj)
         elf = ELF(so)
         elf.init(64)
         if argparser.args.header: elf.dump_header()
-        elif argparser.args.symboltable: elf.dump_symbol_tb()
+        elif argparser.args.symboltable:
+            elf.dump_symbol_tb(".strtab", sh_type_e.SHT_STRTAB)
+            elf.dump_symbol_tb(".dynstr", sh_type_e.SHT_STRTAB)
         elif argparser.args.phdrs: elf.dump_phdrs()
         elif argparser.args.shdrs: elf.dump_shdrs()
         elif argparser.args.symbolindex: elf.dump_symbol_idx()
         elif argparser.args.stentries: elf.dump_st_entries()
         elif argparser.args.objcode: elf.dump_funcs(True)
         elif argparser.args.test: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
+        elif argparser.args.test: elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, True)
+        elif argparser.args.dynsym: elf.dump_st_entries_dyn()
     except:
+        variables = globals().copy()
+        variables.update(locals())
+        shell = code.InteractiveConsole(variables)
         shell.interact(banner="PyElfDump REPL")
 
 if __name__ == "__main__":
