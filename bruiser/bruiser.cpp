@@ -259,7 +259,7 @@ class PyExec {
           PyObject* pyrepr = PyObject_Repr(pybytes);
           PyObject* pyunicode = PyUnicode_AsEncodedString(pyrepr, "utf-8", "surrogateescape");
           const char* dummy = PyBytes_AsString(pyunicode);
-          std::cout << RED << dummy << "\n" << NORMAL;
+          //std::cout << RED << dummy << "\n" << NORMAL;
           hexobj_str.push_back(std::string(dummy));
         }
       }
@@ -1192,46 +1192,50 @@ class LuaWrapper
 
       std::cout << CYAN << "initing the py embed class...\n" << NORMAL;
       PyExec py(filename.c_str(), funcname.c_str(), objjpath.c_str());
-      std::cout << CYAN << "forking python script...\n" << NORMAL;
-      pid_t pid = fork();
 
-      if (pid < 0) {
-        PRINT_WITH_COLOR_LB(RED, "could not fork...");
-        lua_pushnumber(__ls, EXIT_FAILURE);
-      }
+      std::cout << BLUE << "running load.py: " << NORMAL << "\n";
+      py.run();
+      if (action == "code_list") {
+        py.getAsCppByte();
+        //py.printHexObjs();
 
-      if (pid == 0) {
-        std::cout << BLUE << "running load.py: " << NORMAL << "\n";
-        py.run();
-        if (action == "code_list") {
-          py.getAsCppByte();
-          py.printHexObjs();
-        }
-        else if (action == "symbol_list") {
-          py.getAsCppStringVec();
-        }
-
+        int tableindex1 = 1;
+        int tableindex2 = 1;
+        // the return type to lua is a table of tables
         lua_newtable(__ls);
-        int tableindex = 0 ;
+        if (!lua_checkstack(__ls, py.exportObjs().size() * 2)) {
+          PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+        }
+        for (auto& iter : py.exportObjs()) {
+          lua_pushnumber(__ls, tableindex1);
+          lua_newtable(__ls);
+          for (auto& iterer : iter) {
+            lua_pushnumber(__ls, tableindex2);
+            tableindex2++;
+            lua_pushnumber(__ls, iterer);
+            lua_settable(__ls, -3);
+          }
+          tableindex2 = 1;
+          tableindex1++;
+          lua_settable(__ls, -3);
+        }
+      }
+      else if (action == "symbol_list") {
+        py.getAsCppStringVec();
+        int tableindex = 1 ;
+        // the return type to lua is a table
+        lua_newtable(__ls);
+        if (!lua_checkstack(__ls, py.exportStrings().size() * 2)) {
+          PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+        }
         for (auto& iter : py.exportStrings()) {
           lua_pushnumber(__ls, tableindex);
           tableindex++;
           lua_pushstring(__ls, iter.c_str());
-          lua_settable(__ls, 1);
+          lua_settable(__ls, -3);
         }
-        //py.killPyObj();
-        //lua_pushnumber(__ls, 0);
-        exit(EXIT_SUCCESS);
       }
 
-      if (pid > 0) {
-        int status;
-        pid_t returned;
-        returned = waitpid(pid, &status, 0);
-        //lua_pushnumber(__ls, returned);
-      }
-
-      //lua_pushnumber(__ls, 0);
       return 1;
     }
 
