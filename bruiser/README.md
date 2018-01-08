@@ -34,8 +34,8 @@ Imagine we have a classical mutation operator that mutates all `+` operators to 
 ### How?
 I'm going to write about it as soon as I get my thoughts organized. In the meantime you can look at the source code for some hints.<br/>
 
-### Example
-First you should clone the mutator repo and run `git submodule init` and `git submodule update` to get the cool third-party repos that enable mutator to run.<br/>
+### Exampless
+First you should clone the mutator repo and run `git submodule init` and `git submodule update` to get the third-party repos that enable mutator to run.<br/>
 To build bruiser you can either run the makefile in bruiser's directory, then run `make` or just run the makefile at mutator's root directory and run `make bruiser`.<br/>
 After building bruiser, you can run it like any other mutator tool. So for example if you want to run bruiser on its test file run:<br/>
 
@@ -44,6 +44,8 @@ After building bruiser, you can run it like any other mutator tool. So for examp
 ./bruiser ../test/bruisertest/test.cpp
 
 ```
+
+or if you're lazy like me just run the shellscript `run.sh` in bruiser's directory.<br/>
 
 After that you can just run your commands.<br/>
 To run you commands from a lua file, you can just use `dofile()` to call your script. Bruiser has an embedded lua interpreter with the bruiser functions registered in it, so you do have full access to all lua libraries and functionalities plus the added bruiser functionality.<br/>
@@ -63,3 +65,11 @@ You can also run bruiser in non-cli mode:<br/>
 ```
 
 Bruiser requires a compilation database to run. If you don't have a compilation database, take a look at [Bear](https://github.com/rizsotto/Bear). If you're using `cmake`, just tell it to generate a compilation database.<br/>
+
+TLDR; now let's look at some useful example.<br/>
+#### ELF info
+mutator has it's own pyelf script which resides at `/bfd`, named `load.py`. `load.py` reads an ELF file and then returns the results to lua in the form of tables. For more detailed info please look at the wiki entry.<br/>
+Running the following command will return a table containing the names of the objects found in the specified ELF file. To build `../bfd/test/test.so` go to the test dir for bfd and run the makefile.<br/>
+```lua
+objload("elf_get_obj_names", "../bfd/test/test.so", "symbol_list")
+```
