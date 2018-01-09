@@ -253,7 +253,7 @@ class PyExec {
       if (PyList_Check(pValue)) {
         std::cout << GREEN << "got a python list\n" << NORMAL;
         int list_length = PyList_Size(pValue);
-        std::cout << BLUE << "length of list: " << list_length << "\n" << NORMAL;
+        std::cout << BLUE << "length of list: " << list_length << NORMAL  <<"\n";
         for (int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
           PyObject* pyrepr = PyObject_Repr(pybytes);
@@ -271,7 +271,7 @@ class PyExec {
       std::vector<uint8_t> tempvec;
       if(PyList_Check(pValue)) {
         int list_length = PyList_Size(pValue);
-        std::cout << BLUE << "length of list: " << list_length << "\n" << NORMAL;
+        std::cout << BLUE << "length of list: " << list_length << NORMAL << "\n";
         for(int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
           if(PyList_Check(pybytes)) {
@@ -1203,6 +1203,7 @@ class LuaWrapper
         int tableindex2 = 1;
         // the return type to lua is a table of tables
         lua_newtable(__ls);
+        // @devi-FIXME-probably reserving way too much stack space
         if (!lua_checkstack(__ls, py.exportObjs().size() * 2)) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
@@ -1225,6 +1226,7 @@ class LuaWrapper
         int tableindex = 1 ;
         // the return type to lua is a table
         lua_newtable(__ls);
+        // @devi-FIXME-probably reserving way too much stack space
         if (!lua_checkstack(__ls, py.exportStrings().size() * 2)) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
@@ -1236,6 +1238,17 @@ class LuaWrapper
         }
       }
 
+      PRINT_WITH_COLOR_LB(GREEN, "done.");
+      return 1;
+    }
+
+    int BruiserLuaxobjRegister(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 2) {
+        PRINT_WITH_COLOR_LB(RED, "arg number should be 2.");
+      }
+
+      Executioner executioner;
       return 1;
     }
 
@@ -1847,6 +1860,7 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "pwd", &LuaDispatch<&LuaWrapper::BruiserLuaPWD>);
     lua_register(LE.GetLuaState(), "objload", &LuaDispatch<&LuaWrapper::BruiserPyLoader>);
     lua_register(LE.GetLuaState(), "listObjects", &LuaDispatch<&LuaWrapper::BruiserLuaListObjects>);
+    lua_register(LE.GetLuaState(), "xobjregister", &LuaDispatch<&LuaWrapper::BruiserLuaxobjRegister>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 

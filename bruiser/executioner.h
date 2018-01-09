@@ -56,6 +56,34 @@ namespace { // start of anonymous namespace
     return 0;
   }
 
+  inline void argInjector(lua_State* __ls) {
+    int numargs = lua_gettop(__ls);
+    for (int i = 2; i <= numargs; ++i) {
+      if (lua_type(__ls, i) == LUA_TBOOLEAN) {
+      }
+      else if (lua_type(__ls, i) == LUA_TLIGHTUSERDATA) {
+      }
+      else if (lua_type(__ls, i) == LUA_TNUMBER) {
+      }
+      else if (lua_type(__ls, i) == LUA_TSTRING) {
+#ifdef __x86_64__
+        asm volatile("movl %%eax, %0");
+#endif
+      }
+      else if (lua_type(__ls, i) == LUA_TTABLE) {
+      }
+      else if (lua_type(__ls, i) == LUA_TFUNCTION) {
+      }
+      else if (lua_type(__ls, i) == LUA_TUSERDATA) {
+      }
+      else if (lua_type(__ls, i) == LUA_TTHREAD) {
+      }
+      else { // type is nil
+        PRINT_WITH_COLOR_LB(RED, "you passed a Nil argument...");
+      }
+    }
+  }
+
   std::vector<uint8_t> arg_emitter(std::vector<uint8_t> _args) {}
 
   int LuaXobjWrapper(lua_State* __ls) {
@@ -145,6 +173,16 @@ class Executioner {
         return std::make_pair(nullptr, 0);
       }
       return std::make_pair(program_memory, code_size);
+    }
+
+    std::vector<uint64_t> getAllArgs(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      std::vector<uint64_t> args;
+
+      for (int i = 0; i < numargs; ++i) {
+      }
+
+      return args;
     }
 
     void loadAll(void) {

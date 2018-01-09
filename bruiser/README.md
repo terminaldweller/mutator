@@ -34,6 +34,10 @@ Imagine we have a classical mutation operator that mutates all `+` operators to 
 ### How?
 I'm going to write about it as soon as I get my thoughts organized. In the meantime you can look at the source code for some hints.<br/>
 
+### Useful Lua Scripts
+The dir named `lua-scripts` houses demos, examples and useful lua scripts for bruiser.<br/>
+If you happen to write a Lua script for bruiser that you think other people will find useful, then please add it to `lua-scripts` on your fork and make a PR.<br/>
+
 ### Exampless
 First you should clone the mutator repo and run `git submodule init` and `git submodule update` to get the third-party repos that enable mutator to run.<br/>
 To build bruiser you can either run the makefile in bruiser's directory, then run `make` or just run the makefile at mutator's root directory and run `make bruiser`.<br/>
