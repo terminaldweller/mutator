@@ -36,6 +36,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 namespace { // start of anonymous namespace
   using XObject = void(*)(void);
+  using xobj_2int = int(*)(int, int);
+  using LuaRegFunc = int(*)(lua_State*);
   constexpr int MEMORY_SIZE = 32768;
   std::vector<uint8_t> memory(MEMORY_SIZE, 0);
 
@@ -178,10 +180,7 @@ class Executioner {
     std::vector<uint64_t> getAllArgs(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
       std::vector<uint64_t> args;
-
-      for (int i = 0; i < numargs; ++i) {
-      }
-
+      for (int i = 0; i < numargs; ++i) {}
       return args;
     }
 
@@ -202,6 +201,8 @@ class Executioner {
     void registerWithLua(lua_State* _lua_State) {
       lua_register(_lua_State, "xobjwrapper", LuaXobjWrapper);
     }
+
+    XObject getXobject(void* _ptr) {return (XObject)_ptr;}
 
     void xobjsGetPtrs(void) {
       for (auto& iter : obj_mem_ptrs) {

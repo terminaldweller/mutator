@@ -72,16 +72,14 @@ using namespace clang::tooling;
 #endif
 /**********************************************************************************************************************/
 /*global vars*/
-namespace
-{
+namespace { // start of anonymous namespace
   static llvm::cl::OptionCategory BruiserCategory("Empty");
   std::vector<std::string> PushToLua;
 
   bruiser::M0_ERR m0_err [[maybe_unused]];
   bruiser::BruiserReport BruiseRep;
 
-  struct ShellGlobal
-  {
+  struct ShellGlobal {
     ShellGlobal() = default;
 
     std::vector<std::string> PATH;
@@ -91,15 +89,14 @@ namespace
     unsigned int HISTORY_SIZE = SHELL_HISTORY_SIZE;
   };
 
-  struct ShellCache
-  {
+  struct ShellCache {
     std::string LastFileUsed;
     std::string LastFileUsedShort;
   };
 
   ShellGlobal ShellGlobalInstance;
   ShellCache ShellCacheInstance;
-}
+} // end of anonymous naemspace
 /**********************************************************************************************************************/
 cl::opt<bool> Intrusive("intrusive", cl::desc("If set true. bruiser will mutate the source."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("bruiser will run through System Headers"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
@@ -325,18 +322,17 @@ class PyExec {
     std::vector<std::vector<uint8_t>> hexobj;
 };
 /**********************************************************************************************************************/
-class CompilationDatabaseProcessor
-{
+class XObjReliquary {};
+/**********************************************************************************************************************/
+class CompilationDatabaseProcessor {
   public:
   CompilationDatabaseProcessor(CompilationDatabase &__cdb) : CDB(__cdb) {}
 
-  void CalcMakePath(void)
-  {
+  void CalcMakePath(void) {
     std::vector<std::string> Paths;
     std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
 
-    for(auto &iter : CCV)
-    {
+    for(auto &iter : CCV) {
       SourceFiles.push_back(iter.Filename);
       //PRINT_WITH_COLOR_LB(RED, SourceFiles.back().c_str());
     }
@@ -345,37 +341,22 @@ class CompilationDatabaseProcessor
     //PRINT_WITH_COLOR_LB(RED, MakePath.c_str());
   }
 
-  bool CompilationDatabseIsEmpty(void)
-  {
+  bool CompilationDatabseIsEmpty(void) {
     std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
-
-    if(CCV.empty())
-    {
-      return true;
-    }
-
+    if(CCV.empty()) {return true;}
     return false;
   }
 
-  std::string GetMakePath(void)
-  {
-    return this->MakePath;
-  }
+  std::string GetMakePath(void) {return this->MakePath;}
 
-  std::vector<std::string> GetSourceFiles(void)
-  {
-    return this->SourceFiles;
-  }
+  std::vector<std::string> GetSourceFiles(void) {return this->SourceFiles;}
 
-  void PopulateGPATH(void)
-  {
+  void PopulateGPATH(void) {
     ShellGlobalInstance.PATH.push_back(MakePath);
   }
 
-  void PopulateGSOURCEFILES(void)
-  {
-    for (auto &iter : SourceFiles)
-    {
+  void PopulateGSOURCEFILES(void) {
+    for (auto &iter : SourceFiles) {
       ShellGlobalInstance.SOURCE_FILES.push_back(iter);
     }
   }
@@ -1247,9 +1228,33 @@ class LuaWrapper
       if (numargs != 2) {
         PRINT_WITH_COLOR_LB(RED, "arg number should be 2.");
       }
-
+      std::vector<uint8_t> xobj_code_;
+      std::string xobj_name;
+      int table_length = lua_rawlen(__ls, 1);
+      if (lua_type(__ls, 1) != LUA_TTABLE) {
+        PRINT_WITH_COLOR_LB(RED, "the stack value is not a table but is being accessed as such.");
+      } else {
+        PRINT_WITH_COLOR_LB(GREEN, "stack index 1 is a table.");
+      }
+      std::cout << CYAN << "table_length: " << table_length << NORMAL << "\n";
+      for (int i = 1; i <= table_length; ++i) {
+        lua_rawgeti(__ls, 1, i);
+        xobj_code_.push_back(int(lua_tonumber(__ls, i + 2)));
+      }
+      std::cout << RED << "function code: ";
+      for (auto& iter : xobj_code_) {std::cout << RED << int(iter) << " ";}
+      std::cout << NORMAL  <<"\n";
+      xobj_name = lua_tostring(__ls, 2);
       Executioner executioner;
-      return 1;
+      std::pair<void*, size_t> xobj = executioner.loadObjsInXMem(xobj_code_);
+      std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
+      std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
+      XObject ptr = executioner.getXobject(xobj.first);
+      ptr();
+      xobj_2int ptr2;
+      ptr2 = (xobj_2int)ptr;
+      std::cout << MAGENTA  << "result: " << NORMAL << ptr2(30,20) << "\n";
+      return 0;
     }
 
     /*read the m0 report*/
@@ -1802,13 +1807,10 @@ int main(int argc, const char **argv) {
   CompilationDatabaseProcessor CDBP(CDB);
 
   /*checking whether the compilation database is found and not empty*/
-  if (CDBP.CompilationDatabseIsEmpty())
-  {
+  if (CDBP.CompilationDatabseIsEmpty()) {
     PRINT_WITH_COLOR_LB(RED, "bruiser could not find the compilation database.");
     return 1;
-  }
-  else
-  {
+  } else {
     CDBP.CalcMakePath();
     CDBP.PopulateGPATH();
     CDBP.PopulateGSOURCEFILES();
@@ -1870,41 +1872,30 @@ int main(int argc, const char **argv) {
 #undef LIST_LIST_GENERATORS
 
     /*The non-cli execution loop*/
-    if (NonCLILuaScript != "")
-    {
+    if (NonCLILuaScript != "") {
       std::ifstream lua_script_noncli;
       lua_script_noncli.open(NonCLILuaScript);
       std::string line;
-
-      while(std::getline(lua_script_noncli, line))
-      {
+      while(std::getline(lua_script_noncli, line)) {
         BruiserLog.PrintToLog("running in non-cli mode...");
         BruiserLog.PrintToLog(line + "\n");
         LE.RunChunk((char*)line.c_str());
       }
-
       dostring(LE.GetLuaState(), "os.exit()", "test");
       return 0;
     }
 
     /*cli execution loop*/
-    while((command = linenoise(">>>")) != NULL)
-    {
+    while((command = linenoise(">>>")) != NULL) {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
-      if (std::string(command).find("!", 0) == 0)
-      {
+      if (std::string(command).find("!", 0) == 0) {
         std::string histnumber_str = std::string(command).substr(1, std::string::npos);
         unsigned int history_num = std::stoi(histnumber_str, 0, 10);
-        if (history_num >= ShellGlobalInstance.HISTORY_SIZE)
-        {
+        if (history_num >= ShellGlobalInstance.HISTORY_SIZE) {
           PRINT_WITH_COLOR_LB(RED, "invalid history number passed.");
           continue;
-        }
-        else
-        {
-
-        }
+        } else {}
       }
       LE.RunChunk(command);
       linenoiseFree(command);

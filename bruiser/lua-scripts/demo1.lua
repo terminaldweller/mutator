@@ -81,8 +81,34 @@ function codeTableByName(name)
   return nil
 end
 
+function codeTableByName_number(name)
+  local return_table = {}
+  local func_name_table = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
+  local code_table = objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
+  for k,v in ipairs(func_name_table) do
+    if v == name then
+      for k1, v1 in ipairs(code_table[k]) do
+        table.insert(return_table, v1)
+      end
+      return return_table
+    end
+  end
+  return nil
+end
+
+function printFuncSizes()
+  local func_name_table = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
+  local code_table = objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
+  local counter = 1
+  print("function sizes:")
+  for k, v in ipairs(code_table) do
+    print("code size for "..func_name_table[counter].." is".." "..#v)
+    counter = counter + 1
+  end
+end
+
 -- start of @placeholder
-function XobjRegister(code_table, registration_name)
+function xobjRegister(code_table, registration_name)
   -- lightuserdata
   local Xobjpointer
   return Xobjpointer
@@ -110,6 +136,14 @@ function main()
     io.write(v, " ")
   end
   io.write("\n")
+
+  local add2_code = codeTableByName_number("'add2'")
+  local sub2_code = codeTableByName_number("'sub2'")
+
+  printFuncSizes()
+
+  xobjregister(add2_code, "add2")
+  xobjregister(sub2_code, "sub2")
 end
 
 main()

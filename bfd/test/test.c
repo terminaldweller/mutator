@@ -6,7 +6,8 @@ int myfunc3(void) {return 3;}
 int myfunc4(void) {return 4;}
 int myfunc5(void) {return 5;}
 int myfunc6(void) {return 6;}
-int myfunc7(int a, int b) {return a + b;}
+int add2(int a, int b) {return a + b;}
+int sub2(int a, int b) {return a - b;}
 
 int myvar1 = 1;
 int myvar2 = 2;
@@ -15,7 +16,7 @@ int myvar4 = 4;
 
 int main(int argc, char** argv) {
   int sum;
-  sum = myfunc7(10, 20);
+  sum = add2(10, 20);
   printf("i live!\n");
-  return myfunc7(10, 20);
+  return sub2(20, 10);
 }
