@@ -50,6 +50,9 @@ namespace bruiser
 #define JOIN2(x1, x2) x1##x2
 #define JOIN3(x1, x2, x3) x1##x2##x3
 
+#define PTR_NVA(x1, x2) x1(*)(x2)
+#define PTR_VA(x1, x2) x1(*)(x2, ...)
+
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
 #define GREEN "\033[1;32m"

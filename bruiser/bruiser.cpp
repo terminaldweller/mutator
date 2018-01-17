@@ -1065,7 +1065,7 @@ class LiveActionListArrays : public ASTFrontendAction
 class LuaWrapper
 {
   public:
-    LuaWrapper(ClangTool &__CT) : CT(__CT) {}
+    LuaWrapper(ClangTool &__CT, Executioner& __EX) : CT(__CT), executioner(__EX) {}
 
     /*print out the history*/
     int BruiserLuaHistory(lua_State* __ls)
@@ -1245,15 +1245,16 @@ class LuaWrapper
       for (auto& iter : xobj_code_) {std::cout << RED << int(iter) << " ";}
       std::cout << NORMAL  <<"\n";
       xobj_name = lua_tostring(__ls, 2);
-      Executioner executioner;
+      //Executioner executioner;
       std::pair<void*, size_t> xobj = executioner.loadObjsInXMem(xobj_code_);
       std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
       std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
-      XObject ptr = executioner.getXobject(xobj.first);
+      XObject ptr = (XObject)xobj.first;
       ptr();
       xobj_2int ptr2;
       ptr2 = (xobj_2int)ptr;
       std::cout << MAGENTA  << "result: " << NORMAL << ptr2(30,20) << "\n";
+      //devi_luareg(__ls, ptr2, xobj_name, executioner);
       return 0;
     }
 
@@ -1766,18 +1767,11 @@ class LuaWrapper
 
   private:
     ClangTool CT;
+    Executioner executioner;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 typedef int (LuaWrapper::*mem_func)(lua_State* L);
-
-/**
- * @brief A template function to wrap LuaWrapper members into somehting that lua accepts.
- *
- * @param __ls lua state
- *
- * @return returns a pointer to the member function wrapped the way lua accepts it.
- */
 template<mem_func func>
 int LuaDispatch(lua_State* __ls)
 {
@@ -1817,7 +1811,7 @@ int main(int argc, const char **argv) {
   }
 
   /*initialize the LuaWrapper class so we can register and run them from lua.*/
-  LuaWrapper LW(Tool);
+  LuaWrapper LW(Tool, executioner);
 
   /*linenoise init*/
   linenoiseSetCompletionCallback(bruiser::ShellCompletion);

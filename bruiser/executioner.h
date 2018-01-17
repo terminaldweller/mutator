@@ -23,11 +23,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "lua-5.3.4/src/lua.hpp"
 
 #include <iostream>
+#include <functional>
 #include <tuple>
 #include <vector>
 #include <cstdint>
 #include <cstdarg>
 #include <cstring>
+#include <stdarg.h>
 #include <sys/mman.h>
 #include <unistd.h>
 /**********************************************************************************************************************/
@@ -37,7 +39,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 namespace { // start of anonymous namespace
   using XObject = void(*)(void);
   using xobj_2int = int(*)(int, int);
+  using xobj_int = int(*)(int, ...);
+  using xobj_float = float(*)(float, ...);
+  using xobj_double = double(*)(double, ...);
   using LuaRegFunc = int(*)(lua_State*);
+
+  template<typename T>
+  T xobjcaster(void* ptr, T v) {return v;}
+  template<typename T, typename... Args>
+  T xobjcaster(void* ptr, T first, Args... args) {/*return (first(*)(args...))xobjcaster(ptr);*/}
+
   constexpr int MEMORY_SIZE = 32768;
   std::vector<uint8_t> memory(MEMORY_SIZE, 0);
 
@@ -58,7 +69,7 @@ namespace { // start of anonymous namespace
     return 0;
   }
 
-  inline void argInjector(lua_State* __ls) {
+  inline std::vector<uint8_t> codegen(lua_State* __ls) {
     int numargs = lua_gettop(__ls);
     for (int i = 2; i <= numargs; ++i) {
       if (lua_type(__ls, i) == LUA_TBOOLEAN) {
@@ -86,7 +97,10 @@ namespace { // start of anonymous namespace
     }
   }
 
-  std::vector<uint8_t> arg_emitter(std::vector<uint8_t> _args) {}
+  std::vector<uint8_t> arg_emitter(std::vector<uint8_t> _args) {
+    std::vector<uint8_t> ret;
+    return ret;
+  }
 
   int LuaXobjWrapper(lua_State* __ls) {
     int numargs = lua_gettop(__ls);
@@ -174,6 +188,7 @@ class Executioner {
         std::cout << "could not make vmemory executable.\n";
         return std::make_pair(nullptr, 0);
       }
+      xvoidptrs.push_back(program_memory);
       return std::make_pair(program_memory, code_size);
     }
 
@@ -211,12 +226,60 @@ class Executioner {
       }
     }
 
+    void pusheph(std::function<int(lua_State*)> __eph) {ephs.push_back(__eph);}
+
   private:
     std::vector<std::pair<void*, size_t>> obj_mem_ptrs;
     std::vector<std::vector<uint8_t>> objs;
     std::vector<std::string> names;
     std::vector<XObject> xobjs;
+    std::vector<void*> xvoidptrs;
+    std::vector<std::function<int(lua_State*)>> ephs;
 };
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+#if 1
+class EphemeralFunc {
+  public:
+    EphemeralFunc(xobj_2int _ptr, std::string _name) : ptr(_ptr), name(_name) {}
+    virtual ~EphemeralFunc() {}
+
+    int lua_func(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 2) {
+        PRINT_WITH_COLOR(RED, "expected 2 arguments...");
+        lua_tonumber(__ls, 0);
+        return 1;
+      }
+      int arg1 = lua_tonumber(__ls, 1);
+      int arg2 = lua_tonumber(__ls, 1);
+      std::cout << RED << "right before execution..." << NORMAL << "\n";
+      int result = ptr(arg1, arg2);
+      lua_pushnumber(__ls, result);
+      return 1;
+    }
+
+  private:
+    xobj_2int ptr;
+    std::string name;
+};
+
+typedef int (EphemeralFunc::*m_func)(lua_State* L);
+template<m_func func>
+int LuaDispatch2(lua_State* __ls)
+{
+  EphemeralFunc* LWPtr = *static_cast<EphemeralFunc**>(lua_getextraspace(__ls));
+  return ((*LWPtr).*func)(__ls);
+}
+
+int devi_luareg(lua_State* __ls, xobj_2int __xobj, std::string __name, Executioner& __EX) {
+  EphemeralFunc eph(__xobj, __name);
+  //__EX.pusheph(eph.lua_func);
+  lua_register(__ls, __name.c_str(), &LuaDispatch2<&EphemeralFunc::lua_func>);
+  return 0;
+}
+#endif
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 #endif
 /**********************************************************************************************************************/
