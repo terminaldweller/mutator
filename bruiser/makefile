@@ -13,7 +13,7 @@ HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
 SRCS=bruiser.cpp, CompletionHints.cpp, ORCmutation.cpp, mutagen.cpp
 #for some reason without ld the build fails on ubuntu trusty on travis
 #EXTRA_LD_FLAGS+=-lpthread -ldl -lutil -lm -Xlinker -lpython3
-EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags)
+EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi
 ######################################RULES####################################
 .DEFAULT: all
 

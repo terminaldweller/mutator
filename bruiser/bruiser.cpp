@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "mutagen.h"
 #include "ORCmutation.h"
 #include "executioner.h"
+#include "bruiserffi.h"
 /*standard headers*/
 #include <fstream>
 #include <string>

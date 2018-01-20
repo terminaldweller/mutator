@@ -20,6 +20,7 @@
 - [Announcements](#announcements)
 - [Buillding and Running](#building-and-running)
   - [Building](#building)
+  - [Requirements](#requirements)
     - [Linux and Mac](#linux-and-mac)
     - [Windows](#windows)
   - [Running](#running)
@@ -137,6 +138,12 @@ All the as-of-yet implemented features of the project are very much buildable an
 ## Building and Running
 
 ### Building
+
+#### Requirements
+* `LLVM/Clang` 5.0 or higher<br/>
+* `libffi`<br/>
+* `libpython` 3.5 or higher<br/>
+The other requirements are either directly included or have to be included through `git submodule update`.<br/>
 
 #### Linux and Mac
 

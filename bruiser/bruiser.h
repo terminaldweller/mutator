@@ -77,7 +77,7 @@ namespace bruiser
 #define BOLD 1
 #define NO_BOLD 0
 
-#define SHELL_HISTORY_SIZE  100
+#define SHELL_HISTORY_SIZE  10000
 #define SHELL_HISTORY_FILE "bruiser-history.txt"
 
 #define GLOBAL_TIME_OUT 100000
