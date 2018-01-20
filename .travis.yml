@@ -33,8 +33,7 @@ before_script:
   - sudo apt-get update -qq
   - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
   - sudo apt-get install gcc-4.9 g++-4.9
-  - sudo apt-get install libffi -y
-  - sudo apt-get install libffi-devel -y
+  - sudo apt-get install libffi-dev -y
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
   - sudo apt-get install libboost-dev
   - git submodule init
