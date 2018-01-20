@@ -227,6 +227,14 @@ class Executioner {
     }
 
     void pusheph(std::function<int(lua_State*)> __eph) {ephs.push_back(__eph);}
+    void pushvptr(void* _vptr, std::string _name) {vptrs.push_back(std::make_pair(_vptr, _name));}
+    std::vector<std::pair<void*, std::string>> getvptrs(void) {return vptrs;}
+    std::pair<void*, std::string> getvptrbyindex(unsigned int _index) {
+      if (vptrs.size() - 1 >= _index) {
+        return vptrs[_index];
+      }
+      return std::make_pair(nullptr, "");
+    }
 
   private:
     std::vector<std::pair<void*, size_t>> obj_mem_ptrs;
@@ -235,6 +243,7 @@ class Executioner {
     std::vector<XObject> xobjs;
     std::vector<void*> xvoidptrs;
     std::vector<std::function<int(lua_State*)>> ephs;
+    std::vector<std::pair<void*, std::string>> vptrs;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -279,6 +288,47 @@ int devi_luareg(lua_State* __ls, xobj_2int __xobj, std::string __name, Execution
   return 0;
 }
 #endif
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+class Arguary {
+  public:
+    Arguary() = default;
+    ~Arguary() {}
+
+    void pass_ptr(void* _arg) {ptr_stack.push_back(_arg);}
+    void pass_int(int _arg) {int_stack.push_back(_arg);}
+    void pass_uint64(uint64_t _arg) {uint64_stack.push_back(_arg);}
+    void pass_string(char* _arg) {string_stack.push_back(_arg);}
+    void pass_float(float _arg) {float_stack.push_back(_arg);}
+    void pass_double(double _arg) {double_stack.push_back(_arg);}
+    void pass_llint(long long int _arg) {llint_stack.push_back(_arg);}
+    void clear_arg_stacks(void) {
+      ptr_stack.clear();
+      int_stack.clear();
+      uint64_stack.clear();
+      string_stack.clear();
+      float_stack.clear();
+      double_stack.clear();
+      llint_stack.clear();
+    }
+
+  private:
+    std::vector<void*> ptr_stack;
+    std::vector<int> int_stack;
+    std::vector<uint64_t> uint64_stack;
+    std::vector<char*> string_stack;
+    std::vector<float> float_stack;
+    std::vector<double> double_stack;
+    std::vector<long long int> llint_stack;
+};
+/**********************************************************************************************************************/
+/**********************************************************************************************************************/
+class XGlobals {
+  public:
+    XGlobals() {}
+    ~XGlobals() {}
+  private:
+};
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 #endif

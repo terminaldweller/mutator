@@ -7,9 +7,9 @@ TARGET=test
 ##################################RULES################################
 .DEFAULT:all
 
-.PHONY:all clean help $(TARGET) ASM
+.PHONY:all clean help
 
-all:$(TARGET) $(TARGET).so ASM
+all:$(TARGET) $(TARGET).so $(TARGET).asm
 
 .c.o:
 	$(CC) $(CC_FLAGS) -c $< -o $@
@@ -17,7 +17,7 @@ all:$(TARGET) $(TARGET).so ASM
 $(TARGET): $(TARGET).o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
-ASM: $(TARGET).o
+$(TARGET).asm: $(TARGET).o
 	objdump -d -M intel -S $(TARGET).o > $(TARGET).asm
 
 $(TARGET).so: $(TARGET).o

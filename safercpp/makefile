@@ -12,7 +12,7 @@ endif
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY: all clean help $(SFCPP01)
+.PHONY: all clean help
 
 all: $(SFCPP01)
 

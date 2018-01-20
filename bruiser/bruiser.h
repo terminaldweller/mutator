@@ -153,7 +153,11 @@ help CMDHelp[] = {
   {"objload()", "objload(\"main\", \"../bfd/test/test.so\")", "load the compiled functions into bruiser", "string", "success or failure"},
   {"listObjects()", "listObjects(\"function\")", "lists the loaded objects of the given type", "string", "success or failure"},
   {"xobjwrapper()", "xobjwrapper(\"function\")", "call an xobject", "", "success or failure"},
-  {"xobjregister", "xobjregister(code_table, registration_name)", "registers an xobject as a callable function from lua", "", "pointer to the function"}
+  {"xobjregister", "xobjregister(code_table, registration_name)", "registers an xobject as a callable function from lua", "", "pointer to the function"},
+  {"xcall", "xcall(index, num_args)", "call xobj with the given index in to the xobj vector with the given number of args", "", "returns the xobj call result"},
+  {"xobjlist", "xobjlist()", "return a table containing xobj pointers and names. names are keys, values are the pointers.", "", "table of pairs"},
+  {"xallocglobal", "xallocglobal(index)", "allocate a global value with index index", "", ""},
+  {"xallocallglobals", "xallocallglobals()", "allocate all globals", "", ""}
 };
 /**********************************************************************************************************************/
 /**

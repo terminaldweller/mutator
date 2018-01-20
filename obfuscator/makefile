@@ -7,7 +7,7 @@ OBSC=obfuscator
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY: all clean help $(OBSC)
+.PHONY: all clean help
 
 all: $(OBSC)
 

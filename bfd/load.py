@@ -24,6 +24,8 @@ class CLIArgParser(object):
         parser.add_argument("--objcode", action='store_true', help="dump objects", default=False)
         parser.add_argument("--test", action='store_true', help="test switch", default=False)
         parser.add_argument("--dynsym", action='store_true', help="dump dynamic symbol table", default=False)
+        parser.add_argument("--dlpath", action='store_true', help="dump dynamic linker path", default=False)
+        parser.add_argument("--section", type=str, help="dump a section")
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -296,6 +298,7 @@ class ELF(object):
         self.symbol_table_e = []
         self.data_section = []
         self.text_section = []
+        self.dlpath = str()
 
     def init(self, size):
         self.size = size
@@ -448,6 +451,36 @@ class ELF(object):
             for name in ret_list:
                 print(name)
         return ret_list
+
+    def dump_section(self, section_name):
+        for section in self.shhdr:
+            name = self.read_section_name(byte2int(section.sh_name))
+            if name == section_name:
+                self.so.seek(byte2int(section.sh_offset))
+                obj = self.so.read(byte2int(section.sh_size))
+                if section_name == ".interp":  self.dlpath = repr(obj)
+                count = int()
+                strrep = []
+                for byte in obj:
+                    if count%16 == 0:
+                        for ch in strrep:
+                            if ord(ch) > 16: print(ch, end = '')
+                            else: pass
+                        print()
+                        strrep = []
+                        print(format(count, "06x"), ': ', end='')
+                        strrep.append(str(chr(byte)))
+                        print(format(byte, '02x') + ' ', end='')
+                    else:
+                        strrep += str(chr(byte))
+                        print(format(byte, '02x') + ' ', end='')
+                    count += 1
+                for i in range(0, 16-count%16): print("   ", end="")
+                for ch in strrep:
+                    if ord(ch) > 16: print(ch, end = '')
+                    else: pass
+                print()
+                return self.dlpath
 
     def dump_obj_size(self, stt_type, dump_b):
         ret_list = []
@@ -706,6 +739,8 @@ def main():
         elif argparser.args.test: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
         elif argparser.args.test: elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, True)
         elif argparser.args.dynsym: elf.dump_st_entries_dyn()
+        elif argparser.args.dlpath: elf.dump_section(".interp")
+        elif argparser.args.section: elf.dump_section(argparser.args.section)
     except:
         variables = globals().copy()
         variables.update(locals())

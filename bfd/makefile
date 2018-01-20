@@ -7,7 +7,7 @@ TARGET=main
 ##################################RULES################################
 .DEFAULT:all
 
-.PHONY:all clean help $(TARGET) $(TARGET).so test
+.PHONY:all clean help test
 
 all:$(TARGET) $(TARGET).so test
 

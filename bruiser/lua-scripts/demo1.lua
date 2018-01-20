@@ -12,29 +12,32 @@
 -- objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
 --
 --------------------------------------------------------------------------------------------------------------
+elf_file = "../bfd/test/test.so"
+--elf_file = "../bfd/test/test"
+
 function printObjNames()
-  local c = objload("elf_get_obj_names", "../bfd/test/test.so", "symbol_list")
+  local c = objload("elf_get_obj_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function printObjSizes()
-  local c = objload("elf_get_obj_sizes", "../bfd/test/test.so", "symbol_list")
+  local c = objload("elf_get_obj_sizes", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function printFuncNames()
-  local c = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
+  local c = objload("elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function printFuncCode()
-  local c = objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
+  local c = objload("elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(c) do
     print(k,v)
     if #v ~= 0 then
@@ -47,7 +50,7 @@ function printFuncCode()
 end
 
 function findMain()
-  local c = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
+  local c = objload("elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     if v == "'main'" then 
       io.write("main index is".." "..k.."\n")
@@ -58,8 +61,8 @@ end
 
 function codeTables()
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
-  local code_table = objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
+  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("elf_get_func_code", elf_file, "code_list")
   for i=1,#func_name_table,1 do
     return_table[func_name_table[i]] = code_table[i]
   end
@@ -68,8 +71,8 @@ end
 
 function codeTableByName(name)
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
-  local code_table = objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
+  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(func_name_table) do
     if v == name then
       for k1, v1 in ipairs(code_table[k]) do
@@ -83,8 +86,8 @@ end
 
 function codeTableByName_number(name)
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
-  local code_table = objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
+  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(func_name_table) do
     if v == name then
       for k1, v1 in ipairs(code_table[k]) do
@@ -97,8 +100,8 @@ function codeTableByName_number(name)
 end
 
 function printFuncSizes()
-  local func_name_table = objload("elf_get_func_names", "../bfd/test/test.so", "symbol_list")
-  local code_table = objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
+  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("elf_get_func_code", elf_file, "code_list")
   local counter = 1
   print("function sizes:")
   for k, v in ipairs(code_table) do
@@ -142,6 +145,7 @@ function main()
 
   printFuncSizes()
 
+  pwd()
   xobjregister(add2_code, "add2")
   xobjregister(sub2_code, "sub2")
 end

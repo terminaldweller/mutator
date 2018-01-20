@@ -17,7 +17,7 @@ EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags)
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY: all clean help $(BRUISER)
+.PHONY: all clean help
 
 all: $(BRUISER)
 

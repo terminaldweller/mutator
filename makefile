@@ -19,7 +19,7 @@ OBSC=obfuscator
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY:all clean install help $(TARGET0) $(TARGET1) $(TARGET2) TAGS $(SFCPP01) $(BRUISER) $(OBSC)
+.PHONY:all clean install help TAGS $(BRUISER) $(OBSC) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01)
 
 all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC)
 

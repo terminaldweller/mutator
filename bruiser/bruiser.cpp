@@ -1250,6 +1250,7 @@ class LuaWrapper
       std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
       std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
       XObject ptr = (XObject)xobj.first;
+      executioner.pushvptr(xobj.first, xobj_name);
       ptr();
       xobj_2int ptr2;
       ptr2 = (xobj_2int)ptr;
@@ -1257,6 +1258,49 @@ class LuaWrapper
       //devi_luareg(__ls, ptr2, xobj_name, executioner);
       return 0;
     }
+
+    int BruiserLuaCallX(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "bad number of args. expected exactly two.");}
+      int x_index = lua_tointeger(__ls, 1);
+      int x_arg_num = lua_tointeger(__ls, 2);
+      xobj_2int ptr;
+      auto dummy = executioner.getvptrbyindex(x_index).first;
+      if (dummy != nullptr) {
+        ptr = (xobj_2int)dummy;
+        int result = ptr(30, 20);
+        std::cout << "call made to xobj named " << GREEN << executioner.getvptrbyindex(x_index).second << NORMAL << "\n";
+        lua_pushnumber(__ls, result);
+        return 1;
+      } else {
+        PRINT_WITH_COLOR_LB(RED, "the index is too high into the xobj vector.");
+        return 0;
+      }
+    }
+
+    int BruiserLuaXObjGetList(lua_State* __ls) {
+      auto xlist = executioner.getvptrs();
+        lua_newtable(__ls);
+        if (!lua_checkstack(__ls, xlist.size() * 2)) {
+          PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+        }
+        for (auto& iter : xlist) {
+          std::cout << CYAN << iter.second << NORMAL <<"\n";
+          lua_pushstring(__ls, iter.second.c_str());
+          std::cout << MAGENTA << (long int)iter.first << NORMAL <<"\n";
+          lua_pushinteger(__ls, (long int)iter.first);
+          lua_settable(__ls, -3);
+        }
+      return 1;
+    }
+
+    int BruiserLuaXObjAllocGlobal(lua_State* __ls) {
+      int nuamrgs = lua_gettop(__ls);
+      std::string glob_name = lua_tostring(__ls , 1);
+      size_t size = lua_tointeger(__ls, 2);
+      return 0;
+    }
+    int BruiserLuaXObjAllocAllGlobals(lua_State* __ls) {return 0;}
 
     /*read the m0 report*/
     int BruiserLuaM0(lua_State* __ls)
@@ -1785,8 +1829,10 @@ int main(int argc, const char **argv) {
   /*initializing the log*/
   bruiser::BruiserReport BruiserLog;
 
-  /*initing executioner*/
+  /*initing xobj stuff*/
   Executioner executioner;
+  Arguary arguary;
+  XGlobals xglobals;
 
   /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);
@@ -1857,6 +1903,10 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "objload", &LuaDispatch<&LuaWrapper::BruiserPyLoader>);
     lua_register(LE.GetLuaState(), "listObjects", &LuaDispatch<&LuaWrapper::BruiserLuaListObjects>);
     lua_register(LE.GetLuaState(), "xobjregister", &LuaDispatch<&LuaWrapper::BruiserLuaxobjRegister>);
+    lua_register(LE.GetLuaState(), "xcall", &LuaDispatch<&LuaWrapper::BruiserLuaCallX>);
+    lua_register(LE.GetLuaState(), "xobjlist", &LuaDispatch<&LuaWrapper::BruiserLuaXObjGetList>);
+    lua_register(LE.GetLuaState(), "xallocglobal", &LuaDispatch<&LuaWrapper::BruiserLuaXObjAllocGlobal>);
+    lua_register(LE.GetLuaState(), "xallocallglobals", &LuaDispatch<&LuaWrapper::BruiserLuaXObjAllocAllGlobals>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
