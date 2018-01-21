@@ -18,12 +18,99 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
+// @TODO-structs and unions not supported
+// @TODO-vararg xobjs are not supported
+/**********************************************************************************************************************/
 #include <ffi.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include "bruiserffi.h"
 /**********************************************************************************************************************/
+#define VOIDIFY(X) (void*)X
+/**********************************************************************************************************************/
+#define REINTERPRET_GENERATOR(X) \
+  X ffi_reinterpret_##X(void* result) {return (X)result;}
+
+#define X_LIST_GEN \
+  X(uint8_t, "uint8_t")\
+  X(uint16_t, "uint8_t")\
+  X(uint32_t, "uint8_t")\
+  X(uint64_t, "uint8_t")\
+  X(int8_t, "uint8_t")\
+  X(int16_t, "uint8_t")\
+  X(int32_t, "uint8_t")\
+  X(int64_t, "uint8_t")\
+  X(uintptr_t, "uint8_t")\
+  //X(float, "uint8_t")\
+  X(double, "uint8_t")
+
+#define X(X1,X2) REINTERPRET_GENERATOR(X1)
+X_LIST_GEN
+#undef X
+#undef X_LIST_GEN
+#undef REINTERPRET_GENERATOR
+
+void ffi_value_ctor(void** ret, int argc, ...) {
+  va_list value_list;
+  char* arg_string;
+  uint16_t counter = 0U;
+
+  va_start(value_list, argc);
+  for (int i = 0; i < argc; ++i) {
+    arg_string = va_arg(value_list, char*);
+    if (strcmp(arg_string, "uint8") == 0) {
+      uint8_t* dummy = va_arg(value_list, uint8_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "sint8") == 0) {
+      int8_t* dummy = va_arg(value_list, int8_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "uint16") == 0) {
+      uint16_t* dummy = va_arg(value_list, uint16_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "sint16") == 0) {
+      int16_t* dummy = va_arg(value_list, int16_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "uint32") == 0) {
+      uint32_t* dummy = va_arg(value_list, uint32_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "sint32") == 0) {
+      int32_t* dummy = va_arg(value_list, int32_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "uint64") == 0) {
+      uint64_t* dummy = va_arg(value_list, uint64_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "sint64") == 0) {
+      int64_t* dummy = va_arg(value_list, int64_t*);
+      ret[counter] = VOIDIFY(dummy);
+    }
+    else if (strcmp(arg_string, "float") == 0) {
+      float* dummy = va_arg(value_list, float*);
+      ret[counter] = dummy;
+    }
+    else if (strcmp(arg_string, "double") == 0) {
+      double* dummy = va_arg(value_list, double*);
+      ret[counter] = dummy;
+    }
+    else if (strcmp(arg_string, "pointer") == 0) {
+      ret[counter] = va_arg(value_list, void*);
+    }
+    else {
+      ret[counter] = NULL;
+      fprintf(stderr, "got garbage arg value string...\n");
+    }
+    counter++;
+  }
+}
+
 ffi_type* ffi_type_ctor(const char* arg_string) {
   if (strcmp(arg_string, "void") == 0) {return &ffi_type_void;}
   else if (strcmp(arg_string, "uint8") == 0) {return &ffi_type_uint8;}
@@ -45,16 +132,17 @@ ffi_type* ffi_type_ctor(const char* arg_string) {
   }
 }
 
-void* ffi_callX(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, const char* ret_type) {
+void* ffi_callX(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, void** values) {
   ffi_status status;
   ffi_cif cif;
   ffi_type* args_types[argc];
+  void* ret;
+
   for (int i = 0; i < argc; ++i) {
     if (ffi_type_ctor(arg_string[i])) args_types[i] = ffi_type_ctor(arg_string[i]);
   }
 
-  //status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, argc, &rtype, args);
-  status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, argc, &ffi_type_uint32, args_types);
+  status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, argc, &rtype, args_types);
   if (status == FFI_BAD_TYPEDEF) {
     fprintf(stderr, "ffi_prep_cif returned FFI_BAD_TYPEDEF: %d\n", status);
     return NULL;
@@ -68,32 +156,37 @@ void* ffi_callX(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, 
     return NULL;
   }
 
-  uint32_t a = 30;
-  uint32_t b = 20;
-  void* ret;
-  //void* values[argc]; //FIXME the actual arguments
-  void* values[2] = {&a, &b};
   ffi_call(&cif, FFI_FN(x_ptr), &ret, values);
   return ret;
 }
 
-void* ffi_callX_var(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, const char* ret_type) {}
+void* ffi_callX_var(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, void** values) {}
 /**********************************************************************************************************************/
 // @DEVI-the following lines are only meant for testing.
 uint32_t add2(uint32_t a, uint32_t b) {return a+b;}
 uint32_t sub2(uint32_t a, uint32_t b) {return a-b;}
+#pragma weak main
 int main(int argc, char** argv) {
+  // @DEVI-we get these from lua
   void* padd = &add2;
   void* psub = &sub2;
+  // @DEVI-user input from lua
   int argcount = 2;
+  // @DEVI-we get these from user in lua
   ffi_type ret_type = ffi_type_uint32;
+  // @DEVI-we get these from user in lua
   const char* args[] = {"uint32", "uint32"};
   const char* ret_string = "uint32";
+  uint32_t a = 30;
+  uint32_t b = 20;
+  void* values[2];
+  // @DEVI-we get thsese from the user in lua
+  ffi_value_ctor(values, 2, "uint32", &a, "uint32", &b);
 
-  void* result = ffi_callX(argcount, args, ret_type, psub, ret_string);
-  fprintf(stdout, "first result %d\n", (uint32_t)result);
-  result = ffi_callX(argcount, args, ret_type, padd, ret_string);
-  fprintf(stdout, "first result %d\n", (uint32_t)result);
+  void* result = ffi_callX(argcount, args, ret_type, padd, values);
+  fprintf(stdout, "result of callling add is %d\n", (uint32_t)result);
+  result = ffi_callX(argcount, args, ret_type, psub, values);
+  fprintf(stdout, "result of calling sub is %d\n", (uint32_t)result);
   return 0;
 }
 /**********************************************************************************************************************/

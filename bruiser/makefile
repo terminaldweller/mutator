@@ -32,6 +32,9 @@ depend: .bruiser.d
 .cpp.o: depend
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
+.c.o:
+	$(CC) $(CC_FLAGS) -c $< -o $@
+
 linenoise.o:
 	$(CC) $(CC_FLAGS) linenoise/linenoise.c -c -o linenoise.o
 
@@ -43,7 +46,7 @@ $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
 	@echo "building with jit"
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:

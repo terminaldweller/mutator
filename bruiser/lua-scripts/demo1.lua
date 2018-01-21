@@ -120,6 +120,13 @@ end
 -- registration_name()
 -- end of @placeholder
 
+-- start of @placeholder
+-- C--args = argc, arg_string, ffi_type, xptr, the_actual_args
+-- lua--args = number, table, string, xptr, args
+-- end of @placeholder
+function callX(n_argc, t_string, str, index, t_values)
+end
+
 function main()
   printObjNames()
   printObjSizes()
@@ -148,6 +155,10 @@ function main()
   pwd()
   xobjregister(add2_code, "add2")
   xobjregister(sub2_code, "sub2")
+  a=xcall(2,{"uint32","uint32"},"uint32",0, {30,20})
+  print("call add result", a)
+  a=xcall(2,{"uint32", "uint32"},"uint32",1, {30,20})
+  print("call sub result", a)
 end
 
 main()

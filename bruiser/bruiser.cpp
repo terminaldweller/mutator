@@ -1242,36 +1242,119 @@ class LuaWrapper
         lua_rawgeti(__ls, 1, i);
         xobj_code_.push_back(int(lua_tonumber(__ls, i + 2)));
       }
-      std::cout << RED << "function code: ";
-      for (auto& iter : xobj_code_) {std::cout << RED << int(iter) << " ";}
+      std::cout << BLUE << "function code: ";
+      for (auto& iter : xobj_code_) {std::cout << NORMAL << int(iter) << " ";}
       std::cout << NORMAL  <<"\n";
       xobj_name = lua_tostring(__ls, 2);
-      //Executioner executioner;
       std::pair<void*, size_t> xobj = executioner.loadObjsInXMem(xobj_code_);
       std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
       std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
-      XObject ptr = (XObject)xobj.first;
       executioner.pushvptr(xobj.first, xobj_name);
-      ptr();
-      xobj_2int ptr2;
-      ptr2 = (xobj_2int)ptr;
-      std::cout << MAGENTA  << "result: " << NORMAL << ptr2(30,20) << "\n";
-      //devi_luareg(__ls, ptr2, xobj_name, executioner);
       return 0;
     }
 
     int BruiserLuaCallX(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
-      if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "bad number of args. expected exactly two.");}
-      int x_index = lua_tointeger(__ls, 1);
-      int x_arg_num = lua_tointeger(__ls, 2);
-      xobj_2int ptr;
-      auto dummy = executioner.getvptrbyindex(x_index).first;
-      if (dummy != nullptr) {
-        ptr = (xobj_2int)dummy;
-        int result = ptr(30, 20);
-        std::cout << "call made to xobj named " << GREEN << executioner.getvptrbyindex(x_index).second << NORMAL << "\n";
-        lua_pushnumber(__ls, result);
+      if (numargs != 5) {PRINT_WITH_COLOR_LB(RED, "xcall: bad number of args. expected exactly five.");}
+      int argc = lua_tointeger(__ls, 1);
+      // 2-table of strings
+      std::string ffi_ret_type_string = lua_tostring(__ls, 3);
+      int x_index = lua_tointeger(__ls, 4);
+      // 5-the actual args-table of values
+
+      // @DEVI-FIXME: currently we are not handling structs at all
+      ffi_type ret_type;
+      if (std::strcmp(ffi_ret_type_string.c_str(), "void") == 0) {ret_type = ffi_type_void;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "uint8") == 0) {ret_type = ffi_type_uint8;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "sint8") == 0) {ret_type = ffi_type_sint8;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "uint16") == 0) {ret_type = ffi_type_uint16;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "sint16") == 0) {ret_type = ffi_type_sint16;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "uint32") == 0) {ret_type = ffi_type_uint32;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "sint32") == 0) {ret_type = ffi_type_sint32;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "uint64") == 0) {ret_type = ffi_type_uint64;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "sint64") == 0) {ret_type = ffi_type_sint64;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "float") == 0) {ret_type = ffi_type_float;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "double") == 0) {ret_type = ffi_type_double;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "pointer") == 0) {ret_type = ffi_type_pointer;}
+      else if (std::strcmp(ffi_ret_type_string.c_str(), "struct") == 0) {ret_type = ffi_type_pointer;}
+      else {PRINT_WITH_COLOR_LB(RED, "unknown return type string.");return 0;
+      }
+
+      const char* args[argc];
+      int table_length_2 = lua_rawlen(__ls, 2);
+      if (lua_type(__ls, 2) != LUA_TTABLE) {
+        PRINT_WITH_COLOR_LB(RED, "xcall: the stack value is not a table but is being accessed as such.");
+        return 0;
+      } else {
+        PRINT_WITH_COLOR_LB(GREEN, "xcall: stack index 2 is a table.");
+      }
+      std::cout << CYAN << "table_length: " << table_length_2 << NORMAL << "\n";
+      for (int i = 1; i <= table_length_2; ++i) {
+        lua_rawgeti(__ls, 2, i);
+        args[i-1] = lua_tostring(__ls, i + numargs);
+        //std::cout << YELLOW << args[i-1] << NORMAL << "\n";
+      }
+
+      std::list<uint64_t> uints;
+      std::list<int64_t> ints;
+      std::list<std::string> strings;
+      std::list<bool> bools;
+      std::list<uintptr_t> ptrs;
+      std::list<float> floats;
+      std::list<double> doubles;
+      void* values[argc];
+      int numbers[argc];
+      int table_length_5 = lua_rawlen(__ls, 5);
+
+      if (!lua_checkstack(__ls, 10)) {
+        PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+        return 0;
+      }
+      if (lua_type(__ls, 5) != LUA_TTABLE) {
+        PRINT_WITH_COLOR_LB(RED, "xcall: the stack value is not a table but is being accessed as such.");
+        return 0;
+      } else {
+        PRINT_WITH_COLOR_LB(GREEN, "xcall: stack index 5 is a table.");
+      }
+
+      std::cout << CYAN << "table_length: " << table_length_5 << NORMAL << "\n";
+      for (int i = 1; i <= table_length_5; ++i) {
+        lua_rawgeti(__ls, 5, i);
+        numbers[i-1] = lua_tointeger(__ls, i + numargs + argc);
+        if (lua_type(__ls, i) == LUA_TBOOLEAN) {}
+        else if (lua_type(__ls, i) == LUA_TLIGHTUSERDATA) {}
+        else if (lua_type(__ls, i+numargs+argc) == LUA_TNUMBER) {
+          uints.push_back(lua_tointeger(__ls, i + numargs + argc));
+          values[i-1]=&uints.back();
+        }
+        else if (lua_type(__ls, i) == LUA_TSTRING) {}
+        else if (lua_type(__ls, i) == LUA_TTABLE) {}
+        else if (lua_type(__ls, i) == LUA_TFUNCTION) {}
+        else if (lua_type(__ls, i) == LUA_TUSERDATA) {}
+        else if (lua_type(__ls, i) == LUA_TTHREAD) {}
+      }
+
+      auto x_ptr = executioner.getvptrbyindex(x_index).first;
+      void* result;
+      if (x_ptr != nullptr) {
+        std::cout << "calling xobj named " << GREEN << executioner.getvptrbyindex(x_index).second << NORMAL << "\n";
+        result = ffi_callX(argc, args, ret_type, x_ptr, values);
+        std::cout << reinterpret_cast<uint64_t>(result) << "\n";
+        lua_pushinteger(__ls, ffi_reinterpret_uint32_t(result));
+        if (std::strcmp(ffi_ret_type_string.c_str(), "void") == 0) {return 0;}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "uint8") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uint8_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "sint8") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int8_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "uint16") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uint16_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "sint16") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int16_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "uint32") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uint32_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "sint32") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int32_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "uint64") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uint64_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "sint64") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int64_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "float") == 0) {}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "double") == 0) {}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "pointer") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uintptr_t(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "struct") == 0) {}
+        else {PRINT_WITH_COLOR_LB(RED, "unknown return type string.");return 0;}
         return 1;
       } else {
         PRINT_WITH_COLOR_LB(RED, "the index is too high into the xobj vector.");
@@ -1286,9 +1369,9 @@ class LuaWrapper
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
         for (auto& iter : xlist) {
-          std::cout << CYAN << iter.second << NORMAL <<"\n";
+          std::cout << CYAN << iter.second << NORMAL;
           lua_pushstring(__ls, iter.second.c_str());
-          std::cout << MAGENTA << (long int)iter.first << NORMAL <<"\n";
+          std::cout << " " << MAGENTA << (long int)iter.first << NORMAL <<"\n";
           lua_pushinteger(__ls, (long int)iter.first);
           lua_settable(__ls, -3);
         }
