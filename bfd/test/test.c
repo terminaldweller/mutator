@@ -8,6 +8,9 @@ int myfunc5(void) {return 5;}
 int myfunc6(void) {return 6;}
 int add2(int a, int b) {return a + b;}
 int sub2(int a, int b) {return a - b;}
+double adddouble(double a, double b) {return a+b;}
+double subdouble(double a, double b) {return a-b;}
+double triple(double a, double b, double c) {return a+b+c;}
 
 int myvar1 = 1;
 int myvar2 = 2;
