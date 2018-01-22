@@ -149,16 +149,38 @@ function main()
 
   local add2_code = codeTableByName_number("'add2'")
   local sub2_code = codeTableByName_number("'sub2'")
+  local adddouble_code = codeTableByName_number("'adddouble'")
+  local subdouble_code = codeTableByName_number("'subdouble'")
+  local triple_code = codeTableByName_number("'triple'")
 
   printFuncSizes()
 
   pwd()
   xobjregister(add2_code, "add2")
   xobjregister(sub2_code, "sub2")
+  xobjregister(adddouble_code, "adddouble")
+  xobjregister(subdouble_code, "subdouble")
+  xobjregister(triple_code, "triple")
   a=xcall(2,{"uint32","uint32"},"uint32",0, {30,20})
   print("call add result", a)
   a=xcall(2,{"uint32", "uint32"},"uint32",1, {30,20})
   print("call sub result", a)
+
+  arg1 = 100
+  arg2 = 200
+  a=xcall(2,{"sint32", "sint32"},"sint32",1, {arg1,arg2})
+  print("xcall returned:",a)
+  if a ~= -100 then print("test failed") end
+  a=xcall(2,{"double", "double"},"double",2, {333.333,222.222})
+  print("xcall returned:",a)
+  -- FIXME
+  if a ~= 555.555 then print("test failed") end
+  a=xcall(2,{"double", "double"},"double",3, {333.333,222.222})
+  print("xcall returned:",a)
+  if a ~= 111.111 then print("test failed") end
+  a=xcall(3,{"double", "double", "double"},"double",4, {333.333,222.222,111.111})
+  print("xcall returned:",a)
+  if a ~= 666.666 then print("test failed") end
 end
 
 main()

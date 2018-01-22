@@ -1303,7 +1303,6 @@ class LuaWrapper
       std::list<float> floats;
       std::list<double> doubles;
       void* values[argc];
-      int numbers[argc];
       int table_length_5 = lua_rawlen(__ls, 5);
 
       if (!lua_checkstack(__ls, 10)) {
@@ -1320,12 +1319,18 @@ class LuaWrapper
       std::cout << CYAN << "table_length: " << table_length_5 << NORMAL << "\n";
       for (int i = 1; i <= table_length_5; ++i) {
         lua_rawgeti(__ls, 5, i);
-        numbers[i-1] = lua_tointeger(__ls, i + numargs + argc);
         if (lua_type(__ls, i) == LUA_TBOOLEAN) {}
         else if (lua_type(__ls, i) == LUA_TLIGHTUSERDATA) {}
         else if (lua_type(__ls, i+numargs+argc) == LUA_TNUMBER) {
-          uints.push_back(lua_tointeger(__ls, i + numargs + argc));
-          values[i-1]=&uints.back();
+          double dummy = lua_tonumber(__ls, i + numargs + argc);
+          if (dummy == (long long int)dummy) { // FIXME
+            uints.push_back(lua_tointeger(__ls, i + numargs + argc));
+            values[i-1]=&uints.back();
+          } // int
+          else {
+            doubles.push_back(lua_tonumber(__ls, i + numargs + argc));
+            values[i-1]=&doubles.back();
+          } // float
         }
         else if (lua_type(__ls, i) == LUA_TSTRING) {}
         else if (lua_type(__ls, i) == LUA_TTABLE) {}
@@ -1339,8 +1344,8 @@ class LuaWrapper
       if (x_ptr != nullptr) {
         std::cout << "calling xobj named " << GREEN << executioner.getvptrbyindex(x_index).second << NORMAL << "\n";
         result = ffi_callX(argc, args, ret_type, x_ptr, values);
-        std::cout << reinterpret_cast<uint64_t>(result) << "\n";
-        lua_pushinteger(__ls, ffi_reinterpret_uint32_t(result));
+        if (result == nullptr) {PRINT_WITH_COLOR_LB(RED, "ffi_callX returned null.");return 0;}
+        
         if (std::strcmp(ffi_ret_type_string.c_str(), "void") == 0) {return 0;}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "uint8") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uint8_t(result));}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "sint8") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int8_t(result));}
@@ -1350,8 +1355,8 @@ class LuaWrapper
         else if (std::strcmp(ffi_ret_type_string.c_str(), "sint32") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int32_t(result));}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "uint64") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uint64_t(result));}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "sint64") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int64_t(result));}
-        else if (std::strcmp(ffi_ret_type_string.c_str(), "float") == 0) {}
-        else if (std::strcmp(ffi_ret_type_string.c_str(), "double") == 0) {}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "float") == 0) {lua_pushnumber(__ls, ffi_reinterpret_float(result));}
+        else if (std::strcmp(ffi_ret_type_string.c_str(), "double") == 0) {lua_pushnumber(__ls, ffi_reinterpret_double(result));}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "pointer") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uintptr_t(result));}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "struct") == 0) {}
         else {PRINT_WITH_COLOR_LB(RED, "unknown return type string.");return 0;}

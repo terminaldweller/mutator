@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 #define VOIDIFY(X) (void*)X
 /**********************************************************************************************************************/
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#pragma GCC diagnostic push
 #define REINTERPRET_GENERATOR(X) \
   X ffi_reinterpret_##X(void* result) {return (X)result;}
 
@@ -51,6 +53,8 @@ X_LIST_GEN
 #undef X
 #undef X_LIST_GEN
 #undef REINTERPRET_GENERATOR
+float ffi_reinterpret_float(void* result) {return *(float*)&result;}
+double ffi_reinterpret_double(void* result) {return *(double*)&result;}
 
 void ffi_value_ctor(void** ret, int argc, ...) {
   va_list value_list;
@@ -160,33 +164,39 @@ void* ffi_callX(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, 
   return ret;
 }
 
-void* ffi_callX_var(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, void** values) {}
+void* ffi_callX_var(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, void** values) {return NULL;}
+/**********************************************************************************************************************/
 /**********************************************************************************************************************/
 // @DEVI-the following lines are only meant for testing.
 uint32_t add2(uint32_t a, uint32_t b) {return a+b;}
 uint32_t sub2(uint32_t a, uint32_t b) {return a-b;}
+double addd(double a, double b) {return a+b;}
 #pragma weak main
 int main(int argc, char** argv) {
-  // @DEVI-we get these from lua
   void* padd = &add2;
   void* psub = &sub2;
-  // @DEVI-user input from lua
+  void* padd2 = &addd;
   int argcount = 2;
-  // @DEVI-we get these from user in lua
   ffi_type ret_type = ffi_type_uint32;
-  // @DEVI-we get these from user in lua
   const char* args[] = {"uint32", "uint32"};
   const char* ret_string = "uint32";
   uint32_t a = 30;
   uint32_t b = 20;
   void* values[2];
-  // @DEVI-we get thsese from the user in lua
   ffi_value_ctor(values, 2, "uint32", &a, "uint32", &b);
 
   void* result = ffi_callX(argcount, args, ret_type, padd, values);
   fprintf(stdout, "result of callling add is %d\n", (uint32_t)result);
   result = ffi_callX(argcount, args, ret_type, psub, values);
   fprintf(stdout, "result of calling sub is %d\n", (uint32_t)result);
+
+  ret_type = ffi_type_double;
+  double c = 111.111;
+  double d = 111.111;
+  const char* args2[] = {"double", "double"};
+  void* values2[] = {&c, &d};
+  result = ffi_callX(argcount, args2, ret_type, padd2, values2);
+  fprintf(stdout, "result of calling addd is %f\n", ffi_reinterpret_double(result));
   return 0;
 }
 /**********************************************************************************************************************/

@@ -49,6 +49,8 @@ X_LIST_GEN
 #undef X
 #undef X_LIST_GEN
 #undef REINTERPRET_GENERATOR
+float ffi_reinterpret_float(void* result);
+double ffi_reinterpret_double(void* result);
 
   /**
    * @brief constructs the arguments to be passed to ffi_call.
