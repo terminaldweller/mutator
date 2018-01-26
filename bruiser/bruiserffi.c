@@ -45,8 +45,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
   X(int32_t, "uint8_t")\
   X(int64_t, "uint8_t")\
   X(uintptr_t, "uint8_t")\
-  //X(float, "uint8_t")\
-  X(double, "uint8_t")
 
 #define X(X1,X2) REINTERPRET_GENERATOR(X1)
 X_LIST_GEN
@@ -55,6 +53,7 @@ X_LIST_GEN
 #undef REINTERPRET_GENERATOR
 float ffi_reinterpret_float(void* result) {return *(float*)&result;}
 double ffi_reinterpret_double(void* result) {return *(double*)&result;}
+char* ffi_reinterpret_string(void* result) {return (char*)result;}
 
 void ffi_value_ctor(void** ret, int argc, ...) {
   va_list value_list;
@@ -128,6 +127,7 @@ ffi_type* ffi_type_ctor(const char* arg_string) {
   else if (strcmp(arg_string, "float") == 0) {return &ffi_type_float;}
   else if (strcmp(arg_string, "double") == 0) {return &ffi_type_double;}
   else if (strcmp(arg_string, "pointer") == 0) {return &ffi_type_pointer;}
+  else if (strcmp(arg_string, "string") == 0) {return &ffi_type_pointer;}
   // @DEVI-FIXME: currently we are not handling structs at all
   else if (strcmp(arg_string, "struct") == 0) {return &ffi_type_pointer;}
   else {
@@ -171,11 +171,13 @@ void* ffi_callX_var(int argc, const char** arg_string, ffi_type rtype, void* x_p
 uint32_t add2(uint32_t a, uint32_t b) {return a+b;}
 uint32_t sub2(uint32_t a, uint32_t b) {return a-b;}
 double addd(double a, double b) {return a+b;}
+char* passthrough(char* a) {return a;}
 #pragma weak main
 int main(int argc, char** argv) {
   void* padd = &add2;
   void* psub = &sub2;
   void* padd2 = &addd;
+  void* pstring = &passthrough;
   int argcount = 2;
   ffi_type ret_type = ffi_type_uint32;
   const char* args[] = {"uint32", "uint32"};
@@ -197,6 +199,12 @@ int main(int argc, char** argv) {
   void* values2[] = {&c, &d};
   result = ffi_callX(argcount, args2, ret_type, padd2, values2);
   fprintf(stdout, "result of calling addd is %f\n", ffi_reinterpret_double(result));
+  const char* args3[] = {"string"};
+  char* dummy = "i live!";
+  void* values3[] = {&dummy};
+  result = ffi_callX(1, args3, ffi_type_pointer, pstring, values3);
+  fprintf(stdout, "result of calling passthrough is %s\n", ffi_reinterpret_string(result));
+
   return 0;
 }
 /**********************************************************************************************************************/

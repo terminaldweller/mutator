@@ -235,6 +235,12 @@ class Executioner {
       }
       return std::make_pair(nullptr, "");
     }
+    std::pair<void*, std::string> getvptrbyname(const char* name) {
+      for (auto &iter : vptrs) {
+        if (std::strcmp(name, iter.second.c_str()) == 0) return iter;
+      }
+      return std::make_pair(nullptr, "");
+    }
 
   private:
     std::vector<std::pair<void*, size_t>> obj_mem_ptrs;
@@ -328,6 +334,7 @@ class XGlobals {
     XGlobals() {}
     ~XGlobals() {}
   private:
+    std::list<std::pair<void*, size_t>> globals;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/

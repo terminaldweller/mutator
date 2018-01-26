@@ -41,8 +41,6 @@ extern "C" {
   X(int32_t, "uint8_t")\
   X(int64_t, "uint8_t")\
   X(uintptr_t, "uint8_t")\
-  //X(float, "uint8_t")\
-  X(double, "uint8_t")
 
 #define X(X1,X2) REINTERPRET_GENERATOR(X1)
 X_LIST_GEN
@@ -51,6 +49,7 @@ X_LIST_GEN
 #undef REINTERPRET_GENERATOR
 float ffi_reinterpret_float(void* result);
 double ffi_reinterpret_double(void* result);
+char* ffi_reinterpret_string(void* result);
 
   /**
    * @brief constructs the arguments to be passed to ffi_call.

@@ -152,6 +152,8 @@ function main()
   local adddouble_code = codeTableByName_number("'adddouble'")
   local subdouble_code = codeTableByName_number("'subdouble'")
   local triple_code = codeTableByName_number("'triple'")
+  local quad_code = codeTableByName_number("'quad'")
+  local passthrough_code = codeTableByName_number("'passthrough'")
 
   printFuncSizes()
 
@@ -161,6 +163,9 @@ function main()
   xobjregister(adddouble_code, "adddouble")
   xobjregister(subdouble_code, "subdouble")
   xobjregister(triple_code, "triple")
+  xobjregister(quad_code, "quad")
+  xobjregister(passthrough_code, "passthrough")
+
   a=xcall(2,{"uint32","uint32"},"uint32",0, {30,20})
   print("call add result", a)
   a=xcall(2,{"uint32", "uint32"},"uint32",1, {30,20})
@@ -170,17 +175,28 @@ function main()
   arg2 = 200
   a=xcall(2,{"sint32", "sint32"},"sint32",1, {arg1,arg2})
   print("xcall returned:",a)
+
   if a ~= -100 then print("test failed") end
   a=xcall(2,{"double", "double"},"double",2, {333.333,222.222})
   print("xcall returned:",a)
   -- FIXME
-  if a ~= 555.555 then print("test failed") end
+  if tostring(a) ~= tostring(555.555) then print("test failed") end
   a=xcall(2,{"double", "double"},"double",3, {333.333,222.222})
   print("xcall returned:",a)
-  if a ~= 111.111 then print("test failed") end
+  if tostring(a) ~= tostring(111.111) then print("test failed") end
+
   a=xcall(3,{"double", "double", "double"},"double",4, {333.333,222.222,111.111})
   print("xcall returned:",a)
-  if a ~= 666.666 then print("test failed") end
+  a=xcall(3,{"double", "double", "double"},"double","triple", {333.333,222.222,111.111})
+  print("xcall returned:",a)
+  if tostring(a) ~= tostring(666.666) then print("test failed") end
+
+  --a=xcall(4,{"sint32", "sint32", "sint32", "sint32"},"sint32",5, {10,20,30,40})
+  --print("xcall returned:",a)
+  --if a ~= 100 then print("test failed") end
+
+  a=xcall(1,{"string"},"string","passthrough", {"i live!"})
+  print("xcall returned:",a)
 end
 
 main()
