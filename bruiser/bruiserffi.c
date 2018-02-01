@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <capstone/capstone.h>
+//#include <capstone/capstone.h>
 #include "bruiserffi.h"
 /**********************************************************************************************************************/
 #define VOIDIFY(X) (void*)X
