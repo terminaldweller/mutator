@@ -6,12 +6,21 @@ LD_FLAGS=
 TARGETD=mutatord
 TARGETS=mutatorserver
 TARGETC=mutatorclient
+SRCS=$(wildcard *.c)
 ##################################RULES################################
 .DEFAULT:all
 
-.PHONY:all clean help
+.PHONY:all clean help depend
 
 all:$(TARGETC) $(TARGETS) $(TARGETD)
+
+depend:.depend
+
+.depend:$(SRCS)
+	rm -f ./.depend
+	$(CC) -MM $(CC_FLAGS) $^ > ./.depend
+
+-include .depend
 
 .c.o:
 	$(CC) $(CC_FLAGS) -c $< -o $@
@@ -27,6 +36,7 @@ $(TARGETD): $(TARGETD).o daemon_aux.o
 
 clean:
 	rm -f *.o *~ $(TARGETD) $(TARGETS) $(TARGETC)
+	rm ./.depend
 
 help:
 	@echo 'all builds the daemon, the server and the client. all is the default.'

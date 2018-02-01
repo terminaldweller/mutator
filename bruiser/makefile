@@ -1,7 +1,6 @@
 
 ######################################INCLUDES#################################
 include ../macros.mk
-
 #######################################VARS####################################
 CXX_FLAGS+=-I/usr/include
 CXX_FLAGS+=$(shell $(PY_CONF) --includes)
@@ -10,7 +9,8 @@ LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
 LIB_LUA_JIT=./LuaJIT/src/libluajit.a
 HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
-SRCS=bruiser.cpp, CompletionHints.cpp, ORCmutation.cpp, mutagen.cpp
+SRCS=$(wildcard *.cpp)
+C_SRCS=$(wildcard *.c)
 #for some reason without ld the build fails on ubuntu trusty on travis
 #EXTRA_LD_FLAGS+=-lpthread -ldl -lutil -lm -Xlinker -lpython3
 EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi
@@ -21,15 +21,19 @@ EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi
 
 all: $(BRUISER)
 
-depend: .bruiser.d
+depend:.depend
+dependc:.dependc
 
-.bruiser.d: $(SRCS)
-	rm -f ./.bruisr.d
-	$(CXX) $(CXX_FLAGS) -MMD $^ -MF ./.bruiser.d;
+.depend:$(SRCS)
+	$(CXX) -MM $(CXX_FLAGS) $^ > ./.depend
 
--include ./.bruiser.d
+.dependc:$(C_SRCS)
+	$(CC) -MM $(CC_FLAGS) $^ > ./.dependc
 
-.cpp.o: depend
+-include .depend
+-include .dependc
+
+.cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 .c.o:
@@ -51,9 +55,13 @@ $(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o Com
 
 clean:
 	rm -f *.o *~ $(BRUISER)
+	rm .depend
+	rm .dependc
 
 deepclean:
 	rm -f *.o *~ $(BRUISER)
+	rm .depend
+	rm .dependc
 	$(MAKE) -C lua-5.3.4 clean
 	$(MAKE) -C LuaJIT clean
 

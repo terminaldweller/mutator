@@ -1,7 +1,6 @@
 
 ######################################INCLUDES#################################
 include macros.mk
-
 #######################################VARS####################################
 EXTRA_LD_FLAGS+=tinyxml2/tinyxml2.o
 
@@ -15,13 +14,21 @@ TARGETS=mutatorserver
 SFCPP01=safercpp-arr
 BRUISER=bruiser
 OBSC=obfuscator
-
+SRCS=$(wildcard *.cpp)
 ######################################RULES####################################
 .DEFAULT: all
 
 .PHONY:all clean install help TAGS $(BRUISER) $(OBSC) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01)
 
 all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC)
+
+depend:.depend
+
+.depend:$(SRCS)
+	rm -f ./.depend
+	$(CXX) -MM $(CXX_FLAGS) $^ > ./.depend
+
+-include ./.depend
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -60,6 +67,7 @@ TAGS: $(SRCS)
 
 clean:
 	rm -f *.o *~ $(TARGET0) $(TARGET1) $(TARGET2)
+	rm ./.depend
 	$(MAKE) -C tinyxml2 clean
 	$(MAKE) -C json clean
 	$(MAKE) -C daemon clean
