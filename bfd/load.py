@@ -3,6 +3,12 @@ import argparse
 import sys
 import readline
 import code
+import signal
+from capstone import *
+from capstone.x86 import *
+
+def SigHandler_SIGINT(signum, frame):
+    sys.exit(0)
 
 class ExceptionHandler(object):
     def __init__(self, globals, locals):
@@ -23,6 +29,8 @@ class CLIArgParser(object):
         parser.add_argument("--stentries", action='store_true', help="dump section table entries", default=False)
         parser.add_argument("--objcode", action='store_true', help="dump objects", default=False)
         parser.add_argument("--test", action='store_true', help="test switch", default=False)
+        parser.add_argument("--funcs", action='store_true', help="dump functions", default=False)
+        parser.add_argument("--objs", action='store_true', help="dump objects", default=False)
         parser.add_argument("--dynsym", action='store_true', help="dump dynamic symbol table", default=False)
         parser.add_argument("--dlpath", action='store_true', help="dump dynamic linker path", default=False)
         parser.add_argument("--section", type=str, help="dump a section")
@@ -721,6 +729,26 @@ def elf_get_func_code():
     elf.init(64)
     return elf.dump_funcs(False)
 
+class Call_Rewriter(object):
+    #def __init__(self, obj_code, arch, mode):
+    def __init__(self, obj_code):
+        self.obj_code = bytes(obj_code)
+        self.md = Cs(CS_ARCH_X86, CS_MODE_64)
+        #self.md = Cs(arch, mode)
+
+    def dumpall(self):
+        for i in self.md.disasm(self.obj_code, 0x1):
+            print("0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
+
+    def run(self):
+        for i in self.md.disasm(self.obj_code, 0x1):
+            if i.mnemonic == "call":
+                print("0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
+
+class Global_Rewriter(object):
+    def __init__(self):
+        pass
+
 def main():
     try:
         argparser = CLIArgParser()
@@ -736,12 +764,19 @@ def main():
         elif argparser.args.symbolindex: elf.dump_symbol_idx()
         elif argparser.args.stentries: elf.dump_st_entries()
         elif argparser.args.objcode: elf.dump_funcs(True)
-        elif argparser.args.test: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
-        elif argparser.args.test: elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, True)
+        elif argparser.args.funcs: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
+        elif argparser.args.objs: elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, True)
         elif argparser.args.dynsym: elf.dump_st_entries_dyn()
         elif argparser.args.dlpath: elf.dump_section(".interp")
         elif argparser.args.section: elf.dump_section(argparser.args.section)
+        elif argparser.args.test:
+            print(elf.dump_funcs(False)[10])
+            print(elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False)[10])
+            code = elf.dump_funcs(False)[10]
+            rewriter = Call_Rewriter(code)
+            rewriter.run()
     except:
+        signal.signal(signal.SIGINT, SigHandler_SIGINT)
         variables = globals().copy()
         variables.update(locals())
         shell = code.InteractiveConsole(variables)

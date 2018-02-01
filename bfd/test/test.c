@@ -11,6 +11,8 @@ int sub2(int a, int b) {return a - b;}
 double adddouble(double a, double b) {return a+b;}
 double subdouble(double a, double b) {return a-b;}
 double triple(double a, double b, double c) {return a+b+c;}
+int quad(int a, int b, int c, int d) {return add2(a,b) + add2(c,d);}
+const char* passthrough(const char* a) {return a;}
 
 int myvar1 = 1;
 int myvar2 = 2;

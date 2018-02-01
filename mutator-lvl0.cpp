@@ -55,7 +55,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Tooling/CommonOptionsParser.h"
-#include "clang/Tooling/Core/QualTypeNames.h"
+//#include "clang/Tooling/Core/QualTypeNames.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 /*LLVM headers*/

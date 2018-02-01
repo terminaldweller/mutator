@@ -9,7 +9,7 @@ TARGETC=mutatorclient
 ##################################RULES################################
 .DEFAULT:all
 
-.PHONY:all clean help $(TARGETC) $(TARGETS) $(TARGETD)
+.PHONY:all clean help
 
 all:$(TARGETC) $(TARGETS) $(TARGETD)
 
