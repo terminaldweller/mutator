@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <capstone/capstone.h>
 #include "bruiserffi.h"
 /**********************************************************************************************************************/
 #define VOIDIFY(X) (void*)X
@@ -36,15 +37,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
   X ffi_reinterpret_##X(void* result) {return (X)result;}
 
 #define X_LIST_GEN \
-  X(uint8_t, "uint8_t")\
-  X(uint16_t, "uint8_t")\
-  X(uint32_t, "uint8_t")\
-  X(uint64_t, "uint8_t")\
-  X(int8_t, "uint8_t")\
-  X(int16_t, "uint8_t")\
-  X(int32_t, "uint8_t")\
-  X(int64_t, "uint8_t")\
-  X(uintptr_t, "uint8_t")\
+  X(uint8_t, "for uint8_t")\
+  X(uint16_t, "for uint16_t")\
+  X(uint32_t, "for uint32_t")\
+  X(uint64_t, "for uint64_t")\
+  X(int8_t, "for int8_t")\
+  X(int16_t, "for int16_t")\
+  X(int32_t, "for int32_t")\
+  X(int64_t, "for int64_t")\
+  X(uintptr_t, "for pointers")\
 
 #define X(X1,X2) REINTERPRET_GENERATOR(X1)
 X_LIST_GEN

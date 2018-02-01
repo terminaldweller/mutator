@@ -34,6 +34,7 @@ struct SigNames
   char *SigName;
 };
 
+#if 0
 std::vector<SigNames> SignalNames = 
 {
   {SIGHUP, (char*)"SIGHUP"},
@@ -67,6 +68,7 @@ std::vector<SigNames> SignalNames =
   {SIGWINCH, (char*)"SIGWINCH"},
   {SIGIO, (char*)"SIGIO"}
 };
+#endif
 
 std::vector<std::string> BRUISR_COMMANDS = 
 {

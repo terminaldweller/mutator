@@ -332,7 +332,17 @@ class Arguary {
 class XGlobals {
   public:
     XGlobals() {}
-    ~XGlobals() {}
+    ~XGlobals() {
+      for (auto &iter : globals) free(iter.first);
+    }
+
+    void reserve(size_t size) {
+      globals.push_back(std::make_pair(malloc(size), size));
+    }
+
+    void* getAddressByIndex(int index) {
+    }
+
   private:
     std::list<std::pair<void*, size_t>> globals;
 };

@@ -15,6 +15,16 @@
 elf_file = "../bfd/test/test.so"
 --elf_file = "../bfd/test/test"
 
+function getGlobalTable()
+  local return_table = {}
+  local names = objload("elf_get_obj_names", elf_file, "symbol_list")
+  local sizes = objload("elf_get_obj_sizes", elf_file, "symbol_list")
+  for i=1,#names,1 do
+    return_table[names[i]] = sizes[i]
+  end
+  return return_table
+end
+
 function printObjNames()
   local c = objload("elf_get_obj_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
@@ -191,12 +201,13 @@ function main()
   print("xcall returned:",a)
   if tostring(a) ~= tostring(666.666) then print("test failed") end
 
+  a=xcall(1,{"string"},"string","passthrough", {"i live!"})
+  print("xcall returned:",a)
+
   --a=xcall(4,{"sint32", "sint32", "sint32", "sint32"},"sint32",5, {10,20,30,40})
   --print("xcall returned:",a)
   --if a ~= 100 then print("test failed") end
 
-  a=xcall(1,{"string"},"string","passthrough", {"i live!"})
-  print("xcall returned:",a)
 end
 
 main()

@@ -1066,7 +1066,7 @@ class LiveActionListArrays : public ASTFrontendAction
 class LuaWrapper
 {
   public:
-    LuaWrapper(ClangTool &__CT, Executioner& __EX) : CT(__CT), executioner(__EX) {}
+    LuaWrapper(ClangTool &__CT, Executioner& __EX, XGlobals __XG) : CT(__CT), executioner(__EX), xglobals(__XG) {}
 
     /*print out the history*/
     int BruiserLuaHistory(lua_State* __ls)
@@ -1396,12 +1396,15 @@ class LuaWrapper
     }
 
     int BruiserLuaXObjAllocGlobal(lua_State* __ls) {
-      int nuamrgs = lua_gettop(__ls);
+      int numargs = lua_gettop(__ls);
+      if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");}
       std::string glob_name = lua_tostring(__ls , 1);
       size_t size = lua_tointeger(__ls, 2);
+      xglobals.reserve(size);
       return 0;
     }
-    int BruiserLuaXObjAllocAllGlobals(lua_State* __ls) {return 0;}
+
+    int BruiserLuaXObjAllocAllGlobals(lua_State* __ls) {}
 
     /*read the m0 report*/
     int BruiserLuaM0(lua_State* __ls)
@@ -1913,6 +1916,7 @@ class LuaWrapper
   private:
     ClangTool CT;
     Executioner executioner;
+    XGlobals xglobals;
 };
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
@@ -1958,7 +1962,7 @@ int main(int argc, const char **argv) {
   }
 
   /*initialize the LuaWrapper class so we can register and run them from lua.*/
-  LuaWrapper LW(Tool, executioner);
+  LuaWrapper LW(Tool, executioner, xglobals);
 
   /*linenoise init*/
   linenoiseSetCompletionCallback(bruiser::ShellCompletion);
