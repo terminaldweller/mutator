@@ -1,5 +1,7 @@
 #!/bin/bash
 ########################################################################################################################
+#cd $(dirname $0)
+########################################################################################################################
 Red="\033[0;31m"
 Green="\033[0;32m"
 Lblue="\033[1;34m"
@@ -35,6 +37,13 @@ function RelicKeeper
     printf "${Orange}RelicKeeper removed the oldest safercpp relic.\n${NC}" | tee -a ../../test/precommit.rep
   fi
 
+  cd ../obfuscator
+  RELIC_CNT=$(ls | gawk 'END{print NR}')
+  if (( $RELIC_CNT > $RELIC_COUNT )); then
+    rm "$(ls -t | tail -1)"
+    printf "${Orange}RelicKeeper removed the oldest obfuscator relic.\n${NC}" | tee -a ../../test/precommit.rep
+  fi
+
   cd ../..
 }
 ########################################################################################################################
@@ -57,8 +66,8 @@ fi
 
 printf "${Lblue}running mutator-lvl0 on the tdd sources...\n${NC}" | tee -a ./test/precommit.rep
 
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}" | tee -a ./test/precommit.rep
@@ -85,8 +94,8 @@ else
 fi
 
 printf "${Lblue}running smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
@@ -142,15 +151,36 @@ if [[ $? == 0 ]]; then
   "cp" ./mutator-lvl0 ./reliquary/m0/m0-$TIME
   "cp" ./bruiser/bruiser ./reliquary/bruiser/bruiser-$TIME
   "cp" ./safercpp/safercpp-arr ./reliquary/safercpp/safercpp-$TIME
+  "cp" ./obfuscator/obfuscator ./reliquary/obfuscator/obfuscator-$TIME
   RelicKeeper
   source ./extra-tools/oracle.sh ./test/precommit.rep
 else
   printf "${Red}mutator c++1z test build failed.\n${NC}" | tee -a ./test/precommit.rep
 fi
 
+printf "${Lblue}running load.py test...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}../bfd/test.py\n${NC}" | tee -a ./test/precommit.rep
+./bfd/test.py --obj ./bfd/test/test.so
+# its not a mistake. the obfuscator test is supposed to return 128
+if [[ $? == 0 ]]; then
+  printf "${Green}load.py test passed.\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}load.py test failed.\n${NC}" | tee -a ./test/precommit.rep
+fi
+
+printf "${Lblue}running obfuscator test...\n${NC}" | tee -a ./test/precommit.rep
+printf "${Orange}../obfuscator/run.sh\n${NC}" | tee -a ./test/precommit.rep
+./obfuscator/run.sh
+# its not a mistake. the obfuscator test is supposed to return 128
+if [[ $? == 128 ]]; then
+  printf "${Green}obfuscator test passed.\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}obfuscator test failed.\n${NC}" | tee -a ./test/precommit.rep
+fi
+
 printf "${Lblue}running mutator-lvl0 on the tdd sources...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}" | tee -a ./test/precommit.rep
@@ -177,8 +207,8 @@ else
 fi
 
 printf "${Lblue}running smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++1z smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
@@ -208,6 +238,13 @@ if [[ $? == 0 ]]; then
 else
   printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/demo.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/demo.lua
+if [[ $? == 0 ]]; then
+  printf "${Green}bruiser xobj test passed...\n${NC}" | tee -a ./test/precommit.rep
+else
+  printf "${Red}bruiser xobj test failed...\n${NC}" | tee -a ./test/precommit.rep
+fi
 
 printf "${Lblue}running cpp smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
 printf "${Orange}./mutator-lvl0 ./test/m0-cpp-smoke/m0-cpp-smoke.cpp\n${NC}" | tee -a ./test/precommit.rep
@@ -234,8 +271,8 @@ else
 fi
 
 printf "${Lblue}running mutator-lvl0 on the tdd sources...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 smoke test on the tdds passed.\n${NC}" | tee -a ./test/precommit.rep
@@ -262,8 +299,8 @@ else
 fi
 
 printf "${Lblue}running smoke tests on mutator-lvl0...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
-"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/6.4.1/include -Wall > ./test/misra-log
+printf "${Orange}./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log\n${NC}" | tee -a ./test/precommit.rep
+"./mutator-lvl0" -SysHeader=false -MainOnly=true ./test/testFuncs3.h -- -std=c90 -I/lib/gcc/x86_64-redhat-linux/7.3.1/include -Wall > ./test/misra-log
 
 if [[ $? == 0 ]]; then
   printf "${Green}mutator-lvl0 C++14 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep

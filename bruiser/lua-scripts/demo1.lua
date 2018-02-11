@@ -13,6 +13,7 @@
 --
 --------------------------------------------------------------------------------------------------------------
 elf_file = "../bfd/test/test.so"
+--elf_file = "/home/bloodstalker/devi/hell2/bfd/test/test.so"
 --elf_file = "../bfd/test/test"
 
 function getGlobalTable()
@@ -120,24 +121,8 @@ function printFuncSizes()
   end
 end
 
--- start of @placeholder
-function xobjRegister(code_table, registration_name)
-  -- lightuserdata
-  local Xobjpointer
-  return Xobjpointer
-end
--- should be varargs
--- registration_name()
--- end of @placeholder
-
--- start of @placeholder
--- C--args = argc, arg_string, ffi_type, xptr, the_actual_args
--- lua--args = number, table, string, xptr, args
--- end of @placeholder
-function callX(n_argc, t_string, str, index, t_values)
-end
-
 function main()
+  pwd()
   printObjNames()
   printObjSizes()
   printFuncNames()
@@ -167,7 +152,6 @@ function main()
 
   printFuncSizes()
 
-  pwd()
   xobjregister(add2_code, "add2")
   xobjregister(sub2_code, "sub2")
   xobjregister(adddouble_code, "adddouble")
@@ -189,20 +173,20 @@ function main()
   if a ~= -100 then print("test failed") end
   a=xcall(2,{"double", "double"},"double",2, {333.333,222.222})
   print("xcall returned:",a)
-  -- FIXME
-  if tostring(a) ~= tostring(555.555) then print("test failed") end
+  if tostring(a) ~= tostring(555.555) then print("test failed"); os.exit(1) end
   a=xcall(2,{"double", "double"},"double",3, {333.333,222.222})
   print("xcall returned:",a)
-  if tostring(a) ~= tostring(111.111) then print("test failed") end
+  if tostring(a) ~= tostring(111.111) then print("test failed"); os.exit(1) end
 
   a=xcall(3,{"double", "double", "double"},"double",4, {333.333,222.222,111.111})
   print("xcall returned:",a)
   a=xcall(3,{"double", "double", "double"},"double","triple", {333.333,222.222,111.111})
   print("xcall returned:",a)
-  if tostring(a) ~= tostring(666.666) then print("test failed") end
+  if tostring(a) ~= tostring(666.666) then print("test failed"); os.exit(1) end
 
   a=xcall(1,{"string"},"string","passthrough", {"i live!"})
   print("xcall returned:",a)
+  if (a ~= "i live!") then print("test failed"); os.exit(1) end
 
   --a=xcall(4,{"sint32", "sint32", "sint32", "sint32"},"sint32",5, {10,20,30,40})
   --print("xcall returned:",a)

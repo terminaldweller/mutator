@@ -8,6 +8,7 @@ from capstone import *
 from capstone.x86 import *
 
 def SigHandler_SIGINT(signum, frame):
+    print()
     sys.exit(0)
 
 class ExceptionHandler(object):

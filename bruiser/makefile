@@ -13,7 +13,7 @@ SRCS=$(wildcard *.cpp)
 C_SRCS=$(wildcard *.c)
 #for some reason without ld the build fails on ubuntu trusty on travis
 #EXTRA_LD_FLAGS+=-lpthread -ldl -lutil -lm -Xlinker -lpython3
-EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi
+EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone
 ######################################RULES####################################
 .DEFAULT: all
 

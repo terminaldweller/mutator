@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 /*included modules*/
 /*project headers*/
-#include "mutator_aux.h"
+//#include "mutator_aux.h"
 /*standard headers*/
 #include <string>
 #include <iostream>
@@ -60,51 +60,7 @@ using namespace clang::driver;
 using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
-
 static llvm::cl::OptionCategory MatcherSampleCategory("Matcher Sample");
-/**********************************************************************************************************************/
-class IfElseFixer : public MatchFinder::MatchCallback
-{
-public:
-  IfElseFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
-
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    /*underdev*/
-    if (MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse") != nullptr)
-    {
-      const IfStmt *ElseIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
-      //const IfStmt *LastIf = MR.Nodes.getNodeAs<clang::IfStmt>("mrifelse");
-
-      SourceLocation IFESL = ElseIf->getLocStart();
-      IFESL = Devi::SourceLocationHasMacro(IFESL, Rewrite, "start");
-      SourceLocation IFESLE = ElseIf->getLocEnd();
-      IFESLE = Devi::SourceLocationHasMacro(IFESLE, Rewrite, "end");
-      SourceRange SR;
-      SR.setBegin(IFESL);
-      SR.setEnd(IFESLE);
-
-      clang::Rewriter::RewriteOptions opts;
-
-      int RangeSize = Rewrite.getRangeSize(SR, opts);
-
-      //std::cout << IFESLE.printToString(*MR.SourceManager) << "\n" << std::endl;
-
-#if 1
-      //Rewrite.InsertText(ElseIf->getThen()->getLocStart(), "{\n", "true", "true");
-      Rewrite.InsertTextAfterToken(IFESL.getLocWithOffset(RangeSize + 1U), "else\n{/*intentionally left blank*/\n}\n");
-#endif
-    }
-    else
-    {
-      std::cout << "matcher -mrifelse- returned nullptr." << std::endl;
-    }
-  }
-
-
-private:
-  Rewriter &Rewrite;
-};
 /**********************************************************************************************************************/
 class BlankDiagConsumer : public clang::DiagnosticConsumer
 {
@@ -116,16 +72,15 @@ class BlankDiagConsumer : public clang::DiagnosticConsumer
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 public:
-  MyASTConsumer(Rewriter &R) : HandlerForIfElse(R) {
-    Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mrifelse"), &HandlerForIfElse);
+  MyASTConsumer(Rewriter &R) {
   }
 
-  void HandleTranslationUnit(ASTContext &Context) override {
-    Matcher.matchAST(Context);
+  void HandleTranslationUnit(ASTContext &Context) {
+    std::cout << "i was here\n";
+    //Matcher.matchAST(Context);
   }
 
 private:
-  IfElseFixer HandlerForIfElse;
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
@@ -140,7 +95,10 @@ public:
     DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
     DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+    //return llvm::make_unique<ASTConsumer>(new MyASTConsumer(TheRewriter));
+    //return llvm::make_unique<ASTConsumer>(*new MyASTConsumer(TheRewriter));
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
+    //return std::unique_ptr<ASTConsumer>(new ASTConsumer);
   }
 
 private:
@@ -148,43 +106,15 @@ private:
   Rewriter TheRewriter;
 };
 /**********************************************************************************************************************/
-#if 0
-class mutatorBEConsumer : public ASTConsumer {
-  public:
-    using LinkModule = CodeGenAction::LinkModule;
-    mutatorBEConsumer(clang::BackendAction Backend_EmitObj, DiagnosticsEngine &diags, const HeaderSearchOptions &HSO, 
-        const PreprocessorOptions &PPO, const CodeGenOptions &CGO, const clang::TargetOptions &TO, 
-        const LangOptions &LO, bool TimePasses, const std::string &InFile, llvm::SmallVector<LinkModule, 4> LinkModules, 
-        std::unique_ptr<raw_pwrite_stream> OS, LLVMContext &C) {}
-
-    virtual void HandleTranslationUnit(ASTContext &astc) {}
-};
-#endif
-/**********************************************************************************************************************/
-class mutatorEmitObjAction : public EmitObjAction {
-  public:
-    mutatorEmitObjAction() {}
-};
-/**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, MatcherSampleCategory);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
-  std::vector<std::unique_ptr<ASTUnit>> ASTs;
-  auto buildASTRes [[maybe_unused]] = Tool.buildASTs(ASTs);
 
-  for (auto &iter : ASTs)
-  {
-    if (iter->hasSema())
-    {
-      std::cout << "sema acquired\n";
-      iter->Save("./TU.save");
-      clang::Sema &selfSema [[maybe_unused]] = iter->getSema();
-    }
-  }
-
-
-  return Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+  int ret;
+  ret = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
+  std::cout << "fucking done!\n";
+  return ret;
 }
 /*last line intentionally left blank.*/
 

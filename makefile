@@ -85,6 +85,7 @@ install:
 	if [[ ! -d "./reliquary/m0" ]]; then mkdir ./reliquary/m0; fi
 	if [[ ! -d "./reliquary/bruiser" ]]; then mkdir ./reliquary/bruiser; fi
 	if [[ ! -d "./reliquary/safercpp" ]]; then mkdir ./reliquary/safercpp; fi
+	if [[ ! -d "./reliquary/obfuscator" ]]; then mkdir ./reliquary/obfuscator; fi
 	$(shell echo MUTATOR_HOME=$$(pwd) > ./daemon/mutator.config)
 
 help:

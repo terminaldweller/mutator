@@ -104,6 +104,7 @@ cl::opt<bool> CheckSystemHeader("SysHeader", cl::desc("bruiser will run through 
 cl::opt<bool> MainFileOnly("MainOnly", cl::desc("bruiser will only report the results that reside in the main file"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<bool> Verbose("verbose", cl::desc("verbosity"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
 /**********************************************************************************************************************/
 class LuaEngine
@@ -209,16 +210,16 @@ class PyExec {
       if (pModule != nullptr) {
         pFunc = PyObject_GetAttrString(pModule, py_func_name.c_str());
         if (pFunc && PyCallable_Check(pFunc)) {
-          std::cout << GREEN << "function is callable." << NORMAL << "\n";
+          if (Verbose) std::cout << GREEN << "function is callable." << NORMAL << "\n";
           pArgs = PyTuple_New(1);
           pValue = PyUnicode_FromString(obj_path.c_str());
           PyTuple_SetItem(pArgs, 0, pValue);
           pArgs = nullptr;
-          std::cout << BLUE << "calling python function..." << NORMAL << "\n";
+          if (Verbose) std::cout << BLUE << "calling python function..." << NORMAL << "\n";
           pValue = PyObject_CallObject(pFunc, pArgs);
           //Py_DECREF(pArgs);
           if (pValue != nullptr) {
-            std::cout << GREEN << "call finished successfully." << NORMAL << "\n";
+            if (Verbose) std::cout << GREEN << "call finished successfully." << NORMAL << "\n";
             //printf("Result of call: %ld\n", PyLong_AsLong(pValue));
             //Py_DECREF(pValue);
           } else {
@@ -247,11 +248,11 @@ class PyExec {
     }
 
     int getAsCppStringVec(void) {
-      PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
+      if (Verbose) PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
       if (PyList_Check(pValue)) {
-        std::cout << GREEN << "got a python list\n" << NORMAL;
+        if (Verbose) std::cout << GREEN << "got a python list\n" << NORMAL;
         int list_length = PyList_Size(pValue);
-        std::cout << BLUE << "length of list: " << list_length << NORMAL  <<"\n";
+        if (Verbose) std::cout << BLUE << "length of list: " << list_length << NORMAL  <<"\n";
         for (int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
           PyObject* pyrepr = PyObject_Repr(pybytes);
@@ -265,11 +266,11 @@ class PyExec {
     }
 
     int getAsCppByte(void) {
-      PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
+      if (Verbose) PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
       std::vector<uint8_t> tempvec;
       if(PyList_Check(pValue)) {
         int list_length = PyList_Size(pValue);
-        std::cout << BLUE << "length of list: " << list_length << NORMAL << "\n";
+        if (Verbose) std::cout << BLUE << "length of list: " << list_length << NORMAL << "\n";
         for(int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
           if(PyList_Check(pybytes)) {
@@ -1161,7 +1162,7 @@ class LuaWrapper
       std::string action;
 
       if (numargs == 3) {
-        std::cout << CYAN << "got args." << NORMAL << "\n";
+        if (Verbose) std::cout << CYAN << "got args." << NORMAL << "\n";
         funcname = lua_tostring(__ls, 1);
         objjpath = lua_tostring(__ls, 2);
         action = lua_tostring(__ls, 3);
@@ -1172,10 +1173,10 @@ class LuaWrapper
         return EXIT_FAILURE;
       }
 
-      std::cout << CYAN << "initing the py embed class...\n" << NORMAL;
+      if (Verbose) std::cout << CYAN << "initing the py embed class...\n" << NORMAL;
       PyExec py(filename.c_str(), funcname.c_str(), objjpath.c_str());
 
-      std::cout << BLUE << "running load.py: " << NORMAL << "\n";
+      if (Verbose) std::cout << BLUE << "running load.py: " << NORMAL << "\n";
       py.run();
       if (action == "code_list") {
         py.getAsCppByte();
@@ -1185,8 +1186,7 @@ class LuaWrapper
         int tableindex2 = 1;
         // the return type to lua is a table of tables
         lua_newtable(__ls);
-        // @devi-FIXME-probably reserving way too much stack space
-        if (!lua_checkstack(__ls, py.exportObjs().size() * 2)) {
+        if (!lua_checkstack(__ls, py.exportObjs().size())) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
         for (auto& iter : py.exportObjs()) {
@@ -1208,8 +1208,7 @@ class LuaWrapper
         int tableindex = 1 ;
         // the return type to lua is a table
         lua_newtable(__ls);
-        // @devi-FIXME-probably reserving way too much stack space
-        if (!lua_checkstack(__ls, py.exportStrings().size() * 2)) {
+        if (!lua_checkstack(__ls, py.exportStrings().size())) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
         for (auto& iter : py.exportStrings()) {
@@ -1220,7 +1219,7 @@ class LuaWrapper
         }
       }
 
-      PRINT_WITH_COLOR_LB(GREEN, "done.");
+      if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "done.");
       return 1;
     }
 
@@ -1235,20 +1234,27 @@ class LuaWrapper
       if (lua_type(__ls, 1) != LUA_TTABLE) {
         PRINT_WITH_COLOR_LB(RED, "the stack value is not a table but is being accessed as such.");
       } else {
-        PRINT_WITH_COLOR_LB(GREEN, "stack index 1 is a table.");
+        if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "stack index 1 is a table.");
       }
-      std::cout << CYAN << "table_length: " << table_length << NORMAL << "\n";
+      if (Verbose) std::cout << CYAN << "table_length: " << table_length << NORMAL << "\n";
+      if (!lua_checkstack(__ls, table_length)) {
+        PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+      }
       for (int i = 1; i <= table_length; ++i) {
         lua_rawgeti(__ls, 1, i);
         xobj_code_.push_back(int(lua_tonumber(__ls, i + 2)));
       }
-      std::cout << BLUE << "function code: ";
-      for (auto& iter : xobj_code_) {std::cout << NORMAL << int(iter) << " ";}
-      std::cout << NORMAL  <<"\n";
+      if (Verbose) {
+        std::cout << BLUE << "function code: ";
+        for (auto& iter : xobj_code_) {std::cout << NORMAL << int(iter) << " ";}
+        std::cout << NORMAL  <<"\n";
+      }
       xobj_name = lua_tostring(__ls, 2);
       std::pair<void*, size_t> xobj = executioner.loadObjsInXMem(xobj_code_);
-      std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
-      std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
+      if (Verbose) {
+        std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
+        std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
+      }
       executioner.pushvptr(xobj.first, xobj_name);
       return 0;
     }
@@ -1297,9 +1303,9 @@ class LuaWrapper
         PRINT_WITH_COLOR_LB(RED, "xcall: the stack value is not a table but is being accessed as such.");
         return 0;
       } else {
-        PRINT_WITH_COLOR_LB(GREEN, "xcall: stack index 2 is a table.");
+        if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "xcall: stack index 2 is a table.");
       }
-      std::cout << CYAN << "table_length: " << table_length_2 << NORMAL << "\n";
+      if (Verbose) std::cout << CYAN << "table_length: " << table_length_2 << NORMAL << "\n";
       for (int i = 1; i <= table_length_2; ++i) {
         lua_rawgeti(__ls, 2, i);
         args[i-1] = lua_tostring(__ls, i + numargs);
@@ -1323,10 +1329,10 @@ class LuaWrapper
         PRINT_WITH_COLOR_LB(RED, "xcall: the stack value is not a table but is being accessed as such.");
         return 0;
       } else {
-        PRINT_WITH_COLOR_LB(GREEN, "xcall: stack index 5 is a table.");
+        if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "xcall: stack index 5 is a table.");
       }
 
-      std::cout << CYAN << "table_length: " << table_length_5 << NORMAL << "\n";
+      if (Verbose) std::cout << CYAN << "table_length: " << table_length_5 << NORMAL << "\n";
       for (int i = 1; i <= table_length_5; ++i) {
         lua_rawgeti(__ls, 5, i);
         if (lua_type(__ls, i+numargs+argc) == LUA_TBOOLEAN) {}
@@ -1382,7 +1388,7 @@ class LuaWrapper
     int BruiserLuaXObjGetList(lua_State* __ls) {
       auto xlist = executioner.getvptrs();
         lua_newtable(__ls);
-        if (!lua_checkstack(__ls, xlist.size() * 2)) {
+        if (!lua_checkstack(__ls, xlist.size())) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
         for (auto& iter : xlist) {
@@ -1552,6 +1558,7 @@ class LuaWrapper
       return 0;
     }
 
+    //@DEVI-FIXME-broken
     int BruiserLuaShowSourcecode(lua_State* __ls)
     {
       unsigned int args = 0U;
@@ -1584,13 +1591,17 @@ class LuaWrapper
       }
 
       std::string line;
+      std::string dummy;
       while(getline(targetfile, line))
       {
-        lua_pushstring(__ls, line.c_str());
+        dummy += line;
+        //lua_pushstring(__ls, line.c_str());
       }
 
+      lua_pushstring(__ls , dummy.c_str());
       targetfile.close();
-      return lineend - linebegin + 1U;
+      //return lineend - linebegin + 1U;
+      return 1;
     }
 
     int BruiserLuaMutagenExtraction(lua_State* __ls)
@@ -2022,14 +2033,7 @@ int main(int argc, const char **argv) {
 
     /*The non-cli execution loop*/
     if (NonCLILuaScript != "") {
-      std::ifstream lua_script_noncli;
-      lua_script_noncli.open(NonCLILuaScript);
-      std::string line;
-      while(std::getline(lua_script_noncli, line)) {
-        BruiserLog.PrintToLog("running in non-cli mode...");
-        BruiserLog.PrintToLog(line + "\n");
-        LE.RunChunk((char*)line.c_str());
-      }
+      luaL_dofile(LE.GetLuaState(), NonCLILuaScript.c_str());
       dostring(LE.GetLuaState(), "os.exit()", "test");
       return 0;
     }

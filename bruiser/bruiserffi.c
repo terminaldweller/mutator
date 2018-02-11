@@ -21,13 +21,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 // @TODO-structs and unions not supported
 // @TODO-vararg xobjs are not supported
 /**********************************************************************************************************************/
+#include "bruiserffi.h"
+#include <capstone/capstone.h>
+#include <errno.h>
 #include <ffi.h>
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-//#include <capstone/capstone.h>
-#include "bruiserffi.h"
 /**********************************************************************************************************************/
 #define VOIDIFY(X) (void*)X
 /**********************************************************************************************************************/
@@ -167,6 +169,32 @@ void* ffi_callX(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, 
 
 void* ffi_callX_var(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, void** values) {return NULL;}
 /**********************************************************************************************************************/
+#define CODE_1 "\x55\x48\x89\xe5\x48\x83\xec\x20\x89\x7d\xfc\x89\x75\xf8\x89\x55\xf4\x89\x4d\xf0\x8b\x7d\xfc\x8b\x75\xf8\xe8\xd1\xfd\xff\xff\x8b\x7d\xf4\x8b\x75\xf0\x89\x45\xec\xe8\xc3\xfd\xff\xff\x8b\x4d\xec\x1\xc1\x89\xc8\x48\x83\xc4\x20\x5d\xc3"
+int capstone_test(void) {
+  csh handle;
+  cs_insn* insn;
+  size_t count;
+  if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) return -1;
+  count = cs_disasm(handle, CODE_1, sizeof(CODE_1) - 1, 0x0, 0, &insn);
+  if (count > 0) {
+    size_t j;
+    for (j = 0; j <count; ++j) {
+      if (strcmp(insn[j].mnemonic, "call") == 0) {
+        printf("0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic, insn[j].op_str);
+        char* endptr;
+        intmax_t address = strtoimax(insn[j].op_str, &endptr, 0);
+        uintmax_t uaddress = strtoumax(insn[j].op_str, &endptr, 0);
+        printf("address: %ld\n", address);
+        printf("uaddress: %ld\n", uaddress);
+      }
+    }
+    cs_free(insn, count);
+  } else {
+    printf("ERROR!!!\n");
+  }
+  cs_close(&handle);
+  return 0;
+}
 /**********************************************************************************************************************/
 // @DEVI-the following lines are only meant for testing.
 uint32_t add2(uint32_t a, uint32_t b) {return a+b;}
@@ -205,6 +233,10 @@ int main(int argc, char** argv) {
   void* values3[] = {&dummy};
   result = ffi_callX(1, args3, ffi_type_pointer, pstring, values3);
   fprintf(stdout, "result of calling passthrough is %s\n", ffi_reinterpret_string(result));
+
+  /*capstone tests*/
+  printf("\n");
+  capstone_test();
 
   return 0;
 }

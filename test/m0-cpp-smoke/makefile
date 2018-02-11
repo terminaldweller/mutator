@@ -1,7 +1,7 @@
 TARGET=m0-cpp-smoke
 CXX?=clang++
 # you should change the include path to one that is right for you
-CXX_FLAGS=-I/usr/lib/gcc/x86_64-redhat-linux/6.3.1/include -std=c++14
+CXX_FLAGS=-I/usr/lib/gcc/x86_64-redhat-linux/7.3.1/include -std=c++14
 
 .DEFAULT:all clean
 

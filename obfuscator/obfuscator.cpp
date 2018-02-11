@@ -445,10 +445,12 @@ class BlankDiagConsumer : public clang::DiagnosticConsumer
 class MyASTConsumer : public ASTConsumer {
 public:
   MyASTConsumer(Rewriter &R) : funcDeclHandler(R), HandlerForVar(R), HandlerForClass(R), HandlerForCalledFunc(R), HandlerForCalledVar(R) {
+#if 1
     Matcher.addMatcher(functionDecl().bind("funcdecl"), &funcDeclHandler);
     Matcher.addMatcher(varDecl(anyOf(unless(hasDescendant(expr(anything()))), hasDescendant(expr(anything()).bind("expr")))).bind("vardecl"), &HandlerForVar);
     Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"), &HandlerForClass);
     Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
+#endif
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -471,6 +473,7 @@ public:
     delete BDCProto;
     delete tee;
   }
+
   void EndSourceFileAction() override {
     std::error_code EC;
     std::string OutputFilename = TEMP_FILE;
@@ -608,6 +611,7 @@ class WhitespaceWarper {
 /**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
+#if 1
   CommonOptionsParser op(argc, argv, ObfuscatorCat);
   const std::vector<std::string> &SourcePathList = op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
@@ -616,6 +620,7 @@ int main(int argc, const char **argv) {
   CW.run();
   dumpHashFilenames(hashFilenames(SourcePathList));
   dumpDirList(listDirs("./test"));
+#endif
 #if 0
   for (auto &iter : SourcePathList) {
     std::cout << "name: " << std::get<0>(getNameFromPath(iter)) << "\t" << "extension: " << std::get<1>(getNameFromPath(iter)) << "\tpath: " << std::get<2>(getNameFromPath(iter)) << "\n";

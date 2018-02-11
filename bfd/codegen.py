@@ -9,6 +9,7 @@ import capstone
 from load import ELF
 
 def SigHandler_SIGINT(signum, frame):
+    print()
     sys.exit(0)
 
 class Argparser(object):
@@ -27,7 +28,7 @@ class Call_Rewriter(object):
 
     def run():
         for i in md.disasm(self.obj_code, 0x0):
-            print("0x%x:\t%s\t%s", %(i.address, i.mnemonic, i.op_str))
+            print("0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
 
 class Global_Rewriter(object):
     def __init__(self):

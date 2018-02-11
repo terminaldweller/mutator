@@ -21,10 +21,10 @@ depend: .depend
 -include ./.depend
 
 .cpp.o:
-	$(CXX) $(CXX_FLAGS) -c $< -o $@
+	$(CXX) -v $(CXX_FLAGS) -c $< -o $@
 
 $(OBSC): $(OBSC).o ../mutator_aux.o
-	$(CXX) $^ $(LD_FLAGS) -o $@
+	$(CXX) -v $^ $(LD_FLAGS) -o $@
 
 clean:
 	rm -f *.o *~ $(OBSC)

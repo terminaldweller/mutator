@@ -1,3 +1,4 @@
 #!/bin/bash
 
-./bruiser ../test/bruisertest/test.cpp
+cd $(dirname $0)
+"./bruiser"  ../test/bruisertest/test.cpp
