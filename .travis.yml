@@ -48,7 +48,7 @@ before_script:
 
 script: 
   - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
-  - cd ./extra-tools/precommitTests.sh
+  - ./extra-tools/precommitTests.sh
 
 after_failure:
   - find . -maxdepth 1 -name "core*"
