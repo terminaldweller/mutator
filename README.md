@@ -35,23 +35,24 @@
 - [Contributions](#contributions)
 - [Support](#support)
 - [Contact](#contact)
+- [Gource](#gource)
 
 
 ## Overview
 
 Here's the elevator pitch: mutator is a suite of tools aimed at analysis and automation of C/C++ code development.<br/>
 Here's a detailed list of what's currently available:<br/>
-mutator-lvl0(m0) will run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
-Safercpp runs the automatic refactoring sets on your source code, automatically changing your code to use the SaferCpp libraries.<br/>
-mutator-lvl1 is an experimental tool that builds your code as a shared object library and keep it in the memory, later to be used by bruiser to dynamically link against or even run.<br/>
-bruiser is an interactive shell-like tool used to mutate the source code plus run the mutants. You can read about the idea in bruiser's directory.<br/>
-mutatord, the mutator server and the client are also provided as optional features.<br/>
-obfuscator is a C/C++ source code obfuscator.<br/>
+**bruiser** is an interactive shell-like tool. Currently mutator lets you pull in shared object libraries and run them through lua plus a couple of other features.<br/>
+**obfuscator** is a C/C++ source code obfuscator.<br/>
+**mutator-lvl0(m0)** will run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
+**Safercpp** runs the automatic refactoring sets on your source code, automatically changing your code to use the SaferCpp libraries.<br/>
+**mutatord**,the mutator server and the client are also provided as optional features.<br/>
+**load.py** is a custom ELF dump script that bruiser uses for manipulating shared object and executable ELF files.<br/>
 
 #### What is SaferCpp?
 SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more [here](https://github.com/duneroadrunner/SaferCPlusPlus).<br/>
 
-Reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
+mutator-lvl0's reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
 You can also run the mutator daemon(`mutatord`) which runs it in a client-server mode, with the client being a thin client.<br/>
 You can Join the Maillist here, [mutator maillist](https://www.freelists.org/list/mutator).<br/>
 You can follow Project `mutator` on twitter, @xashmith.
@@ -67,8 +68,8 @@ mutator is a suite of tools aimed at analysis and automation of C/C++ code devel
 Mutation levels have nothing to do with the order of mutants.<br/>
 * [daemon](daemon/README.md): mutatord is the mutator daemon that runs the server. mutatorclient is the thin client that sends the commands to the server.<br/>
 * [safercpp-arr](safercpp/README.md) is SaferCPP's automatic refactoring tool for arrays.<br/>
-* [bruiser](bruiser/README.md) the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more. For more info read the README on bruiser's folder in project root.<br/>
-* [obfuscator](obfuscator/README.md) is a C/C++ source-level translation tool.<br/>
+* [bruiser](bruiser/README.md) the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more.  You can also manipulate ELF shared object libraries and executables. For example you can call the library funtions from bruiser's lua interpreter. For more info read the README on bruiser's folder in project root.<br/>
+* [obfuscator](obfuscator/README.md) is a C/C++ source-level obfuscation tool.<br/>
 <br/>
 
 ## How to get project mutator
@@ -90,6 +91,7 @@ make
 make install
 
 ```
+NOTE: `make install` currently wont copy binaries to /usr/local/bin or similar directories since mutator is in its early stages and I don't want to pollute the your directories.<br/>
 
 mutator is also being hosted using [IPFS](https://github.com/ipfs/ipfs). To get it from IPFS just run:<br/>
 ```bash
@@ -97,8 +99,8 @@ mutator is also being hosted using [IPFS](https://github.com/ipfs/ipfs). To get 
 git clone https://ipfs.io/ipfs/QmdBBG76K5rNSWB4iK4ZhTtiZAkSsyDpiWzcPsPfnHY2ZA/mutator
 
 ```
+NOTE: this is mostly a novelty feature. The copy you can fetch from IPFS is usually outdated.<br/>
 
-If you don't have them, you can build them or get them from a repo.<br/>
 To build LLVM/Clang from source take a look at [here](https://clang.llvm.org/get_started.html) and [here](http://llvm.org/docs/GettingStarted.html).<br/>
 To build `safercpp-arr` you to need to build Clang with RTTI enabled.<br/>
 On Fedora you can just get the Requirements by dnf. For Ubuntu and Debian either look at mutator's `.travis.yaml` or check out the [nightly builds for Debian/Ubuntu](http://apt.llvm.org).<br/>
@@ -106,14 +108,10 @@ On Fedora you can just get the Requirements by dnf. For Ubuntu and Debian either
 ### Dev Status
 All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase on the master branch. If something's not working properly let me know.<br/>
 
-* `mutator-lvl0` is the executable responsible for the Misra-C rule checks. Currently it has reached a release candidate, soon to be branched and have unit tests written for it.<br/>
-* `mutator-lvl1` and **`mutator-lvl2`** are collectively the code mutation and code transformation(automatic-refactoring) executables. Currently the automatic code transformations implemented are only limited to adding braces to blocks that are missing it, fixing SwitchStmts with adding a default clause if missing and breaks, swapping the RHS and LHS when the RHS is a constant and adding `else` if an if-else is missing one. The mutation is only limited to statement and condition tagging for the time-being.<br/>
+* All tools are in the development stage.<br/>
 
 ### Dev Plans
-* Bruiser
-* Branch a release candidate for `mutator-lvl0`, then start writing the unit tests. This might take a while, since I will try to find testers and code reviewers. If you are willing to help with testing, Email me at `thabogre@gmail.com`. Please set the subject to `mutator-lvl0 test` so I wouldn't miss it. I'll do the unit tests and reviews myself if I don't manage to find volunteers for that. While it's far from ideal, it's better than nothing.
-* Implementing the automatic refactoring features of mutator.
-* Upgrading the UI to be able to handle the new automatic-refactoring features.
+* Bruiser: finish up the Xobjs side of bruiser.<br/>
 
 ### Test Plans
 
@@ -127,6 +125,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ## Announcements
 
+* bruiser has a working poc demo for Xobjs. For more info checkout bruiser's `README.md`.<br/>
 * announcing `obfuscator`, the newest mutator family member. it's a C/C++ source obfuscation tool.<br/>
 * mutator has a new experimental member, bruiser. The idea is that we are already inside the code, so why not break it?<br/>
 * mutator now has a daemon,a server and a client. It works, but we all know how much weight we can put on "it just works", don't we?  I'll be polishing it over the coming days. For more info and detail see `README.md` under `daemon` in project root. Also, please do note that you don't have to use the server feature. You can just run mutator like before. It's an added functionality. It does not modify previous functionality.<br/>
@@ -142,6 +141,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 #### Requirements
 * `LLVM/Clang` 5.0 or higher<br/>
 * `libffi`<br/>
+* `libcapstone`<br/>
 * `libpython` 3.5 or higher<br/>
 The other requirements are either directly included or have to be included through `git submodule update`.<br/>
 
@@ -195,6 +195,8 @@ make install
 
 #### Windows
 
+First off, there is no official windows support and there are no plans to do so and the reason is simple. Right now I don't have the resources to do so.<br/>
+That being said, we can get on with the rest of the explanation.<br/>
 Currently a Windows build is not officially supported but if you can build LLVM/Clang, then you can build mutator too. Currently the latest version of LLVM/Clang available on Cygwin is 3.8 and that does not include the dev-libraries so you can't use those. Just use the Guide on LLVM for building using Visual Studio. After you have the headers and libraries and llvm-config, just use `BUILD_MODE=WIN_BUILD` with Clang and you should be good to go.<br/>
 Let me know if you decide to try this and/or have any problems with it.<br/>
 
@@ -392,5 +394,9 @@ If the company/organization you represent wants to sponsor mutator, let me know.
 
 ### Contact
 You can email me at thabogre@gmail.com, there is also the twitter account for the mutator project, @xashmith and there is the mutator maillist, mutator-repost@freelists.org. You need to be a member though to be able to send mail on the maillist. The maillist is moderated.<br/>
+
+### Gource
+Mostly because why not:<br/>
+[![gource-vid](/web-resources/img/gource.png)](https://www.youtube.com/watch?v=A53auytlNMM)
 
 <a href="https://twitter.com/xashmith" class="twitter-follow-button" data-show-count="false">Follow @xashmith</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
