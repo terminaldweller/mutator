@@ -192,6 +192,9 @@ function main()
   --print("xcall returned:",a)
   --if a ~= 100 then print("test failed") end
 
+  a = xobjlist()
+  print("the offset of quad and add2 is : ", a["quad"] - a["add2"])
+
 end
 
 main()

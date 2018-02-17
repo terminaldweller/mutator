@@ -1392,9 +1392,9 @@ class LuaWrapper
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
         for (auto& iter : xlist) {
-          std::cout << CYAN << iter.second << NORMAL;
+          if (Verbose) std::cout << CYAN << iter.second << NORMAL;
           lua_pushstring(__ls, iter.second.c_str());
-          std::cout << " " << MAGENTA << (long int)iter.first << NORMAL <<"\n";
+          if (Verbose) std::cout << " " << MAGENTA << (long int)iter.first << NORMAL <<"\n";
           lua_pushinteger(__ls, (long int)iter.first);
           lua_settable(__ls, -3);
         }

@@ -34,6 +34,7 @@ class CLIArgParser(object):
         parser.add_argument("--objs", action='store_true', help="dump objects", default=False)
         parser.add_argument("--dynsym", action='store_true', help="dump dynamic symbol table", default=False)
         parser.add_argument("--dlpath", action='store_true', help="dump dynamic linker path", default=False)
+        parser.add_argument("--phdynent", action='store_true', help="dump ph PT_DYNAMIC entries", default=False)
         parser.add_argument("--section", type=str, help="dump a section")
         self.args = parser.parse_args()
         if self.args.obj is None:
@@ -141,6 +142,39 @@ def get_ph_type(value):
     elif value == p_type_e.GNU_STACK: return "GNU_STACK"
     elif value == p_type_e.GNU_RELRO: return "GNU_RELRO"
     else: return None
+
+class ph_dynamic_entry:
+    def __init__(self, d_tag, d_un):
+        self.d_tag = d_tag;
+        self.d_un = d_un
+
+class PH_DYN_TAG_TYPE:
+    DT_NULL  = 0
+    DT_NEEDED  = 1
+    DT_PLTRELSZ = 2
+    DT_PLTGOT  = 3
+    DT_HASH  = 4
+    DT_STRTAB  = 5
+    DT_SYMTAB  = 6
+    DT_RELA  = 7
+    DT_RELASZ  = 8
+    DT_RELAENT  = 9
+    DT_STRSZ  = 10
+    DT_SYMENT  = 11
+    DT_INIT = 12
+    DT_FINI = 13
+    DT_SONAME = 14
+    DT_RPATH = 15
+    DT_SYMBOLIC = 16
+    DT_REL = 17
+    DT_RELSZ = 18
+    DT_RELENT = 19
+    DT_PLTREL = 20
+    DT_DEBUG = 21
+    DT_TEXTREL = 22
+    DT_JMPREL = 23
+    DT_LOPROC = 24
+    DT_HIPROC = 25
 
 class ELF_ST_BIND:
     STB_LOCAL = 0
@@ -308,6 +342,7 @@ class ELF(object):
         self.data_section = []
         self.text_section = []
         self.dlpath = str()
+        self.ph_dyn_ent = []
 
     def init(self, size):
         self.size = size
@@ -340,6 +375,7 @@ class ELF(object):
                     offset += 24
         self.pop_data_section()
         self.pop_text_section()
+        self.get_ph_dyn_entries()
 
     def read_ELF_H(self, size):
         self.elfhdr.ei_mag = self.so.read(4)
@@ -429,6 +465,22 @@ class ELF(object):
             name.append(chr(char))
             char = strings[index]
         return ''.join(name)
+
+    def get_ph_dyn_entries(self):
+        for phdr in self.phdr:
+            if byte2int(phdr.p_type) == p_type_e.PT_DYNAMIC:
+                self.so.seek(byte2int(phdr.p_offset), 0)
+                size = byte2int(phdr.p_memsz)
+                ph_dyn = self.so.read(size)
+        for i in range(int(size/8)):
+            d_tag = byte2int(ph_dyn[8*i:8*i + 4])
+            d_un = byte2int(ph_dyn[8*i + 4:8*i + 8])
+            self.ph_dyn_ent.append(ph_dynamic_entry(d_tag, d_un))
+
+    def dump_ph_dyn_entries(self):
+        for ph_dyn_e in self.ph_dyn_ent:
+            print(Colors.green + "d_tag: " + Colors.blue + repr(ph_dyn_e.d_tag) + Colors.ENDC, end="\t")
+            print(Colors.green + "d_un: " + Colors.blue + repr(ph_dyn_e.d_un) + Colors.ENDC)
 
     def dump_funcs(self, dump_b):
         ret_list = []
@@ -745,6 +797,7 @@ class Call_Rewriter(object):
         for i in self.md.disasm(self.obj_code, 0x1):
             if i.mnemonic == "call":
                 print("0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
+                print(i.bytes)
 
 class Global_Rewriter(object):
     def __init__(self):
@@ -771,11 +824,23 @@ def main():
         elif argparser.args.dlpath: elf.dump_section(".interp")
         elif argparser.args.section: elf.dump_section(argparser.args.section)
         elif argparser.args.test:
+            counter = 0
             print(elf.dump_funcs(False)[10])
             print(elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False)[10])
-            code = elf.dump_funcs(False)[10]
-            rewriter = Call_Rewriter(code)
+            for name in elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False):
+                if name == "glob":
+                    print(counter)
+                    print(elf.dump_funcs(False)[counter])
+                    print(name)
+                if name == "quad":
+                    print(counter)
+                    print(elf.dump_funcs(False)[counter])
+                    print(name)
+                counter += 1
+            obj = elf.dump_funcs(False)[10]
+            rewriter = Call_Rewriter(obj)
             rewriter.run()
+        elif argparser.args.phdynent: elf.dump_ph_dyn_entries()
     except:
         signal.signal(signal.SIGINT, SigHandler_SIGINT)
         variables = globals().copy()

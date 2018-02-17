@@ -1,7 +1,7 @@
 
 ##################################VARS#################################
 CC=clang
-CC_FLAGS=-fpic
+CC_FLAGS=-fpic -O0
 LD_FLAGS= -l bfd
 TARGET=test
 ##################################RULES################################
@@ -18,7 +18,7 @@ $(TARGET): $(TARGET).o
 	$(CC) $^ $(LD_FLAGS) -o $@
 
 $(TARGET).asm: $(TARGET).o
-	objdump -d -M intel -S $(TARGET).o > $(TARGET).asm
+	objdump -r -d -M intel -S $(TARGET).o > $(TARGET).asm
 
 $(TARGET).so: $(TARGET).o
 	$(CC) $^ $(LD_FLAGS) -shared -o $@

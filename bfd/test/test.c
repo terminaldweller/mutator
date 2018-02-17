@@ -19,6 +19,8 @@ int myvar2 = 2;
 int myvar3 = 3;
 int myvar4 = 4;
 
+int glob(void) {return myvar1+myvar2+myvar3+myvar4;}
+
 int main(int argc, char** argv) {
   int sum;
   sum = add2(10, 20);
