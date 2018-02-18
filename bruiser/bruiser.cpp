@@ -255,6 +255,7 @@ class PyExec {
         if (Verbose) std::cout << BLUE << "length of list: " << list_length << NORMAL  <<"\n";
         for (int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
+          //@DEVI-FIXIT-the weird '' we get for strings is because of repr().
           PyObject* pyrepr = PyObject_Repr(pybytes);
           PyObject* pyunicode = PyUnicode_AsEncodedString(pyrepr, "utf-8", "surrogateescape");
           const char* dummy = PyBytes_AsString(pyunicode);

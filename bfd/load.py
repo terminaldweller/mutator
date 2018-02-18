@@ -7,6 +7,24 @@ import signal
 from capstone import *
 from capstone.x86 import *
 
+class ELF_TYPE_SIZES:
+    ELF32_HALF = 2
+    ELF64_HALF = 2
+    ELF32_WORD = 4
+    ELF32_SWORD = 4
+    ELF64_WORD = 4
+    ELF64_SWORD = 4
+    ELF32_XWORD = 8
+    ELF32_SXWORD = 8
+    ELF64_XWORD = 8
+    ELF64_SXWORD = 8
+    ELF32_ADDR = 4
+    ELF64_ADDR = 8
+    ELF32_OFF = 4
+    ELF64_OFF = 8
+    ELF32_SECTION = 2
+    ELF64_SECTION = 2
+
 def SigHandler_SIGINT(signum, frame):
     print()
     sys.exit(0)
@@ -45,6 +63,64 @@ def byte2int(value):
 
 def byte2hex(value):
     return hex(int.from_bytes(value, byteorder="little", signed=False))
+
+def LEB128UnsignedDecode(bytelist):
+    result = 0
+    shift = 0
+    for byte in bytelist:
+        result |= (byte & 0x7f) << shift
+        if (byte & 0x80) == 0:
+            break
+        shift += 7
+    return(result)
+
+def LEB128SignedDecode(bytelist):
+    result = 0
+    shift = 0
+    for byte in bytelist:
+        result |= (byte & 0x7f) << shift
+        last_byte = byte
+        shift += 7
+        if (byte & 0x80) == 0:
+            break
+    if last_byte & 0x40:
+        result |= - (1 << shift)
+    return(result)
+
+def LEB128UnsignedEncode(int_val):
+    if int_val < 0:
+        raise Exception("value must not be negative")
+    elif int_val == 0:
+        return bytes([0])
+    byte_array = bytearray()
+    while int_val:
+        byte = int_val & 0x7f
+        byte_array.append(byte | 0x80)
+        int_val >>= 7
+    byte_array[-1] ^= 0x80
+    return(byte_array)
+
+def LEB128SignedEncode(int_val):
+    byte_array = bytearray()
+    while True:
+        byte = int_val & 0x7f
+        byte_array.append(byte | 0x80)
+        int_val >>= 7
+        if (int_val == 0 and byte&0x40 == 0) or (int_val == -1 and byte&0x40):
+            byte_array[-1] ^= 0x80
+            break
+    return(byte_array)
+
+class ELF_REL():
+    def __init__(self, r_offset, r_info):
+        self.r_offset = r_offset
+        self.r_info = r_info
+
+class ELF_RELA():
+    def __init__(self, r_offset, r_info, r_addend):
+        self.r_offset = r_offset
+        self.r_info = r_info
+        self.r_addend = r_addend
 
 def get_section_type_string(number):
     if number == 0x0: return "NULL"
@@ -148,6 +224,18 @@ class ph_dynamic_entry:
         self.d_tag = d_tag;
         self.d_un = d_un
 
+class elf_seg_flags:
+    PF_X = 0x1
+    PF_W = 0x2
+    PF_R = 0x4
+
+def get_elf_seg_flag(value):
+    ret = []
+    if value & 0x01 == 1: ret.append("X")
+    if (value & 0x02) >> 1 == 1: ret.append("W")
+    if (value & 0x04) >> 2 == 1: ret.append("R")
+    return ''.join(ret)
+
 class PH_DYN_TAG_TYPE:
     DT_NULL  = 0
     DT_NEEDED  = 1
@@ -173,8 +261,148 @@ class PH_DYN_TAG_TYPE:
     DT_DEBUG = 21
     DT_TEXTREL = 22
     DT_JMPREL = 23
-    DT_LOPROC = 24
-    DT_HIPROC = 25
+    DT_LOPROC = 0x70000000
+    DT_HIPROC = 0x7FFFFFFF
+    DT_BIND_NOW = 24
+    DT_INIT_ARRAY = 25
+    DT_FINI_ARRAY = 26
+    DT_INIT_ARRAYSZ = 27
+    DT_FINI_ARRAYSZ = 28
+    DT_RUNPATH = 29
+    DT_FLAGS = 30
+    DT_ENCODING = 32
+    DT_PREINIT_ARRAY = 32
+    DT_PREINIT_ARRAYSZ = 33
+    DT_NUM = 34
+    DT_LOOS = 0x6000000d
+    DT_HIOS = 0x6ffff000
+    DT_PROC_NUM = 0x0
+    DT_MIPS_NUM = 0x0
+    DT_VALRNGLO = 0x6ffffd00
+    DT_GNU_PRELINKED = 0x6ffffdf5
+    DT_GNU_CONFLICTSZ = 0x6ffffdf6
+    DT_GNU_LIBLISTSZ  = 0x6ffffdf7
+    DT_CHECKSUM = 0x6ffffdf8
+    DT_PLTPADSZ = 0x6ffffdf9
+    DT_MOVEENT = 0x6ffffdfa
+    DT_MOVESZ = 0x6ffffdfb
+    DT_FEATURE_1 = 0x6ffffdfc
+    DT_POSFLAG_1 = 0x6ffffdfd
+    DT_SYMINSZ = 0x6ffffdfe
+    DT_SYMINENT = 0x6ffffdff
+    DT_VALRNGHI = 0x6ffffdff
+    DT_VALNUM  = 12
+    DT_ADDRRNGLO = 0x6ffffe00
+    DT_GNU_HASH = 0x6ffffef5
+    DT_TLSDESC_PLT = 0x6ffffef6
+    DT_TLSDESC_GOT = 0x6ffffef7
+    DT_GNU_CONFLICT = 0x6ffffef8
+    DT_GNU_LIBLIST = 0x6ffffef9
+    DT_CONFIG = 0x6ffffefa
+    DT_DEPAUDIT = 0x6ffffefb
+    DT_AUDIT = 0x6ffffefc
+    DT_PLTPAD = 0x6ffffefd
+    DT_MOVETAB = 0x6ffffefe
+    DT_SYMINFO = 0x6ffffeff
+    DT_ADDRRNGHI = 0x6ffffeff
+    DT_ADDRNUM = 11
+    DT_VERSYM = 0x6ffffff0
+    DT_RELACOUNT = 0x6ffffff9
+    DT_RELCOUNT = 0x6ffffffa
+    DT_FLAGS_1 = 0x6ffffffb
+    DT_VERDEF = 0x6ffffffc
+    DT_VERDEFNUM = 0x6ffffffd
+    DT_VERNEED = 0x6ffffffe
+    DT_VERNEEDNUM = 0x6fffffff
+    DT_VERSIONTAGNUM = 16
+    DT_AUXILIARY = 0x7ffffffd
+    DT_FILTER = 0x7fffffff
+    DT_EXTRANUM = 3
+
+def get_ph_dynamic_ent_tag_type(value):
+    if value == PH_DYN_TAG_TYPE.DT_NULL: return "DT_NULL"
+    elif value == PH_DYN_TAG_TYPE.DT_NEEDED: return "DT_NEEDED"
+    elif value == PH_DYN_TAG_TYPE.DT_PLTRELSZ: return "DT_PLTRELSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_PLTGOT: return "DT_PLTGOT"
+    elif value == PH_DYN_TAG_TYPE.DT_HASH: return "DT_HASH"
+    elif value == PH_DYN_TAG_TYPE.DT_STRTAB: return "DT_STRTAB"
+    elif value == PH_DYN_TAG_TYPE.DT_SYMTAB: return "DT_SYMTAB"
+    elif value == PH_DYN_TAG_TYPE.DT_RELA: return "DT_RELA"
+    elif value == PH_DYN_TAG_TYPE.DT_RELASZ: return "DT_RELASZ"
+    elif value == PH_DYN_TAG_TYPE.DT_RELAENT: return "DT_RELAENT"
+    elif value == PH_DYN_TAG_TYPE.DT_STRSZ: return "DT_STRSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_SYMENT: return "DT_SYMENT"
+    elif value == PH_DYN_TAG_TYPE.DT_INIT: return "DT_INIT"
+    elif value == PH_DYN_TAG_TYPE.DT_FINI: return "DT_FINI"
+    elif value == PH_DYN_TAG_TYPE.DT_SONAME: return "DT_SONAME"
+    elif value == PH_DYN_TAG_TYPE.DT_RPATH: return "DT_RPATH"
+    elif value == PH_DYN_TAG_TYPE.DT_SYMBOLIC: return "DT_SYMBOLIC"
+    elif value == PH_DYN_TAG_TYPE.DT_REL: return "DT_REL"
+    elif value == PH_DYN_TAG_TYPE.DT_RELSZ: return "DT_RELSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_RELENT: return "DT_RELENT"
+    elif value == PH_DYN_TAG_TYPE.DT_PLTREL: return "DT_PLTREL"
+    elif value == PH_DYN_TAG_TYPE.DT_DEBUG: return "DT_DEBUG"
+    elif value == PH_DYN_TAG_TYPE.DT_TEXTREL: return "DT_TEXTREL"
+    elif value == PH_DYN_TAG_TYPE.DT_JMPREL: return "DT_JMPREL"
+    elif value == PH_DYN_TAG_TYPE.DT_LOPROC: return "DT_LOPROC"
+    elif value == PH_DYN_TAG_TYPE.DT_HIPROC: return "DT_HIPROC"
+    elif value == PH_DYN_TAG_TYPE.DT_BIND_NOW: return "DT_BIND_NOW"
+    elif value == PH_DYN_TAG_TYPE.DT_INIT_ARRAY: return "DT_INIT_ARRAY"
+    elif value == PH_DYN_TAG_TYPE.DT_FINI_ARRAY: return "DT_FINI_ARRAY"
+    elif value == PH_DYN_TAG_TYPE.DT_INIT_ARRAYSZ: return "DT_INIT_ARRAYSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_FINI_ARRAYSZ: return "DT_FINI_ARRAYSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_RUNPATH: return "DT_RUNPATH"
+    elif value == PH_DYN_TAG_TYPE.DT_FLAGS: return "DT_FLAGS"
+    elif value == PH_DYN_TAG_TYPE.DT_ENCODING: return "DT_ENCODING"
+    elif value == PH_DYN_TAG_TYPE.DT_PREINIT_ARRAY: return "DT_PREINIT_ARRAY"
+    elif value == PH_DYN_TAG_TYPE.DT_PREINIT_ARRAYSZ: return "DT_PREINIT_ARRAYSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_NUM: return "DT_NUM"
+    elif value == PH_DYN_TAG_TYPE.DT_LOOS: return "DT_LOOS"
+    elif value == PH_DYN_TAG_TYPE.DT_HIOS: return "DT_HIOS"
+    #elif value == PH_DYN_TAG_TYPE.DT_PROC_NUM: return "DT_PROC_NUM"
+    #elif value == PH_DYN_TAG_TYPE.DT_MIPS_NUM: return "DT_MIPS_NUM"
+    elif value == PH_DYN_TAG_TYPE.DT_VALRNGLO: return "DT_VALRNGLO"
+    elif value == PH_DYN_TAG_TYPE.DT_GNU_PRELINKED: return "DT_GNU_PRELINKED"
+    elif value == PH_DYN_TAG_TYPE.DT_GNU_CONFLICTSZ: return "DT_GNU_CONFLICTSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_GNU_LIBLISTSZ: return "DT_GNU_LIBLISTSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_CHECKSUM: return "DT_CHECKSUM"
+    elif value == PH_DYN_TAG_TYPE.DT_PLTPADSZ: return "DT_PLTPADSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_MOVEENT: return "DT_MOVEENT"
+    elif value == PH_DYN_TAG_TYPE.DT_MOVESZ: return "DT_MOVESZ"
+    elif value == PH_DYN_TAG_TYPE.DT_FEATURE_1: return "DT_FEATURE_1"
+    elif value == PH_DYN_TAG_TYPE.DT_POSFLAG_1: return "DT_POSFLAG_1"
+    elif value == PH_DYN_TAG_TYPE.DT_SYMINSZ: return "DT_SYMINSZ"
+    elif value == PH_DYN_TAG_TYPE.DT_SYMINENT: return "DT_SYMINENT"
+    elif value == PH_DYN_TAG_TYPE.DT_VALRNGHI: return "DT_VALRNGHI"
+    #DT_VALNUM  = 12
+    elif value == PH_DYN_TAG_TYPE.DT_ADDRRNGLO: return "DT_ADDRRNGLO"
+    elif value == PH_DYN_TAG_TYPE.DT_GNU_HASH: return "DT_GNU_HASH"
+    elif value == PH_DYN_TAG_TYPE.DT_TLSDESC_PLT: return "DT_TLSDESC_PLT"
+    elif value == PH_DYN_TAG_TYPE.DT_TLSDESC_GOT: return "DT_TLSDESC_GOT"
+    elif value == PH_DYN_TAG_TYPE.DT_GNU_CONFLICT: return "DT_GNU_CONFLICT"
+    elif value == PH_DYN_TAG_TYPE.DT_GNU_LIBLIST: return "DT_GNU_LIBLIST"
+    elif value == PH_DYN_TAG_TYPE.DT_CONFIG: return "DT_CONFIG"
+    elif value == PH_DYN_TAG_TYPE.DT_DEPAUDIT: return "DT_DEPAUDIT"
+    elif value == PH_DYN_TAG_TYPE.DT_AUDIT: return "DT_AUDIT"
+    elif value == PH_DYN_TAG_TYPE.DT_PLTPAD: return "DT_PLTPAD"
+    elif value == PH_DYN_TAG_TYPE.DT_MOVETAB: return "DT_MOVETAB"
+    elif value == PH_DYN_TAG_TYPE.DT_SYMINFO: return "DT_SYMINFO"
+    elif value == PH_DYN_TAG_TYPE.DT_ADDRRNGHI: return "DT_ADDRRNGHI"
+    #DT_ADDRNUM = 11
+    elif value == PH_DYN_TAG_TYPE.DT_VERSYM: return "DT_VERSYM"
+    elif value == PH_DYN_TAG_TYPE.DT_RELACOUNT: return "DT_RELACOUNT"
+    elif value == PH_DYN_TAG_TYPE.DT_RELCOUNT: return "DT_RELCOUNT"
+    elif value == PH_DYN_TAG_TYPE.DT_FLAGS_1: return "DT_FLAGS_1"
+    elif value == PH_DYN_TAG_TYPE.DT_VERDEF: return "DT_VERDEF"
+    elif value == PH_DYN_TAG_TYPE.DT_VERDEFNUM: return "DT_VERDEFNUM"
+    elif value == PH_DYN_TAG_TYPE.DT_VERNEED: return "DT_VERNEED"
+    elif value == PH_DYN_TAG_TYPE.DT_VERNEEDNUM: return "DT_VERNEEDNUM"
+    elif value == PH_DYN_TAG_TYPE.DT_VERSIONTAGNUM: return "DT_VERSIONTAGNUM"
+    elif value == PH_DYN_TAG_TYPE.DT_AUXILIARY: return "DT_AUXILIARY"
+    elif value == PH_DYN_TAG_TYPE.DT_FILTER: return "DT_FILTER"
+    #DT_EXTRANUM = 3
+    else: return str(value)
+    #else: return "UNKNOWN"
 
 class ELF_ST_BIND:
     STB_LOCAL = 0
@@ -470,7 +698,7 @@ class ELF(object):
         for phdr in self.phdr:
             if byte2int(phdr.p_type) == p_type_e.PT_DYNAMIC:
                 self.so.seek(byte2int(phdr.p_offset), 0)
-                size = byte2int(phdr.p_memsz)
+                size = byte2int(phdr.p_filesz)
                 ph_dyn = self.so.read(size)
         for i in range(int(size/8)):
             d_tag = byte2int(ph_dyn[8*i:8*i + 4])
@@ -479,7 +707,7 @@ class ELF(object):
 
     def dump_ph_dyn_entries(self):
         for ph_dyn_e in self.ph_dyn_ent:
-            print(Colors.green + "d_tag: " + Colors.blue + repr(ph_dyn_e.d_tag) + Colors.ENDC, end="\t")
+            print(Colors.green + "d_tag: " + Colors.blue + get_ph_dynamic_ent_tag_type(ph_dyn_e.d_tag) + Colors.ENDC, end="\t")
             print(Colors.green + "d_un: " + Colors.blue + repr(ph_dyn_e.d_un) + Colors.ENDC)
 
     def dump_funcs(self, dump_b):
@@ -611,7 +839,8 @@ class ELF(object):
         for i in range(0, int.from_bytes(self.elfhdr.e_phnum, byteorder="little", signed=False)):
             type = get_ph_type(byte2int(self.phdr[i].p_type))
             print(Colors.blue + "p_type: " + Colors.cyan + type + Colors.ENDC, end="")
-            print(Colors.blue + " p_flags: " + Colors.cyan + repr(byte2int(self.phdr[i].p_flags)) + Colors.ENDC, end="")
+            flags = get_elf_seg_flag(byte2int(self.phdr[i].p_flags))
+            print(Colors.blue + " p_flags: " + Colors.cyan + flags + Colors.ENDC, end="")
             print(Colors.blue + " p_offset: " + Colors.cyan + repr(byte2int(self.phdr[i].p_offset)) + Colors.ENDC, end="")
             print(Colors.blue + " p_vaddr: " + Colors.cyan + repr(byte2int(self.phdr[i].p_vaddr)) + Colors.ENDC, end="")
             print(Colors.blue + " p_paddr: " + Colors.cyan + repr(byte2int(self.phdr[i].p_paddr)) + Colors.ENDC, end="")

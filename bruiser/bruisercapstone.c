@@ -178,7 +178,7 @@ int call_rewriter(int offset, size_t size, uint8_t* asm_code, const char* obj) {
         // rewriting
         asm_code[size_counter] = 0xe8, size_counter++;
         uint8_t temp[4];
-        //@DEVI-call cant be the last instructino in a function
+        //@DEVI-call cant be the last instructino in a function assuming its well-formed
         int2byte(offset + insn[j].address, temp, 4);
         for (int i = 0; i < 4; ++i) {asm_code[size_counter] = temp[i]; size_counter++;}
         continue;
