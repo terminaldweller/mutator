@@ -368,6 +368,7 @@ Project mutator uses the following cool libraries:
 * [Linenoise](https://github.com/antirez/linenoise)
 * [Lua](https://github.com/lua/lua)
 * [LuaJIT](https://github.com/LuaJIT/LuaJIT)
+* [capstone](https://github.com/aquynh/capstone)
 * Thanks to [Jonathan Brossard](https://github.com/endrazine) for [WCC](https://github.com/endrazine/wcc), specifically `wsh` which is the inspiration for `bruiser`.<br/>
 
 All mutator source code is provided under GPL-2.0.<br/>
