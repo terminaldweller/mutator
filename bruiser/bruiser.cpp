@@ -106,6 +106,7 @@ cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find 
 cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> Verbose("verbose", cl::desc("verbosity"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
+cl::opt<std::string> LuaDefault("luadefault", cl::desc("the path to the luadefault file. the default option is where the bruiser executable is."), cl::init("./defaults.lua"), cl::cat(BruiserCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 class LuaEngine
 {
@@ -137,6 +138,10 @@ class LuaEngine
 
     void LoadEverylib(void) {
       luaL_openlibs(LS);
+    }
+
+    void RunLuaDefaults(void) {
+      luaL_dofile(LS, LuaDefault.c_str());
     }
 
     void RunString(char* __lua_string) {}
@@ -247,6 +252,9 @@ class PyExec {
     return 0;
     }
 
+    //std::vector<std::string> actionParser(std::string action) {}
+    //void convertPush(PyObject* pyobject) {}
+
     int getAsCppStringVec(void) {
       if (Verbose) PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
       if (PyList_Check(pValue)) {
@@ -261,6 +269,19 @@ class PyExec {
           const char* dummy = PyBytes_AsString(pyunicode);
           //std::cout << RED << dummy << "\n" << NORMAL;
           hexobj_str.push_back(std::string(dummy));
+        }
+      }
+      return 0;
+    }
+
+    int getAsCppByte_PyIntList(void) {
+      if(PyList_Check(pValue)) {
+        int list_length = PyList_Size(pValue);
+        for(int i = 0; i < list_length; ++i) {
+          PyObject* pybytes = PyList_GetItem(pValue, i);
+          if (PyLong_Check(pybytes)) {
+            text_section.push_back(PyLong_AsLong(pybytes));
+          }
         }
       }
       return 0;
@@ -308,6 +329,7 @@ class PyExec {
 
     std::vector<std::vector<uint8_t>> exportObjs(void) {return hexobj;}
     std::vector<std::string> exportStrings(void) {return hexobj_str;}
+    std::vector<std::uint8_t> exportTextSection(void) {return text_section;}
 
   private:
     std::string py_script_name;
@@ -323,6 +345,7 @@ class PyExec {
     char** argv;
     std::vector<std::string> hexobj_str;
     std::vector<std::vector<uint8_t>> hexobj;
+    std::vector<uint8_t> text_section;
 };
 /**********************************************************************************************************************/
 class XObjReliquary {};
@@ -1165,8 +1188,11 @@ class LuaWrapper
       if (numargs == 3) {
         if (Verbose) std::cout << CYAN << "got args." << NORMAL << "\n";
         funcname = lua_tostring(__ls, 1);
+        if (funcname == "") PRINT_WITH_COLOR_LB(RED, "first argument is nil");
         objjpath = lua_tostring(__ls, 2);
+        if (objjpath == "") PRINT_WITH_COLOR_LB(RED, "second argument is nil");
         action = lua_tostring(__ls, 3);
+        if (action == "") PRINT_WITH_COLOR_LB(RED, "third argument is nil");
         lua_pop(__ls, 3);
       }
       else {
@@ -1203,8 +1229,7 @@ class LuaWrapper
           tableindex1++;
           lua_settable(__ls, -3);
         }
-      }
-      else if (action == "symbol_list") {
+      } else if (action == "symbol_list") {
         py.getAsCppStringVec();
         int tableindex = 1 ;
         // the return type to lua is a table
@@ -1216,6 +1241,20 @@ class LuaWrapper
           lua_pushnumber(__ls, tableindex);
           tableindex++;
           lua_pushstring(__ls, iter.c_str());
+          lua_settable(__ls, -3);
+        }
+      } else if (action == "bytes") {
+        py.getAsCppByte_PyIntList();
+        int tableindex = 1 ;
+        // the return type to lua is a table
+        lua_newtable(__ls);
+        if (!lua_checkstack(__ls, py.exportStrings().size())) {
+          PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+        }
+        for (auto& iter : py.exportTextSection()) {
+          lua_pushnumber(__ls, tableindex);
+          tableindex++;
+          lua_pushinteger(__ls, iter);
           lua_settable(__ls, -3);
         }
       }
@@ -1990,6 +2029,7 @@ int main(int argc, const char **argv) {
 
     LuaEngine LE;
     LE.LoadEverylib();
+    LE.RunLuaDefaults();
     *static_cast<LuaWrapper**>(lua_getextraspace(LE.GetLuaState())) = &LW;
 
     /*@DEVI-this part is just registering our LuaWrapper member functions with lua so we can call them from lua.*/
@@ -2043,6 +2083,7 @@ int main(int argc, const char **argv) {
     while((command = linenoise(">>>")) != NULL) {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
+#if 0
       if (std::string(command).find("!", 0) == 0) {
         std::string histnumber_str = std::string(command).substr(1, std::string::npos);
         unsigned int history_num = std::stoi(histnumber_str, 0, 10);
@@ -2051,6 +2092,7 @@ int main(int argc, const char **argv) {
           continue;
         } else {}
       }
+#endif
       LE.RunChunk(command);
       linenoiseFree(command);
     }

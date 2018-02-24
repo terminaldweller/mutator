@@ -741,7 +741,7 @@ class ELF(object):
                 print(name)
         return ret_list
 
-    def dump_section(self, section_name):
+    def dump_section(self, section_name, dump):
         for section in self.shhdr:
             name = self.read_section_name(byte2int(section.sh_name))
             if name == section_name:
@@ -749,27 +749,34 @@ class ELF(object):
                 obj = self.so.read(byte2int(section.sh_size))
                 if section_name == ".interp":  self.dlpath = repr(obj)
                 count = int()
-                strrep = []
-                for byte in obj:
-                    if count%16 == 0:
-                        for ch in strrep:
-                            if ord(ch) > 16: print(ch, end = '')
-                            else: pass
-                        print()
-                        strrep = []
-                        print(format(count, "06x"), ': ', end='')
-                        strrep.append(str(chr(byte)))
-                        print(format(byte, '02x') + ' ', end='')
-                    else:
-                        strrep += str(chr(byte))
-                        print(format(byte, '02x') + ' ', end='')
-                    count += 1
-                for i in range(0, 16-count%16): print("   ", end="")
-                for ch in strrep:
-                    if ord(ch) > 16: print(ch, end = '')
-                    else: pass
-                print()
-                return self.dlpath
+                if dump:
+                    strrep = []
+                    for byte in obj:
+                        if count%16 == 0:
+                            for ch in strrep:
+                                if ord(ch) > 16 and ord(ch) < 127: print(ch, end = '')
+                                else: pass
+                            print()
+                            strrep = []
+                            print(format(count, "06x"), ': ', end='')
+                            strrep.append(str(chr(byte)))
+                            print(format(byte, '02x') + ' ', end='')
+                        else:
+                            pass
+                            strrep += str(chr(byte))
+                            print(format(byte, '02x') + ' ', end='')
+                        count += 1
+                    for i in range(0, 16-count%16): print("   ", end="")
+                    #for ch in strrep:
+                        #if ord(ch) > 63 and ord(ch) < 100: print(repr(ch), end = '')
+                        #else: pass
+                    print()
+
+                ret_dummy = []
+                for i in range(0, len(obj)):
+                    ret_dummy.append(obj[i])
+                #print(ret_dummy)
+                return ret_dummy
 
     def dump_obj_size(self, stt_type, dump_b):
         ret_list = []
@@ -991,6 +998,12 @@ def elf_get_func_names():
     elf.init(64)
     return elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False)
 
+def elf_get_text_section():
+    so = openSO_r(sys.argv[1])
+    elf = ELF(so)
+    elf.init(64)
+    return elf.dump_section(".text", False)
+
 # obj here means variables or what the C standard means by objects
 def elf_get_obj_names():
     so = openSO_r(sys.argv[1])
@@ -1050,8 +1063,8 @@ def main():
         elif argparser.args.funcs: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
         elif argparser.args.objs: elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, True)
         elif argparser.args.dynsym: elf.dump_st_entries_dyn()
-        elif argparser.args.dlpath: elf.dump_section(".interp")
-        elif argparser.args.section: elf.dump_section(argparser.args.section)
+        elif argparser.args.dlpath: elf.dump_section(".interp", True)
+        elif argparser.args.section: elf.dump_section(argparser.args.section, True)
         elif argparser.args.test:
             counter = 0
             print(elf.dump_funcs(False)[10])

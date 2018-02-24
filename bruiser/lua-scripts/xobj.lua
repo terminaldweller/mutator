@@ -1,4 +1,5 @@
 ------------------------------------------------Project Mutator-----------------------------------------------
+--bruiser's xobj module
 --Copyright (C) 2018 Farzad Sadeghi
 
 --This program is free software; you can redistribute it and/or
@@ -15,11 +16,15 @@
 --along with this program; if not, write to the Free Software
 --Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 --------------------------------------------------------------------------------------------------------------
-function getSO(so_path)
+--start of xobj module
+local xobj = {}
+
+local elf_file = ""
+function xobj.getSO(so_path)
   elf_file = so_path
 end
 
-function getGlobalTable()
+function xobj.getGlobalTable()
   local return_table = {}
   local names = objload("elf_get_obj_names", elf_file, "symbol_list")
   local sizes = objload("elf_get_obj_sizes", elf_file, "symbol_list")
@@ -29,28 +34,28 @@ function getGlobalTable()
   return return_table
 end
 
-function printObjNames()
+function xobj.printObjNames()
   local c = objload("elf_get_obj_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
-function printObjSizes()
+function xobj.printObjSizes()
   local c = objload("elf_get_obj_sizes", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
-function printFuncNames()
+function xobj.printFuncNames()
   local c = objload("elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
-function printFuncCode()
+function xobj.printFuncCode()
   local c = objload("elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(c) do
     print(k,v)
@@ -63,7 +68,7 @@ function printFuncCode()
   end
 end
 
-function findMain()
+function xobj.findMain()
   local c = objload("elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     if v == "'main'" then 
@@ -73,7 +78,7 @@ function findMain()
   end
 end
 
-function codeTables()
+function xobj.codeTables()
   local return_table = {}
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
@@ -83,7 +88,7 @@ function codeTables()
   return return_table
 end
 
-function codeTableByName(name)
+function xobj.codeTableByName(name)
   local return_table = {}
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
@@ -98,7 +103,7 @@ function codeTableByName(name)
   return nil
 end
 
-function codeTableByName_number(name)
+function xobj.codeTableByName_number(name)
   local return_table = {}
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
@@ -113,7 +118,7 @@ function codeTableByName_number(name)
   return nil
 end
 
-function printFuncSizes()
+function xobj.printFuncSizes()
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
   local counter = 1
@@ -123,5 +128,12 @@ function printFuncSizes()
     counter = counter + 1
   end
 end
+
+function xobj.getTextSection()
+  return objload("elf_get_text_section", elf_exe, "bytes")
+end
+
+--end of xobj module
+return xobj
 --------------------------------------------------------------------------------------------------------------
 

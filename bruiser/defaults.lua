@@ -1,0 +1,2 @@
+package.path = package.path .. ";/home/bloodstalker/.luarocks/share/lua/5.3/?.lua;/home/bloodstalker/.luarocks/share/lua/5.3/?/init.lua;/usr/share/lua/5.3/?.lua;/usr/share/lua/5.3/?/init.lua;/usr/lib64/lua/5.3/?.lua;/usr/lib64/lua/5.3/?/init.lua;./?.lua;./?/init.lua"
+package.cpath = package.cpath .. ";/home/bloodstalker/.luarocks/lib64/lua/5.3/?.so;/usr/lib64/lua/5.3/?.so;/usr/lib64/lua/5.3/loadall.so;./?.so"

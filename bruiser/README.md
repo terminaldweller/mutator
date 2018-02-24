@@ -77,3 +77,21 @@ Running the following command will return a table containing the names of the ob
 ```lua
 objload("elf_get_obj_names", "../bfd/test/test.so", "symbol_list")
 ```
+For a more detailed example look at the wiki here on github.<br/>
+The xobj functionality is provided as a lua module. You can use it by:<br/>
+```lua
+xobj = require("lua-scripts.xobj")
+```
+you can see a working example if you run `lua-scripts/demo2.lua`. The example requires `ansicolors`. You can get that by `luarocks install ansicolors`.<br/>
+
+#### Lua Defaults
+Upon start-up, bruiser will look to find a file called `defaults.lua` in the same directory as the bruiser executable to run before running any user provided lua code, both in interactive and non-interactive modes. The path to the lua default file could be changed from the default value by the `LuaDefault` option passed to bruiser on startup.<br/>
+If you use `luarocks`, you can run `luarocks path --bin` to see where rocks on your machine are and then add that to your path to have the rocks available in bruiser as well.<br/>
+One way do to that is to add the following lines to your `defaults.lua`:<br/>
+```lua
+
+package.path = package.path .. ";LUA_PATH"
+packege.cpath = package.cpath .. ";LUA_CPATH"
+
+```
+The following lines make the rocks in `LUA_PATH` and `LUA_CPATH` available on bruiser. You can get `LUA_PATH` and `LUA_CPATH` by runnin `luarocks path --bin`. You can also look at the `default.lua` that is shipped with bruiser.<br/>
