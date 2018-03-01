@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "ORCmutation.h"
 #include "executioner.h"
 #include "bruiserffi.h"
+#include "bruisercapstone.h"
 /*standard headers*/
 #include <fstream>
 #include <string>
@@ -105,8 +106,95 @@ cl::opt<bool> MainFileOnly("MainOnly", cl::desc("bruiser will only report the re
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> Verbose("verbose", cl::desc("verbosity"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
+// @DEVI-FIXME-we need something like python's code module. lua's -i is not it.
+cl::opt<bool> LuaInteractive("interactive", cl::desc("run in interactive mode"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
 cl::opt<std::string> LuaDefault("luadefault", cl::desc("the path to the luadefault file. the default option is where the bruiser executable is."), cl::init("./defaults.lua"), cl::cat(BruiserCategory), cl::ZeroOrMore);
+/**********************************************************************************************************************/
+template <typename T>
+int pushLuaTableInt(lua_State* __ls, std::vector<T> vec) {
+  int tableindex = 1;
+  lua_newtable(__ls);
+  if (!lua_checkstack(__ls, vec.size())) {
+    PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+    return -1;
+  }
+  for (auto& iter : vec) {
+    lua_pushinteger(__ls, tableindex);
+    tableindex++;
+    lua_pushinteger(__ls, iter);
+    lua_settable(__ls, -3);
+  }
+  return 0;
+}
+
+int pushLuaTableString(lua_State* __ls, std::vector<std::string> vec) {
+  int tableindex = 1;
+  lua_newtable(__ls);
+  if (!lua_checkstack(__ls, vec.size())) {
+    PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+    return -1;
+  }
+  for (auto& iter : vec) {
+    lua_pushinteger(__ls, tableindex);
+    tableindex++;
+    lua_pushstring(__ls, iter.c_str());
+    lua_settable(__ls, -3);
+  }
+  return 0;
+}
+
+template <typename T>
+int pushLuaTableNumber(lua_State* __ls, std::vector<T> vec) {
+  int tableindex = 1;
+  lua_newtable(__ls);
+  if (!lua_checkstack(__ls, vec.size())) {
+    PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+    return -1;
+  }
+  for (auto& iter : vec) {
+    lua_pushinteger(__ls, tableindex);
+    tableindex++;
+    lua_pushnumber(__ls, iter);
+    lua_settable(__ls, -3);
+  }
+  return 0;
+}
+
+template <typename T>
+std::vector<T> getLuaTableInt(lua_State* __ls, int numargs, int argnum) {
+  std::vector<T> ret;
+  int table_length = lua_rawlen(__ls, argnum);
+  lua_checkstack(__ls, table_length);
+  for (int i = 1; i <= table_length; ++i) {
+    lua_rawgeti(__ls, argnum, i);
+    ret.push_back(lua_tointeger(__ls, i + numargs));
+  }
+  return ret;
+}
+
+std::vector<std::string> getLuaTableString(lua_State* __ls, int numargs, int argnum) {
+  std::vector<std::string> ret;
+  int table_length = lua_rawlen(__ls, argnum);
+  lua_checkstack(__ls, table_length);
+  for (int i = 1; i <= table_length; ++i) {
+    lua_rawgeti(__ls, argnum, i);
+    ret.push_back(lua_tostring(__ls, i + numargs));
+  }
+  return ret;
+}
+
+template <typename T>
+std::vector<T> getLuaTableNumber(lua_State* __ls, int numargs, int argnum) {
+  std::vector<T> ret;
+  int table_length = lua_rawlen(__ls, argnum);
+  lua_checkstack(__ls, table_length);
+  for (int i = 1; i <= table_length; ++i) {
+    lua_rawgeti(__ls, argnum, i);
+    ret.push_back(lua_tonumber(__ls, i + numargs));
+  }
+  return ret;
+}
 /**********************************************************************************************************************/
 class LuaEngine
 {
@@ -252,8 +340,59 @@ class PyExec {
     return 0;
     }
 
-    //std::vector<std::string> actionParser(std::string action) {}
-    //void convertPush(PyObject* pyobject) {}
+    std::vector<std::string> actionParser(std::string action) {}
+    void convertNPush(PyObject* pyobject) {}
+
+    int64_t pyInt(PyObject* po) {return PyLong_AsLong(po);}
+
+    double pyFloat(PyObject* po) {return PyFloat_AsDouble(po);}
+
+    std::vector<PyObject*> pyList_unpack(PyObject* po) {
+      std::vector<PyObject*> dummy;
+      if (PyList_Check(po)) {
+        int size = PyList_Size(po);
+        for (int i = 0; i < size; ++i) {
+          dummy.push_back(PyList_GetItem(po, i));
+        }
+      } else {
+        PRINT_WITH_COLOR_LB(RED, "Not a PyList object.");
+      }
+      return dummy;
+    }
+
+    std::string pyString(PyObject* po) {
+      return PyBytes_AsString(PyUnicode_AsEncodedString(PyObject_Repr(po), "utf-8", "surrogateescape"));
+    }
+
+    std::pair<std::vector<PyObject*>, std::vector<PyObject*>> pyDict_unpack(PyObject* po) {
+      std::vector<PyObject*> Keys, Values;
+      if (PyDict_Check(po)) {
+        Keys = pyList_unpack(PyDict_Keys(po));
+        Values = pyList_unpack(PyDict_Values(po));
+      } else {
+        PRINT_WITH_COLOR_LB(RED, "Not a PyDict object.");
+      }
+      return std::make_pair(Keys, Values);
+    }
+
+    char* pyBytes(PyObject* po) {
+      char* dummy;
+      if (PyBytes_Check(po)) {
+        dummy = PyBytes_AsString(po);
+      } else {
+        PRINT_WITH_COLOR_LB(RED, "Not a PyBytes object.");
+      }
+      return dummy;
+    }
+
+    char* pyByteArray(PyObject* po) {
+      char* dummy;
+      if (PyByteArray_Check(po)) {
+        dummy = PyByteArray_AsString(po);
+      } else {
+        PRINT_WITH_COLOR_LB(RED, "Not a PyByteArray object.");
+      }
+    }
 
     int getAsCppStringVec(void) {
       if (Verbose) PRINT_WITH_COLOR_LB(BLUE, "processing return result...");
@@ -1443,7 +1582,7 @@ class LuaWrapper
 
     int BruiserLuaXObjAllocGlobal(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
-      if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");}
+      if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
       std::string glob_name = lua_tostring(__ls , 1);
       size_t size = lua_tointeger(__ls, 2);
       xglobals.reserve(size);
@@ -1451,6 +1590,33 @@ class LuaWrapper
     }
 
     int BruiserLuaXObjAllocAllGlobals(lua_State* __ls) {}
+
+    int BruiserGetJumpTable(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
+      uint64_t size = lua_tointeger(__ls, 1);
+      std::vector<uint8_t> code_v = getLuaTableInt<uint8_t>(__ls, 2, 2);
+      auto ptr = makejmptable(size, code_v.data());
+      std::cout << RED << &ptr << NORMAL << "\n";
+      lua_pushlightuserdata(__ls, ptr);
+      return 1;
+    }
+
+    int BruiserFreeJumpTable(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 1) {PRINT_WITH_COLOR_LB(RED, "expected exactly one argument.");}
+      uint64_t head = lua_tointeger(__ls, 1);
+      freejmptable((JMP_S_T*)head);
+      return 0;
+    }
+
+    int BruiserDumpJumpTable(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 1) {PRINT_WITH_COLOR_LB(RED, "expected exactly one argument of type lightuserdata.");}
+      uint64_t ptr = lua_tointeger(__ls, 1);
+      dumpjmptable((JMP_S_T*)ptr);
+      return 0;
+    }
 
     /*read the m0 report*/
     int BruiserLuaM0(lua_State* __ls)
@@ -2064,6 +2230,9 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "xobjlist", &LuaDispatch<&LuaWrapper::BruiserLuaXObjGetList>);
     lua_register(LE.GetLuaState(), "xallocglobal", &LuaDispatch<&LuaWrapper::BruiserLuaXObjAllocGlobal>);
     lua_register(LE.GetLuaState(), "xallocallglobals", &LuaDispatch<&LuaWrapper::BruiserLuaXObjAllocAllGlobals>);
+    lua_register(LE.GetLuaState(), "getjmptable", &LuaDispatch<&LuaWrapper::BruiserGetJumpTable>);
+    lua_register(LE.GetLuaState(), "freejmptable", &LuaDispatch<&LuaWrapper::BruiserFreeJumpTable>);
+    lua_register(LE.GetLuaState(), "dumpjmptable", &LuaDispatch<&LuaWrapper::BruiserDumpJumpTable>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 

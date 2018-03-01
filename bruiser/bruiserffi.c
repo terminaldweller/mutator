@@ -32,8 +32,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 #define VOIDIFY(X) (void*)X
 /**********************************************************************************************************************/
-#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
 #define REINTERPRET_GENERATOR(X) \
   X ffi_reinterpret_##X(void* result) {return (X)result;}
 
@@ -53,6 +53,7 @@ X_LIST_GEN
 #undef X
 #undef X_LIST_GEN
 #undef REINTERPRET_GENERATOR
+#pragma GCC diagnostic pop
 float ffi_reinterpret_float(void* result) {return *(float*)&result;}
 double ffi_reinterpret_double(void* result) {return *(double*)&result;}
 char* ffi_reinterpret_string(void* result) {return (char*)result;}

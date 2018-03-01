@@ -157,7 +157,10 @@ help CMDHelp[] = {
   {"xcall", "xcall(index, num_args)", "call xobj with the given index in to the xobj vector with the given number of args", "", "returns the xobj call result"},
   {"xobjlist", "xobjlist()", "return a table containing xobj pointers and names. names are keys, values are the pointers.", "", "table of pairs"},
   {"xallocglobal", "xallocglobal(index)", "allocate a global value with index index", "", ""},
-  {"xallocallglobals", "xallocallglobals()", "allocate all globals", "", ""}
+  {"xallocallglobals", "xallocallglobals()", "allocate all globals", "", ""},
+  {"getjmptable", "getjmptable(size, code)", "get a table of all jumps", "", "returns a pointer to the head of the jump table linked-list as lightuserdata"},
+  {"freejmptable", "freejmptable(head)", "free the jmp table linked-list", "", "nothing"},
+  {"dumpjmptable", "dumpjmptable(head)", "dumps the jmp table linked-list", "", "nothing"}
 };
 /**********************************************************************************************************************/
 /**

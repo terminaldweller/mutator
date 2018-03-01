@@ -133,6 +133,14 @@ function xobj.getTextSection()
   return objload("elf_get_text_section", elf_exe, "bytes")
 end
 
+function xobj.CSDump(code)
+  ret = ""
+  for k,v in pairs(code) do
+    ret = ret.."\\x"..string.format("%02x",v)
+  end
+  return ret
+end
+
 --end of xobj module
 return xobj
 --------------------------------------------------------------------------------------------------------------

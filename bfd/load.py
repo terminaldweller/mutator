@@ -4,6 +4,9 @@ import sys
 import readline
 import code
 import signal
+import os
+import sys
+import shutil
 from capstone import *
 from capstone.x86 import *
 
@@ -48,6 +51,7 @@ class CLIArgParser(object):
         parser.add_argument("--stentries", action='store_true', help="dump section table entries", default=False)
         parser.add_argument("--objcode", action='store_true', help="dump objects", default=False)
         parser.add_argument("--test", action='store_true', help="test switch", default=False)
+        parser.add_argument("--test2", action='store_true', help="test switch 2", default=False)
         parser.add_argument("--funcs", action='store_true', help="dump functions", default=False)
         parser.add_argument("--objs", action='store_true', help="dump objects", default=False)
         parser.add_argument("--dynsym", action='store_true', help="dump dynamic symbol table", default=False)
@@ -1045,6 +1049,25 @@ class Global_Rewriter(object):
     def __init__(self):
         pass
 
+class Rewriter(object):
+    def __init__(self, path):
+        so = openSO_r(path)
+        self.elf = ELF(so)
+        self.elf.init(64)
+        shutil.copyfile(path, "/tmp/exe")
+        self.file_w = open("/tmp/exe", "wb")
+        self.magic_section_number = int()
+
+    def fix_section_offsets(self, section_name):
+        magic_number = int()
+        for i in range(0, byte2int(self.elf.elfhdr.e_shnum)):
+            name = self.elf.read_section_name(byte2int(self.elf.shhdr[i].sh_name))
+            if section_name == name:
+                self.magic_section_number = i + 1
+
+    def fix_section_size(self, section_name):
+        pass
+
 def main():
     try:
         argparser = CLIArgParser()
@@ -1065,6 +1088,9 @@ def main():
         elif argparser.args.dynsym: elf.dump_st_entries_dyn()
         elif argparser.args.dlpath: elf.dump_section(".interp", True)
         elif argparser.args.section: elf.dump_section(argparser.args.section, True)
+        elif argparser.args.test2:
+            rewriter = Rewriter(argparser.args.obj)
+            rewriter.fix_section_offsets(".text")
         elif argparser.args.test:
             counter = 0
             print(elf.dump_funcs(False)[10])

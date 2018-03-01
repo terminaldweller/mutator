@@ -13,7 +13,7 @@ SRCS=$(wildcard *.cpp)
 C_SRCS=$(wildcard *.c)
 #for some reason without ld the build fails on ubuntu trusty on travis
 #EXTRA_LD_FLAGS+=-lpthread -ldl -lutil -lm -Xlinker -lpython3
-EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi #-lcapstone
+EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone
 ######################################RULES####################################
 .DEFAULT: all
 
@@ -50,7 +50,7 @@ $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
 	@echo "building with jit"
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o bruisercapstone.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:

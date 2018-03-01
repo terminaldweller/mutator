@@ -94,4 +94,5 @@ package.path = package.path .. ";LUA_PATH"
 packege.cpath = package.cpath .. ";LUA_CPATH"
 
 ```
-The following lines make the rocks in `LUA_PATH` and `LUA_CPATH` available on bruiser. You can get `LUA_PATH` and `LUA_CPATH` by runnin `luarocks path --bin`. You can also look at the `default.lua` that is shipped with bruiser.<br/>
+The following lines make the rocks in `LUA_PATH` and `LUA_CPATH` available on bruiser. You can get `LUA_PATH` and `LUA_CPATH` by runnin `luarocks path --bin`. You can also look at the `defaults.lua` that is shipped with bruiser.<br/>
+Also since there is a cli option that tells bruiser which lua script to load before handing control over to user code, you can have more than one such script to suit your needs.<br/>

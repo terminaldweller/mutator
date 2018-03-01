@@ -25,11 +25,37 @@ function main()
   xobjregister(passthrough_code, "passthrough")
 end
 
+function pretty_dump()
+  count = 0
+  local text_section = xobj.getTextSection()
+  io.write(colors("%{blue}".."    ".."\t".."00 ".."01 ".."02 ".."03 ".."04 ".."05 ".."06 ".."07 ".."08 ".."09 ".."0A ".."0B ".."0C ".."0D ".."0E ".."0F"))
+  for k,v in pairs(text_section) do
+    if count % 16 == 0 then
+      print()
+      io.write(colors("%{blue}".."0x"..string.format("%03x",count)), "\t")
+    end
+    io.write(colors("%{green}"..string.format("%02x", v)), " ")
+    count = count + 1
+  end
+  count = 0
+  print()
+end
+
+function test()
+  local text_section = xobj.getTextSection()
+  dummy = xobj.CSDump(text_section)
+  print(dummy)
+end
+
 function asm_rewriter()
   local text_section = xobj.getTextSection()
-  for k,v in pairs(text_section) do io.write(colors("%{blue}"..string.format("%02x",k)),":",colors("%{green}"..string.format("%02x",v)),"\t") end
-  io.write("\n")
+  local head = getjmptable(#text_section, text_section)
+  print("head value is",head)
+  dumpjmptable(head)
+  freejmptable(haed)
 end
 
 --main()
+--pretty_dump()
+--test()
 asm_rewriter()
