@@ -19,7 +19,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
-#include "./lua-5.3.4/src/lua.hpp"
+#include "./lua-5.3.4/src/lua.h"
+#include "./lua-5.3.4/src/lauxlib.h"
+#include "./lua-5.3.4/src/lualib.h"
 #include "./bruisercapstone.h"
 #include "./asmrewriter.h"
 
@@ -27,38 +29,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 static JMP_S_T* convert_jmpt(lua_State* __ls, int index) {
   JMP_S_T* dummy = (JMP_S_T*)lua_touserdata(__ls, index);
-  if (dummy == NULL) luaL_typerror(__ls, index, dummy);
+  //if (dummy == NULL) luaL_typerror(__ls, index, dummy);
   return dummy;
 }
 
 static JMP_S_T* check_jmpt(lua_State* __ls, int index) {
   JMP_S_T* dummy;
   luaL_checktype(__ls, index, LUA_TUSERDATA);
-  dummy = (JMP_S_T*)luaL_checkudata(__ls, index, JMP_S_T);
-  if (dummy == NULL) luaL_typerror(__ls, index, dummy);
+  dummy = (JMP_S_T*)luaL_checkudata(__ls, index, "jmp_s_t");
+  //if (dummy == NULL) luaL_typerror(__ls, index, dummy);
   return dummy;
 }
 
 static JMP_S_T* push_jmpt(lua_State* __ls) {
   JMP_S_T* dummy = (JMP_S_T*)lua_newuserdata(__ls, sizeof(JMP_S_T));
-  luaL_getmetatable(__ls, JMP_S_T);
+  luaL_getmetatable(__ls, "jmp_s_t");
   lua_setmetatable(__ls, -2);
   return dummy;
 }
 
 static int new_jmpt(lua_State* __ls) {
-  JMP_T jmp_t = luaL_optint(__ls, 1, 0);
-  uint64_t location = luaL_optint(__ls, 2, 0);
-  uint8_t size = luaL_optint(__ls, 3, 0);
+  JMP_T jmp_t = luaL_optinteger(__ls, 1, 0);
+  uint64_t location = luaL_optinteger(__ls, 2, 0);
+  uint8_t size = luaL_optinteger(__ls, 3, 0);
   //
   //
   //
-  uint64_t address = luaL_optint(__ls, 7, 0);
-  uint64_t address_y = luaL_optint(__ls, 8, 0);
-  uint64_t address_n = luaL_optint(__ls, 9, 0);
-  unsigned char y = luaL_optint(__ls, 10, 0);
-  unsigned char n = luaL_optint(__ls, 11, 0);
-  unsigned char z = luaL_optint(__ls, 12, 0);
+  uint64_t address = luaL_optinteger(__ls, 7, 0);
+  uint64_t address_y = luaL_optinteger(__ls, 8, 0);
+  uint64_t address_n = luaL_optinteger(__ls, 9, 0);
+  unsigned char y = luaL_optinteger(__ls, 10, 0);
+  unsigned char n = luaL_optinteger(__ls, 11, 0);
+  unsigned char z = luaL_optinteger(__ls, 12, 0);
   JMP_S_T* dummy = push_jmpt(__ls);
   dummy->type = jmp_t;
   dummy->location = location;
@@ -96,7 +98,7 @@ static int jmpt_custom(lua_State* __ls) {
 #define SET_GENERATOR(X) \
   static int jmpt_set_##X(lua_State* __ls) {\
   JMP_S_T* dummy = check_jmpt(__ls,1);\
-  dummy->type = luaL_checkint(__ls, 2);\
+  dummy->type = luaL_checkinteger(__ls, 2);\
   lua_settop(__ls, 1);\
   return 1;\
 }
@@ -124,10 +126,32 @@ static int jmpt_set_next_n(lua_State* __ls) {}
 
 static int jmpt_gc(lua_State* __ls) {}
 
+static const luaL_Reg jmpt_methods[] = {
+  {"new", new_jmpt},
+  {"set_type", jmpt_set_type},
+  {"set_location", jmpt_set_location},
+  {"set_size", jmpt_set_size},
+  {"set_address", jmpt_set_address},
+  {"set_address_y", jmpt_set_address_y},
+  {"set_address_n", jmpt_set_address_n},
+  {"set_next", jmpt_set_next},
+  {"set_next_y", jmpt_set_next_y},
+  {"set_next_n", jmpt_set_next_n},
+  {"set_y", jmpt_set_y},
+  {"set_n", jmpt_set_n},
+  {"set_z", jmpt_set_z},
+  {0,0}
+};
+
+static const luaL_Reg jmpt_meta[] = {
+  {"__gc", jmpt_gc},
+  {0, 0}
+};
+
 int jmpt_register(lua_State* __ls) {
-  luaL_openlib(__ls, JMP_S_T, jmpt_methods, 0);
-  luaL_newmetatable(__ls, JMP_S_T);
-  luaL_openlib(__ls, 0, jmpt_meta, 0);
+  luaL_newlib(__ls, jmpt_methods);
+  luaL_newmetatable(__ls, "jmp_s_t");
+  luaL_newlib(__ls, jmpt_meta);
   lua_pushliteral(__ls, "__index");
   lua_pushvalue(__ls, -3);
   lua_rawset(__ls, -3);

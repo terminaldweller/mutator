@@ -50,7 +50,7 @@ $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
 	@echo "building with jit"
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o bruisercapstone.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o bruisercapstone.o asmrewriter.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:

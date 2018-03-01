@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "executioner.h"
 #include "bruiserffi.h"
 #include "bruisercapstone.h"
+#include "asmrewriter.h"
 /*standard headers*/
 #include <fstream>
 #include <string>

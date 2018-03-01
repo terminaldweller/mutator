@@ -1,5 +1,4 @@
 
-
 /***************************************************Project Mutator****************************************************/
 /*first line intentionally left blank.*/
 /*bruiser's lua asmrewriter implementation for jump tables*/
@@ -19,7 +18,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
-#include "./lua-5.3.4/src/lua.hpp"
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "./lua-5.3.4/src/lua.h"
+#include "./lua-5.3.4/src/lauxlib.h"
+#include "./lua-5.3.4/src/lualib.h"
 #include "./bruisercapstone.h"
 
 #include <inttypes.h>
@@ -53,36 +57,17 @@ X_LIST_GEN
 #undef X_LIST_GEN
 #undef SET_GENERATOR
 
-static int jmpt_set_next(lua_State* __ls) {}
-static int jmpt_set_next_y(lua_State* __ls) {}
-static int jmpt_set_next_n(lua_State* __ls) {}
+static int jmpt_set_next(lua_State* __ls);
+static int jmpt_set_next_y(lua_State* __ls);
+static int jmpt_set_next_n(lua_State* __ls);
 
-static const luaL_reg jmpt_methods[] = {
-  {"new", new_jmpt},
-  {"set_type", jmpt_set_type},
-  {"set_location", jmpt_set_location},
-  {"set_size", jmpt_set_size},
-  {"set_address", jmpt_set_address},
-  {"set_address_y", jmpt_set_address_y},
-  {"set_address_n", jmpt_set_address_n},
-  {"set_next", jmpt_set_next},
-  {"set_next_y", jmpt_set_next_y},
-  {"set_next_n", jmpt_set_next_n},
-  {"set_y", jmpt_set_y},
-  {"set_n", jmpt_set_n},
-  {"set_z", jmpt_set_z},
-  {0,0}
-};
+static int jmpt_gc(lua_State* __ls);
 
-static int jmpt_gc(lua_State* __ls) {}
+int jmpt_register(lua_State* __ls);
 
-static const luaL_reg jmpt_meta[] = {
-  {"__gc", jmpt_gc},
-  {0, 0}
+#endif
+#ifdef __cplusplus
 }
-
-int jmpt_register(lua_State* __ls) {
-
 #endif
 /**********************************************************************************************************************/
 /*last line intentionally left blank.*/

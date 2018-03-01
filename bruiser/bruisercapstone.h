@@ -46,7 +46,7 @@ struct jmp_s_t {
   bool y;
   bool n;
   bool z;
-};
+}jmp_s_t;
 #define JMP_S_T struct jmp_s_t
 JMP_S_T* iter_next(JMP_S_T* arg);
 JMP_S_T* iter_next_y(JMP_S_T* arg);
