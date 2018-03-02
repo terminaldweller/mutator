@@ -18,19 +18,19 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include "./lua-5.3.4/src/lua.h"
 #include "./lua-5.3.4/src/lauxlib.h"
 #include "./lua-5.3.4/src/lualib.h"
-#include "./bruisercapstone.h"
+//#include "./bruisercapstone.h"
 
 #include <inttypes.h>
 /**********************************************************************************************************************/
 #ifndef ASM_REWRITER_H
 #define ASM_REWRITER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 static JMP_S_T* convert_jmpt(lua_State* __ls, int index);
 static JMP_S_T* check_jmpt(lua_State* __ls, int index);
 static JMP_S_T* push_jmpt(lua_State* __ls);

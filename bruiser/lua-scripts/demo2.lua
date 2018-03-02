@@ -55,7 +55,13 @@ function asm_rewriter()
   freejmptable(haed)
 end
 
+function jmp_t_test()
+  for k,v in pairs(jmp_s_t) do print(k,v) end
+  local t = jmp_s_t.new()
+end
+
 --main()
 --pretty_dump()
 --test()
-asm_rewriter()
+--asm_rewriter()
+jmp_t_test()

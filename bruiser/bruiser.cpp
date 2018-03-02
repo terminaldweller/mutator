@@ -229,6 +229,11 @@ class LuaEngine
       luaL_openlibs(LS);
     }
 
+    void registerJMPTable(void) {
+      jmpt_register(LS);
+      lua_pop(LS, 1);
+    }
+
     void RunLuaDefaults(void) {
       luaL_dofile(LS, LuaDefault.c_str());
     }
@@ -2197,6 +2202,7 @@ int main(int argc, const char **argv) {
     LuaEngine LE;
     LE.LoadEverylib();
     LE.RunLuaDefaults();
+    LE.registerJMPTable();
     *static_cast<LuaWrapper**>(lua_getextraspace(LE.GetLuaState())) = &LW;
 
     /*@DEVI-this part is just registering our LuaWrapper member functions with lua so we can call them from lua.*/

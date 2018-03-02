@@ -2,18 +2,20 @@
 ######################################INCLUDES#################################
 include ../macros.mk
 #######################################VARS####################################
+CC=clang
+CC?=clang
 CXX_FLAGS+=-I/usr/include
 CXX_FLAGS+=$(shell $(PY_CONF) --includes)
 BRUISER=bruiser
 LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
 LIB_LUA_JIT=./LuaJIT/src/libluajit.a
-HEADER_LIST=bruiser.h bruiser-extra.h CompletionHints.h
+HEADER_LIST=
 SRCS=$(wildcard *.cpp)
 C_SRCS=$(wildcard *.c)
 #for some reason without ld the build fails on ubuntu trusty on travis
 #EXTRA_LD_FLAGS+=-lpthread -ldl -lutil -lm -Xlinker -lpython3
-EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone
+EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone -L./lua-5.3.4/src -llua
 ######################################RULES####################################
 .DEFAULT: all
 
@@ -50,7 +52,7 @@ $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
 	@echo "building with jit"
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o bruisercapstone.o asmrewriter.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o bruisercapstone.o $(LIB_LUA) asmrewriter.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:

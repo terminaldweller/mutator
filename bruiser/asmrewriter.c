@@ -1,5 +1,4 @@
 
-
 /***************************************************Project Mutator****************************************************/
 /*first line intentionally left blank.*/
 /*bruiser's lua asmrewriter implementation for jump tables*/
@@ -149,9 +148,9 @@ static const luaL_Reg jmpt_meta[] = {
 };
 
 int jmpt_register(lua_State* __ls) {
-  luaL_newlib(__ls, jmpt_methods);
+  luaL_openlib(__ls, "jmp_s_t", jmpt_methods, 0);
   luaL_newmetatable(__ls, "jmp_s_t");
-  luaL_newlib(__ls, jmpt_meta);
+  luaL_openlib(__ls, 0, jmpt_meta, 0);
   lua_pushliteral(__ls, "__index");
   lua_pushvalue(__ls, -3);
   lua_rawset(__ls, -3);
@@ -166,6 +165,15 @@ int jmpt_register(lua_State* __ls) {
 //@DEVI-the main is only meant for testing
 #pragma weak main
 int main(int argc, char** argv) {
+  lua_State* L = luaL_newstate();
+  luaL_openlibs(L);
+
+  jmpt_register(L);
+  lua_pop(L, 1);
+
+  if (argc > 1) luaL_dofile(L, argv[1]);
+  lua_close(L);
+
   return 0;
 }
 /**********************************************************************************************************************/

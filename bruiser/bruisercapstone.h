@@ -33,7 +33,7 @@ extern "C" {
 enum jmp_type {NONE=0, JMP=1, JNE=2, JE=3};
 #define JMP_T enum jmp_type
 
-struct jmp_s_t {
+typedef struct jmp_s_t {
   JMP_T type;
   uint64_t location;
   uint8_t size;
