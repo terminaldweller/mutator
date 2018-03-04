@@ -35,7 +35,9 @@ extern "C" {
 static JMP_S_T* convert_jmpt(lua_State* __ls, int index);
 static JMP_S_T* check_jmpt(lua_State* __ls, int index);
 JMP_S_T* push_jmpt(lua_State* __ls);
-static int new_jmpt(lua_State* __ls);
+int jmpt_push_args(lua_State* __ls, JMP_S_T* jmpt);
+int new_jmpt_2(lua_State* __ls);
+int new_jmpt(lua_State* __ls);
 static int jmpt_custom(lua_State* __ls);
 
 #define SET_GENERATOR(X) \
@@ -56,7 +58,7 @@ static int jmpt_custom(lua_State* __ls);
 X_LIST_GEN
 #undef X
 #undef X_LIST_GEN
-#undef SET_GENERATOR
+#undef GET_GENERATOR
 
 #define GET_GENERATOR(X) \
 static int X(lua_State* __ls);
@@ -79,9 +81,10 @@ X_LIST_GEN
 #undef SET_GENERATOR
 
 static int next(lua_State* __ls);
-static int next(lua_State* __ls);
-static int next(lua_State* __ls);
+static int next_y(lua_State* __ls);
+static int next_n(lua_State* __ls);
 
+static int inext(lua_State* __ls);
 static int jmpt_set_next(lua_State* __ls);
 static int jmpt_set_next_y(lua_State* __ls);
 static int jmpt_set_next_n(lua_State* __ls);

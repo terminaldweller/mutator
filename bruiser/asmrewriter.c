@@ -41,13 +41,60 @@ static JMP_S_T* check_jmpt(lua_State* __ls, int index) {
 }
 
 JMP_S_T* push_jmpt(lua_State* __ls) {
-  JMP_S_T* dummy = (JMP_S_T*)lua_newuserdata(__ls, sizeof(JMP_S_T));
+  lua_checkstack(__ls, 1);
+  JMP_S_T* dummy = lua_newuserdata(__ls, sizeof(JMP_S_T));
   luaL_getmetatable(__ls, "jmp_s_t");
   lua_setmetatable(__ls, -2);
   return dummy;
 }
 
-static int new_jmpt(lua_State* __ls) {
+int jmpt_push_args(lua_State* __ls, JMP_S_T* jmpt) {
+  lua_checkstack(__ls, 12);
+  lua_pushinteger(__ls, jmpt->type);
+  lua_pushinteger(__ls, jmpt->location);
+  lua_pushinteger(__ls, jmpt->size);
+  lua_pushlightuserdata(__ls, jmpt->next);
+  lua_pushlightuserdata(__ls, jmpt->next_y);
+  lua_pushlightuserdata(__ls, jmpt->next_n);
+  lua_pushinteger(__ls, jmpt->address);
+  lua_pushinteger(__ls, jmpt->address_y);
+  lua_pushinteger(__ls, jmpt->address_n);
+  lua_pushinteger(__ls, jmpt->y);
+  lua_pushinteger(__ls, jmpt->n);
+  lua_pushinteger(__ls, jmpt->z);
+}
+
+int new_jmpt_2(lua_State* __ls) {
+  lua_checkstack(__ls, 12);
+  JMP_T jmp_t = luaL_optinteger(__ls, -12, 0);
+  uint64_t location = luaL_optinteger(__ls, -11, 0);
+  uint8_t size = luaL_optinteger(__ls, -10, 0);
+  JMP_S_T* next = lua_touserdata(__ls, -9);
+  JMP_S_T* next_y = lua_touserdata(__ls, -8);
+  JMP_S_T* next_n = lua_touserdata(__ls, -7);
+  uint64_t address = luaL_optinteger(__ls, -6, 0);
+  uint64_t address_y = luaL_optinteger(__ls, -5, 0);
+  uint64_t address_n = luaL_optinteger(__ls, -4, 0);
+  unsigned char y = luaL_optinteger(__ls, -3, 0);
+  unsigned char n = luaL_optinteger(__ls, -2, 0);
+  unsigned char z = luaL_optinteger(__ls, -1, 0);
+  JMP_S_T* dummy = push_jmpt(__ls);
+  dummy->type = jmp_t;
+  dummy->location = location;
+  dummy->size = size;
+  dummy->next = next;
+  dummy->next_y = next_y;
+  dummy->next_n = next_n;
+  dummy->address = address;
+  dummy->address_y = address_y;
+  dummy->address_n = address_n;
+  dummy->y = y;
+  dummy->n = n;
+  dummy->z = z;
+  return 1;
+}
+
+int new_jmpt(lua_State* __ls) {
   lua_checkstack(__ls, 12);
   JMP_T jmp_t = luaL_optinteger(__ls, 1, 0);
   uint64_t location = luaL_optinteger(__ls, 2, 0);
@@ -123,19 +170,33 @@ X_LIST_GEN
 
 static int next(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls, 1);
+  lua_pop(__ls, -1);\
   lua_pushlightuserdata(__ls, dummy->next);
   return 1;
 }
 
 static int next_y(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls, 1);
+  lua_pop(__ls, -1);\
   lua_pushlightuserdata(__ls, dummy->next_y);
   return 1;
 }
 
 static int next_n(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls, 1);
+  lua_pop(__ls, -1);\
   lua_pushlightuserdata(__ls, dummy->next_n);
+  return 1;
+}
+
+static int inext(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls, 1);
+  if (dummy->next != NULL) {
+    jmpt_push_args(__ls, dummy->next);
+    new_jmpt_2(__ls);
+  } else {
+    lua_pushnil(__ls);
+  }
   return 1;
 }
 
@@ -164,20 +225,21 @@ X_LIST_GEN
 #undef X_LIST_GEN
 #undef SET_GENERATOR
 
-static int jmpt_set_next(lua_State* __ls) {
+int jmpt_set_next(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls,1);
   dummy->next = luaL_checkudata(__ls, 2, "jmp_s_t");
   lua_settop(__ls, 1);
   return 1;
 }
 
-static int jmpt_set_next_y(lua_State* __ls) {
+int jmpt_set_next_y(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls,1);
   dummy->next_y = luaL_checkudata(__ls, 2, "jmp_s_t");
   lua_settop(__ls, 1);
   return 1;
 }
-static int jmpt_set_next_n(lua_State* __ls) {
+
+int jmpt_set_next_n(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls,1);
   dummy->next_n = luaL_checkudata(__ls, 2, "jmp_s_t");
   lua_settop(__ls, 1);
@@ -223,6 +285,7 @@ static const luaL_Reg jmpt_methods[] = {
   {"y", y},
   {"n", n},
   {"z", z},
+  {"inext", inext},
   {0,0}
 };
 

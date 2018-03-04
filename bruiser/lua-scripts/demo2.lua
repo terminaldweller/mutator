@@ -61,6 +61,9 @@ setmetatable(jmp_s_t, {__call = function(self, arg1,arg2,arg3,arg4,arg5,arg6,arg
                                   return t
                                 end})
 
+setmetatable(jmp_s_t, {__index = function(self, arg1)
+end})
+
 function jmp_s_t:show(msg)
   print(msg, self, self:custom())
   return self
@@ -84,14 +87,14 @@ end
 
 function integ_test()
   local text_section = xobj.getTextSection()
-  local head = jmp_s_t.new()
-  head = getjmptable(#text_section, text_section)
+  local head = getjmptable(#text_section, text_section)
   head:show("XXXXXhead is")
-  print(head:location())
-  --while head:next() ~= nil do
-  for i=1,11,1 do
-    head = head:next()
+  print("head location is ", head:location())
+  while head:inext() ~= nil do
+  --for i=1,11,1 do
     head:show("next is")
+    head = head:inext()
+    --if head:type() == 0 then break end
   end
 end
 

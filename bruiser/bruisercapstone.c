@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 #include "./bruisercapstone.h"
 #include "./devi_extra.h"
+#include "./asmrewriter.h"
+#include "./lua-5.3.4/src/lua.h"
+#include "./lua-5.3.4/src/lauxlib.h"
+#include "./lua-5.3.4/src/lualib.h"
 #include <capstone/capstone.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -213,7 +217,7 @@ int call_rewriter(int offset, size_t size, uint8_t* asm_code, const char* obj) {
 }
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
-JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose) {
+JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) {
   csh handle;
   cs_insn* insn;
   size_t count;
@@ -221,8 +225,9 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose) {
   uint8_t code[16];
   size_t size_counter = 0;
 
-  JMP_S_T* head = malloc(sizeof(JMP_S_T));
-  JMP_S_T* tail = malloc(sizeof(JMP_S_T));
+  JMP_S_T* head = push_jmpt(__ls);
+  //JMP_S_T* head = malloc(sizeof(JMP_S_T));
+  JMP_S_T* tail;
   head->type = NONE;
   head->next = NULL;
   tail = head;
@@ -254,12 +259,12 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose) {
         if (Verbose) printf(RED"%jx\n", address);
         if (Verbose) printf(RED"%d\n", insn[j].size);
 #endif
-        JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
-        dummy->location = insn[j].address;
-        dummy->type = JMP;
-        dummy->address = address;
-        dummy->size = insn[j].size;
-        dummy->next = NULL;
+        tail->location = insn[j].address;
+        tail->type = JMP;
+        tail->address = address;
+        tail->size = insn[j].size;
+        JMP_S_T* dummy = push_jmpt(__ls);
+        //JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         tail->next = dummy;
         tail = dummy;
       }
@@ -274,12 +279,12 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose) {
         if (Verbose) printf(RED"%jx\n", address);
         if (Verbose) printf(RED"%d\n", insn[j].size);
 #endif
-        JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
-        dummy->location = insn[j].address;
-        dummy->type = JE;
-        dummy->address_y = address;
-        dummy->size = insn[j].size;
-        dummy->next = NULL;
+        tail->location = insn[j].address;
+        tail->type = JE;
+        tail->address = address;
+        tail->size = insn[j].size;
+        JMP_S_T* dummy = push_jmpt(__ls);
+        //JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         tail->next = dummy;
         tail = dummy;
       }
@@ -294,12 +299,12 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose) {
         if (Verbose) printf(RED"%lx\n", address);
         if (Verbose) printf(RED"%d\n", insn[j].size);
 #endif
-        JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
-        dummy->location = insn[j].address;
-        dummy->type = JNE;
-        dummy->address_y = address;
-        dummy->size = insn[j].size;
-        dummy->next = NULL;
+        tail->location = insn[j].address;
+        tail->type = JNE;
+        tail->address = address;
+        tail->size = insn[j].size;
+        JMP_S_T* dummy = push_jmpt(__ls);
+        //JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         tail->next = dummy;
         tail = dummy;
       }
@@ -317,6 +322,7 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose) {
     printf("ERROR!!!\n");
   }
   cs_close(&handle);
+  tail->next = NULL;
   return head;
 }
 /**********************************************************************************************************************/
@@ -333,7 +339,7 @@ int freejmptable(JMP_S_T* _head) {
 /**********************************************************************************************************************/
 int dumpjmptable(JMP_S_T* current) {
   while (current != NULL) {
-    printf("jump location: %ld", current->location);
+    printf("jump location: %lx", current->location);
     printf("\tjump address: %lu", current->address);
     printf("\tjump type: %d", current->type);
     printf("\tjump next: %x", &current->next);
@@ -393,27 +399,13 @@ int main(int argc, char** argv) {
   ks_write(KS_ARCH_X86, KS_MODE_64, "add rax, rcx", 0, encode);
   ks_free(encode);
 
-#if 0
-  head = malloc(sizeof(JMP_S_T));
-  tail = malloc(sizeof(JMP_S_T));
-  head->type = NONE;
-  head->next = NULL;
-  tail = head;
-#endif
   uint8_t asm_code3[834];
-  JMP_S_T* current = makejmptable(834, CODE_3, true);
+  lua_State* L = luaL_newstate();
+  JMP_S_T* current = makejmptable(834, CODE_3, true, L);
 
-#if 0
-  while (current != NULL) {
-    printf("jump location: %lx", current->location);
-    printf("\tjump address: %lu", current->address);
-    printf("\tjump type: %d", current->type);
-    printf("\tinstruction size: %d\n", current->size);
-    current = current->next;
-  }
-#endif
   dumpjmptable(current);
-  freejmptable(current);
+  lua_close(L);
+  //freejmptable(current);
 
   return 0;
 }

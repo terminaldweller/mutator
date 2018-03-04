@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
+#include "./lua-5.3.4/src/lua.h"
+#include "./lua-5.3.4/src/lauxlib.h"
+#include "./lua-5.3.4/src/lualib.h"
 #include <capstone/capstone.h>
 #include <keystone/keystone.h>
 #include <stdint.h>
@@ -62,7 +65,7 @@ void leb128_decode_u(uint32_t value, uint8_t* ret_value, size_t size);
 int ks_write(ks_arch arch, int mode, const char* assembly, int syntax, unsigned char* encode);
 int global_rewriter(int offset, size_t size, uint8_t* asm_code, const char* obj);
 int call_rewriter(int offset, size_t size, uint8_t* asm_code, const char* obj);
-JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose);
+JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls);
 int freejmptable(JMP_S_T* _head);
 int dumpjmptable(JMP_S_T* head);
 void jmprewriter_j(JMP_S_T* jmp, uint8_t* code, JMP_T type, uint8_t* rewritten);
