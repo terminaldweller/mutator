@@ -1602,9 +1602,10 @@ class LuaWrapper
       if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
       uint64_t size = lua_tointeger(__ls, 1);
       std::vector<uint8_t> code_v = getLuaTableInt<uint8_t>(__ls, 2, 2);
-      auto ptr = makejmptable(size, code_v.data());
-      std::cout << RED << &ptr << NORMAL << "\n";
-      lua_pushlightuserdata(__ls, ptr);
+      JMP_S_T* head = makejmptable(size, code_v.data(), Verbose);
+      JMP_S_T* dummy = push_jmpt(__ls);
+      dummy = head;
+      dumpjmptable(dummy);
       return 1;
     }
 

@@ -51,8 +51,6 @@ typedef struct jmp_s_t {
 JMP_S_T* iter_next(JMP_S_T* arg);
 JMP_S_T* iter_next_y(JMP_S_T* arg);
 JMP_S_T* iter_next_n(JMP_S_T* arg);
-extern JMP_S_T* head;
-extern JMP_S_T* tail;
 
 uint32_t get_textsection_length(void);
 uintptr_t get_symbol_rt_address(const char* symbol_name);
@@ -64,7 +62,7 @@ void leb128_decode_u(uint32_t value, uint8_t* ret_value, size_t size);
 int ks_write(ks_arch arch, int mode, const char* assembly, int syntax, unsigned char* encode);
 int global_rewriter(int offset, size_t size, uint8_t* asm_code, const char* obj);
 int call_rewriter(int offset, size_t size, uint8_t* asm_code, const char* obj);
-JMP_S_T* makejmptable(size_t size, uint8_t* obj);
+JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose);
 int freejmptable(JMP_S_T* _head);
 int dumpjmptable(JMP_S_T* head);
 void jmprewriter_j(JMP_S_T* jmp, uint8_t* code, JMP_T type, uint8_t* rewritten);
@@ -74,6 +72,7 @@ void jmprewriter_je(JMP_S_T* jmp, uint8_t* code, JMP_T type, uint8_t* rewritten)
 #ifdef __cplusplus
 }
 #endif
+
 #endif
 /**********************************************************************************************************************/
 /*last line intentionally left blank.*/

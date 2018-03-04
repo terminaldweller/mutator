@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /**********************************************************************************************************************/
 static JMP_S_T* convert_jmpt(lua_State* __ls, int index) {
   JMP_S_T* dummy = (JMP_S_T*)lua_touserdata(__ls, index);
-  //if (dummy == NULL) luaL_typerror(__ls, index, dummy);
+  if (dummy == NULL) printf("bad user data type.\n");
   return dummy;
 }
 
@@ -36,11 +36,11 @@ static JMP_S_T* check_jmpt(lua_State* __ls, int index) {
   JMP_S_T* dummy;
   luaL_checktype(__ls, index, LUA_TUSERDATA);
   dummy = (JMP_S_T*)luaL_checkudata(__ls, index, "jmp_s_t");
-  //if (dummy == NULL) luaL_typerror(__ls, index, dummy);
+  if (dummy == NULL) printf("bad user data type.\n");
   return dummy;
 }
 
-static JMP_S_T* push_jmpt(lua_State* __ls) {
+JMP_S_T* push_jmpt(lua_State* __ls) {
   JMP_S_T* dummy = (JMP_S_T*)lua_newuserdata(__ls, sizeof(JMP_S_T));
   luaL_getmetatable(__ls, "jmp_s_t");
   lua_setmetatable(__ls, -2);
@@ -48,12 +48,13 @@ static JMP_S_T* push_jmpt(lua_State* __ls) {
 }
 
 static int new_jmpt(lua_State* __ls) {
+  lua_checkstack(__ls, 12);
   JMP_T jmp_t = luaL_optinteger(__ls, 1, 0);
   uint64_t location = luaL_optinteger(__ls, 2, 0);
   uint8_t size = luaL_optinteger(__ls, 3, 0);
-  //
-  //
-  //
+  JMP_S_T* next = lua_touserdata(__ls, 4);
+  JMP_S_T* next_y = lua_touserdata(__ls, 5);
+  JMP_S_T* next_n = lua_touserdata(__ls, 6);
   uint64_t address = luaL_optinteger(__ls, 7, 0);
   uint64_t address_y = luaL_optinteger(__ls, 8, 0);
   uint64_t address_n = luaL_optinteger(__ls, 9, 0);
@@ -64,9 +65,9 @@ static int new_jmpt(lua_State* __ls) {
   dummy->type = jmp_t;
   dummy->location = location;
   dummy->size = size;
-  //dummy->next =;
-  //dummy->next_y =;
-  //dummy->next_n =;
+  dummy->next = next;
+  dummy->next_y = next_y;
+  dummy->next_n = next_n;
   dummy->address = address;
   dummy->address_y = address_y;
   dummy->address_n = address_n;
@@ -78,26 +79,70 @@ static int new_jmpt(lua_State* __ls) {
 
 static int jmpt_custom(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls, 1);
-  printf("this is the jump table custom function.\n");
-  lua_pushnumber(__ls, dummy->type);
-  lua_pushnumber(__ls, dummy->location);
-  lua_pushnumber(__ls, dummy->size);
+  //printf("this is the jump table custom function.\n");
+  //lua_checkstack(__ls, 12);
+  lua_pushinteger(__ls, dummy->type);
+  lua_pushinteger(__ls, dummy->location);
+  lua_pushinteger(__ls, dummy->size);
   lua_pushlightuserdata(__ls, dummy->next);
   lua_pushlightuserdata(__ls, dummy->next_y);
   lua_pushlightuserdata(__ls, dummy->next_n);
-  lua_pushnumber(__ls, dummy->address);
-  lua_pushnumber(__ls, dummy->address_y);
-  lua_pushnumber(__ls, dummy->address_n);
-  lua_pushnumber(__ls, dummy->y);
-  lua_pushnumber(__ls, dummy->n);
-  lua_pushnumber(__ls, dummy->z);
+  lua_pushinteger(__ls, dummy->address);
+  lua_pushinteger(__ls, dummy->address_y);
+  lua_pushinteger(__ls, dummy->address_n);
+  lua_pushinteger(__ls, dummy->y);
+  lua_pushinteger(__ls, dummy->n);
+  lua_pushinteger(__ls, dummy->z);
   return 12;
+}
+
+#define GET_GENERATOR(X) \
+static int X(lua_State* __ls) { \
+  JMP_S_T* dummy = check_jmpt(__ls, 1);\
+  lua_pop(__ls, -1);\
+  lua_pushinteger(__ls, dummy->X);\
+  return 1;\
+}
+
+#define X_LIST_GEN \
+  X(type, "getter method for type")\
+  X(location, "getter method for location")\
+  X(size, "getter method for size")\
+  X(address, "getter method for address")\
+  X(address_y, "getter method for address_y")\
+  X(address_n, "getter method for address_n")\
+  X(y, "getter method for y")\
+  X(n, "getter method for n")\
+  X(z, "getter method for z")
+
+#define X(X1,X2) GET_GENERATOR(X1)
+X_LIST_GEN
+#undef X
+#undef X_LIST_GEN
+#undef SET_GENERATOR
+
+static int next(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls, 1);
+  lua_pushlightuserdata(__ls, dummy->next);
+  return 1;
+}
+
+static int next_y(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls, 1);
+  lua_pushlightuserdata(__ls, dummy->next_y);
+  return 1;
+}
+
+static int next_n(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls, 1);
+  lua_pushlightuserdata(__ls, dummy->next_n);
+  return 1;
 }
 
 #define SET_GENERATOR(X) \
   static int jmpt_set_##X(lua_State* __ls) {\
   JMP_S_T* dummy = check_jmpt(__ls,1);\
-  dummy->type = luaL_checkinteger(__ls, 2);\
+  dummy->X = luaL_checkinteger(__ls, 2);\
   lua_settop(__ls, 1);\
   return 1;\
 }
@@ -119,11 +164,37 @@ X_LIST_GEN
 #undef X_LIST_GEN
 #undef SET_GENERATOR
 
-static int jmpt_set_next(lua_State* __ls) {}
-static int jmpt_set_next_y(lua_State* __ls) {}
-static int jmpt_set_next_n(lua_State* __ls) {}
+static int jmpt_set_next(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls,1);
+  dummy->next = luaL_checkudata(__ls, 2, "jmp_s_t");
+  lua_settop(__ls, 1);
+  return 1;
+}
 
-static int jmpt_gc(lua_State* __ls) {}
+static int jmpt_set_next_y(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls,1);
+  dummy->next_y = luaL_checkudata(__ls, 2, "jmp_s_t");
+  lua_settop(__ls, 1);
+  return 1;
+}
+static int jmpt_set_next_n(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls,1);
+  dummy->next_n = luaL_checkudata(__ls, 2, "jmp_s_t");
+  lua_settop(__ls, 1);
+  return 1;
+}
+
+static int jmpt_gc(lua_State* __ls) {
+  JMP_S_T* dummy = check_jmpt(__ls,1);
+  //freejmptable(dummy);
+}
+
+static int jmpt_tostring(lua_State* __ls) {
+  char buff[32];
+  sprintf(buff, "%p", convert_jmpt(__ls , 1));
+  lua_pushfstring(__ls, "jmp_s_t (%s)", buff);
+  return 1;
+}
 
 static const luaL_Reg jmpt_methods[] = {
   {"new", new_jmpt},
@@ -139,11 +210,25 @@ static const luaL_Reg jmpt_methods[] = {
   {"set_y", jmpt_set_y},
   {"set_n", jmpt_set_n},
   {"set_z", jmpt_set_z},
+  {"custom", jmpt_custom},
+  {"type", type},
+  {"location", location},
+  {"size", size},
+  {"next", next},
+  {"next_y", next_y},
+  {"next_n", next_n},
+  {"address", address},
+  {"address_y", address_y},
+  {"address_n", address_n},
+  {"y", y},
+  {"n", n},
+  {"z", z},
   {0,0}
 };
 
 static const luaL_Reg jmpt_meta[] = {
   {"__gc", jmpt_gc},
+  {"__tostring", jmpt_tostring},
   {0, 0}
 };
 

@@ -31,9 +31,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 static JMP_S_T* convert_jmpt(lua_State* __ls, int index);
 static JMP_S_T* check_jmpt(lua_State* __ls, int index);
-static JMP_S_T* push_jmpt(lua_State* __ls);
+JMP_S_T* push_jmpt(lua_State* __ls);
 static int new_jmpt(lua_State* __ls);
 static int jmpt_custom(lua_State* __ls);
 
@@ -57,6 +58,30 @@ X_LIST_GEN
 #undef X_LIST_GEN
 #undef SET_GENERATOR
 
+#define GET_GENERATOR(X) \
+static int X(lua_State* __ls);
+
+#define X_LIST_GEN \
+  X(type, "setter method for type")\
+  X(location, "setter method for location")\
+  X(size, "setter method for size")\
+  X(address, "setter method for address")\
+  X(address_y, "setter method for address_y")\
+  X(address_n, "setter method for address_n")\
+  X(y, "setter method for y")\
+  X(n, "setter method for n")\
+  X(z, "setter method for z")
+
+#define X(X1,X2) GET_GENERATOR(X1)
+X_LIST_GEN
+#undef X
+#undef X_LIST_GEN
+#undef SET_GENERATOR
+
+static int next(lua_State* __ls);
+static int next(lua_State* __ls);
+static int next(lua_State* __ls);
+
 static int jmpt_set_next(lua_State* __ls);
 static int jmpt_set_next_y(lua_State* __ls);
 static int jmpt_set_next_n(lua_State* __ls);
@@ -65,9 +90,10 @@ static int jmpt_gc(lua_State* __ls);
 
 int jmpt_register(lua_State* __ls);
 
-#endif
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 /**********************************************************************************************************************/
 /*last line intentionally left blank.*/

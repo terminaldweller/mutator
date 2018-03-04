@@ -31,8 +31,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <string.h>
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
-JMP_S_T* head = NULL;
-JMP_S_T* tail = NULL;
 extern char etext, edata, end;
 // quad
 #define CODE_1 "\x55\x48\x89\xe5\x48\x83\xec\x20\x89\x7d\xfc\x89\x75\xf8\x89\x55\xf4\x89\x4d\xf0\x8b\x7d\xfc\x8b\x75\xf8\xe8\xd1\xfd\xff\xff\x8b\x7d\xf4\x8b\x75\xf0\x89\x45\xec\xe8\xc3\xfd\xff\xff\x8b\x4d\xec\x1\xc1\x89\xc8\x48\x83\xc4\x20\x5d\xc3"
@@ -215,7 +213,7 @@ int call_rewriter(int offset, size_t size, uint8_t* asm_code, const char* obj) {
 }
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
-JMP_S_T* makejmptable(size_t size, uint8_t* obj) {
+JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose) {
   csh handle;
   cs_insn* insn;
   size_t count;
@@ -223,8 +221,8 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj) {
   uint8_t code[16];
   size_t size_counter = 0;
 
-  head = malloc(sizeof(JMP_S_T));
-  tail = malloc(sizeof(JMP_S_T));
+  JMP_S_T* head = malloc(sizeof(JMP_S_T));
+  JMP_S_T* tail = malloc(sizeof(JMP_S_T));
   head->type = NONE;
   head->next = NULL;
   tail = head;
@@ -234,27 +232,27 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj) {
 #pragma GCC diagnostic ignored "-Wpointer-sign"
   count = cs_disasm(handle, obj, size, 0x0, 0, &insn);
 #pragma GCC diagnostic pop
-  printf("number of instructions: %zu.\n\n", count);
+  if (Verbose) printf("number of instructions: %zu.\n\n", count);
   cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 
   intmax_t address;
   if (count > 0) {
     size_t j;
     for (j = 0; j < count; ++j) {
-      printf(CYAN"%zu.\t"NORMAL, j);
-      printf(GREEN"0x%"PRIx64":\t%s""\t\t%s\t"NORMAL, insn[j].address, insn[j].mnemonic, insn[j].op_str);
-      for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(BLUE"%02x "NORMAL, code[i]);}
-      printf("\n");
+      if (Verbose) printf(CYAN"%zu.\t"NORMAL, j);
+      if (Verbose) printf(GREEN"0x%"PRIx64":\t%s""\t\t%s\t"NORMAL, insn[j].address, insn[j].mnemonic, insn[j].op_str);
+      if (Verbose) for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(BLUE"%02x "NORMAL, code[i]);}
+      if (Verbose) printf("\n");
 
       if (strcmp(insn[j].mnemonic, "jmp") == 0) {
         char* endptr;
         address = strtoumax(insn[j].op_str, &endptr, 0);
 #if 1
-        printf(RED"found a jmp\n");
-        for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(RED"%02x "NORMAL, code[i]);}
-        printf("\n");
-        printf(RED"%jx\n", address);
-        printf(RED"%d\n", insn[j].size);
+        if (Verbose) printf(RED"found a jmp\n");
+        if (Verbose) for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(RED"%02x "NORMAL, code[i]);}
+        if (Verbose) printf("\n");
+        if (Verbose) printf(RED"%jx\n", address);
+        if (Verbose) printf(RED"%d\n", insn[j].size);
 #endif
         JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         dummy->location = insn[j].address;
@@ -270,11 +268,11 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj) {
         char* endptr;
         address = strtoimax(insn[j].op_str, &endptr, 0);
 #if 1
-        printf(RED"found a je\n");
-        for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(RED"%02x "NORMAL, code[i]);}
-        printf("\n");
-        printf(RED"%jx\n", address);
-        printf(RED"%d\n", insn[j].size);
+        if (Verbose) printf(RED"found a je\n");
+        if (Verbose) for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(RED"%02x "NORMAL, code[i]);}
+        if (Verbose) printf("\n");
+        if (Verbose) printf(RED"%jx\n", address);
+        if (Verbose) printf(RED"%d\n", insn[j].size);
 #endif
         JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         dummy->location = insn[j].address;
@@ -290,11 +288,11 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj) {
         char* endptr;
         address = strtoimax(insn[j].op_str, &endptr, 0);
 #if 1
-        printf(RED"found a jne\n");
-        for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(RED"%02x "NORMAL, code[i]);}
-        printf("\n");
-        printf(RED"%lx\n", address);
-        printf(RED"%d\n", insn[j].size);
+        if (Verbose) printf(RED"found a jne\n");
+        if (Verbose) for (int i = 0; i < 16; ++i) {code[i] = insn[j].bytes[i]; printf(RED"%02x "NORMAL, code[i]);}
+        if (Verbose) printf("\n");
+        if (Verbose) printf(RED"%lx\n", address);
+        if (Verbose) printf(RED"%d\n", insn[j].size);
 #endif
         JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         dummy->location = insn[j].address;
@@ -335,9 +333,10 @@ int freejmptable(JMP_S_T* _head) {
 /**********************************************************************************************************************/
 int dumpjmptable(JMP_S_T* current) {
   while (current != NULL) {
-    printf("jump location: %lx", current->location);
+    printf("jump location: %ld", current->location);
     printf("\tjump address: %lu", current->address);
     printf("\tjump type: %d", current->type);
+    printf("\tjump next: %x", &current->next);
     printf("\tinstruction size: %d\n", current->size);
     current = current->next;
   }
@@ -402,7 +401,7 @@ int main(int argc, char** argv) {
   tail = head;
 #endif
   uint8_t asm_code3[834];
-  JMP_S_T* current = makejmptable(834, CODE_3);
+  JMP_S_T* current = makejmptable(834, CODE_3, true);
 
 #if 0
   while (current != NULL) {
