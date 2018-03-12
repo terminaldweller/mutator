@@ -226,7 +226,6 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) 
   size_t size_counter = 0;
 
   JMP_S_T* head = push_jmpt(__ls);
-  //JMP_S_T* head = malloc(sizeof(JMP_S_T));
   JMP_S_T* tail;
   head->type = NONE;
   head->next = NULL;
@@ -264,7 +263,6 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) 
         tail->address = address;
         tail->size = insn[j].size;
         JMP_S_T* dummy = push_jmpt(__ls);
-        //JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         tail->next = dummy;
         tail = dummy;
       }
@@ -284,7 +282,6 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) 
         tail->address = address;
         tail->size = insn[j].size;
         JMP_S_T* dummy = push_jmpt(__ls);
-        //JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         tail->next = dummy;
         tail = dummy;
       }
@@ -304,7 +301,6 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) 
         tail->address = address;
         tail->size = insn[j].size;
         JMP_S_T* dummy = push_jmpt(__ls);
-        //JMP_S_T* dummy = malloc(sizeof(JMP_S_T));
         tail->next = dummy;
         tail = dummy;
       }

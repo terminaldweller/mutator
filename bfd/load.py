@@ -126,6 +126,48 @@ class ELF_RELA():
         self.r_info = r_info
         self.r_addend = r_addend
 
+def ffs(offset,header_list, numbered, *args):
+    cn = Colors.green
+    ch = Colors.cyan
+    cd = Colors.blue
+    cb = Colors.BOLD
+    ci = Colors.red
+    ce = Colors.ENDC
+    max_column_width = []
+    lines = []
+    numbers_f = []
+    dummy = []
+
+    if numbered:
+        numbers_f.extend(range(1, len(args[-1])+1))
+        max_column_width.append(max([len(repr(number)) for number in numbers_f]))
+        header_list.insert(0, "idx")
+
+    for arg in args:
+        max_column_width.append(max([len(repr(argette)) for argette in arg]))
+
+    index = range(0, len(header_list))
+    for header, width, i in zip(header_list, max_column_width, index):
+        max_column_width[i] = max(len(header), width) + offset
+
+    for i in index:
+        dummy.append(ch + cb + header_list[i].ljust(max_column_width[i]) + ce)
+    lines.append("".join(dummy))
+    dummy.clear()
+
+    index2 = range(0, len(args[-1]))
+    for i in index2:
+        if numbered:
+            dummy.append(ci+cb+repr(i).ljust(max_column_width[0])+ce)
+            for arg, width in zip(args, max_column_width[1:]):
+                dummy.append(cd+repr(arg[i]).ljust(width)+ce)
+        else:
+            for arg, width in zip(args, max_column_width):
+                dummy.append(cd+repr(arg[i]).ljust(width)+ce)
+        lines.append("".join(dummy))
+        dummy.clear()
+    return lines
+
 def get_section_type_string(number):
     if number == 0x0: return "NULL"
     if number == 0x1: return "PROGBITS"
@@ -710,9 +752,12 @@ class ELF(object):
             self.ph_dyn_ent.append(ph_dynamic_entry(d_tag, d_un))
 
     def dump_ph_dyn_entries(self):
-        for ph_dyn_e in self.ph_dyn_ent:
-            print(Colors.green + "d_tag: " + Colors.blue + get_ph_dynamic_ent_tag_type(ph_dyn_e.d_tag) + Colors.ENDC, end="\t")
-            print(Colors.green + "d_un: " + Colors.blue + repr(ph_dyn_e.d_un) + Colors.ENDC)
+        header = ["d_tag", "d_un"]
+        tag_list = [get_ph_dynamic_ent_tag_type(ph.d_tag) for ph in self.ph_dyn_ent]
+        un_list = [ph.d_un for ph in self.ph_dyn_ent]
+        lines = ffs(2, header, True, tag_list, un_list)
+        for line in lines:
+            print(line)
 
     def dump_funcs(self, dump_b):
         ret_list = []
@@ -793,32 +838,28 @@ class ELF(object):
         return ret_list
 
     def dump_symbol_idx(self):
-        print(Colors.green + "symbol:" + Colors.ENDC)
-        for iter in self.string_tb_e:
-            print(Colors.blue + "name: " + Colors.cyan + repr(int.from_bytes(iter.st_name, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "size: " + Colors.cyan + repr(int.from_bytes(iter.st_size, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "value: " + Colors.cyan +  repr(int.from_bytes(iter.st_value, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "info: " + Colors.cyan +  repr(int.from_bytes(iter.st_info, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "other: " + Colors.cyan +  repr(int.from_bytes(iter.st_other, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "shndx: " + Colors.cyan +  repr(int.from_bytes(iter.st_shndx, byteorder="little")) + Colors.ENDC)
-        print(Colors.green + "dyn symbol:" + Colors.ENDC)
-        for iter in self.string_tb_e_dyn:
-            print(Colors.blue + "name: " + Colors.cyan +  repr(int.from_bytes(iter.st_name, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "size: " + Colors.cyan +  repr(int.from_bytes(iter.st_size, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "value: " + Colors.cyan +  repr(int.from_bytes(iter.st_value, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "info: " + Colors.cyan +  repr(int.from_bytes(iter.st_info, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "other: " + Colors.cyan +  repr(int.from_bytes(iter.st_other, byteorder="little")) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "shndx: " + Colors.cyan +  repr(int.from_bytes(iter.st_shndx, byteorder="little")) + Colors.ENDC)
+        header = ["name", "size", "value", "info", "other", "shndx"]
+        name_list = [byte2int(st.st_name) for st in self.string_tb_e]
+        size_list = [byte2int(st.st_size) for st in self.string_tb_e]
+        value_list = [byte2int(st.st_value) for st in self.string_tb_e]
+        info_list = [byte2int(st.st_info) for st in self.string_tb_e]
+        other_list = [byte2int(st.st_other) for st in self.string_tb_e]
+        shndx_list = [byte2int(st.st_shndx) for st in self.string_tb_e]
+        lines = ffs(2, header, True, name_list, size_list, value_list, info_list, other_list, shndx_list)
+        print(Colors.green + Colors.BOLD + "symbol:" + Colors.ENDC)
+        for line in lines:
+            print(line)
+        print(Colors.green + Colors.BOLD + "dyn symbol:" + Colors.ENDC)
+        header = ["name", "size", "value", "info", "other", "shndx"]
+        name_list = [byte2int(st.st_name) for st in self.string_tb_e_dyn]
+        size_list = [byte2int(st.st_size) for st in self.string_tb_e_dyn]
+        value_list = [byte2int(st.st_value) for st in self.string_tb_e_dyn]
+        info_list = [byte2int(st.st_info) for st in self.string_tb_e_dyn]
+        other_list = [byte2int(st.st_other) for st in self.string_tb_e_dyn]
+        shndx_list = [byte2int(st.st_shndx) for st in self.string_tb_e_dyn]
+        lines = ffs(2, header, True, name_list, size_list, value_list, info_list, other_list, shndx_list)
+        for line in lines:
+            print(line)
 
     def dump_header(self):
         print("------------------------------------------------------------------------------")
@@ -846,48 +887,37 @@ class ELF(object):
         print("------------------------------------------------------------------------------")
 
     def dump_phdrs(self):
-        print(Colors.green + Colors.BOLD + "pheaders:" + Colors.ENDC)
-        for i in range(0, int.from_bytes(self.elfhdr.e_phnum, byteorder="little", signed=False)):
-            type = get_ph_type(byte2int(self.phdr[i].p_type))
-            print(Colors.blue + "p_type: " + Colors.cyan + type + Colors.ENDC, end="")
-            flags = get_elf_seg_flag(byte2int(self.phdr[i].p_flags))
-            print(Colors.blue + " p_flags: " + Colors.cyan + flags + Colors.ENDC, end="")
-            print(Colors.blue + " p_offset: " + Colors.cyan + repr(byte2int(self.phdr[i].p_offset)) + Colors.ENDC, end="")
-            print(Colors.blue + " p_vaddr: " + Colors.cyan + repr(byte2int(self.phdr[i].p_vaddr)) + Colors.ENDC, end="")
-            print(Colors.blue + " p_paddr: " + Colors.cyan + repr(byte2int(self.phdr[i].p_paddr)) + Colors.ENDC, end="")
-            print(Colors.blue + " p_filesz: " + Colors.cyan + repr(byte2int(self.phdr[i].p_filesz)) + Colors.ENDC, end="")
-            print(Colors.blue + " p_memsz: " + Colors.cyan + repr(byte2int(self.phdr[i].p_memsz)) + Colors.ENDC, end="")
-            print(Colors.blue + " p_flags2: " + Colors.cyan + repr(self.phdr[i].p_flags2) + Colors.ENDC, end="")
-            print(Colors.blue + " p_align: " + Colors.cyan + repr(byte2int(self.phdr[i].p_align)) + Colors.ENDC)
+        header = ["p_type", "p_flags", "p_offset", "p_vaddr", "p_paddr", "p_filesz", "p_memsz", "p_flags2", "p_align"]
+        type_list = [get_ph_type(byte2int(phdr.p_type)) for phdr in self.phdr]
+        flags_list = [get_elf_seg_flag(byte2int(phdr.p_type)) for phdr in self.phdr]
+        offset_list = [byte2int(phdr.p_offset) for phdr in self.phdr]
+        vaddr_list = [byte2int(phdr.p_vaddr) for phdr in self.phdr]
+        paddr_list = [byte2int(phdr.p_paddr) for phdr in self.phdr]
+        filesz_list = [byte2int(phdr.p_filesz) for phdr in self.phdr]
+        memsz_list = [byte2int(phdr.p_memsz) for phdr in self.phdr]
+        flags2_list = [phdr.p_flags2 for phdr in self.phdr]
+        align_list = [byte2hex(phdr.p_align) for phdr in self.phdr]
+
+        lines = ffs(2, header, True, type_list, flags_list, offset_list, vaddr_list, paddr_list, filesz_list, memsz_list, flags2_list, align_list)
+        for line in lines:
+            print(line)
 
     def dump_shdrs(self):
-        print(Colors.green + Colors.BOLD + "sheaders:" + Colors.ENDC)
-        counter = int()
-        for i in range(0, int.from_bytes(self.elfhdr.e_shnum, byteorder="little", signed=False)):
-            name = self.read_section_name(byte2int(self.shhdr[i].sh_name))
-            print(Colors.green + Colors.BOLD + repr(counter) + Colors.ENDC, end="")
-            print("   ", end="")
-            print(Colors.blue + "sh_name: " + Colors.cyan + name + Colors.ENDC, end="")
-            print("\t", end="")
-            type = get_section_type_string(byte2int(self.shhdr[i].sh_type))
-            print(Colors.blue + "sh_type: " + Colors.cyan + type + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_flags: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_flags)) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_addr: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_addr)) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_offset: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_offset)) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_size: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_size)) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_link: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_link)) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_info: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_info)) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_addralign: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_addralign)) + Colors.ENDC, end="")
-            print("\t", end="")
-            print(Colors.blue + "sh_entsize: " + Colors.cyan + repr(byte2int(self.shhdr[i].sh_entsize)) + Colors.ENDC)
-            counter += 1
+        header = ["sh_name", "sh_type", "sh_flags", "sh_addr", "sh_offset", "sh_size", "sh_link", "sh_info", "sh_addralign", "sh_entsize"]
+        name_list = [self.read_section_name(byte2int(shhdr.sh_name)) for shhdr in self.shhdr]
+        type_list = [get_section_type_string(byte2int(shhdr.sh_type)) for shhdr in self.shhdr]
+        flag_list = [byte2int(shhdr.sh_flags) for shhdr in self.shhdr]
+        addr_list = [byte2int(shhdr.sh_addr) for shhdr in self.shhdr]
+        offset_list = [byte2int(shhdr.sh_offset) for shhdr in self.shhdr]
+        size_list = [byte2int(shhdr.sh_size) for shhdr in self.shhdr]
+        link_list = [byte2int(shhdr.sh_link) for shhdr in self.shhdr]
+        info_list = [byte2int(shhdr.sh_info) for shhdr in self.shhdr]
+        allign_list = [byte2int(shhdr.sh_addralign) for shhdr in self.shhdr]
+        entsize_list = [byte2int(shhdr.sh_entsize) for shhdr in self.shhdr]
+
+        lines = ffs(2, header, True, name_list, type_list, flag_list, addr_list, offset_list, size_list, link_list, info_list, allign_list, entsize_list)
+        for line in lines:
+            print(line)
 
     def dump_symbol_tb(self, name, type):
         for i in range(0, byte2int(self.elfhdr.e_shnum)):
@@ -902,28 +932,36 @@ class ELF(object):
 
 
     def dump_st_entries(self):
-        for entry in self.string_tb_e:
-            print(Colors.green + "name index: " + Colors.ENDC + repr(byte2int(entry.st_name)), end="")
-            print(Colors.green + " name: " + Colors.ENDC + repr("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name), ".strtab"))), end="")
-            print(Colors.green + " value: " + Colors.ENDC + repr(byte2int(entry.st_value)), end="")
-            print(Colors.green + " size: " + Colors.ENDC + repr(byte2int(entry.st_size)), end="")
-            print(Colors.green + " info: " + Colors.ENDC + repr(byte2int(entry.st_info)), end="")
-            print(Colors.green + " other: " + Colors.ENDC + repr(byte2int(entry.st_other)), end="")
-            print(Colors.green + " shndx: " + Colors.ENDC + repr(byte2int(entry.st_shndx)), end="")
-            print(Colors.green + " bind: " + Colors.ENDC + get_elf_st_bind_string(entry.st_bind), end="")
-            print(Colors.green + " type: " + Colors.ENDC + get_elf_st_type_string(entry.st_type))
+        header = ["name_index", "name", "value", "size", "info", "other", "shndx", "bind", "type"]
+        idx_list = [byte2int(entry.st_name) for entry in self.string_tb_e]
+        name_list = [ "".join(self.get_st_entry_symbol_string(byte2int(entry.st_name), ".strtab")) for entry in self.string_tb_e]
+        value_list = [byte2int(entry.st_value) for entry in self.string_tb_e]
+        size_list = [byte2int(entry.st_size) for entry in self.string_tb_e]
+        info_list = [byte2int(entry.st_info) for entry in self.string_tb_e]
+        other_list = [byte2int(entry.st_other) for entry in self.string_tb_e]
+        shndx_list = [byte2int(entry.st_shndx) for entry in self.string_tb_e]
+        bind_list = [get_elf_st_bind_string(entry.st_bind) for entry in self.string_tb_e]
+        type_list = [get_elf_st_type_string(entry.st_type) for entry in self.string_tb_e]
+
+        lines = ffs(2, header, True, idx_list, name_list, value_list, size_list, info_list, other_list, shndx_list, bind_list, type_list)
+        for line in lines:
+            print(line)
 
     def dump_st_entries_dyn(self):
-        for entry in self.string_tb_e_dyn:
-            print(Colors.green + "name index: " + Colors.ENDC + repr(byte2int(entry.st_name)), end="")
-            print(Colors.green + " name: " + Colors.ENDC + repr("".join(self.get_st_entry_symbol_string(byte2int(entry.st_name), ".dynstr"))), end="")
-            print(Colors.green + " value: " + Colors.ENDC + repr(byte2int(entry.st_value)), end="")
-            print(Colors.green + " size: " + Colors.ENDC + repr(byte2int(entry.st_size)), end="")
-            print(Colors.green + " info: " + Colors.ENDC + repr(byte2int(entry.st_info)), end="")
-            print(Colors.green + " other: " + Colors.ENDC + repr(byte2int(entry.st_other)), end="")
-            print(Colors.green + " shndx: " + Colors.ENDC + repr(byte2int(entry.st_shndx)), end="")
-            print(Colors.green + " bind: " + Colors.ENDC + get_elf_st_bind_string(entry.st_bind), end="")
-            print(Colors.green + " type: " + Colors.ENDC + get_elf_st_type_string(entry.st_type))
+        header = ["name_index", "name", "value", "size", "info", "other", "shndx", "bind", "type"]
+        idx_list = [byte2int(entry.st_name) for entry in self.string_tb_e_dyn]
+        name_list = [ "".join(self.get_st_entry_symbol_string(byte2int(entry.st_name), ".dynstr")) for entry in self.string_tb_e_dyn]
+        value_list = [byte2int(entry.st_value) for entry in self.string_tb_e_dyn]
+        size_list = [byte2int(entry.st_size) for entry in self.string_tb_e_dyn]
+        info_list = [byte2int(entry.st_info) for entry in self.string_tb_e_dyn]
+        other_list = [byte2int(entry.st_other) for entry in self.string_tb_e_dyn]
+        shndx_list = [byte2int(entry.st_shndx) for entry in self.string_tb_e_dyn]
+        bind_list = [get_elf_st_bind_string(entry.st_bind) for entry in self.string_tb_e_dyn]
+        type_list = [get_elf_st_type_string(entry.st_type) for entry in self.string_tb_e_dyn]
+
+        lines = ffs(2, header, True, idx_list, name_list, value_list, size_list, info_list, other_list, shndx_list, bind_list, type_list)
+        for line in lines:
+            print(line)
 
     def get_st_entry_symbol_string(self, index, section_name):
         symbol = []

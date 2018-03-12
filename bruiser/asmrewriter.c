@@ -259,7 +259,7 @@ static int jmpt_tostring(lua_State* __ls) {
 }
 
 static const luaL_Reg jmpt_methods[] = {
-  {"new", new_jmpt},
+  {"new", new_jmpt_2},
   {"set_type", jmpt_set_type},
   {"set_location", jmpt_set_location},
   {"set_size", jmpt_set_size},

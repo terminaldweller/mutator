@@ -1605,7 +1605,6 @@ class LuaWrapper
       auto head = makejmptable(size, code_v.data(), Verbose, __ls);
       jmpt_push_args(__ls, head);
       new_jmpt_2(__ls);
-      dumpjmptable(head);
       return 1;
     }
 

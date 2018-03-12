@@ -129,7 +129,7 @@ function xobj.printFuncSizes()
   end
 end
 
-function xobj.getTextSection()
+function xobj.getTextSection(elf_exe)
   return objload("elf_get_text_section", elf_exe, "bytes")
 end
 

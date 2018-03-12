@@ -4,6 +4,13 @@ colors = require("ansicolors")
 elf_file = "../bfd/test/test.so"
 elf_exe = "../bfd/test/test"
 
+function get_jmp_type(val)
+  if val == 1 then return "JMP" end
+  if val == 2 then return "JNE" end
+  if val == 3 then return "JE" end
+  return "U"
+end
+
 function main()
   xobj.getSO(elf_file)
   local add2_code = xobj.codeTableByName_number("'add2'")
@@ -27,7 +34,7 @@ end
 
 function pretty_dump()
   count = 0
-  local text_section = xobj.getTextSection()
+  local text_section = xobj.getTextSection(elf_exe)
   io.write(colors("%{blue}".."    ".."\t".."00 ".."01 ".."02 ".."03 ".."04 ".."05 ".."06 ".."07 ".."08 ".."09 ".."0A ".."0B ".."0C ".."0D ".."0E ".."0F"))
   for k,v in pairs(text_section) do
     if count % 16 == 0 then
@@ -42,17 +49,9 @@ function pretty_dump()
 end
 
 function test()
-  local text_section = xobj.getTextSection()
+  local text_section = xobj.getTextSection(elf_exe)
   dummy = xobj.CSDump(text_section)
   print(dummy)
-end
-
-function asm_rewriter()
-  local text_section = xobj.getTextSection()
-  local head = getjmptable(#text_section, text_section)
-  print("head value is",head)
-  dumpjmptable(head)
-  freejmptable(haed)
 end
 
 setmetatable(jmp_s_t, {__call = function(self, arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)
@@ -60,9 +59,6 @@ setmetatable(jmp_s_t, {__call = function(self, arg1,arg2,arg3,arg4,arg5,arg6,arg
                                   print("created", t)
                                   return t
                                 end})
-
-setmetatable(jmp_s_t, {__index = function(self, arg1)
-end})
 
 function jmp_s_t:show(msg)
   print(msg, self, self:custom())
@@ -86,21 +82,45 @@ function jmp_t_test()
 end
 
 function integ_test()
-  local text_section = xobj.getTextSection()
+  local text_section = xobj.getTextSection(elf_exe)
   local head = getjmptable(#text_section, text_section)
   head:show("XXXXXhead is")
   print("head location is ", head:location())
   while head:inext() ~= nil do
-  --for i=1,11,1 do
     head:show("next is")
     head = head:inext()
-    --if head:type() == 0 then break end
   end
+end
+
+function asm_rewriter_pretty()
+  local text_section = xobj.getTextSection(elf_exe)
+  local head = getjmptable(#text_section, text_section)
+  while head:inext() ~= nil do
+    io.write(colors("%{blue}".."type:"),colors("%{green}"..get_jmp_type(head:type())),"\t",colors("%{blue}".."location:"),colors("%{green}".."0x"..string.format("%x",head:location())),"\t",colors("%{blue}".."size:"),colors("%{green}"..head:size()),"\n")
+    head = head:inext()
+  end
+  freejmptable(haed)
+end
+
+function dump_jmp_table()
+  local text_section = xobj.getTextSection(elf_exe)
+  local head = getjmptable(#text_section, text_section)
+  while head:inext() ~= nil do
+    io.write("type:", head:type(), "\tlocation:", "0x"..string.format("%x", head:location()))
+    print()
+    head = head:inext()
+  end
+end
+
+function get_jmp_table()
+  local text_section = xobj.getTextSection(elf_exe)
+  return getjmptable(#text_section, text_section)
 end
 
 --main()
 --pretty_dump()
 --test()
---asm_rewriter()
 --jmp_t_test()
-integ_test()
+--integ_test()
+--asm_rewriter_pretty()
+dump_jmp_table()
