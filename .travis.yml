@@ -46,6 +46,7 @@ before_script:
   - sudo apt-get install python3.5-dev -y --allow-unauthenticated
   - python3-config --includes
   - python3-config --ldflags
+  - llvm-config-5.0 --has-rtti
 
 script: 
   - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
