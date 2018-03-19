@@ -344,9 +344,7 @@ int dumpjmptable(JMP_S_T* current) {
   }
 }
 /**********************************************************************************************************************/
-void jmprewriter_j(JMP_S_T* jmp, uint8_t* code, JMP_T type, uint8_t* rewritten) {
-  
-}
+void jmprewriter_j(JMP_S_T* jmp, uint8_t* code, JMP_T type, uint8_t* rewritten) {}
 void jmprewriter_jne(JMP_S_T* jmp, uint8_t* code, JMP_T type, uint8_t* rewritten) {};
 void jmprewriter_je(JMP_S_T* jmp, uint8_t* code, JMP_T type, uint8_t* rewritten) {}
 /**********************************************************************************************************************/

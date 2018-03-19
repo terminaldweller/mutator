@@ -42,6 +42,7 @@ class ExceptionHandler(object):
 class CLIArgParser(object):
     def __init__(self):
         parser = argparse.ArgumentParser()
+        parser.add_argument("--dbg", action="store_true", help="debug", default=False)
         parser.add_argument("--obj", type=str, help="path to the executbale, shared object or object you want to load in bruiser")
         parser.add_argument("--header", action='store_true', help="dump headers", default=False)
         parser.add_argument("--symboltable", action='store_true', help="dump symbol table", default=False)
@@ -58,6 +59,8 @@ class CLIArgParser(object):
         parser.add_argument("--dlpath", action='store_true', help="dump dynamic linker path", default=False)
         parser.add_argument("--phdynent", action='store_true', help="dump ph PT_DYNAMIC entries", default=False)
         parser.add_argument("--section", type=str, help="dump a section")
+        parser.add_argument("--dumpfunc", type=str, help="dump a functions machine code")
+        parser.add_argument("--dumpfuncasm", type=str, help="dump a functions assembly code")
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -741,6 +744,7 @@ class ELF(object):
         return ''.join(name)
 
     def get_ph_dyn_entries(self):
+        size = 0
         for phdr in self.phdr:
             if byte2int(phdr.p_type) == p_type_e.PT_DYNAMIC:
                 self.so.seek(byte2int(phdr.p_offset), 0)
@@ -791,9 +795,11 @@ class ELF(object):
         return ret_list
 
     def dump_section(self, section_name, dump):
+        hit = False
         for section in self.shhdr:
             name = self.read_section_name(byte2int(section.sh_name))
             if name == section_name:
+                hit = True
                 self.so.seek(byte2int(section.sh_offset))
                 obj = self.so.read(byte2int(section.sh_size))
                 if section_name == ".interp":  self.dlpath = repr(obj)
@@ -826,6 +832,7 @@ class ELF(object):
                     ret_dummy.append(obj[i])
                 #print(ret_dummy)
                 return ret_dummy
+        if not hit: print(Colors.red + Colors.BOLD + "section is not present" + Colors.ENDC)
 
     def dump_obj_size(self, stt_type, dump_b):
         ret_list = []
@@ -862,29 +869,34 @@ class ELF(object):
             print(line)
 
     def dump_header(self):
-        print("------------------------------------------------------------------------------")
-        print(Colors.green + "elf header:" + Colors.ENDC)
-        print(Colors.blue + "ei_mag: " + Colors.cyan + repr(self.elfhdr.ei_mag) + Colors.ENDC)
-        print(Colors.blue + "ei_class: " + Colors.cyan + repr(byte2int(self.elfhdr.ei_class)) + Colors.ENDC)
-        print(Colors.blue + "ei_data: " + Colors.cyan + repr(byte2int(self.elfhdr.ei_data)) + Colors.ENDC)
-        print(Colors.blue + "ei_version: " + Colors.cyan + repr(byte2int(self.elfhdr.ei_version)) + Colors.ENDC)
-        print(Colors.blue + "ei_osabi: " + Colors.cyan + repr(byte2int(self.elfhdr.ei_osabi)) + Colors.ENDC)
-        print(Colors.blue + "ei_abiversion: " + Colors.cyan + repr(byte2int(self.elfhdr.ei_abiversion)) + Colors.ENDC)
-        print(Colors.blue + "ei_pad: " + Colors.cyan + repr(byte2int(self.elfhdr.ei_pad)) + Colors.ENDC)
-        print(Colors.blue + "e_type: " + Colors.cyan + repr(byte2int(self.elfhdr.e_type)) + Colors.ENDC)
-        print(Colors.blue + "e_machine: " + Colors.cyan + repr(byte2int(self.elfhdr.e_machine)) + Colors.ENDC)
-        print(Colors.blue + "e_version: " + Colors.cyan + repr(byte2int(self.elfhdr.e_version)) + Colors.ENDC)
-        print(Colors.blue + "e_entry: " + Colors.cyan + repr(byte2int(self.elfhdr.e_entry)) + Colors.ENDC)
-        print(Colors.blue + "e_phoff: " + Colors.cyan + repr(byte2int(self.elfhdr.e_phoff)) + Colors.ENDC)
-        print(Colors.blue + "e_shoff: " + Colors.cyan + repr(byte2int(self.elfhdr.e_shoff)) + Colors.ENDC)
-        print(Colors.blue + "e_flags: " + Colors.cyan + repr(byte2int(self.elfhdr.e_flags)) + Colors.ENDC)
-        print(Colors.blue + "e_ehsize: " + Colors.cyan + repr(byte2int(self.elfhdr.e_ehsize)) + Colors.ENDC)
-        print(Colors.blue + "e_phentsize: " + Colors.cyan + repr(byte2int(self.elfhdr.e_phentsize)) + Colors.ENDC)
-        print(Colors.blue + "e_phnum: " + Colors.cyan + repr(byte2int(self.elfhdr.e_phnum)) + Colors.ENDC)
-        print(Colors.blue + "e_shentsize: " + Colors.cyan + repr(byte2int(self.elfhdr.e_shentsize)) + Colors.ENDC)
-        print(Colors.blue + "e_shnum: " + Colors.cyan + repr(byte2int(self.elfhdr.e_shnum)) + Colors.ENDC)
-        print(Colors.blue + "e_shstrndx: " + Colors.cyan + repr(byte2int(self.elfhdr.e_shstrndx)) + Colors.ENDC)
-        print("------------------------------------------------------------------------------")
+        header = ["ei_mag", "ei_class", "ei_data", "ei_version", "ei_osabi", "ei_abiversion", "ei_pad",
+                  "e_type", "e_machine", "e_version", "e_version", "e_entry", "e_phoff", "e_shoff", "e_flags",
+                  "e_entsize", "e_phentsize", "e_phnum", "e_shentsize", "e_shnum", "e_shstrndx"]
+        mag_list = [self.elfhdr.ei_mag]
+        class_list = [byte2int(self.elfhdr.ei_class)]
+        data_list = [byte2int(self.elfhdr.ei_data)]
+        version_list = [byte2int(self.elfhdr.ei_version)]
+        osabi_list = [byte2int(self.elfhdr.ei_osabi)]
+        abiversion_list = [byte2int(self.elfhdr.ei_abiversion)]
+        pad_list = [byte2int(self.elfhdr.ei_pad)]
+        type_list = [byte2int(self.elfhdr.e_type)]
+        machine_list = [byte2int(self.elfhdr.e_machine)]
+        version_list = [byte2int(self.elfhdr.e_version)]
+        entry_list = [byte2int(self.elfhdr.e_entry)]
+        phoff_list = [byte2int(self.elfhdr.e_phoff)]
+        shoff_list = [byte2int(self.elfhdr.e_shoff)]
+        flags_list = [byte2int(self.elfhdr.e_flags)]
+        ehsize_list = [byte2int(self.elfhdr.e_ehsize)]
+        phentsize_list = [byte2int(self.elfhdr.e_phentsize)]
+        phnum_list = [byte2int(self.elfhdr.e_phnum)]
+        shentsize_list = [byte2int(self.elfhdr.e_shentsize)]
+        shnum_list = [byte2int(self.elfhdr.e_shnum)]
+        shstrndx_list = [byte2int(self.elfhdr.e_shstrndx)]
+        lines = ffs(2, header, True, mag_list, class_list, data_list, version_list, osabi_list, abiversion_list,
+                    pad_list, type_list, machine_list, version_list, entry_list, phoff_list, shoff_list,
+                    flags_list, ehsize_list, phentsize_list, phnum_list, shentsize_list, phnum_list, shentsize_list, shnum_list, shstrndx_list)
+        for line in lines:
+            print(line)
 
     def dump_phdrs(self):
         header = ["p_type", "p_flags", "p_offset", "p_vaddr", "p_paddr", "p_filesz", "p_memsz", "p_flags2", "p_align"]
@@ -1066,6 +1078,20 @@ def elf_get_func_code():
     elf.init(64)
     return elf.dump_funcs(False)
 
+def elf_get_func_code_byname():
+    so = openSO_r(sys.argv[1])
+    arg = openSO_r(sys.argv[2])
+    elf = ELF(so)
+    elf.init(64)
+    counter = 0
+    hit = False
+    for name in elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False):
+        if name == arg:
+            code = elf.dump_funcs(False)[counter]
+            hit = True
+        counter += 1
+    return code
+
 class Call_Rewriter(object):
     #def __init__(self, obj_code, arch, mode):
     def __init__(self, obj_code):
@@ -1102,57 +1128,67 @@ class Rewriter(object):
             name = self.elf.read_section_name(byte2int(self.elf.shhdr[i].sh_name))
             if section_name == name:
                 self.magic_section_number = i + 1
+        print(self.magic_section_number)
 
     def fix_section_size(self, section_name):
         pass
 
+def premain(argparser):
+    so = openSO_r(argparser.args.obj)
+    elf = ELF(so)
+    elf.init(64)
+    if argparser.args.header: elf.dump_header()
+    elif argparser.args.symboltable:
+        elf.dump_symbol_tb(".strtab", sh_type_e.SHT_STRTAB)
+        elf.dump_symbol_tb(".dynstr", sh_type_e.SHT_STRTAB)
+    elif argparser.args.phdrs: elf.dump_phdrs()
+    elif argparser.args.shdrs: elf.dump_shdrs()
+    elif argparser.args.symbolindex: elf.dump_symbol_idx()
+    elif argparser.args.stentries: elf.dump_st_entries()
+    elif argparser.args.objcode: elf.dump_funcs(True)
+    elif argparser.args.funcs: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
+    elif argparser.args.objs: elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, True)
+    elif argparser.args.dynsym: elf.dump_st_entries_dyn()
+    elif argparser.args.dlpath: elf.dump_section(".interp", True)
+    elif argparser.args.section: elf.dump_section(argparser.args.section, True)
+    elif argparser.args.test2:
+        rewriter = Rewriter(argparser.args.obj)
+        rewriter.fix_section_offsets(".text")
+    elif argparser.args.dumpfunc:
+        counter = 0
+        for name in elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False):
+            if name == argparser.args.dumpfunc:
+                print(Colors.red + Colors.BOLD + name + Colors.ENDC)
+                code = elf.dump_funcs(False)[counter]
+                print(code)
+            counter += 1
+    elif argparser.args.dumpfuncasm:
+        counter = 0
+        hit = False
+        for name in elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False):
+            if name == argparser.args.dumpfuncasm:
+                code = elf.dump_funcs(False)[counter]
+                hit = True
+            counter += 1
+        if hit:
+            md = Cs(CS_ARCH_X86, CS_MODE_64)
+            for i in md.disasm(bytes(code), 0x0):
+                print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
+    elif argparser.args.phdynent: elf.dump_ph_dyn_entries()
+
 def main():
-    try:
-        argparser = CLIArgParser()
-        so = openSO_r(argparser.args.obj)
-        elf = ELF(so)
-        elf.init(64)
-        if argparser.args.header: elf.dump_header()
-        elif argparser.args.symboltable:
-            elf.dump_symbol_tb(".strtab", sh_type_e.SHT_STRTAB)
-            elf.dump_symbol_tb(".dynstr", sh_type_e.SHT_STRTAB)
-        elif argparser.args.phdrs: elf.dump_phdrs()
-        elif argparser.args.shdrs: elf.dump_shdrs()
-        elif argparser.args.symbolindex: elf.dump_symbol_idx()
-        elif argparser.args.stentries: elf.dump_st_entries()
-        elif argparser.args.objcode: elf.dump_funcs(True)
-        elif argparser.args.funcs: elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, True)
-        elif argparser.args.objs: elf.dump_symbol_string(ELF_ST_TYPE.STT_OBJECT, True)
-        elif argparser.args.dynsym: elf.dump_st_entries_dyn()
-        elif argparser.args.dlpath: elf.dump_section(".interp", True)
-        elif argparser.args.section: elf.dump_section(argparser.args.section, True)
-        elif argparser.args.test2:
-            rewriter = Rewriter(argparser.args.obj)
-            rewriter.fix_section_offsets(".text")
-        elif argparser.args.test:
-            counter = 0
-            print(elf.dump_funcs(False)[10])
-            print(elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False)[10])
-            for name in elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False):
-                if name == "glob":
-                    print(counter)
-                    print(elf.dump_funcs(False)[counter])
-                    print(name)
-                if name == "quad":
-                    print(counter)
-                    print(elf.dump_funcs(False)[counter])
-                    print(name)
-                counter += 1
-            obj = elf.dump_funcs(False)[10]
-            rewriter = Call_Rewriter(obj)
-            rewriter.run()
-        elif argparser.args.phdynent: elf.dump_ph_dyn_entries()
-    except:
-        signal.signal(signal.SIGINT, SigHandler_SIGINT)
-        variables = globals().copy()
-        variables.update(locals())
-        shell = code.InteractiveConsole(variables)
-        shell.interact(banner="PyElfDump REPL")
+    argparser = CLIArgParser()
+    if argparser.args.dbg:
+        try:
+            premain(argparser)
+        except:
+            signal.signal(signal.SIGINT, SigHandler_SIGINT)
+            variables = globals().copy()
+            variables.update(locals())
+            shell = code.InteractiveConsole(variables)
+            shell.interact(banner="DELF REPL")
+    else:
+        premain(argparser)
 
 if __name__ == "__main__":
     main()

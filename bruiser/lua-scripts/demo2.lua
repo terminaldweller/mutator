@@ -118,9 +118,9 @@ function get_jmp_table()
 end
 
 --main()
---pretty_dump()
+pretty_dump()
 --test()
 --jmp_t_test()
 --integ_test()
 --asm_rewriter_pretty()
-dump_jmp_table()
+--dump_jmp_table()

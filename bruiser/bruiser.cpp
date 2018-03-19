@@ -325,8 +325,7 @@ class PyExec {
             Py_DECREF(pFunc);
             Py_DECREF(pModule);
             PyErr_Print();
-            std::cout << RED << "call failed." << NORMAL << "\n";
-            fprintf(stderr, "Call failed\n");
+            std::cout << RED << "Call failed." << NORMAL << "\n";
             return EXIT_FAILURE;
           }
         }
@@ -476,6 +475,8 @@ class PyExec {
     std::vector<std::string> exportStrings(void) {return hexobj_str;}
     std::vector<std::uint8_t> exportTextSection(void) {return text_section;}
 
+    void getVarargs(std::vector<void*> _varargs) {varargs = _varargs;}
+
   private:
     std::string py_script_name;
     std::string py_func_name;
@@ -491,6 +492,7 @@ class PyExec {
     std::vector<std::string> hexobj_str;
     std::vector<std::vector<uint8_t>> hexobj;
     std::vector<uint8_t> text_section;
+    std::vector<void*> varargs;
 };
 /**********************************************************************************************************************/
 class XObjReliquary {};
@@ -1339,6 +1341,7 @@ class LuaWrapper
         action = lua_tostring(__ls, 3);
         if (action == "") PRINT_WITH_COLOR_LB(RED, "third argument is nil");
         lua_pop(__ls, 3);
+        std::cout << NORMAL;
       }
       else {
         std::cout << RED << "wrong number of arguments provided. should give the python script name, python func name and its args.\n" << NORMAL;
@@ -1349,7 +1352,7 @@ class LuaWrapper
       PyExec py(filename.c_str(), funcname.c_str(), objjpath.c_str());
 
       if (Verbose) std::cout << BLUE << "running load.py: " << NORMAL << "\n";
-      py.run();
+      if (py.run() == EXIT_FAILURE) return 0;
       if (action == "code_list") {
         py.getAsCppByte();
         //py.printHexObjs();
