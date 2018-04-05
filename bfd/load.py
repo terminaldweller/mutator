@@ -61,6 +61,9 @@ class CLIArgParser(object):
         parser.add_argument("--section", type=str, help="dump a section")
         parser.add_argument("--dumpfunc", type=str, help="dump a functions machine code")
         parser.add_argument("--dumpfuncasm", type=str, help="dump a functions assembly code")
+        parser.add_argument("--textasm", action='store_true', help="disassemble the text section", default=False)
+        parser.add_argument("--dynsecents", action='store_true', help="dynamic section entries", default=False)
+        parser.add_argument("--reladynents", action='store_true', help=".rela.dyn entries", default=False)
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -453,6 +456,48 @@ def get_ph_dynamic_ent_tag_type(value):
     else: return str(value)
     #else: return "UNKNOWN"
 
+class X86_REL_TYPE:
+    R_386_NONE = 0
+    R_386_32 = 1
+    R_386_PC32 = 2
+    R_386_GOT32 = 3
+    R_386_PLT32 = 4
+    R_386_COPY = 5
+    R_386_GLOB_DAT = 6
+    R_386_JMP_SLOT = 7
+    R_386_RELATIVE = 8
+    R_386_GOTOFF = 9
+    R_386_GOTPC = 10
+    R_386_32PLT = 11
+    R_386_16 = 12
+    R_386_PC16 = 13
+    R_386_8 = 14
+    R_386_PC8 = 15
+    R_386_SIZE32 = 16
+
+class X86_64_REL_TYPE:
+    R_AMD64_NONE = 0
+    R_AMD64_64 = 1
+    R_AMD64_PC32 = 2
+    R_AMD6_GOT32 = 3
+    R_AMD64_PLT32 = 4
+    R_AMD64_COPY = 5
+    R_AMD64_GLOV_DAT = 6
+    R_AMD64_JUMP_SLOT = 7
+    R_AMD64_RELATIVE = 8
+    R_AMD64_GOTPCREL = 9
+    R_AMD64_32 = 10
+    R_AMD64_32S = 11
+    R_AMD64_16 = 12
+    R_AMD64_PC16 = 13
+    R_AMD64_8 = 14
+    R_AMD64_PC8 = 15
+    R_AMD64_PC64 = 24
+    R_AMD64_GOTOFF64 = 25
+    R_AMD64_GOTPC32 = 26
+    R_AMD64_SIZE32 = 32
+    R_AMD64_SIZE64 = 33
+
 class ELF_ST_BIND:
     STB_LOCAL = 0
     STB_GLOBAL = 1
@@ -620,6 +665,10 @@ class ELF(object):
         self.text_section = []
         self.dlpath = str()
         self.ph_dyn_ent = []
+        self.dyn_section = []
+        self.dyn_section_ents = []
+        self.rela_dyn = []
+        self.rela_dyn_ents = []
 
     def init(self, size):
         self.size = size
@@ -653,6 +702,8 @@ class ELF(object):
         self.pop_data_section()
         self.pop_text_section()
         self.get_ph_dyn_entries()
+        self.pop_dynamic_entries(".dynamic", self.dyn_section_ents)
+        self.pop_dynamic_entries(".rela.dyn", self.rela_dyn_ents)
 
     def read_ELF_H(self, size):
         self.elfhdr.ei_mag = self.so.read(4)
@@ -975,6 +1026,15 @@ class ELF(object):
         for line in lines:
             print(line)
 
+    def dump_dyn_sec_ents(self, who):
+        header = ["type_string", "tag", "value"]
+        tag_string_list = [entry["type_string"] for entry in who]
+        tag_list = [entry["tag"] for entry in who]
+        value_list = [entry["value"] for entry in who]
+        lines = ffs(2, header, True, tag_string_list, tag_list, value_list)
+        for line in lines:
+            print(line)
+
     def get_st_entry_symbol_string(self, index, section_name):
         symbol = []
         for i in range(0, byte2int(self.elfhdr.e_shnum)):
@@ -1018,6 +1078,32 @@ class ELF(object):
             if name == ".text":
                 self.so.seek(byte2int(section.sh_offset))
                 self.text_section = self.so.read(byte2int(section.sh_size))
+
+    def pop_dynamic_entries(self, section_name, struct_to_pop):
+        for section in self.shhdr:
+            name = self.read_section_name(byte2int(section.sh_name))
+            if name == section_name:
+                self.so.seek(byte2int(section.sh_offset))
+                self.dyn_section = self.so.read(byte2int(section.sh_size))
+        length = int(len(self.dyn_section))
+        tag_type = int()
+        type_string = str()
+        value = int()
+        dummy = {}
+        jmp_val = int()
+        if self.size == 64: jmp_val = 8
+        elif self.size == 32: jmp_val = 4
+        else: jmp_val = 8; print("self.size is not set for class elf.going with 8 as a default.")
+        for offset in range(0, length, jmp_val*2):
+            tag_type = byte2int(self.dyn_section[offset:offset+jmp_val])
+            dummy["tag"] = tag_type
+            value = byte2int(self.dyn_section[offset+jmp_val:offset+(jmp_val*2)])
+            dummy["value"] = value
+            type_string = get_ph_dynamic_ent_tag_type(tag_type)
+            dummy["type_string"] = type_string
+            type_string = str()
+            struct_to_pop.append(dummy)
+            dummy = {}
 
 class obj_loader():
     def __init__(self, bytes):
@@ -1175,6 +1261,13 @@ def premain(argparser):
             for i in md.disasm(bytes(code), 0x0):
                 print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
     elif argparser.args.phdynent: elf.dump_ph_dyn_entries()
+    elif argparser.args.textasm:
+        md = Cs(CS_ARCH_X86, CS_MODE_64)
+        for i in md.disasm(bytes(elf.text_section), 0x0):
+            print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
+    elif argparser.args.dynsecents: elf.dump_dyn_sec_ents(elf.dyn_section_ents)
+    elif argparser.args.reladynents: elf.dump_dyn_sec_ents(elf.rela_dyn_ents)
+    else: print("why even bother if you were not gonna type anythng decent in?")
 
 def main():
     argparser = CLIArgParser()
