@@ -234,7 +234,9 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) 
   if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) return NULL;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpointer-sign"
+  printf("starting to disassemble...\n");
   count = cs_disasm(handle, obj, size, 0x0, 0, &insn);
+  printf("finished disassembling.\n");
 #pragma GCC diagnostic pop
   if (Verbose) printf("number of instructions: %zu.\n\n", count);
   cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);

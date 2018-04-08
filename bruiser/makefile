@@ -71,5 +71,5 @@ help:
 	@echo 'there is help.'
 	@echo 'all is the defualt target.'
 	@echo 'clean runs clean.'
-	@echo 'deepclean will also clean the lua build'
+	@echo 'deepclean will also clean lua and luajit'
 	@echo 'for a more complete and detaild list of BUILD_MODE and other things look at the main makefiles help under project root.'

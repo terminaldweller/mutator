@@ -1,7 +1,8 @@
 
 ##################################VARS#################################
-CC=clang
-CC_FLAGS=-fpic -O0
+CC?=gcc
+CC=gcc
+CC_FLAGS=-fpic -O0 -g -v --debug
 LD_FLAGS= -l bfd
 TARGET=test
 ##################################RULES################################

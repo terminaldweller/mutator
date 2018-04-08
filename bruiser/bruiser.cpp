@@ -166,7 +166,10 @@ template <typename T>
 std::vector<T> getLuaTableInt(lua_State* __ls, int numargs, int argnum) {
   std::vector<T> ret;
   int table_length = lua_rawlen(__ls, argnum);
-  lua_checkstack(__ls, table_length);
+  if (!lua_checkstack(__ls, table_length)) {
+    std::cout << RED << "need to grow lua stack by " << table_length << ":";
+    PRINT_WITH_COLOR_LB(RED, "cant grow lua stack by that much.");
+  }
   for (int i = 1; i <= table_length; ++i) {
     lua_rawgeti(__ls, argnum, i);
     ret.push_back(lua_tointeger(__ls, i + numargs));
@@ -177,7 +180,10 @@ std::vector<T> getLuaTableInt(lua_State* __ls, int numargs, int argnum) {
 std::vector<std::string> getLuaTableString(lua_State* __ls, int numargs, int argnum) {
   std::vector<std::string> ret;
   int table_length = lua_rawlen(__ls, argnum);
-  lua_checkstack(__ls, table_length);
+  if (!lua_checkstack(__ls, table_length)) {
+    std::cout << RED << "need to grow lua stack by " << table_length << ":";
+    PRINT_WITH_COLOR_LB(RED, "cant grow lua stack by that much.");
+  }
   for (int i = 1; i <= table_length; ++i) {
     lua_rawgeti(__ls, argnum, i);
     ret.push_back(lua_tostring(__ls, i + numargs));
@@ -189,7 +195,10 @@ template <typename T>
 std::vector<T> getLuaTableNumber(lua_State* __ls, int numargs, int argnum) {
   std::vector<T> ret;
   int table_length = lua_rawlen(__ls, argnum);
-  lua_checkstack(__ls, table_length);
+  if (!lua_checkstack(__ls, table_length)) {
+    std::cout << RED << "need to grow lua stack by " << table_length << ":";
+    PRINT_WITH_COLOR_LB(RED, "cant grow lua stack by that much.");
+  }
   for (int i = 1; i <= table_length; ++i) {
     lua_rawgeti(__ls, argnum, i);
     ret.push_back(lua_tonumber(__ls, i + numargs));
@@ -1605,7 +1614,9 @@ class LuaWrapper
       if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
       uint64_t size = lua_tointeger(__ls, 1);
       std::vector<uint8_t> code_v = getLuaTableInt<uint8_t>(__ls, 2, 2);
+      if (Verbose) PRINT_WITH_COLOR_LB(BLUE, "making jump table...");
       auto head = makejmptable(size, code_v.data(), Verbose, __ls);
+      if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "finished makejmptable call.");
       jmpt_push_args(__ls, head);
       new_jmpt_2(__ls);
       return 1;

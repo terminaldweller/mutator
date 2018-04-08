@@ -19,6 +19,8 @@
 --start of asmrewriter module
 local asmrw = {}
 xobj = require("lua-scripts.xobj")
+-- this will hold a copy of the original text section
+local text_buffer = {}
 
 setmetatable(jmp_s_t, {__call = 
     function(self, arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)

@@ -63,13 +63,14 @@ class CLIArgParser(object):
         parser.add_argument("--dumpfuncasm", type=str, help="dump a functions assembly code")
         parser.add_argument("--textasm", action='store_true', help="disassemble the text section", default=False)
         parser.add_argument("--dynsecents", action='store_true', help="dynamic section entries", default=False)
-        parser.add_argument("--reladynents", action='store_true', help=".rela.dyn entries", default=False)
+        parser.add_argument("--reladyn", action='store_true', help=".rela.dyn entries", default=False)
+        parser.add_argument("--relaplt", action='store_true', help=".rela.plt entries", default=False)
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
 
-def byte2int(value):
-    return int.from_bytes(value, byteorder="little", signed=False)
+def byte2int(value,sign = False):
+    return int.from_bytes(value, byteorder="little", signed=sign)
 
 def byte2hex(value):
     return hex(int.from_bytes(value, byteorder="little", signed=False))
@@ -475,14 +476,34 @@ class X86_REL_TYPE:
     R_386_PC8 = 15
     R_386_SIZE32 = 16
 
+def get_x86_rel_type(val):
+    if val == X86_REL_TYPE.R_386_NONE: return "R_386_NONE"
+    elif val == X86_REL_TYPE.R_386_32: return "R_386_32"
+    elif val == X86_REL_TYPE.R_386_PC32: return "R_386_PC32"
+    elif val == X86_REL_TYPE.R_386_GOT32: return "R_386_GOT32"
+    elif val == X86_REL_TYPE.R_386_PLT32: return "R_386_PLT32"
+    elif val == X86_REL_TYPE.R_386_COPY: return "R_386_COPY"
+    elif val == X86_REL_TYPE.R_386_GLOB_DAT: return "R_386_GLOB_DAT"
+    elif val == X86_REL_TYPE.R_386_JMP_SLOT: return "R_386_JMP_SLOT"
+    elif val == X86_REL_TYPE.R_386_RELATIVE: return "R_386_RELATIVE"
+    elif val == X86_REL_TYPE.R_386_GOTOFF: return "R_386_GOTOFF"
+    elif val == X86_REL_TYPE.R_386_GOTPC: return "R_386_GOTPC"
+    elif val == X86_REL_TYPE.R_386_32PLT: return "R_386_32PLT"
+    elif val == X86_REL_TYPE.R_386_16: return "R_386_16"
+    elif val == X86_REL_TYPE.R_386_PC16: return "R_386_PC16"
+    elif val == X86_REL_TYPE.R_386_8: return "R_386_8"
+    elif val == X86_REL_TYPE.R_386_PC8: return "R_386_PC8"
+    elif val == X86_REL_TYPE.R_386_SIZE32: return "R_386_SIZE32"
+    else: return "UNKNOWN"
+
 class X86_64_REL_TYPE:
     R_AMD64_NONE = 0
     R_AMD64_64 = 1
     R_AMD64_PC32 = 2
-    R_AMD6_GOT32 = 3
+    R_AMD64_GOT32 = 3
     R_AMD64_PLT32 = 4
     R_AMD64_COPY = 5
-    R_AMD64_GLOV_DAT = 6
+    R_AMD64_GLOB_DAT = 6
     R_AMD64_JUMP_SLOT = 7
     R_AMD64_RELATIVE = 8
     R_AMD64_GOTPCREL = 9
@@ -497,6 +518,30 @@ class X86_64_REL_TYPE:
     R_AMD64_GOTPC32 = 26
     R_AMD64_SIZE32 = 32
     R_AMD64_SIZE64 = 33
+
+def get_x86_64_rel_type(val):
+    if val == X86_64_REL_TYPE.R_AMD64_NONE: return "R_386_NONE"
+    elif val == X86_64_REL_TYPE.R_AMD64_64: return "R_AMD64_64"
+    elif val == X86_64_REL_TYPE.R_AMD64_PC32: return "R_AMD64_PC32"
+    elif val == X86_64_REL_TYPE.R_AMD64_GOT32: return "R_AMD64_GOT32"
+    elif val == X86_64_REL_TYPE.R_AMD64_PLT32: return "R_AMD64_PLT32"
+    elif val == X86_64_REL_TYPE.R_AMD64_COPY: return "R_AMD64_COPY"
+    elif val == X86_64_REL_TYPE.R_AMD64_GLOB_DAT: return "R_AMD64_GLOB_DAT"
+    elif val == X86_64_REL_TYPE.R_AMD64_JUMP_SLOT: return "R_AMD64_JUMP_SLOT"
+    elif val == X86_64_REL_TYPE.R_AMD64_RELATIVE: return "R_AMD64_RELATIVE"
+    elif val == X86_64_REL_TYPE.R_AMD64_GOTPCREL: return "R_AMD64_GOTPCREL"
+    elif val == X86_64_REL_TYPE.R_AMD64_32: return "R_AMD64_32"
+    elif val == X86_64_REL_TYPE.R_AMD64_32S: return "R_AMD64_32S"
+    elif val == X86_64_REL_TYPE.R_AMD64_16: return "R_AMD64_16"
+    elif val == X86_64_REL_TYPE.R_AMD64_PC16: return "R_AMD64_PC16"
+    elif val == X86_64_REL_TYPE.R_AMD64_8: return "R_AMD64_8"
+    elif val == X86_64_REL_TYPE.R_AMD64_PC8: return "R_AMD64_PC8"
+    elif val == X86_64_REL_TYPE.R_AMD64_PC64: return "R_AMD64_PC64"
+    elif val == X86_64_REL_TYPE.R_AMD64_GOTOFF64: return "R_AMD64_GOTOFF64"
+    elif val == X86_64_REL_TYPE.R_AMD64_GOTPC32: return "R_AMD64_GOTPC32"
+    elif val == X86_64_REL_TYPE.R_AMD64_SIZE32: return "R_AMD64_SIZE32"
+    elif val == X86_64_REL_TYPE.R_AMD64_SIZE64: return "R_AMD64_SIZE64"
+    else: return "UNKNOWN"
 
 class ELF_ST_BIND:
     STB_LOCAL = 0
@@ -669,6 +714,8 @@ class ELF(object):
         self.dyn_section_ents = []
         self.rela_dyn = []
         self.rela_dyn_ents = []
+        self.rela_plt = []
+        self.rela_plt_ents = []
 
     def init(self, size):
         self.size = size
@@ -703,7 +750,9 @@ class ELF(object):
         self.pop_text_section()
         self.get_ph_dyn_entries()
         self.pop_dynamic_entries(".dynamic", self.dyn_section_ents)
-        self.pop_dynamic_entries(".rela.dyn", self.rela_dyn_ents)
+        self.pop_rela(".rela.plt", self.rela_plt, self.rela_plt_ents)
+        self.pop_rela(".rela.dyn", self.rela_dyn, self.rela_dyn_ents)
+        #self.pop_rel()
 
     def read_ELF_H(self, size):
         self.elfhdr.ei_mag = self.so.read(4)
@@ -1027,13 +1076,29 @@ class ELF(object):
             print(line)
 
     def dump_dyn_sec_ents(self, who):
-        header = ["type_string", "tag", "value"]
+        header = ["type_string", "tag", "value", "value(hex)"]
         tag_string_list = [entry["type_string"] for entry in who]
         tag_list = [entry["tag"] for entry in who]
         value_list = [entry["value"] for entry in who]
-        lines = ffs(2, header, True, tag_string_list, tag_list, value_list)
+        value_list_hex = [hex(entry["value"]) for entry in who]
+        lines = ffs(2, header, True, tag_string_list, tag_list, value_list, value_list_hex)
         for line in lines:
             print(line)
+
+    def dump_rela(self, to_dump):
+        header = ["r_offset", "r_info", "r_addend"]
+        r_offset_list = [entry["r_offset"] for entry in to_dump]
+        r_info_list = [entry["r_info"] for entry in to_dump]
+        addend_list = [entry["r_addend"] for entry in to_dump]
+        lines = ffs(2, header, True, r_offset_list, r_info_list, addend_list)
+        for line in lines: print(line)
+
+    def dump_rel(self, to_dump):
+        header = ["r_offset", "r_info"]
+        r_offset_list = [entry["r_offset"] for entry in to_dump]
+        r_info_list = [entry["r_info"] for entry in to_dump]
+        lines = ffs(2, header, True, r_offset_list, r_info_list)
+        for line in lines: print(line)
 
     def get_st_entry_symbol_string(self, index, section_name):
         symbol = []
@@ -1104,6 +1169,48 @@ class ELF(object):
             type_string = str()
             struct_to_pop.append(dummy)
             dummy = {}
+
+    def pop_rela(self, section_name, section_whole, to_pop):
+        size = int()
+        entsize = int()
+        dummy = {}
+        step = int()
+        if self.size == 64: step = 8
+        if self.size == 32: step = 4
+        for section in self.shhdr:
+            name = self.read_section_name(byte2int(section.sh_name))
+            if name == section_name:
+                self.so.seek(byte2int(section.sh_offset))
+                section_whole = self.so.read(byte2int(section.sh_size))
+                size = byte2int(section.sh_size)
+                entsize = byte2int(section.sh_entsize)
+        for i in range(0, int(size/entsize)):
+            dummy["r_offset"] = byte2int(section_whole[i*entsize:i*entsize+step])
+            dummy["r_info"] = byte2int(section_whole[i*entsize+step:i*entsize+(step*2)])
+            dummy["r_addend"] = byte2int(section_whole[i*entsize+(step*2):i*entsize+(step*3)], sign=True)
+            to_pop.append(dummy)
+            dummy = {}
+
+    def pop_rel(self, section_name, section_whole, to_pop):
+        size = int()
+        entsize = int()
+        dummy = {}
+        step = int()
+        if self.size == 64: step = 8
+        if self.size == 32: step = 4
+        for section in self.shhdr:
+            name = self.read_section_name(byte2int(section.sh_name))
+            if name == section_name:
+                self.so.seek(byte2int(section.sh_offset))
+                section_whole = self.so.read(byte2int(section.sh_size))
+                size = byte2int(section.sh_size)
+                entsize = byte2int(section.sh_entsize)
+        for i in range(0, int(size/entsize)):
+            dummy["r_offset"] = byte2int(section_whole[i*entsize:i*entsize+step])
+            dummy["r_info"] = byte2int(section_whole[i*entsize+step:i*entsize+(step*2)])
+            to_pop.append(dummy)
+            dummy = {}
+
 
 class obj_loader():
     def __init__(self, bytes):
@@ -1266,7 +1373,8 @@ def premain(argparser):
         for i in md.disasm(bytes(elf.text_section), 0x0):
             print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
     elif argparser.args.dynsecents: elf.dump_dyn_sec_ents(elf.dyn_section_ents)
-    elif argparser.args.reladynents: elf.dump_dyn_sec_ents(elf.rela_dyn_ents)
+    elif argparser.args.reladyn: elf.dump_rela(elf.rela_dyn_ents)
+    elif argparser.args.relaplt: elf.dump_rela(elf.rela_plt_ents)
     else: print("why even bother if you were not gonna type anythng decent in?")
 
 def main():
