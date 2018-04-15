@@ -317,7 +317,7 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) 
 
     cs_free(insn, count);
   } else {
-    printf("ERROR!!!\n");
+    printf("capstone ERROR!!!\n");
   }
   cs_close(&handle);
   tail->next = NULL;

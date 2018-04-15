@@ -90,6 +90,7 @@ namespace { // start of anonymous namespace
     std::string MAKEPATH;
     std::string BINPATH;
     unsigned int HISTORY_SIZE = SHELL_HISTORY_SIZE;
+    bool droptocli;
   };
 
   struct ShellCache {
@@ -172,7 +173,8 @@ std::vector<T> getLuaTableInt(lua_State* __ls, int numargs, int argnum) {
   }
   for (int i = 1; i <= table_length; ++i) {
     lua_rawgeti(__ls, argnum, i);
-    ret.push_back(lua_tointeger(__ls, i + numargs));
+    ret.push_back(lua_tointeger(__ls, 1 + numargs));
+    lua_pop(__ls, 1);
   }
   return ret;
 }
@@ -186,7 +188,8 @@ std::vector<std::string> getLuaTableString(lua_State* __ls, int numargs, int arg
   }
   for (int i = 1; i <= table_length; ++i) {
     lua_rawgeti(__ls, argnum, i);
-    ret.push_back(lua_tostring(__ls, i + numargs));
+    ret.push_back(lua_tostring(__ls, 1 + numargs));
+    lua_pop(__ls, 1);
   }
   return ret;
 }
@@ -201,7 +204,8 @@ std::vector<T> getLuaTableNumber(lua_State* __ls, int numargs, int argnum) {
   }
   for (int i = 1; i <= table_length; ++i) {
     lua_rawgeti(__ls, argnum, i);
-    ret.push_back(lua_tonumber(__ls, i + numargs));
+    ret.push_back(lua_tonumber(__ls, 1 + numargs));
+    lua_pop(__ls, 1);
   }
   return ret;
 }
@@ -1613,7 +1617,9 @@ class LuaWrapper
       int numargs = lua_gettop(__ls);
       if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
       uint64_t size = lua_tointeger(__ls, 1);
+      PRINT_WITH_COLOR_LB(CYAN, "cpp:calling getluatableint...");
       std::vector<uint8_t> code_v = getLuaTableInt<uint8_t>(__ls, 2, 2);
+      PRINT_WITH_COLOR_LB(GREEN, "cpp:called getluatableint...");
       if (Verbose) PRINT_WITH_COLOR_LB(BLUE, "making jump table...");
       auto head = makejmptable(size, code_v.data(), Verbose, __ls);
       if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "finished makejmptable call.");
@@ -1879,6 +1885,15 @@ class LuaWrapper
       }
 
       return 1;
+    }
+
+    int BruiserLuaDropToCLI(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 0) {
+        PRINT_WITH_COLOR_LB(RED, "wrong number of args. should be called with no arguments.");
+        return 0;
+      }
+      ShellGlobalInstance.droptocli = true;
     }
 
     int BruiserLuaStrainRecognition(lua_State* __ls)
@@ -2273,16 +2288,6 @@ int main(int argc, const char **argv) {
     while((command = linenoise(">>>")) != NULL) {
       linenoiseHistoryAdd(command);
       linenoiseHistorySave(SHELL_HISTORY_FILE);
-#if 0
-      if (std::string(command).find("!", 0) == 0) {
-        std::string histnumber_str = std::string(command).substr(1, std::string::npos);
-        unsigned int history_num = std::stoi(histnumber_str, 0, 10);
-        if (history_num >= ShellGlobalInstance.HISTORY_SIZE) {
-          PRINT_WITH_COLOR_LB(RED, "invalid history number passed.");
-          continue;
-        } else {}
-      }
-#endif
       LE.RunChunk(command);
       linenoiseFree(command);
     }

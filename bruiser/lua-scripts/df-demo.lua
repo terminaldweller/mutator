@@ -26,11 +26,13 @@ function pretty_dump()
 end
 
 function jmp_table_test()
+  io.write(colors("%{cyan}".."lua:getting text section...\n"))
   local text_section = xobj.getTextSection(df_exe)
+  io.write(colors("%{green}".."lua:got text section.\n"))
   local head = jmp_s_t()
   -- messes up the stack. I could fix it but not sure why i would want to keep this in
   --local head2 = jmp_s_t:new()
-  io.write("lua:calling getjmptable\n")
+  io.write(colors("%{cyan}".."lua:calling getjmptable\n"))
   head = getjmptable(#text_section, text_section)
 
   while head:inext() ~= nil do
