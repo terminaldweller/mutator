@@ -133,6 +133,10 @@ function xobj.getTextSection(elf_exe)
   return objload("elf_get_text_section", elf_exe, "bytes")
 end
 
+function xobj.getRODataSection(elf_exe)
+  return objload("elf_get_rodata_section", elf_exe, "bytes")
+end
+
 function xobj.CSDump(code)
   ret = ""
   for k,v in pairs(code) do

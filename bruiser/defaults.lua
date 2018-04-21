@@ -1,2 +1,15 @@
-package.path = package.path .. ";/home/bloodstalker/.luarocks/share/lua/5.3/?.lua;/home/bloodstalker/.luarocks/share/lua/5.3/?/init.lua;/usr/share/lua/5.3/?.lua;/usr/share/lua/5.3/?/init.lua;/usr/lib64/lua/5.3/?.lua;/usr/lib64/lua/5.3/?/init.lua;./?.lua;./?/init.lua"
-package.cpath = package.cpath .. ";/home/bloodstalker/.luarocks/lib64/lua/5.3/?.so;/usr/lib64/lua/5.3/?.so;/usr/lib64/lua/5.3/loadall.so;./?.so"
+-- bruiser default script.
+-- This is run everytime bruiser is called.
+
+-- adds luarocks' path and cpath to bruiser
+local luarocks_handle = io.popen("luarocks path --bin")
+for line in luarocks_handle:lines() do
+  local path = string.match(line, "LUA_PATH%s*=%s*('.+')")
+  local cpath = string.match(line, "LUA_CPATH%s*=%s*('.+')")
+  if path ~= nil then 
+    package.path = package.path..path
+  end
+  if cpath ~= nil then
+    package.cpath = package.cpath..cpath
+  end
+end

@@ -65,6 +65,7 @@ class CLIArgParser(object):
         parser.add_argument("--dynsecents", action='store_true', help="dynamic section entries", default=False)
         parser.add_argument("--reladyn", action='store_true', help=".rela.dyn entries", default=False)
         parser.add_argument("--relaplt", action='store_true', help=".rela.plt entries", default=False)
+        parser.add_argument("--rodata", action='store_true', help="dump .rodata", default=False)
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -716,6 +717,7 @@ class ELF(object):
         self.rela_dyn_ents = []
         self.rela_plt = []
         self.rela_plt_ents = []
+        self.rodata = []
 
     def init(self, size):
         self.size = size
@@ -1250,6 +1252,12 @@ def elf_get_text_section():
     elf = ELF(so)
     elf.init(64)
     return elf.dump_section(".text", False)
+
+def elf_get_rodata_section():
+    so = openSO_r(sys.argv[1])
+    elf = ELF(so)
+    elf.init(64)
+    return elf.dump_section(".rodata", False)
 
 # obj here means variables or what the C standard means by objects
 def elf_get_obj_names():

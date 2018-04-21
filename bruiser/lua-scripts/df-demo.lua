@@ -28,19 +28,30 @@ end
 function jmp_table_test()
   io.write(colors("%{cyan}".."lua:getting text section...\n"))
   local text_section = xobj.getTextSection(df_exe)
+  local rodata = xobj.getRODataSection(df_exe)
+  for k,v in pairs(rodata) do
+    if v > 32 and v < 127 then 
+      io.write(string.format("%c",v)) 
+    else
+      io.write(" ")
+    end
+  end
+  io.write("\0\n")
   io.write(colors("%{green}".."lua:got text section.\n"))
   local head = jmp_s_t()
   -- messes up the stack. I could fix it but not sure why i would want to keep this in
   --local head2 = jmp_s_t:new()
   io.write(colors("%{cyan}".."lua:calling getjmptable\n"))
-  head = getjmptable(#text_section, text_section)
+  --head = getjmptable(#text_section, text_section)
 
-  while head:inext() ~= nil do
-    head:dump("entry")
-    io.write("type:", head:type(), "\tlocation:", "0x"..string.format("%x", head:location()))
-    print()
-    head = head:inext()
-  end
+  --if false then
+    --while head:inext() ~= nil do
+      --head:dump("entry")
+      --io.write("type:", head:type(), "\tlocation:", "0x"..string.format("%x", head:location()))
+      --print()
+      --head = head:inext()
+    --end
+    --end
 end
 
 --main()

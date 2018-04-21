@@ -86,13 +86,4 @@ you can see a working example if you run `lua-scripts/demo2.lua`. The example re
 
 #### Lua Defaults
 Upon start-up, bruiser will look to find a file called `defaults.lua` in the same directory as the bruiser executable to run before running any user provided lua code, both in interactive and non-interactive modes. The path to the lua default file could be changed from the default value by the `LuaDefault` option passed to bruiser on startup.<br/>
-If you use `luarocks`, you can run `luarocks path --bin` to see where rocks on your machine are and then add that to your path to have the rocks available in bruiser as well.<br/>
-One way do to that is to add the following lines to your `defaults.lua`:<br/>
-```lua
-
-package.path = package.path .. ";LUA_PATH"
-packege.cpath = package.cpath .. ";LUA_CPATH"
-
-```
-The following lines make the rocks in `LUA_PATH` and `LUA_CPATH` available on bruiser. You can get `LUA_PATH` and `LUA_CPATH` by runnin `luarocks path --bin`. You can also look at the `defaults.lua` that is shipped with bruiser.<br/>
-Also since there is a cli option that tells bruiser which lua script to load before handing control over to user code, you can have more than one such script to suit your needs.<br/>
+The default script provided will run `luarocks path --bin` and add `paht` and `cpath` so that you can use your Lua modules from bruiser.<br/>

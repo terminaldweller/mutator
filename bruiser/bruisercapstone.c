@@ -242,6 +242,7 @@ JMP_S_T* makejmptable(size_t size, uint8_t* obj, bool Verbose, lua_State* __ls) 
   cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 
   intmax_t address;
+  //@DEVI-matching against strings is really slow
   if (count > 0) {
     size_t j;
     for (j = 0; j < count; ++j) {
