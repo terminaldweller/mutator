@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "bruisercapstone.h"
 #include "asmrewriter.h"
 /*standard headers*/
+#include <exception>
 #include <fstream>
 #include <string>
 #include <cassert>
@@ -108,6 +109,7 @@ cl::opt<bool> MainFileOnly("MainOnly", cl::desc("bruiser will only report the re
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> Verbose("verbose", cl::desc("verbosity"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<bool> Nosrc("No Source file needed", cl::desc("verbosity"), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 // @DEVI-FIXME-we need something like python's code module. lua's -i is not it.
 cl::opt<bool> LuaInteractive("interactive", cl::desc("run in interactive mode"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
@@ -2193,19 +2195,15 @@ int main(int argc, const char **argv) {
 
   /*gets the compilation database and options for the clang instances that we would later run*/
   CommonOptionsParser op(argc, argv, BruiserCategory);
-  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
-  std::vector<std::unique_ptr<ASTUnit>> ASTs;
-  //auto buildASTRes = Tool.buildASTs(ASTs);
-
   CompilationDatabase &CDB = op.getCompilations();
   std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
-
   /*populating the shellglobalinstance*/
   CompilationDatabaseProcessor CDBP(CDB);
+  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 
-  /*checking whether the compilation database is found and not empty*/
+  /*checking whether the compilation database is found and not empty if Nosrc is set*/
   if (CDBP.CompilationDatabseIsEmpty()) {
-    PRINT_WITH_COLOR_LB(RED, "bruiser could not find the compilation database.");
+    PRINT_WITH_COLOR_LB(RED, "Nosrc is set and bruiser can't find the compilation database. quitting...");
     return 1;
   } else {
     CDBP.CalcMakePath();

@@ -57,32 +57,41 @@ For example you can run one of the example scripts that come with bruiser like t
 
 ```lua
 
-dofile("./lua-scripts/testfile1.lua")
+dofile("./lua-scripts/demo1.lua")
 
 ```
 
 You can also run bruiser in non-cli mode:<br/>
 ```bash
 
-./bruiser ../test/bruisertest/test.cpp -lua="./lua-scripts/mutation-example.lua"
+./bruiser ../test/bruisertest/test.cpp -lua="./lua-scripts/demo2.lua"
 
 ```
+The demo scripts, `demo1.lua` and `demo2.lua` require the file `bfd/test/test` and `bfd/test/test.so` to be built. Run make in `bfd/test/` to get `test` and `test.so`.<br/>
 
 Bruiser requires a compilation database to run. If you don't have a compilation database, take a look at [Bear](https://github.com/rizsotto/Bear). If you're using `cmake`, just tell it to generate a compilation database.<br/>
 
 TLDR; now let's look at some useful example.<br/>
-#### ELF info
+
+#### ELF info, Xobjs, ASMRewriter
 mutator has it's own pyelf script which resides at `/bfd`, named `load.py`. `load.py` reads an ELF file and then returns the results to lua in the form of tables. For more detailed info please look at the wiki entry.<br/>
 Running the following command will return a table containing the names of the objects found in the specified ELF file. To build `../bfd/test/test.so` go to the test dir for bfd and run the makefile.<br/>
 ```lua
 objload("elf_get_obj_names", "../bfd/test/test.so", "symbol_list")
 ```
 For a more detailed example look at the wiki here on github.<br/>
+
+The Xobj module along with `load.py` allows you to load a function from an ELF shared object library into executable memory and call it.<br/>
 The xobj functionality is provided as a lua module. You can use it by:<br/>
 ```lua
 xobj = require("lua-scripts.xobj")
 ```
-you can see a working example if you run `lua-scripts/demo2.lua`. The example requires `ansicolors`. You can get that by `luarocks install ansicolors`.<br/>
+For a working example on xobjs, you can run `lua-scripts/demo1.lua`. The example requires `ansicolors`. You can get that by `luarocks install ansicolors`.<br/>
+
+The ASMRewriter functionality allows you to look through the machine code and make changes to the executable.<br/>
+For working examples which demonstrate how much the implementation has improved you can run `lua-scripts/demo2.lua` and `lua-scripts/df-demo.lua`. `demo2.lua` requires `ansicolor`. `df-demo.lua` uses the dwarf fortress executable as an example so you will have to first get that and then change the path in the lua file.<br/>
+
+For more detailed information on the modules and the methods they provide, you can look at the wiki.<br/>
 
 #### Lua Defaults
 Upon start-up, bruiser will look to find a file called `defaults.lua` in the same directory as the bruiser executable to run before running any user provided lua code, both in interactive and non-interactive modes. The path to the lua default file could be changed from the default value by the `LuaDefault` option passed to bruiser on startup.<br/>
