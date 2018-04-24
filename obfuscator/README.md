@@ -5,7 +5,7 @@ obfuscator is a C/C++ source-code obfuscation tool.<br/>
 ## Status
 You can find a list of the implemented features and the ones that will be implemented below.<br/>
 If you have suggestions or recommendations for features to add, please make an issue with the `obfuscator` label.<br/>
-When an alpha version is ready, `obfuscator` will be mirrored into its own repo.<br/>
+When an alpha version is ready, `obfuscator` will get its own mirror repo.<br/>
 
 ### Implemented Features
 * Identifier Obfuscation: Swaps the name of all identifiers with their hash. <br/>
@@ -19,6 +19,7 @@ When an alpha version is ready, `obfuscator` will be mirrored into its own repo.
 
 ## Notes
 * Currently the hash function that is being used is `std::hash<>`. The GCC implementation will be probably the default option since the digest is shorter than 32 characters long. The decision was made since quite a few embedded C/C++ compilers can't correctly handle identifiers longer than 32 characters.<br/>
+* Obfuscator uses the Clang Frontend(CFE) libraries. Most embedded hardware require the use of their custom toolchains and that can result in clang complaining about custom pragmas.<br/>
 * If you want the preprocessor conditionals that evaluate to false that pertain to source code inclusion to be removed, use your compiler to get the output of the preprocessor and then pass that to `obfuscator` or just outright don't include them in the source code since `obfuscator` will not look through things that are not included in the source code by the preprocessor.<br/>
 * Getting rid of the whitespaces in the source code is a moot point since reverting it is as easy as running something like `clang-format` on it, so the feature is not currently included in obfuscator.<br/>
 * At a leter point in time, obfuscator will be moved to a mirror repo of it's own or the mirror might become the main repo.<br/>

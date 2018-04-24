@@ -11,7 +11,12 @@
 ## Table of Contents
 
 - [Overview](#overview)
-  - [What is SaferCpp?](#what-is-safercpp)
+  - [bruiser](#bruiser)
+  - [load.py](#load.py)
+  - [obfuscator](#obfuscator)
+  - [m0](#m0)
+  - [Safercpp](#safercpp)
+  - [mutatord](#mutatord)
 - [mutator](#mutator)
 - [How to get project mutator](#how-to-get-project-mutator)
 - [Dev Status](#dev-status)
@@ -28,6 +33,7 @@
     - [The Action File](#the-action-file)
 - [Implementation Notes](#implementation-notes)
   - [mutator-lvl0](#mutator-lvl0)
+- [Directory Outline](#directory-outline)
 - [Acknowledgements](#acknowledgements)
 - [Feedback](#feedback)
 - [Suggestions and Feature Requests](#suggestions-and-feature-requests)
@@ -40,47 +46,53 @@
 
 ## Overview
 
-Here's the elevator pitch: mutator is a suite of tools aimed at analysis and automation of C/C++ code development.<br/>
+mutator is a suite of tools aimed at analysis and automation of C,C++ and machine code.<br/>
 Here's a detailed list of what's currently available:<br/>
-**bruiser** is an interactive shell-like tool. Currently mutator lets you pull in shared object libraries and run them through lua plus a couple of other features.<br/>
-**obfuscator** is a C/C++ source code obfuscator.<br/>
-**mutator-lvl0(m0)** will run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
-**Safercpp** runs the automatic refactoring sets on your source code, automatically changing your code to use the SaferCpp libraries.<br/>
-**mutatord**,the mutator server and the client are also provided as optional features.<br/>
-**load.py** is a custom ELF dump script that bruiser uses for manipulating shared object and executable ELF files.<br/>
 
-#### What is SaferCpp?
+### bruiser
+Essentially bruiser is a Lua REPL plus: 
+* You get tab-completion, suggestions and history(like a shell).<br> 
+* bruiser comes with its own extensions and libraries implemented in C and Cpp.<br/>
+* Through bruiser's Xobj feature, you can pull in functions from object code, run them and get the result back.<br/>
+* Through the ASMRewriter functionality you can manipulate the machine code and push it back in the object. For more detail you can look at the wiki or check out bruiser's README.md.<br/>
+* Luarocks: You can use your Luarocks modules/libraries in bruiser too. Just make sure `luarocks` is in your path and bruiser will take care of the rest.<br/>
+
+### load.py 
+`load.py` is a custom ELF dump script developed for bruiser. bruiser uses it to interact with ELF files.<br/>
+You can also use the script as a standalone to dump info on the ELF file to stdout.<br/>
+
+### obfuscator 
+Is a C/C++ source code obfuscator.<br/>
+
+### m0
+Run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
+m0's reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
+`m0` also accpets a formatted file as its input, passing it all the options needed to run it. This feature is only available if `m0` is called through `mutator.sh`. For an example please look below.<br/>
+Also to refrain from confusions, `m0`'s executable is actually named `mutator-lvl0` but for the sake of berevity it will be referred to as m0.<br/>
+
+### Safercpp 
+Runs the automatic refactoring sets on your source code, automatically changing your code to use the SaferCpp libraries.<br/>
 SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more [here](https://github.com/duneroadrunner/SaferCPlusPlus).<br/>
 
-mutator-lvl0's reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
-You can also run the mutator daemon(`mutatord`) which runs it in a client-server mode, with the client being a thin client.<br/>
+### mutatord
+The mutator server/daemon and the client are also provided as optional features.<br/>
+At the time of writing the client and server are provided to facilitate use of `m0` as a plugin.<br/>
+
+
 You can Join the Maillist here, [mutator maillist](https://www.freelists.org/list/mutator).<br/>
-You can follow Project `mutator` on twitter, @xashmith.
-<br/>
+You can follow Project `mutator` on twitter, @xashmith.<br/>
 
-## mutator
-
-mutator is a suite of tools aimed at analysis and automation of C/C++ code development with thin client-server architectur written using the Clang front-end(LibTooling) as a stand-alone in mostly C++. It consists of four(so far) executables and a driver. You can run executables like any other CLI tool or just run them through the driver or the client which again acts like a CLI tool. `mutator` also accepts action files that tell it what to do.<br/>
-<br/>
-* mutator-lvl0 or `m0` checks for a number of rules(currently mostly Misra-c) on the source code, generating two reports. The first one is mostly a Misra-c report, the second one is the nodes and their ancestries that are hot spots for mutation.<br/>
-* mutator or `m1` will run the level-1 implementers and mutators. `m1` is deprecated.<br/>
-* mutator-lvl2 or `m2` will be repurposed into an experiment. The idea is simple. To cut down on the mutant run-time, m2 will build the original source code as a shared library object. Due to ASLR(Adress Space Randomization Layout) the real difference between an executable and an `.so` is one single bit in the file header. We will keep the shared object in the memory, use it as a library to link against and even call through the dynamic linker and see how much we can cut down on the execution time of the mutants.<br/>
-Mutation levels have nothing to do with the order of mutants.<br/>
-* [daemon](daemon/README.md): mutatord is the mutator daemon that runs the server. mutatorclient is the thin client that sends the commands to the server.<br/>
-* [safercpp-arr](safercpp/README.md) is SaferCPP's automatic refactoring tool for arrays.<br/>
-* [bruiser](bruiser/README.md) the short explanation is that bruiser is an interactive shell that mutates your code, gives you insight on the code-base loaded and more.  You can also manipulate ELF shared object libraries and executables. For example you can call the library funtions from bruiser's lua interpreter. For more info read the README on bruiser's folder in project root.<br/>
-* [obfuscator](obfuscator/README.md) is a C/C++ source-level obfuscation tool.<br/>
-<br/>
 
 ## How to get project mutator
 
 Before you run make, make sure you have all the dependencies:<br/>
-* You need LLVM 4.0<.<br/>
+* You need LLVM 4.0<(5 or 6 to be on the safe side).<br/>
 * For `safercpp` you will need to have LLVM RTTI also.<br/>
-* For `bruiser` you will need the python 3.5< dev package.<br/>
+* For `bruiser` you will need the python 3.5< dev package(source code and libpython), libcapstone, libkeystone and libffi.<br/>
 * The other libraries used are either submodules or copied inside.<br/>
+For More details you can look at the `Building` section.<br/>
 
-Assuming you already have the LLVM/Clang libraries, just run :
+Assuming you already have the dependencies:<br/>
 
 ```bash
 
@@ -91,7 +103,7 @@ make
 make install
 
 ```
-NOTE: `make install` currently wont copy binaries to /usr/local/bin or similar directories since mutator is in its early stages and I don't want to pollute the your directories.<br/>
+NOTE: `make install` currently wont copy binaries to /usr/local/bin or similar directories since mutator is in its early stages and I don't want to pollute your directories.<br/>
 
 mutator is also being hosted using [IPFS](https://github.com/ipfs/ipfs). To get it from IPFS just run:<br/>
 ```bash
@@ -103,21 +115,22 @@ NOTE: this is mostly a novelty feature. The copy you can fetch from IPFS is usua
 
 To build LLVM/Clang from source take a look at [here](https://clang.llvm.org/get_started.html) and [here](http://llvm.org/docs/GettingStarted.html).<br/>
 To build `safercpp-arr` you to need to build Clang with RTTI enabled.<br/>
-On Fedora you can just get the Requirements by dnf. For Ubuntu and Debian either look at mutator's `.travis.yaml` or check out the [nightly builds for Debian/Ubuntu](http://apt.llvm.org).<br/>
+If you need any help regarding getting the requirements you can look at mutator's `.travis.yaml` or check out the [nightly builds for Debian/Ubuntu](http://apt.llvm.org).<br/>
 
 ### Dev Status
-All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase on the master branch. If something's not working properly let me know.<br/>
+Currently there is only the master branch which is the dev branch. All the as-of-yet implemented features of the project are very much buildable and usable at all times, even during the dev phase on the master branch even if they are called "experimantal". If something's broken, please make a new issue on it.<br/>
 
 * All tools are in the development stage.<br/>
 
 ### Dev Plans
-* Bruiser: finish up the Xobjs side of bruiser.<br/>
+* Bruiser: have bruiser support nested function calls and calls to external SOs.<br/>
+* Obfuscator: suppor for SHAKE128 and SHAKE256.<br/>
 
 ### Test Plans
 
 #### For a detailed list, you can view `tests.md` under `docs`.<br/>
 
-* The Dev method is TDD so of course, we currently have TDD tests.
+* The Dev method I'm using is TDD so of course, we currently have TDD tests.<br/>
 * For static analysis tools, mutator uses [Coverity](https://scan.coverity.com/projects/bloodstalker-mutator) which is integrated with [Travic CI](https://travis-ci.org/bloodstalker/mutator) so it runs every time on every commit.<br/>
 * For dynamic analysis tools, currently mutator is using [Valgrind](http://valgrind.org). You can run it using `./mutator.sh -test mutator-lvl0 valgrind`. You do need to have `valgrind` installed.<br/>
 * The code will be reviewed after the first pre-release version. I'm hoping to find some reviewers but if not, I'll have to do it myself.<br/>
@@ -125,6 +138,8 @@ All the as-of-yet implemented features of the project are very much buildable an
 
 ## Announcements
 
+* Project mutator will be re-licensed to GPL-3.0.<br/>
+* bruiser has a working poc demo for asmrewriter.<br/>
 * bruiser has a working poc demo for Xobjs. For more info checkout bruiser's `README.md`.<br/>
 * announcing `obfuscator`, the newest mutator family member. it's a C/C++ source obfuscation tool.<br/>
 * mutator has a new experimental member, bruiser. The idea is that we are already inside the code, so why not break it?<br/>
@@ -142,6 +157,7 @@ All the as-of-yet implemented features of the project are very much buildable an
 * `LLVM/Clang` 5.0 or higher<br/>
 * `libffi`<br/>
 * `libcapstone`<br/>
+* `libkeystone`<br/>
 * `libpython` 3.5 or higher<br/>
 The other requirements are either directly included or have to be included through `git submodule update`.<br/>
 
@@ -157,10 +173,10 @@ git submodule update
 
 ```
 
-To build the project, you need to have the LLVM libraries 5.0 or higher. mutator can not be built with LLVM 3.9 or lower. The latest tested is LLVM trunk:323883.<br/>
+To build the project, you need to have the LLVM libraries 5.0 or higher. mutator can not be built with LLVM 4.0 or lower. The latest tested is LLVM trunk:323883.<br/>
 Here Are the build options:<br/>
 
-* Running `make` will build the default target which is `all`. This will build all three executables, without support for coverage instrumentation.<br/>
+* Running `make` will build the default target which is `all`. This will build all the executables, without support for coverage instrumentation.<br/>
 * Running `make target-name` will only build the target. So for example, if you are only interested in building the Misra-C rule checker you can run `make mutator-lvl0`.<br/>
 * The makefile option `CXX` tells the makefile which compiler to use. The default value is `clang++`. Currently the only two supported values are `clang++` and `g++`.<br/>
 * The makefile option `BUILD_MODE` determines the build mode regarding coverage and support for builds with `g++`.<br/>
@@ -181,9 +197,8 @@ Note: if you are building the llvm and clang libraries from source, then the llv
 <br/>
 `make mutator-lvl0 CXX=clang++ BUILD_MODE=COV_NO_CLANG LLVM_CONF=llvm-config-3.9`<br/>
 <br/>
-Also do note that building the llvm libraries from source in Debug mode will require big space on your harddrive and will need more than 4GB of RAM. Release mode is less resource-greedy, of course.<br/>
+Also do note that building the llvm libraries from source in Debug mode will require big space on your harddrive and will need quite some RAM and needless say is slower. Release mode is less resource-greedy, of course.<br/>
 Finally if you are having problems with the build, you could take a look at `.travis.yml` or under `CITPreBuildDep.sh` under `extra-tools` for some hints or help apart from asking for help, of course.<br/>
-As a general rule, if you have Clang and LLVM libraries 4.0 or up on your platform, you can build `mutator`. If there are any problems with builds on platforms other than the ones in `.travis.yml` let me know.<br/>
 
 After building the executables, you need to run:<br/>
 
@@ -196,8 +211,6 @@ make install
 #### Windows
 
 First off, there is no official windows support and there are no plans to do so and the reason is simple. Right now I don't have the resources to do so.<br/>
-That being said, we can get on with the rest of the explanation.<br/>
-Currently a Windows build is not officially supported but if you can build LLVM/Clang, then you can build mutator too. Currently the latest version of LLVM/Clang available on Cygwin is 3.8 and that does not include the dev-libraries so you can't use those. Just use the Guide on LLVM for building using Visual Studio. After you have the headers and libraries and llvm-config, just use `BUILD_MODE=WIN_BUILD` with Clang and you should be good to go.<br/>
 Let me know if you decide to try this and/or have any problems with it.<br/>
 
 ### Running
@@ -223,7 +236,7 @@ To run the executables with the mutator UI, you can use `mutator.sh`. For a list
 * `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
 * `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. It is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
 
-`mutator-lvl0` options:<br/>
+`m0` options:<br/>
 
 * SysHeader, will let the executable know that you wish the checks to run through system headers as well. Off by default.<br/>
 * MainOnly, will only publish check results for matches residing in the main file,i.e. The current TU(Translation Unit).<br/>
@@ -267,7 +280,7 @@ Here's the command I use to run the TDD tests:<br/>
 
 #### The Action File
 
-`mutator` can accept a file which tells it what to do. Currently this feature is only supported for `mutator-lvl0`. You can find a sample under `./samples` named `action_file.mutator`.
+`mutator` can accept a file which tells it what to do. Currently this feature is only supported for `m0`. You can find a sample under `./samples` named `action_file.mutator`.
 
 ```bash
 
@@ -315,13 +328,15 @@ Currently, the mutation-only features(mutation for the sake of mutation, technic
 If your code needs a compilation database for clang to understand it and you don't have one,you can use [Bear](https://github.com/rizsotto/Bear). Please note that bear will capture what the make runs, not what is in the makefile. So run `make clean` before invoking `bear make target`. `cmake` can also generate compilation databases if you are using it.<br/>
 
 ### Implementation Notes
-This part contains notes regarding the implementation of the mutator executables.
+This part contains notes regarding the implementation of m0, m1 and m2.<br/>
 
 #### mutator-lvl0
 * The implementation for the Misra-C:2004 rules 11.1,11.2,11.4 and 11.5 might seem unorthodox. Here's the explanation. The essence of the 11.1,11.2,11.3 and 11.4 rules as a collective is (after being translated into clang AST) that any time there is an `ImplicitCastExpr` or `CStyleCastExpr` that has `CastKind = CK_BitCast` the rule-checker should tag it. `CK_BitCast` means that a bit-pattern of one kind is being interpreted as a bit-pattern of another kind which is dangerous. This `CastKind` couple with the other `CastKinds` provided by the clang frontend enable us to tag cases where there is a deviation from the specified rules. Of course it is possible to check for exactly what the rules ask for but execution-time.<br/>
 
 * The implementation for the Misra-C:2004 rule 16.7 only checks for changes made to the pointee object when the pointer is the LHS of a binary `=` operator. Changes can be made to the pointee object through UnaryOperators `++` and `--` but since the `*` UnaryOperator is also involved, the behaviour is undefined as to which unaryOperator is evaluated at first so depending on the original build toolchain's implementation, it could modify the pointer itself or the pointee object. such cases are already being tagged by 12.13 and the fix to that rule will either make the source code in a way that will be tagged by 16.7 or fix it so it wont get tagged. Either way, it is pointless to look for changes to pointee objects through `++` and `--` operators, postfix or prefix. Do note that even if at later times, mutator supports pragmas for different compiler implementation behaviours, the last argument still stands.<br/>
 
+
+### Directory Outline
 Here's a quick look into the project files and directories:<br/>
 
 * **mutator-lvl0.cpp** contains the Misra-C rules to check. The Executable named after it, will run the Misra-C rule checks.<br/>
@@ -337,45 +352,41 @@ Here's a quick look into the project files and directories:<br/>
 * The folder named **extra-tools** holds some tool that help the dev process.<br/>
 * The folder named **samples** holds the output samples for the project. Currently, you can find the text and XML output of the Misra-C rule checker run over the TDD tests.<br/>
 
-#### **The Misra-C rule checking portion has not been extensively tested since it is still WIP but is very much buildable and usable.**<br/>
-
 ### Dev Method
 TDD tests are created for each added feature which are stored under the **test** folder in the repo.<br/>
 Smoke tests and Daily builds are conducted to make sure the code base builds correctly more than once every day.<br/>
 Every time there is a new commit, the code base is buildable and runnable. If you are having problems, raise an issue or let me know.<br/>
 The code base uses Coverity for static analysis and CI Travis for checking the build matrix.<br/>
+Coveralls integration with Travis for code coverage.<br/>
+Also the `precommitTests.sh` script under `extra-tools` is run before every commit to make sure commits are not horribly broken.<br\>
 
 ### Notes
 
-#### **The project will be updated every time there is a major LLVM release and will use those libraries instead of the old ones.**<br/>
+#### **The project will be updated every time there is a major LLVM release and will use those libraries instead of the old ones for development**<br/>
 
-#### **As soon as I manage to find a copy of the Misra-C:2012 document, I'll implement that. Currently the tool only supports Misra-C:2004.**<br/>
-Misra-C rule checker outputs a simple text or xml report. JSON support will be implemented in the future.<br/>
-I'm using **TDD**. The files under the **test** folder are for that purpose. They are not unit tests or are not meant to test that the build process was successful.Those tests will be added later.<br/>
-The project has been tested to build on Fedora25(other major linux distros should be fine). Windows remains untested. I might give it a try when I feel masochistic enough.<br/>
-The project might, at a later point in time, start using **Cmake** for the build process. Currently the TDD tests use CMake as an extra check.<br/>
+The project might, at a later point in time, start using **Cmake** for the build process.<br/>
 Misra 2012 support will be added in the future.<br/>
 Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if you're going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
 The master branch is the dev version. Release versions will be forked.<br/>
-Doxygen comments will be added later on.<br/>
 
 ### Acknowledgements
-Project mutator uses the following cool libraries:
-* [SaferCPP](https://github.com/duneroadrunner/SaferCPlusPlus)
+Project mutator uses the following libraries:
+* [LLVM/Clang](http://llvm.org)
+* [Lua](https://github.com/lua/lua)
+* [Linenoise](https://github.com/antirez/linenoise)
+* [capstone](https://github.com/aquynh/capstone)
+* [keystone](https://github.com/keystone-engine/keystone)
 * [TinyXML2](https://github.com/leethomason/tinyxml2)
 * [JSON](https://github.com/nlohmann/json)
-* [LLVM/Clang](http://llvm.org)
-* [Linenoise](https://github.com/antirez/linenoise)
-* [Lua](https://github.com/lua/lua)
+* [SaferCPP](https://github.com/duneroadrunner/SaferCPlusPlus)
 * [LuaJIT](https://github.com/LuaJIT/LuaJIT)
-* [capstone](https://github.com/aquynh/capstone)
-* Thanks to [Jonathan Brossard](https://github.com/endrazine) for [WCC](https://github.com/endrazine/wcc), specifically `wsh` which is the inspiration for `bruiser`.<br/>
+* Thanks to [Jonathan Brossard](https://github.com/endrazine) for [WCC](https://github.com/endrazine/wcc), specifically `wsh` which is the inspiration for `bruiser`. Check it out if you haven't already.<br/>
 
-All mutator source code is provided under GPL-2.0.<br/>
+All mutator source code is provided under GPL-3.0.<br/>
 All libraries have their respective licences. For more info you can just visit their respective links.<br/>
 
 ### Feedback
-If you run into an issue please raise one here or just contact me with proper information(including source code that causes the issue if there is any).<br/>
+If you run into an issue please make a new issue.<br/>
 
 ### Suggestions and Feature Requests
 You can make a new issue for requests and suggestion. Label them with "Feauture Request".<br/>
@@ -389,8 +400,6 @@ For a full description please read `Contributions.md` in the repo root.<br/>
 
 ### Support
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>
-If the company/organization you represent wants to sponsor mutator, let me know.<br/>
-
 #### Testers are always welcome. If you are interested, let me know. Testing mutator is as important, if not more, than implementing it.<br/>
 
 ### Contact
