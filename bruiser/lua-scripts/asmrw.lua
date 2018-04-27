@@ -4,7 +4,7 @@
 
 --This program is free software; you can redistribute it and/or
 --modify it under the terms of the GNU General Public License
---as published by the Free Software Foundation; either version 2
+--as published by the Free Software Foundation; either version 3
 --of the License, or (at your option) any later version.
 
 --This program is distributed in the hope that it will be useful,
@@ -18,7 +18,7 @@
 --------------------------------------------------------------------------------------------------------------
 --start of asmrewriter module
 local asmrw = {}
-xobj = require("lua-scripts.xobj")
+xobj = require("xobj")
 -- this will hold a copy of the original text section
 local text_buffer = {}
 
@@ -30,6 +30,23 @@ setmetatable(jmp_s_t, {__call =
     end
   }
 )
+
+function asmrw.strings(exe)
+  io.write(colors("%{cyan}".."lua:getting text section...\n"))
+  local text_section = xobj.getTextSection(exe)
+  local rodata = xobj.getRODataSection(exe)
+  for k,v in pairs(rodata) do
+    if v > 33 and v < 127 then 
+      io.write(string.format("%c",v)) 
+    else
+      io.write(" ")
+    end
+  end
+  io.write("\0\n")
+end
+
+function asmrw.strings_deep(exe)
+end
 
 function jmp_s_t:dump(msg)
   print(msg, self:custom())

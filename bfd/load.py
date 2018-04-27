@@ -1,4 +1,21 @@
 #!/bin/python3
+#***************************************************Project Mutator****************************************************/
+# yet another elfdump in python
+#*Copyright (C) 2018 Farzad Sadeghi
+
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 3
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 import argparse
 import sys
 import readline
@@ -1253,6 +1270,12 @@ def elf_get_text_section():
     elf.init(64)
     return elf.dump_section(".text", False)
 
+def elf_get_section(name):
+    so = openSO_r(sys.argv[1])
+    elf = ELF(so)
+    elf.init(64)
+    return elf.dump_section(name, False)
+
 def elf_get_rodata_section():
     so = openSO_r(sys.argv[1])
     elf = ELF(so)
@@ -1315,21 +1338,30 @@ class Global_Rewriter(object):
         pass
 
 class Rewriter(object):
-    def __init__(self, path):
+    def __init__(self, path, new_name):
         so = openSO_r(path)
         self.elf = ELF(so)
         self.elf.init(64)
-        shutil.copyfile(path, "/tmp/exe")
+        #shutil.copyfile(path, "/tmp/exe")
         self.file_w = open("/tmp/exe", "wb")
         self.magic_section_number = int()
+        self.new_name = new_name
 
-    def fix_section_offsets(self, section_name):
+    def fix_section_offsets(self, section_name, new_size:int, new_section:bytes):
         magic_number = int()
         for i in range(0, byte2int(self.elf.elfhdr.e_shnum)):
             name = self.elf.read_section_name(byte2int(self.elf.shhdr[i].sh_name))
             if section_name == name:
-                self.magic_section_number = i + 1
+                self.magic_section_number = i
         print(self.magic_section_number)
+
+        end = int()
+        for i in range(self.magic_section_number-1, byte2int(self.elf.elfhdr.e_shnum)):
+            before = byte2int(self.elf.shhdr[i].sh_offset) + byte2int(self.elf.shhdr[i].sh_size)
+            print(before)
+            if before / byte2int(self.elf.shhdr[i].sh_addralign) == float(before / byte2int(self.elf.shhdr[i].sh_addralign)): pass
+            else:
+                end = ceil(before / byte2int(self.elf.shhdr[i].sh_addralign))
 
     def fix_section_size(self, section_name):
         pass
@@ -1353,8 +1385,9 @@ def premain(argparser):
     elif argparser.args.dlpath: elf.dump_section(".interp", True)
     elif argparser.args.section: elf.dump_section(argparser.args.section, True)
     elif argparser.args.test2:
-        rewriter = Rewriter(argparser.args.obj)
-        rewriter.fix_section_offsets(".text")
+        rewriter = Rewriter(argparser.args.obj, "new_exe")
+        new_text = bytes()
+        rewriter.fix_section_offsets(".text", 1000,  new_text)
     elif argparser.args.dumpfunc:
         counter = 0
         for name in elf.dump_symbol_string(ELF_ST_TYPE.STT_FUNC, False):

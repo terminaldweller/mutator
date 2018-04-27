@@ -17,7 +17,7 @@
   - [m0](#m0)
   - [Safercpp](#safercpp)
   - [mutatord](#mutatord)
-- [mutator](#mutator)
+- [License](#license)
 - [How to get project mutator](#how-to-get-project-mutator)
 - [Dev Status](#dev-status)
 - [Dev Plans](#dev-plans)
@@ -82,6 +82,10 @@ At the time of writing the client and server are provided to facilitate use of `
 You can Join the Maillist here, [mutator maillist](https://www.freelists.org/list/mutator).<br/>
 You can follow Project `mutator` on twitter, @xashmith.<br/>
 
+## License
+SaferCpp is currently licensed under GPL-2.0.<br/>
+All 3rd party libraries/code have their own respective license.<br/>
+Excluding SaferCpp and other 3rd party code/libraries, everything else under project mutator is provided under GPL-3.0.<br/>
 
 ## How to get project mutator
 

@@ -7,7 +7,7 @@
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -42,6 +42,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <thread>
+#include <unistd.h>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -113,7 +114,7 @@ cl::opt<bool> Nosrc("No Source file needed", cl::desc("verbosity"), cl::init(tru
 // @DEVI-FIXME-we need something like python's code module. lua's -i is not it.
 cl::opt<bool> LuaInteractive("interactive", cl::desc("run in interactive mode"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
-cl::opt<std::string> LuaDefault("luadefault", cl::desc("the path to the luadefault file. the default option is where the bruiser executable is."), cl::init("./defaults.lua"), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<std::string> LuaDefault("luadefault", cl::desc("the path to the luadefault file. the default option is where the bruiser executable is."), cl::init(""), cl::cat(BruiserCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 template <typename T>
 int pushLuaTableInt(lua_State* __ls, std::vector<T> vec) {
@@ -250,6 +251,37 @@ class LuaEngine
     }
 
     void RunLuaDefaults(void) {
+      char buf[500];
+      std::string bruiser_path;
+      // @DEVI-linux-only
+      size_t len = readlink("/proc/self/exe", buf, 499);
+      if (len != -1) {
+        buf[len] = '\0';
+        bruiser_path = buf;
+        auto index = bruiser_path.rfind("/");
+        bruiser_path = bruiser_path.substr(0, index);
+        if (Verbose) std::cout << GREEN << bruiser_path << NORMAL << "\n";
+      }
+      else {
+        PRINT_WITH_COLOR_LB(RED, "could not get bruiser's path. bruiser modules path wont be added.");
+        return void();
+      }
+
+      lua_getglobal(LS, "package");
+      lua_getfield(LS, -1, "path");
+      std::string cur_path = lua_tostring(LS, -1);
+      cur_path.append(";");
+      cur_path.append(bruiser_path);
+      cur_path.append("/lua-scripts/?.lua");
+      lua_pop(LS, 1);
+      lua_pushstring(LS, cur_path.c_str());
+      lua_setfield(LS, -2, "path");
+      lua_pop(LS,1);
+
+      if (LuaDefault == "") {
+        LuaDefault = bruiser_path + "/defaults.lua";
+        if (Verbose) std::cout << BLUE << LuaDefault << NORMAL << "\n";
+      }
       luaL_dofile(LS, LuaDefault.c_str());
     }
 
@@ -308,16 +340,28 @@ class PyExec {
       py_script_name(__py_script_name), py_func_name(__py_func_name), obj_path(__obj_path) {}
 
     int run(void) {
-      //std::wstring py_sys_path = L"../bfd";
       Py_Initialize();
+
       int argc = 2;
-      //std::wstring argv[2];
       wchar_t* argv[2];
       argv[0] = Py_DecodeLocale((char*)py_script_name.c_str(), 0);
       argv[1] = Py_DecodeLocale((char*)obj_path.c_str(), 0);
+
+      char buf[500];
+      std::string bruiser_path;
+      // @DEVI-linux-only
+      size_t len = readlink("/proc/self/exe", buf, 499);
+      if (len != -1) {
+        buf[len] = '\0';
+        bruiser_path = buf;
+        auto index = bruiser_path.rfind("/");
+        bruiser_path = bruiser_path.substr(0, index);
+      }
+
       PySys_SetArgv(argc, argv);
       pName = PyUnicode_DecodeFSDefault(py_script_name.c_str());
-      PyRun_SimpleString("import sys\nsys.path.append(\"../bfd\")\n");
+      std::string command = "import sys\nsys.path.append(\"" + bruiser_path + "/../bfd\")\n";
+      PyRun_SimpleString(command.c_str());
       pModule = PyImport_Import(pName);
       Py_DECREF(pName);
 
@@ -1644,6 +1688,12 @@ class LuaWrapper
       uint64_t ptr = lua_tointeger(__ls, 1);
       dumpjmptable((JMP_S_T*)ptr);
       return 0;
+    }
+
+    int BruiserRamDump(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      if (numargs != 1) {PRINT_WITH_COLOR_LB(RED, "expected exactly one argument of type int.");}
+
     }
 
     /*read the m0 report*/

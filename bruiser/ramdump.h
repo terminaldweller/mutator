@@ -1,9 +1,8 @@
 
 /***************************************************Project Mutator****************************************************/
-//-*-c++-*-
 /*first line intentionally left blank.*/
-/*the source code for bruiser's mutation facilities.*/
-/*Copyright (C) 2017 Farzad Sadeghi
+/*bruiser's ram dump module*/
+/*Copyright (C) 2018 Farzad Sadeghi
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,14 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
-/**********************************************************************************************************************/
-/*included modules*/
-#include "mutagen.h"
-/*project headers*/
-/*standard headers*/
-/*LLVM headers*/
-/*other*/
-/**********************************************************************************************************************/
-/**********************************************************************************************************************/
-/*last line intentionally left blank*/
+/***********************************************************************************************************/
+FILE* dump_memory_region(FILE* pMemFile, uint64_t start_address, uint64_t length);
+FILE* dump_ram(unsigned int pid);
+/***************************************************Project Mutator****************************************************/
+/*last line intentionally left blank.*/
 

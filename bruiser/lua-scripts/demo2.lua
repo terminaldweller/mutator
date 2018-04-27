@@ -1,5 +1,5 @@
 
-xobj = require("lua-scripts.xobj")
+xobj = require("xobj")
 colors = require("ansicolors")
 elf_file = "../bfd/test/test.so"
 elf_exe = "../bfd/test/test"
