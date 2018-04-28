@@ -25,25 +25,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*standard headers*/
 #include <iostream>
 #include <string>
-/*LLVM headers*/
 /*other*/
 #include "linenoise/linenoise.h"
 /**********************************************************************************************************************/
-/*used namespaces*/
-/**********************************************************************************************************************/
-/*macros*/
-
-/**********************************************************************************************************************/
-namespace bruiser
-{
-  void ShellCompletion(const char* __buf, linenoiseCompletions* __lc)
-  {
-    if (__buf != NULL)
-    {
-      for(auto &iter : LUA_FUNCS)
-      {
-        if (iter.find(__buf) == 0U)
-        {
+namespace bruiser {
+  void ShellCompletion(const char* __buf, linenoiseCompletions* __lc) {
+    if (__buf != NULL) {
+      for(auto &iter : LUA_FUNCS) {
+        if (iter.find(__buf) != std::string::npos) {
           linenoiseAddCompletion(__lc, iter.c_str());
         }
       }
@@ -52,19 +41,13 @@ namespace bruiser
 
   char* ShellHints(const char* __buf, int* __color, int* __bold)
   {
-    if (__buf != NULL)
-    {
+    if (__buf != NULL) {
       auto dummy = std::string(__buf);
 
-      for(auto &iter : LUA_FUNCS)
-      {
-        if (dummy == "")
-        {
-          break;
-        }
+      for(auto &iter : LUA_FUNCS) {
+        if (dummy == "") break;
 
-        if (iter.find(__buf) == 0U)
-        {
+        if (iter.find(__buf) != std::string::npos) {
           *__color = 35;
           *__bold = 1;
           int sizet = dummy.length();

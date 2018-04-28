@@ -18,8 +18,19 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /***********************************************************************************************************/
-FILE* dump_memory_region(FILE* pMemFile, uint64_t start_address, uint64_t length);
-FILE* dump_ram(unsigned int pid);
+#ifndef RAMDUMP_H
+#define RAMDUMP_H
+#include <inttypes.h>
+#include <stdio.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+void dump_memory_region(FILE* pMemFile, uint64_t start_address, uint64_t length);
+void dump_ram(unsigned int pid, FILE* out_file);
+#ifdef __cplusplus
+}
+#endif
+#endif
 /***************************************************Project Mutator****************************************************/
 /*last line intentionally left blank.*/
 

@@ -134,6 +134,7 @@ std::vector<std::string> LUA_FUNCS =
   "getjmptable(",
   "freejmptable(",
   "dumpjmptable(",
+  "ramdump(",
   "_G",
   "_VERSION",
   "assert",

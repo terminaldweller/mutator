@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "bruiserffi.h"
 #include "bruisercapstone.h"
 #include "asmrewriter.h"
+#include "ramdump.h"
 /*standard headers*/
 #include <exception>
 #include <fstream>
@@ -1692,8 +1693,13 @@ class LuaWrapper
 
     int BruiserRamDump(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
-      if (numargs != 1) {PRINT_WITH_COLOR_LB(RED, "expected exactly one argument of type int.");}
-
+      if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two argument of type int.");}
+      int pid = lua_tointeger(__ls, 1);
+      std::string dumpname = lua_tostring(__ls, 2);
+      FILE* out_file = fopen(dumpname.c_str(), "w");
+      dump_ram(pid, out_file);
+      fclose(out_file);
+      return 0;
     }
 
     /*read the m0 report*/
@@ -2317,6 +2323,7 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "getjmptable", &LuaDispatch<&LuaWrapper::BruiserGetJumpTable>);
     lua_register(LE.GetLuaState(), "freejmptable", &LuaDispatch<&LuaWrapper::BruiserFreeJumpTable>);
     lua_register(LE.GetLuaState(), "dumpjmptable", &LuaDispatch<&LuaWrapper::BruiserDumpJumpTable>);
+    lua_register(LE.GetLuaState(), "ramdump", &LuaDispatch<&LuaWrapper::BruiserRamDump>);
     /*its just regisering the List function from LuaWrapper with X-macros.*/
 #define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 

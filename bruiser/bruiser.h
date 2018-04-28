@@ -160,7 +160,8 @@ help CMDHelp[] = {
   {"xallocallglobals", "xallocallglobals()", "allocate all globals", "", ""},
   {"getjmptable", "getjmptable(size, code)", "get a table of all jumps", "", "returns a pointer to the head of the jump table linked-list as lightuserdata"},
   {"freejmptable", "freejmptable(head)", "free the jmp table linked-list", "", "nothing"},
-  {"dumpjmptable", "dumpjmptable(head)", "dumps the jmp table linked-list", "", "nothing"}
+  {"dumpjmptable", "dumpjmptable(head)", "dumps the jmp table linked-list", "", "nothing"},
+  {"ramdump", "ramdump(pid)", "dumps the ram", "", "ram contents"}
 };
 /**********************************************************************************************************************/
 /**

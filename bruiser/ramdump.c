@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /***********************************************************************************************************/
+//#include "ramdump.h"
 #include <inttypes.h>
 #include <limits.h>
 #include <stdio.h>
@@ -27,24 +28,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <sys/wait.h>
 #include <unistd.h>
 /***********************************************************************************************************/
-FILE* dump_memory_region(FILE* pMemFile, uint64_t start_address, uint64_t length) {
-  FILE* out_file;
+void dump_memory_region(FILE* pMemFile, uint64_t start_address, uint64_t length, FILE* out_file) {
   uint64_t address;
   int pageLength = 4096;
-  unsigned char page[pageLength];
   fseeko(pMemFile, start_address, SEEK_SET);
+  unsigned char page[pageLength];
 
   for (address=start_address; address < start_address + length; address += pageLength) {
     fread(&page, 1, pageLength, pMemFile);
-      fwrite(&page, 1, pageLength, out_file);
+    fwrite(&page, 1, pageLength, out_file);
   }
 }
 
-FILE* dump_ram(unsigned int pid) {
-  long ptraceResult = ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+void dump_ram(unsigned int pid, FILE* out_file) {
+  uint64_t ptraceResult = ptrace(PTRACE_ATTACH, pid, NULL, NULL);
   if (ptraceResult < 0) {
     printf("ramdump: unable to attach to the pid specified\n");
-    return NULL;
+    return;
   }
   wait(NULL);
 
@@ -57,12 +57,11 @@ FILE* dump_ram(unsigned int pid) {
   sprintf(memFilename, "/proc/%s/mem", proc_str);
   FILE* pMemFile = fopen(memFilename, "r");
   char line[256];
-  FILE* out_file;
   while (fgets(line, 256, pMapsFile) != NULL) {
     uint64_t start_address;
     uint64_t end_address;
     sscanf(line, "%08lx-%08lx\n", &start_address, &end_address);
-    dump_memory_region(pMemFile, start_address, end_address - start_address);
+    dump_memory_region(pMemFile, start_address, end_address - start_address, out_file);
   }
 
   fclose(pMapsFile);
@@ -70,17 +69,19 @@ FILE* dump_ram(unsigned int pid) {
 
   ptrace(PTRACE_CONT, pid, NULL, NULL);
   ptrace(PTRACE_DETACH, pid, NULL, NULL);
-  return out_file;
 }
 
 #pragma weak main
 int main(int argc, char **argv) {
   if (argc != 2) {
-    printf("you were supposed to type in the int value");
+    printf("what happened to the pid?\n");
     return 1;
   }
+  FILE* out_file = fopen("/tmp/ramdump", "w");
   int pid = atoi(argv[1]);
-  FILE* out_file = dump_ram(pid);
+  dump_ram(pid, out_file);
+  fclose(out_file);
+  return 0;
 }
 /***********************************************************************************************************/
 /*last line is intentionally left blank*/
