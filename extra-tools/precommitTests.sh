@@ -104,22 +104,22 @@ else
 fi
 
 printf "${Lblue}running bruiser smoke tests...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre1.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre2.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/smoketest.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
@@ -217,29 +217,29 @@ else
 fi
 
 printf "${Lblue}running bruiser smoke tests...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre1.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++1z smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++1z smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre2.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++1z smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++1z smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/smoketest.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++11 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/demo.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/demo.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/demo.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/demo.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser xobj test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
@@ -309,22 +309,22 @@ else
 fi
 
 printf "${Lblue}running bruiser smoke tests...\n${NC}" | tee -a ./test/precommit.rep
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre1.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre1.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre1.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++14 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++14 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/pre2.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre2.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/pre2.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++14 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
   printf "${Red}bruiser C++14 smoke test failed...\n${NC}" | tee -a ./test/precommit.rep
 fi
-printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
-"./bruiser/bruiser" ./test/bruisertest/test.cpp -lua ./bruiser/lua-scripts/smoketest.lua
+printf "${Orange}./bruiser/bruiser ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/smoketest.lua\n${NC}" | tee -a ./test/precommit.rep
+"./bruiser/bruiser" ./test/bruisertest/test.cpp --lua ./bruiser/lua-scripts/smoketest.lua
 if [[ $? == 0 ]]; then
   printf "${Green}bruiser C++11 smoke test passed...\n${NC}" | tee -a ./test/precommit.rep
 else
