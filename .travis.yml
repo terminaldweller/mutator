@@ -35,7 +35,7 @@ before_script:
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo apt-get install libffi-dev -y
   - sudo apt-get install luarocks -y
-  - luarocks install ansicolors
+  - luarocks install ansicolors --local
   - ./extra-tools/capstoneubuntu14.sh
   - ./extra-tools/keystoneubuntu.sh
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
