@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd $(dirname $0)
-#"./bruiser"  ../test/bruisertest/test.cpp --verbose
-"./bruiser"  ../test/bruisertest/test.cpp
-#"./bruiser" -Nosrc
+"make"
+#"./bruiser"
+"./bruiser"  ../test/bruisertest/test.cpp --src
+#gdb "./bruiser ../test/bruisertest/test.cpp --src"

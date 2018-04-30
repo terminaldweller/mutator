@@ -94,6 +94,7 @@ Before you run make, make sure you have all the dependencies:<br/>
 * For `safercpp` you will need to have LLVM RTTI also.<br/>
 * For `bruiser` you will need the python 3.5< dev package(source code and libpython), libcapstone, libkeystone and libffi.<br/>
 * The other libraries used are either submodules or copied inside.<br/>
+* `load.py` needs capstone. You can get it through pip.<br/>
 For More details you can look at the `Building` section.<br/>
 
 Assuming you already have the dependencies:<br/>

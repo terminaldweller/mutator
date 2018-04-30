@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "bruisercapstone.h"
 #include "asmrewriter.h"
 #include "ramdump.h"
+#include "ffs.h"
 /*standard headers*/
 #include <exception>
 #include <fstream>
@@ -44,6 +45,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <sys/wait.h>
 #include <thread>
 #include <unistd.h>
+#include <utility>
 /*LLVM headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -111,9 +113,8 @@ cl::opt<bool> MainFileOnly("MainOnly", cl::desc("bruiser will only report the re
 cl::opt<std::string> M0XMLPath("xmlpath", cl::desc("tells bruiser where to find the XML file containing the Mutator-LVL0 report."), cl::init(bruiser::M0REP), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> LuaJIT("jit", cl::desc("should bruiser use luajit or not."), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<bool> Verbose("verbose", cl::desc("verbosity"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
-cl::opt<bool> Nosrc("No Source file needed", cl::desc("verbosity"), cl::init(true), cl::cat(BruiserCategory), cl::ZeroOrMore);
-// @DEVI-FIXME-we need something like python's code module. lua's -i is not it.
-cl::opt<bool> LuaInteractive("interactive", cl::desc("run in interactive mode"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<bool> SRC("src", cl::desc("source file is needed"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<bool> KEEPALIVE("keepalive", cl::desc("drop to cli after running script in non-cli mode"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
 cl::opt<std::string> LuaDefault("luadefault", cl::desc("the path to the luadefault file. the default option is where the bruiser executable is."), cl::init(""), cl::cat(BruiserCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
@@ -543,12 +544,9 @@ class PyExec {
     std::string obj_path;
     PyObject* pName;
     PyObject* pModule;
-    PyObject* pDict;
     PyObject* pFunc;
     PyObject* pArgs;
     PyObject* pValue;
-    int argc;
-    char** argv;
     std::vector<std::string> hexobj_str;
     std::vector<std::vector<uint8_t>> hexobj;
     std::vector<uint8_t> text_section;
@@ -1298,7 +1296,7 @@ class LiveActionListArrays : public ASTFrontendAction
 class LuaWrapper
 {
   public:
-    LuaWrapper(ClangTool &__CT, Executioner& __EX, XGlobals __XG) : CT(__CT), executioner(__EX), xglobals(__XG) {}
+    LuaWrapper(Executioner& __EX, XGlobals __XG) : executioner(__EX), xglobals(__XG) {}
 
     /*print out the history*/
     int BruiserLuaHistory(lua_State* __ls)
@@ -1345,33 +1343,13 @@ class LuaWrapper
       return argcount;
     }
 
-    /*hijakcs the main main*/
-    int BruiserLuaHijackMain(lua_State* __ls)
-    {
-        int RunResult = this->GetClangTool().run(newFrontendActionFactory<BruiserFrontendAction>().get());
-        printf(CYAN"hijacking main returned %d", RunResult);
-        printf(NORMAL"\n");
-
-        std::ifstream libtooling_tee("../test/bruisertest/libtooling-tee");
-        std::string luaoutstr;
-        std::string dummy;
-
-        while(std::getline(libtooling_tee, dummy))
-        {
-          luaoutstr = luaoutstr + dummy + "\n";
-        }
-
-        lua_pushstring(__ls, luaoutstr.c_str());
-
-        return 1;
-    }
 
     /*print out bruiser version*/
     int BruiserLuaVersion(lua_State* __ls)
     {
         PRINT_WITH_COLOR_LB(GREEN, "bruiser experimental version something.");
         PRINT_WITH_COLOR_LB(GREEN, "project mutator");
-        PRINT_WITH_COLOR_LB(GREEN, "GPL v2.0");
+        PRINT_WITH_COLOR_LB(GREEN, "GPL v3.0");
         PRINT_WITH_COLOR_LB(GREEN, "bloodstalker 2017");
 
         return 1;
@@ -1804,14 +1782,12 @@ class LuaWrapper
 
       pid_t pid = fork();
 
-      if (pid < 0)
-      {
+      if (pid < 0) {
         PRINT_WITH_COLOR_LB(RED, "could not fork...");
         lua_pushnumber(__ls, EXIT_FAILURE);
       }
 
-      if (pid == 0)
-      {
+      if (pid == 0) {
         std::cout << BLUE << "MAKEPATH: " << ShellGlobalInstance.MAKEPATH << NORMAL << "\n";
         std::cout << BLUE << "Running: " << "make -C " << ShellGlobalInstance.MAKEPATH << " " << makearg << NORMAL << "\n";
         int retval = execl("/usr/bin/make", "make", "-C", ShellGlobalInstance.MAKEPATH.c_str(), makearg.c_str(), NULL);
@@ -1819,8 +1795,7 @@ class LuaWrapper
         exit(EXIT_SUCCESS);
       }
 
-      if (pid > 0)
-      {
+      if (pid > 0) {
         int status;
         pid_t returned;
         returned = waitpid(pid, &status, 0);
@@ -1830,12 +1805,10 @@ class LuaWrapper
       return 1;
     }
 
-    int BruiserLuaChangeHistorySize(lua_State* __ls)
-    {
+    int BruiserLuaChangeHistorySize(lua_State* __ls) {
       unsigned int args = 0U;
 
-      if ((args = lua_gettop(__ls)) != 1U)
-      {
+      if ((args = lua_gettop(__ls)) != 1U) {
         PRINT_WITH_COLOR_LB(RED, "function was not called by one argument. Run help().");
         return 0;
       }
@@ -1849,12 +1822,10 @@ class LuaWrapper
     }
 
     //@DEVI-FIXME-broken
-    int BruiserLuaShowSourcecode(lua_State* __ls)
-    {
+    int BruiserLuaShowSourcecode(lua_State* __ls) {
       unsigned int args = 0U;
 
-      if ((args = lua_gettop(__ls)) != 3U)
-      {
+      if ((args = lua_gettop(__ls)) != 3U) {
         PRINT_WITH_COLOR_LB(RED, "function called with the wrong number of arguments. Run help().");
         return 0;
       }
@@ -1864,17 +1835,14 @@ class LuaWrapper
       std::string filename = lua_tostring(__ls, 3);
       std::fstream targetfile;
 
-      for(auto &iter : ShellGlobalInstance.SOURCE_FILES)
-      {
-        if (iter.rfind(filename) == iter.size() - filename.size())
-        {
+      for(auto &iter : ShellGlobalInstance.SOURCE_FILES) {
+        if (iter.rfind(filename) == iter.size() - filename.size()) {
           ShellCacheInstance.LastFileUsed = iter;
           ShellCacheInstance.LastFileUsedShort = filename;
 
           targetfile.open(iter);
 
-          if(targetfile.rdstate() != std::ios_base::goodbit)
-          {
+          if(targetfile.rdstate() != std::ios_base::goodbit) {
             PRINT_WITH_COLOR_LB(RED, "could not open the file.");
           }
         }
@@ -1882,8 +1850,7 @@ class LuaWrapper
 
       std::string line;
       std::string dummy;
-      while(getline(targetfile, line))
-      {
+      while(getline(targetfile, line)) {
         dummy += line;
         //lua_pushstring(__ls, line.c_str());
       }
@@ -1894,36 +1861,29 @@ class LuaWrapper
       return 1;
     }
 
-    int BruiserLuaMutagenExtraction(lua_State* __ls)
-    {
+    int BruiserLuaMutagenExtraction(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
       std::string extractiontarget;
 
-      if (numargs == 1)
-      {
+      if (numargs == 1) {
         extractiontarget = lua_tostring(__ls, 1);
       }
 
       pid_t pid = fork();
 
-      if (pid < 0)
-      {
+      if (pid < 0) {
         /*bruiser could not spawn a child*/
         PRINT_WITH_COLOR_LB(RED, "could not fork a child process(m0).");
         lua_pushnumber(__ls, EXIT_FAILURE);
       }
 
       /*only the child process runs this*/
-      if (pid == 0)
-      {
-        for(auto &iter : ShellGlobalInstance.SOURCE_FILES)
-        {
-          if (iter.rfind(extractiontarget) == iter.size() - extractiontarget.size())
-          {
+      if (pid == 0) {
+        for(auto &iter : ShellGlobalInstance.SOURCE_FILES) {
+          if (iter.rfind(extractiontarget) == iter.size() - extractiontarget.size()) {
             ShellCacheInstance.LastFileUsedShort = extractiontarget;
             ShellCacheInstance.LastFileUsed = iter;
             std::cout << BLUE << "running: " << CYAN << "../mutator-lvl0 " << iter.c_str() << NORMAL << "\n";
-            //int retval = execl("../", "mutator-lvl0", iter.c_str(), NULL);
             int retval = execl("../mutator-lvl0", "mutator-lvl0", iter.c_str(), NULL);
             std::cout << BLUE << "child process retuned " << retval << NORMAL << "\n";
             lua_pushnumber(__ls, retval);
@@ -1933,8 +1893,7 @@ class LuaWrapper
       }
 
       /*only the parent process runs this*/
-      if (pid > 0)
-      {
+      if (pid > 0) {
         /*the parent-bruiser- will need to wait on the child. the child will run m0.*/
         int status;
         pid_t returned;
@@ -1954,41 +1913,33 @@ class LuaWrapper
       ShellGlobalInstance.droptocli = true;
     }
 
-    int BruiserLuaStrainRecognition(lua_State* __ls)
-    {
+    int BruiserLuaStrainRecognition(lua_State* __ls) {
       unsigned int numthreads = std::thread::hardware_concurrency();
       lua_pushnumber(__ls, numthreads);
       return 1;
     }
 
-    int BruiserLuaSetMakePath(lua_State* __ls)
-    {
+    int BruiserLuaSetMakePath(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
 
-      if (numargs != 1)
-      {
+      if (numargs != 1) {
         PRINT_WITH_COLOR_LB(RED, "wrong number of args. run help.");
         return 0;
       }
-
       ShellGlobalInstance.MAKEPATH = lua_tostring(__ls, 1);
-
       return 0;
     }
 
-    int BruiserLuaRun(lua_State* __ls)
-    {
+    int BruiserLuaRun(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
 
-      if (numargs != 1)
-      {
+      if (numargs != 1) {
         PRINT_WITH_COLOR_LB(RED, "wrong number of args. run help().");
         lua_pushnumber(__ls, 1);
         return 1;
       }
 
-      if (ShellGlobalInstance.BINPATH == "")
-      {
+      if (ShellGlobalInstance.BINPATH == "") {
         PRINT_WITH_COLOR_LB(RED, "BINPATH is not set. use setbinpath() to set it.");
         lua_pushnumber(__ls, 1);
         return 1;
@@ -1998,43 +1949,36 @@ class LuaWrapper
 
       pid_t pid = fork();
 
-      if (pid < 0)
-      {
+      if (pid < 0) {
         PRINT_WITH_COLOR_LB(RED, "could not fork...");
         lua_pushnumber(__ls, 1);
         return 1;
       }
 
-      if (pid == 0)
-      {
+      if (pid == 0) {
         int retval = execl((ShellGlobalInstance.BINPATH + "/" + binname).c_str(), binname.c_str(), NULL);
         std::cout << BLUE << "child returned " << retval << NORMAL << "\n";
         lua_pushnumber(__ls, retval);
         exit(EXIT_SUCCESS);
       }
 
-      if (pid > 0)
-      {
+      if (pid > 0) {
         unsigned int current_time [[maybe_unused]] = 0U;
 
-        while (current_time < GLOBAL_TIME_OUT)
-        {
+        while (current_time < GLOBAL_TIME_OUT) {
           int status;
           int returned;
           returned = waitpid(-1, &status, WNOHANG);
 
-          if (returned < 0)
-          {
+          if (returned < 0) {
             lua_pushnumber(__ls, 1);
             break;
           }
 
-          if (WIFEXITED(status) || WIFSIGNALED(status))
-          {
+          if (WIFEXITED(status) || WIFSIGNALED(status)) {
             lua_pushnumber(__ls, 0);
             break;
           }
-
           current_time++;
         }
       }
@@ -2042,12 +1986,10 @@ class LuaWrapper
       return 1;
     }
 
-    int BruiserLuaSetBinPath(lua_State* __ls)
-    {
+    int BruiserLuaSetBinPath(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
 
-      if (numargs != 1)
-      {
+      if (numargs != 1) {
         PRINT_WITH_COLOR_LB(RED, "wrong number of args. should be one string. see help().");
       }
 
@@ -2056,26 +1998,23 @@ class LuaWrapper
       return 0;
     }
 
-    int BruiserLuaGetBinPath(lua_State* __ls)
-    {
+    int BruiserLuaGetBinPath(lua_State* __ls) {
       lua_pushstring(__ls, ShellGlobalInstance.BINPATH.c_str());
       std::cout << BLUE << ShellGlobalInstance.BINPATH << NORMAL << "\n";
       return 1;
     }
 
-    int BruiserLuaGetMakePath(lua_State* __ls)
-    {
+    int BruiserLuaGetMakePath(lua_State* __ls) {
       lua_pushstring(__ls, ShellGlobalInstance.MAKEPATH.c_str());
       std::cout << BLUE << ShellGlobalInstance.MAKEPATH << NORMAL << "\n";
       return 1;
     }
 
-    int BruiserLuaGetPath(lua_State* __ls)
-    {
+    int BruiserLuaGetPath(lua_State* __ls) {
       unsigned int returncount = 0;
 
-      for (auto &iter : ShellGlobalInstance.PATH)
-      { lua_pushstring(__ls, iter.c_str());
+      for (auto &iter : ShellGlobalInstance.PATH){ 
+        lua_pushstring(__ls, iter.c_str());
         std::cout << BLUE << iter.c_str() << NORMAL << "\n";
         returncount++;
       }
@@ -2083,12 +2022,10 @@ class LuaWrapper
       return returncount;
     }
 
-    int BruiserLuaGetSourceFiles(lua_State* __ls)
-    {
+    int BruiserLuaGetSourceFiles(lua_State* __ls) {
       unsigned int returncount = 0;
 
-      for (auto &iter : ShellGlobalInstance.SOURCE_FILES)
-      {
+      for (auto &iter : ShellGlobalInstance.SOURCE_FILES) {
         lua_pushstring(__ls, iter.c_str());
         std::cout << BLUE << iter.c_str() << NORMAL << "\n";
         returncount++;
@@ -2112,12 +2049,10 @@ class LuaWrapper
       return 0;
     }
 
-    int BruiserLuaChangeDirectory(lua_State* __ls)
-    {
+    int BruiserLuaChangeDirectory(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
 
-      if (numargs != 1)
-      {
+      if (numargs != 1) {
         PRINT_WITH_COLOR_LB(RED, "wrond number of arguments. needed one. see help().");
         lua_pushnumber(__ls, 1U);
         return 1;
@@ -2127,32 +2062,27 @@ class LuaWrapper
 
       pid_t pid = fork();
 
-      if (pid < 0)
-      {
+      if (pid < 0) {
         PRINT_WITH_COLOR_LB(RED, "could not fork...");
         lua_pushnumber(__ls, EXIT_FAILURE);
         return 1;
       }
 
-      if (pid == 0)
-      {
+      if (pid == 0) {
         int retval = execl("/usr/bin/cd", "cd", destinationpath.c_str(), NULL);
         std::cout << BLUE << "child returned " << retval << NORMAL << "\n";
       }
 
-      if (pid > 0)
-      {
+      if (pid > 0) {
         int status;
         pid_t returned;
         returned =  waitpid(pid, &status, 0);
         lua_pushnumber(__ls, returned);
       }
-
       return 1;
     }
 
-    int BruiserLuaYolo(lua_State* __ls)
-    {
+    int BruiserLuaYolo(lua_State* __ls) {
       return 0;
     }
 
@@ -2165,28 +2095,54 @@ class LuaWrapper
     {
       pid_t pid = fork();
 
-      if (pid < 0)
-      {
+      if (pid < 0) {
         PRINT_WITH_COLOR_LB(RED, "could not fork...");
         lua_pushnumber(__ls, EXIT_FAILURE);
         return 1;
       }
 
-      if (pid == 0)
-      {
+      if (pid == 0) {
         int retval = execl("/usr/bin/pwd", "pwd", NULL);
         std::cout << BLUE << "child returned " << retval << NORMAL << "\n";
       }
 
-      if (pid > 0)
-      {
+      if (pid > 0) {
         int status;
         pid_t returned;
         returned =  waitpid(pid, &status, 0);
         lua_pushnumber(__ls, returned);
       }
-
       return 1;
+    }
+
+  private:
+    Executioner executioner;
+    XGlobals xglobals;
+};
+/**********************************************************************************************************************/
+class BruiserCFE {
+  public:
+    BruiserCFE(std::unique_ptr<ClangTool> _CT) : CT(std::move(_CT)) {}
+
+    //~BruiserCFE() {}
+
+    /*hijakcs the main main*/
+    int BruiserLuaHijackMain(lua_State* __ls) {
+        int RunResult = this->GetClangTool()->run(newFrontendActionFactory<BruiserFrontendAction>().get());
+        printf(CYAN"hijacking main returned %d", RunResult);
+        printf(NORMAL"\n");
+
+        std::ifstream libtooling_tee("../test/bruisertest/libtooling-tee");
+        std::string luaoutstr;
+        std::string dummy;
+
+        while(std::getline(libtooling_tee, dummy)) {
+          luaoutstr = luaoutstr + dummy + "\n";
+        }
+
+        lua_pushstring(__ls, luaoutstr.c_str());
+
+        return 1;
     }
 
 #define LIST_GENERATOR(__x1) \
@@ -2196,7 +2152,8 @@ class LuaWrapper
       unsigned int InArgCnt = 0U;\
       InArgCnt = lua_gettop(__ls);\
       unsigned int returncount=0U;\
-      this->GetClangTool().run(newFrontendActionFactory<LiveActionList##__x1>().get());\
+      std::cout << "i was called\n";\
+      this->GetClangTool()->run(newFrontendActionFactory<LiveActionList##__x1>().get());\
       for(auto &iter : PushToLua)\
       {lua_pushstring(__ls, iter.c_str());returncount++;}\
       PushToLua.clear();\
@@ -2218,29 +2175,113 @@ class LuaWrapper
 #undef X
 #undef LIST_GENERATOR
 
-    ClangTool GetClangTool(void)
-    {
-      return this->CT;
+    ClangTool* GetClangTool(void) {
+      return this->CT.get();
     }
 
   private:
-    ClangTool CT;
-    Executioner executioner;
-    XGlobals xglobals;
+    std::unique_ptr<ClangTool> CT;
 };
 /**********************************************************************************************************************/
+class RunLoop
+{
+  public:
+    RunLoop(lua_State* __ls, LuaEngine __le) : ls(__ls), le(__le) {}
+
+    void setCFE(std::unique_ptr<BruiserCFE> _cfe) {
+      cfe = std::move(_cfe);
+    }
+
+    void setLW(std::unique_ptr<LuaWrapper> _lw) {
+      lw = std::move(_lw);
+    }
+
+    void setCOP(std::unique_ptr<CommonOptionsParser> _cop) {
+      cop = std::move(_cop);
+    }
+
+    int run(char* command) {
+      if (NonCLILuaScript != "") {
+        luaL_dofile(ls, NonCLILuaScript.c_str());
+        if (KEEPALIVE) {}
+        else {
+          dostring(ls, "os.exit()", "test");
+          return 0;
+        }
+      }
+
+      /*cli execution loop*/
+      while((command = linenoise(">>>")) != NULL) {
+        linenoiseHistoryAdd(command);
+        linenoiseHistorySave(SHELL_HISTORY_FILE);
+        le.RunChunk(command);
+        linenoiseFree(command);
+      }
+    }
+
+  private:
+    lua_State* ls;
+    std::unique_ptr<BruiserCFE> cfe;
+    std::unique_ptr<LuaWrapper> lw;
+    std::unique_ptr<CommonOptionsParser> cop;
+    LuaEngine le;
+};
 /**********************************************************************************************************************/
 typedef int (LuaWrapper::*mem_func)(lua_State* L);
 template<mem_func func>
-int LuaDispatch(lua_State* __ls)
-{
+int LuaDispatch(lua_State* __ls) {
   LuaWrapper* LWPtr = *static_cast<LuaWrapper**>(lua_getextraspace(__ls));
   return ((*LWPtr).*func)(__ls);
 }
+
+typedef int (BruiserCFE::*mem_func2)(lua_State* L);
+template<mem_func2 func2>
+int LuaDispatch2(lua_State* __ls) {
+  BruiserCFE* LWPtr = *static_cast<BruiserCFE**>(lua_getextraspace(__ls));
+  return ((*LWPtr).*func2)(__ls);
+}
 /**********************************************************************************************************************/
+const char* convert(const std::string &s) {return s.c_str();}
+/**********************************************************************************************************************/
+std::pair<ClangTool*, CompilationDatabaseProcessor*> clang_cli_args(int argc, const char** argv) {
+  CommonOptionsParser op(argc, argv, BruiserCategory);
+  CompilationDatabase &CDB = op.getCompilations();
+  std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
+
+  /*populating the shellglobalinstance*/
+  CompilationDatabaseProcessor* CDBP = new CompilationDatabaseProcessor(CDB);
+  ClangTool* Tool = new ClangTool(op.getCompilations(), op.getSourcePathList());
+  //CompilationDatabaseProcessor CDBP(CDB);
+  //ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+
+  if (CDBP->CompilationDatabseIsEmpty()) {
+    PRINT_WITH_COLOR_LB(RED, "src is set and bruiser can't find the compilation database. quitting...");
+  } else {
+    CDBP->CalcMakePath();
+    CDBP->PopulateGPATH();
+    CDBP->PopulateGSOURCEFILES();
+  }
+  std::cout << GREEN << "i returned" << NORMAL << "\n";
+  return std::make_pair(Tool, CDBP);
+}
 /**********************************************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
+  int argc_n = 0;
+  std::vector<std::string> argv_n;
+  std::vector<const char*> vc;
+  // for --nosrc to work we need to bypass llvm's command line parser
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp(argv[i], "--src") == 0) {SRC = true; continue;}
+    if (strcmp(argv[i], "--verbose") == 0) {Verbose = true; continue;}
+    if (strcmp(argv[i], "--keepalive") == 0) {KEEPALIVE = true; continue;}
+    if (strcmp(argv[i], "--lua") == 0) {NonCLILuaScript = argv[i+1]; argc_n--; continue;}
+    if (strcmp(argv[i], "--luadefault") == 0) {LuaDefault = argv[i+1]; argc_n; continue;}
+    argv_n.push_back(argv[i]);
+    argc_n++;
+  }
+  std::transform(argv_n.begin(), argv_n.end(), std::back_inserter(vc), convert);
+
   /*initializing the log*/
   bruiser::BruiserReport BruiserLog;
 
@@ -2249,26 +2290,7 @@ int main(int argc, const char **argv) {
   Arguary arguary;
   XGlobals xglobals;
 
-  /*gets the compilation database and options for the clang instances that we would later run*/
-  CommonOptionsParser op(argc, argv, BruiserCategory);
-  CompilationDatabase &CDB = op.getCompilations();
-  std::vector<CompileCommand> CCV = CDB.getAllCompileCommands();
-  /*populating the shellglobalinstance*/
-  CompilationDatabaseProcessor CDBP(CDB);
-  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
-
-  /*checking whether the compilation database is found and not empty if Nosrc is set*/
-  if (CDBP.CompilationDatabseIsEmpty()) {
-    PRINT_WITH_COLOR_LB(RED, "Nosrc is set and bruiser can't find the compilation database. quitting...");
-    return 1;
-  } else {
-    CDBP.CalcMakePath();
-    CDBP.PopulateGPATH();
-    CDBP.PopulateGSOURCEFILES();
-  }
-
   /*initialize the LuaWrapper class so we can register and run them from lua.*/
-  LuaWrapper LW(Tool, executioner, xglobals);
 
   /*linenoise init*/
   linenoiseSetCompletionCallback(bruiser::ShellCompletion);
@@ -2278,7 +2300,7 @@ int main(int argc, const char **argv) {
   linenoiseHistoryLoad(SHELL_HISTORY_FILE);
   linenoiseSetMultiLine(1);
 
-  /*start running the cli*/
+  /*start running bruiser*/
   {
     char* command;
 
@@ -2286,12 +2308,42 @@ int main(int argc, const char **argv) {
     LE.LoadEverylib();
     LE.RunLuaDefaults();
     LE.registerJMPTable();
-    *static_cast<LuaWrapper**>(lua_getextraspace(LE.GetLuaState())) = &LW;
+    void* lua_e_p = lua_getextraspace_wrapper(LE.GetLuaState(), 0);
+    void* lua_e_p2 = lua_getextraspace_wrapper(LE.GetLuaState(), 1);
+    RunLoop runloop(LE.GetLuaState(), LE);
+
+    if (SRC) {
+      std::unique_ptr<CommonOptionsParser> op(new CommonOptionsParser(argc_n, &vc[0], BruiserCategory));
+      CompilationDatabase &CDB = op.get()->getCompilations();
+      CompilationDatabaseProcessor CDBP(CDB);
+      std::unique_ptr<ClangTool> Tool(new ClangTool(op.get()->getCompilations(), op.get()->getSourcePathList()));
+
+      if (CDBP.CompilationDatabseIsEmpty()) {
+        PRINT_WITH_COLOR_LB(RED, "src is set and bruiser can't find the compilation database. quitting...");
+      } else {
+        CDBP.CalcMakePath();
+        CDBP.PopulateGPATH();
+        CDBP.PopulateGSOURCEFILES();
+      }
+
+      std::unique_ptr<BruiserCFE> LW2(new BruiserCFE(std::move(Tool)));
+
+      *static_cast<BruiserCFE**>(lua_e_p) = LW2.get();
+      lua_register(LE.GetLuaState(), "hijackmain", &LuaDispatch2<&BruiserCFE::BruiserLuaHijackMain>);
+#define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch2<&BruiserCFE::List##__x1>);
+      LIST_LIST_GENERATORS
+#undef X
+#undef LIST_LIST_GENERATORS
+      runloop.setCFE(std::move(LW2));
+      runloop.setCOP(std::move(op));
+    }
+
+    std::unique_ptr<LuaWrapper> LW(new LuaWrapper(executioner, xglobals));
+    *static_cast<LuaWrapper**>(lua_e_p2) = LW.get();
 
     /*@DEVI-this part is just registering our LuaWrapper member functions with lua so we can call them from lua.*/
     lua_register(LE.GetLuaState(), "history", &LuaDispatch<&LuaWrapper::BruiserLuaHistory>);
     lua_register(LE.GetLuaState(), "help", &LuaDispatch<&LuaWrapper::BruiserLuaHelp>);
-    lua_register(LE.GetLuaState(), "hijackmain", &LuaDispatch<&LuaWrapper::BruiserLuaHijackMain>);
     lua_register(LE.GetLuaState(), "version", &LuaDispatch<&LuaWrapper::BruiserLuaVersion>);
     lua_register(LE.GetLuaState(), "clear", &LuaDispatch<&LuaWrapper::BruiserLuaClear>);
     lua_register(LE.GetLuaState(), "m0", &LuaDispatch<&LuaWrapper::BruiserLuaM0>);
@@ -2324,28 +2376,9 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "freejmptable", &LuaDispatch<&LuaWrapper::BruiserFreeJumpTable>);
     lua_register(LE.GetLuaState(), "dumpjmptable", &LuaDispatch<&LuaWrapper::BruiserDumpJumpTable>);
     lua_register(LE.GetLuaState(), "ramdump", &LuaDispatch<&LuaWrapper::BruiserRamDump>);
-    /*its just regisering the List function from LuaWrapper with X-macros.*/
-#define X(__x1, __x2) lua_register(LE.GetLuaState(), #__x1, &LuaDispatch<&LuaWrapper::List##__x1>);
 
-    LIST_LIST_GENERATORS
-
-#undef X
-#undef LIST_LIST_GENERATORS
-
-    /*The non-cli execution loop*/
-    if (NonCLILuaScript != "") {
-      luaL_dofile(LE.GetLuaState(), NonCLILuaScript.c_str());
-      dostring(LE.GetLuaState(), "os.exit()", "test");
-      return 0;
-    }
-
-    /*cli execution loop*/
-    while((command = linenoise(">>>")) != NULL) {
-      linenoiseHistoryAdd(command);
-      linenoiseHistorySave(SHELL_HISTORY_FILE);
-      LE.RunChunk(command);
-      linenoiseFree(command);
-    }
+    runloop.setLW(std::move(LW));
+    runloop.run(command);
 
     LE.Cleanup();
 

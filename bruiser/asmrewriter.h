@@ -32,6 +32,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 extern "C" {
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 static JMP_S_T* convert_jmpt(lua_State* __ls, int index);
 static JMP_S_T* check_jmpt(lua_State* __ls, int index);
 JMP_S_T* push_jmpt(lua_State* __ls);

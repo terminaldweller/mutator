@@ -3,20 +3,20 @@ xobj = require("xobj")
 asmrw = require("asmrw")
 colors = require("ansicolors")
 
-df_exe = "/home/bloodstalker/df/df_44_09_linux/df_linux/libs/Dwarf_Fortress"
-
-function jmp_table_test()
-  io.write(colors("%{cyan}".."lua:getting text section...\n"))
-  local text_section = xobj.getTextSection(df_exe)
-  local rodata = xobj.getRODataSection(df_exe)
-  for k,v in pairs(rodata) do
-    if v > 33 and v < 127 then 
-      io.write(string.format("%c",v)) 
-    else
-      io.write(" ")
-    end
+function df_demo()
+  df_exe = "/home/bloodstalker/df/df_44_09_linux/df_linux/libs/Dwarf_Fortress"
+  --asmrw.strings(df_exe)
+  pgrep_handle = io.popen("pgrep Dwarf_Fortress")
+  for pid in pgrep_handle:lines() do
+    df_pid = tonumber(pid)
   end
-  io.write("\0\n")
+  print("df pid is "..tostring(df_pid))
+  ramdump(df_pid, "/tmp/ramdump")
+  -- @DEVI-broken
+  --ramdump(11419, "/tmp/ramdump")
+  ram = io.open("/tmp/ramdump", "r")
+  io.input(ram)
+  print(io.read())
 end
 
-asmrw.strings(df_exe)
+df_demo()
