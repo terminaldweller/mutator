@@ -34,6 +34,8 @@ before_script:
   - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo apt-get install libffi-dev -y
+  - sudo apt-get install luarocks -y
+  - luarocks install ansicolors
   - ./extra-tools/capstoneubuntu14.sh
   - ./extra-tools/keystoneubuntu.sh
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
@@ -50,12 +52,12 @@ before_script:
 
 script: 
   - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
-  - cd ./extra-tools && ./precommitTests.sh
 
 after_failure:
   - find . -maxdepth 1 -name "core*"
 
 after_success:
+  - cd ./extra-tools && ./precommitTests.sh
   - llvm-config-4.0 --has-rtti
   - llvm-config-5.0 --has-rtti
   - gcc -v

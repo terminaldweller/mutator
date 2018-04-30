@@ -2276,7 +2276,7 @@ int main(int argc, const char **argv) {
     if (strcmp(argv[i], "--verbose") == 0) {Verbose = true; continue;}
     if (strcmp(argv[i], "--keepalive") == 0) {KEEPALIVE = true; continue;}
     if (strcmp(argv[i], "--lua") == 0) {NonCLILuaScript = argv[i+1]; argc_n--; continue;}
-    if (strcmp(argv[i], "--luadefault") == 0) {LuaDefault = argv[i+1]; argc_n; continue;}
+    if (strcmp(argv[i], "--luadefault") == 0) {LuaDefault = argv[i+1]; argc_n--; continue;}
     argv_n.push_back(argv[i]);
     argc_n++;
   }
