@@ -310,6 +310,8 @@ class Daemonize
 #define ELF_EI_PAD =        0xfffffff000000000;
 
 // @DEVI-FIXME-using uint128 here
+// fails to build on stock ubuntu 16.04
+# if 0
 struct ELFHDR_64 {
   public:
     ELFHDR_64() = default;
@@ -347,6 +349,7 @@ struct ELFHDR_32 {
     uint16_t e_ehsize; uint16_t e_phentsize; uint16_t e_phnum; uint16_t e_shentsize;
     uint16_t e_shnum; uint16_t e_shstrndx;
 };
+#endif
 /*program header*/
 struct PHDR_64 {
   public:

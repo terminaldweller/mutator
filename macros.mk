@@ -61,7 +61,7 @@ ifeq ($(CXX), g++)
 $(error This build mode is only useable with clang++.)
 endif
 EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -std=c++1z -stdlib=libstdc++ -UNDEBUG -fexceptions
+ -std=c++17 -stdlib=libstdc++ -UNDEBUG -fexceptions
 EXTRA_LD_FLAGS=-v
 endif
 

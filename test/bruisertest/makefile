@@ -1,7 +1,7 @@
 BRUISER_TEST=test
 CXX?=clang++
 # you should change the include path to one that is right for you
-CXX_FLAGS=-I/usr/lib/gcc/x86_64-redhat-linux/6.3.1/include
+CXX_FLAGS=-I/usr/lib/gcc/x86_64-redhat-linux/7.3.1/include
 
 .DEFAULT:all clean
 

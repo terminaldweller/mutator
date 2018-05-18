@@ -60,7 +60,7 @@ static int jmpt_custom(lua_State* __ls);
 X_LIST_GEN
 #undef X
 #undef X_LIST_GEN
-#undef GET_GENERATOR
+#undef SET_GENERATOR
 
 #define GET_GENERATOR(X) \
 static int X(lua_State* __ls);
@@ -80,7 +80,7 @@ static int X(lua_State* __ls);
 X_LIST_GEN
 #undef X
 #undef X_LIST_GEN
-#undef SET_GENERATOR
+#undef GET_GENERATOR
 
 static int next(lua_State* __ls);
 static int next_y(lua_State* __ls);

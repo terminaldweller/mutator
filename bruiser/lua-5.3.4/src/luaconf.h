@@ -730,7 +730,7 @@
 ** a Lua state with very fast access.
 ** CHANGE it if you need a different size.
 */
-#define LUA_EXTRASPACE		2*(sizeof(void *))
+#define LUA_EXTRASPACE		20*(sizeof(void *))
 
 
 /*

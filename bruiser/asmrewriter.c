@@ -62,6 +62,7 @@ int jmpt_push_args(lua_State* __ls, JMP_S_T* jmpt) {
   lua_pushinteger(__ls, jmpt->y);
   lua_pushinteger(__ls, jmpt->n);
   lua_pushinteger(__ls, jmpt->z);
+  return 0;
 }
 
 int new_jmpt_2(lua_State* __ls) {
@@ -166,7 +167,7 @@ static int X(lua_State* __ls) { \
 X_LIST_GEN
 #undef X
 #undef X_LIST_GEN
-#undef SET_GENERATOR
+#undef GET_GENERATOR
 
 static int next(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls, 1);
@@ -249,6 +250,7 @@ int jmpt_set_next_n(lua_State* __ls) {
 static int jmpt_gc(lua_State* __ls) {
   JMP_S_T* dummy = check_jmpt(__ls,1);
   //freejmptable(dummy);
+  return 0;
 }
 
 static int jmpt_tostring(lua_State* __ls) {

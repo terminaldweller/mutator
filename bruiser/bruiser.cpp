@@ -81,6 +81,7 @@ using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
 namespace { // start of anonymous namespace
+  std::vector<std::pair<void*, std::string>> vptrs;
   static llvm::cl::OptionCategory BruiserCategory("Empty");
   std::vector<std::string> PushToLua;
 
@@ -122,7 +123,7 @@ template <typename T>
 int pushLuaTableInt(lua_State* __ls, std::vector<T> vec) {
   int tableindex = 1;
   lua_newtable(__ls);
-  if (!lua_checkstack(__ls, vec.size())) {
+  if (!lua_checkstack(__ls, 3)) {
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
     return -1;
   }
@@ -138,7 +139,7 @@ int pushLuaTableInt(lua_State* __ls, std::vector<T> vec) {
 int pushLuaTableString(lua_State* __ls, std::vector<std::string> vec) {
   int tableindex = 1;
   lua_newtable(__ls);
-  if (!lua_checkstack(__ls, vec.size())) {
+  if (!lua_checkstack(__ls, 3)) {
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
     return -1;
   }
@@ -155,7 +156,7 @@ template <typename T>
 int pushLuaTableNumber(lua_State* __ls, std::vector<T> vec) {
   int tableindex = 1;
   lua_newtable(__ls);
-  if (!lua_checkstack(__ls, vec.size())) {
+  if (!lua_checkstack(__ls, 3)) {
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
     return -1;
   }
@@ -172,7 +173,7 @@ template <typename T>
 std::vector<T> getLuaTableInt(lua_State* __ls, int numargs, int argnum) {
   std::vector<T> ret;
   int table_length = lua_rawlen(__ls, argnum);
-  if (!lua_checkstack(__ls, table_length)) {
+  if (!lua_checkstack(__ls, 2)) {
     std::cout << RED << "need to grow lua stack by " << table_length << ":";
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack by that much.");
   }
@@ -187,7 +188,7 @@ std::vector<T> getLuaTableInt(lua_State* __ls, int numargs, int argnum) {
 std::vector<std::string> getLuaTableString(lua_State* __ls, int numargs, int argnum) {
   std::vector<std::string> ret;
   int table_length = lua_rawlen(__ls, argnum);
-  if (!lua_checkstack(__ls, table_length)) {
+  if (!lua_checkstack(__ls, 2)) {
     std::cout << RED << "need to grow lua stack by " << table_length << ":";
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack by that much.");
   }
@@ -203,7 +204,7 @@ template <typename T>
 std::vector<T> getLuaTableNumber(lua_State* __ls, int numargs, int argnum) {
   std::vector<T> ret;
   int table_length = lua_rawlen(__ls, argnum);
-  if (!lua_checkstack(__ls, table_length)) {
+  if (!lua_checkstack(__ls, 2)) {
     std::cout << RED << "need to grow lua stack by " << table_length << ":";
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack by that much.");
   }
@@ -256,7 +257,7 @@ class LuaEngine
       char buf[500];
       std::string bruiser_path;
       // @DEVI-linux-only
-      size_t len = readlink("/proc/self/exe", buf, 499);
+      int len = readlink("/proc/self/exe", buf, 499);
       if (len != -1) {
         buf[len] = '\0';
         bruiser_path = buf;
@@ -340,19 +341,22 @@ class PyExec {
   public:
     PyExec(std::string __py_script_name, std::string __py_func_name, std::string __obj_path ) : 
       py_script_name(__py_script_name), py_func_name(__py_func_name), obj_path(__obj_path) {}
+    ~PyExec() {
+      Py_Finalize();
+    }
 
     int run(void) {
       Py_Initialize();
 
       int argc = 2;
       wchar_t* argv[2];
-      argv[0] = Py_DecodeLocale((char*)py_script_name.c_str(), 0);
-      argv[1] = Py_DecodeLocale((char*)obj_path.c_str(), 0);
+      argv[0] = Py_DecodeLocale(py_script_name.c_str(), 0);
+      argv[1] = Py_DecodeLocale(obj_path.c_str(), 0);
 
       char buf[500];
       std::string bruiser_path;
       // @DEVI-linux-only
-      size_t len = readlink("/proc/self/exe", buf, 499);
+      int len = readlink("/proc/self/exe", buf, 499);
       if (len != -1) {
         buf[len] = '\0';
         bruiser_path = buf;
@@ -374,14 +378,13 @@ class PyExec {
           pArgs = PyTuple_New(1);
           pValue = PyUnicode_FromString(obj_path.c_str());
           PyTuple_SetItem(pArgs, 0, pValue);
-          pArgs = nullptr;
-          if (Verbose) std::cout << BLUE << "calling python function..." << NORMAL << "\n";
-          pValue = PyObject_CallObject(pFunc, pArgs);
           //Py_DECREF(pArgs);
+          //pArgs = nullptr;
+          if (Verbose) std::cout << BLUE << "calling python function..." << NORMAL << "\n";
+          //pValue = PyObject_CallObject(pFunc, pArgs);
+          pValue = PyObject_CallObject(pFunc, nullptr);
           if (pValue != nullptr) {
             if (Verbose) std::cout << GREEN << "call finished successfully." << NORMAL << "\n";
-            //printf("Result of call: %ld\n", PyLong_AsLong(pValue));
-            //Py_DECREF(pValue);
           } else {
             Py_DECREF(pFunc);
             Py_DECREF(pModule);
@@ -394,19 +397,18 @@ class PyExec {
         if (PyErr_Occurred()) PyErr_Print();
         fprintf(stderr, "Cannot find function\"%s\"\n", py_func_name.c_str());
       }
-      Py_XDECREF(pFunc);
-      Py_DECREF(pModule);
+      //Py_XDECREF(pFunc);
+      //Py_DECREF(pModule);
     }
     else {
       PyErr_Print();
       fprintf(stderr, "Failed to load \"%ls\"\n", argv[0]);
       return 1;
     }
-    Py_Finalize();
+    //Py_Finalize();
     return 0;
     }
 
-    std::vector<std::string> actionParser(std::string action) {}
     void convertNPush(PyObject* pyobject) {}
 
     int64_t pyInt(PyObject* po) {return PyLong_AsLong(po);}
@@ -445,19 +447,22 @@ class PyExec {
       char* dummy;
       if (PyBytes_Check(po)) {
         dummy = PyBytes_AsString(po);
+        return dummy;
       } else {
         PRINT_WITH_COLOR_LB(RED, "Not a PyBytes object.");
       }
-      return dummy;
+      return nullptr;
     }
 
     char* pyByteArray(PyObject* po) {
       char* dummy;
       if (PyByteArray_Check(po)) {
         dummy = PyByteArray_AsString(po);
+        return dummy;
       } else {
         PRINT_WITH_COLOR_LB(RED, "Not a PyByteArray object.");
       }
+      return nullptr;
     }
 
     int getAsCppStringVec(void) {
@@ -468,7 +473,7 @@ class PyExec {
         if (Verbose) std::cout << BLUE << "length of list: " << list_length << NORMAL  <<"\n";
         for (int i = 0; i < list_length; ++i) {
           PyObject* pybytes = PyList_GetItem(pValue, i);
-          //@DEVI-FIXIT-the weird '' we get for strings is because of repr().
+          if (pybytes == nullptr) PRINT_WITH_COLOR_LB(RED, "getascppstringvec:failed to get py list item.");
           PyObject* pyrepr = PyObject_Repr(pybytes);
           PyObject* pyunicode = PyUnicode_AsEncodedString(pyrepr, "utf-8", "surrogateescape");
           const char* dummy = PyBytes_AsString(pyunicode);
@@ -634,29 +639,6 @@ const clang::Type* bruiser::TypeInfo::getTypeInfo(clang::ASTContext* __astc)
   const clang::Type* TP = EXP->getType().getTypePtr();
 
   return __astc->getCanonicalType(TP);
-}
-/**********************************************************************************************************************/
-namespace bruiser
-{
-  void BruiserLinenoiseCompletionCallback(const char* __buf, linenoiseCompletions* __lc)
-  {
-    if (__buf[0] == 'h')
-    {
-      linenoiseAddCompletion(__lc, "help");
-    }
-  }
-
-  char* BruiserLinenoiseHintsCallback(const char* __buf, int* __color, int* __bold)
-  {
-    if (!strcasecmp(__buf, "h"))
-    {
-      *__color = LN_MAGENTA;
-      *__bold = NO_BOLD;
-      return (char *)"elp";
-    }
-
-    return NULL;
-  }
 }
 /**********************************************************************************************************************/
 class AbstractMatcherHandler : public virtual MatchFinder::MatchCallback
@@ -1296,7 +1278,8 @@ class LiveActionListArrays : public ASTFrontendAction
 class LuaWrapper
 {
   public:
-    LuaWrapper(Executioner& __EX, XGlobals __XG) : executioner(__EX), xglobals(__XG) {}
+    //LuaWrapper(std::unique_ptr<Executioner> _e, std::unique_ptr<XGlobals> _x) : executioner(std::move(_e)), xglobals(std::move(_x)) {}
+    LuaWrapper() {}
 
     /*print out the history*/
     int BruiserLuaHistory(lua_State* __ls)
@@ -1378,11 +1361,10 @@ class LuaWrapper
         if (objjpath == "") PRINT_WITH_COLOR_LB(RED, "second argument is nil");
         action = lua_tostring(__ls, 3);
         if (action == "") PRINT_WITH_COLOR_LB(RED, "third argument is nil");
-        lua_pop(__ls, 3);
         std::cout << NORMAL;
       }
       else {
-        std::cout << RED << "wrong number of arguments provided. should give the python script name, python func name and its args.\n" << NORMAL;
+        std::cout << RED << "wrong number of arguments provided. should give the python script name, python func name and the return type.\n" << NORMAL;
         return EXIT_FAILURE;
       }
 
@@ -1398,10 +1380,10 @@ class LuaWrapper
         int tableindex1 = 1;
         int tableindex2 = 1;
         // the return type to lua is a table of tables
-        lua_newtable(__ls);
-        if (!lua_checkstack(__ls, py.exportObjs().size())) {
+        if (!lua_checkstack(__ls, 5)) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
+        lua_newtable(__ls);
         for (auto& iter : py.exportObjs()) {
           lua_pushnumber(__ls, tableindex1);
           lua_newtable(__ls);
@@ -1419,10 +1401,10 @@ class LuaWrapper
         py.getAsCppStringVec();
         int tableindex = 1 ;
         // the return type to lua is a table
-        lua_newtable(__ls);
-        if (!lua_checkstack(__ls, py.exportStrings().size())) {
+        if (!lua_checkstack(__ls, 5)) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
+        lua_newtable(__ls);
         for (auto& iter : py.exportStrings()) {
           lua_pushnumber(__ls, tableindex);
           tableindex++;
@@ -1433,10 +1415,10 @@ class LuaWrapper
         py.getAsCppByte_PyIntList();
         int tableindex = 1 ;
         // the return type to lua is a table
-        lua_newtable(__ls);
-        if (!lua_checkstack(__ls, py.exportStrings().size())) {
+        if (!lua_checkstack(__ls, 5)) {
           PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
         }
+        lua_newtable(__ls);
         for (auto& iter : py.exportTextSection()) {
           lua_pushnumber(__ls, tableindex);
           tableindex++;
@@ -1463,26 +1445,34 @@ class LuaWrapper
         if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "stack index 1 is a table.");
       }
       if (Verbose) std::cout << CYAN << "table_length: " << table_length << NORMAL << "\n";
-      if (!lua_checkstack(__ls, table_length)) {
+      if (!lua_checkstack(__ls, 2)) {
         PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
       }
       for (int i = 1; i <= table_length; ++i) {
         lua_rawgeti(__ls, 1, i);
-        xobj_code_.push_back(int(lua_tonumber(__ls, i + 2)));
+        xobj_code_.push_back(int(lua_tonumber(__ls, 3)));
+        lua_pop(__ls, 1);
       }
       if (Verbose) {
         std::cout << BLUE << "function code: ";
         for (auto& iter : xobj_code_) {std::cout << NORMAL << int(iter) << " ";}
         std::cout << NORMAL  <<"\n";
       }
+
       xobj_name = lua_tostring(__ls, 2);
-      std::pair<void*, size_t> xobj = executioner.loadObjsInXMem(xobj_code_);
+      std::pair<void*, size_t> xobj = loadObjsInXMem(xobj_code_);
       if (Verbose) {
         std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
         std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
       }
-      executioner.pushvptr(xobj.first, xobj_name);
+      vptrs.push_back(std::make_pair(xobj.first, xobj_name));
       return 0;
+    }
+
+    int BruiserLuaGetXSize(lua_State* __ls) {
+      int ret = vptrs.size();
+      lua_pushinteger(__ls, ret);
+      return 1;
     }
 
     int BruiserLuaCallX(lua_State* __ls) {
@@ -1494,11 +1484,13 @@ class LuaWrapper
 
       void* x_ptr; 
       if (lua_type(__ls, 4) == LUA_TNUMBER) {
-        x_ptr = executioner.getvptrbyindex(lua_tointeger(__ls, 4)).first;
+        if (vptrs.size() - 1 > lua_tointeger(__ls, 4)) x_ptr = vptrs[lua_tointeger(__ls, 4)].first;
       } else if (lua_type(__ls, 4) == LUA_TSTRING) {
-        x_ptr = executioner.getvptrbyname(lua_tostring(__ls, 4)).first;
+        for (auto& iter : vptrs) {
+          if (iter.second == lua_tostring(__ls ,4)) x_ptr = iter.first;
+        }
       } else {
-        PRINT_WITH_COLOR_LB(RED, "argument 4 is neihter an index nor a string.");
+        PRINT_WITH_COLOR_LB(RED, "argument 4 is neihter a number nor a string.");
         lua_pushnil(__ls);
         return 1;
       }
@@ -1611,40 +1603,47 @@ class LuaWrapper
       }
     }
 
+#if 1
     int BruiserLuaXObjGetList(lua_State* __ls) {
-      auto xlist = executioner.getvptrs();
-        lua_newtable(__ls);
-        if (!lua_checkstack(__ls, xlist.size())) {
-          PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
-        }
-        for (auto& iter : xlist) {
-          if (Verbose) std::cout << CYAN << iter.second << NORMAL;
-          lua_pushstring(__ls, iter.second.c_str());
-          if (Verbose) std::cout << " " << MAGENTA << (long int)iter.first << NORMAL <<"\n";
-          lua_pushinteger(__ls, (long int)iter.first);
-          lua_settable(__ls, -3);
-        }
+      if (lua_gettop(__ls) != 0) {
+        PRINT_WITH_COLOR_LB(RED, "no arguments required...");
+        return 0;
+      }
+      if (!lua_checkstack(__ls, 3)) {
+        PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
+      }
+      lua_newtable(__ls);
+      for (auto& iter : vptrs) {
+        if (Verbose) std::cout << CYAN << iter.second << NORMAL;
+        lua_pushstring(__ls, iter.second.c_str());
+        if (Verbose) std::cout << " " << MAGENTA << (long int)iter.first << NORMAL <<"\n";
+        lua_pushinteger(__ls, (long int)iter.first);
+        lua_settable(__ls, -3);
+      }
       return 1;
     }
+#endif
 
     int BruiserLuaXObjAllocGlobal(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
       if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
       std::string glob_name = lua_tostring(__ls , 1);
       size_t size = lua_tointeger(__ls, 2);
-      xglobals.reserve(size);
+      //xglobals->reserve(size);
       return 0;
     }
 
-    int BruiserLuaXObjAllocAllGlobals(lua_State* __ls) {}
+    int BruiserLuaXObjAllocAllGlobals(lua_State* __ls) {
+      return 0;
+    }
 
     int BruiserGetJumpTable(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
       if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
       uint64_t size = lua_tointeger(__ls, 1);
-      PRINT_WITH_COLOR_LB(CYAN, "cpp:calling getluatableint...");
+      if (Verbose) PRINT_WITH_COLOR_LB(CYAN, "cpp:calling getluatableint...");
       std::vector<uint8_t> code_v = getLuaTableInt<uint8_t>(__ls, 2, 2);
-      PRINT_WITH_COLOR_LB(GREEN, "cpp:called getluatableint...");
+      if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "cpp:called getluatableint...");
       if (Verbose) PRINT_WITH_COLOR_LB(BLUE, "making jump table...");
       auto head = makejmptable(size, code_v.data(), Verbose, __ls);
       if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "finished makejmptable call.");
@@ -1850,8 +1849,10 @@ class LuaWrapper
 
       std::string line;
       std::string dummy;
+      unsigned int line_number = 0;
       while(getline(targetfile, line)) {
-        dummy += line;
+        line_number++;
+        if (line_number >= linebegin && line_number < lineend) dummy += line;
         //lua_pushstring(__ls, line.c_str());
       }
 
@@ -1902,15 +1903,6 @@ class LuaWrapper
       }
 
       return 1;
-    }
-
-    int BruiserLuaDropToCLI(lua_State* __ls) {
-      int numargs = lua_gettop(__ls);
-      if (numargs != 0) {
-        PRINT_WITH_COLOR_LB(RED, "wrong number of args. should be called with no arguments.");
-        return 0;
-      }
-      ShellGlobalInstance.droptocli = true;
     }
 
     int BruiserLuaStrainRecognition(lua_State* __ls) {
@@ -2114,17 +2106,11 @@ class LuaWrapper
       }
       return 1;
     }
-
-  private:
-    Executioner executioner;
-    XGlobals xglobals;
 };
 /**********************************************************************************************************************/
 class BruiserCFE {
   public:
     BruiserCFE(std::unique_ptr<ClangTool> _CT) : CT(std::move(_CT)) {}
-
-    //~BruiserCFE() {}
 
     /*hijakcs the main main*/
     int BruiserLuaHijackMain(lua_State* __ls) {
@@ -2152,7 +2138,6 @@ class BruiserCFE {
       unsigned int InArgCnt = 0U;\
       InArgCnt = lua_gettop(__ls);\
       unsigned int returncount=0U;\
-      std::cout << "i was called\n";\
       this->GetClangTool()->run(newFrontendActionFactory<LiveActionList##__x1>().get());\
       for(auto &iter : PushToLua)\
       {lua_pushstring(__ls, iter.c_str());returncount++;}\
@@ -2200,7 +2185,8 @@ class RunLoop
       cop = std::move(_cop);
     }
 
-    int run(char* command) {
+    int run(void) {
+      char* command;
       if (NonCLILuaScript != "") {
         luaL_dofile(ls, NonCLILuaScript.c_str());
         if (KEEPALIVE) {}
@@ -2217,6 +2203,7 @@ class RunLoop
         le.RunChunk(command);
         linenoiseFree(command);
       }
+      return 0;
     }
 
   private:
@@ -2285,13 +2272,6 @@ int main(int argc, const char **argv) {
   /*initializing the log*/
   bruiser::BruiserReport BruiserLog;
 
-  /*initing xobj stuff*/
-  Executioner executioner;
-  Arguary arguary;
-  XGlobals xglobals;
-
-  /*initialize the LuaWrapper class so we can register and run them from lua.*/
-
   /*linenoise init*/
   linenoiseSetCompletionCallback(bruiser::ShellCompletion);
   linenoiseSetHintsCallback(bruiser::ShellHints);
@@ -2302,8 +2282,6 @@ int main(int argc, const char **argv) {
 
   /*start running bruiser*/
   {
-    char* command;
-
     LuaEngine LE;
     LE.LoadEverylib();
     LE.RunLuaDefaults();
@@ -2338,7 +2316,10 @@ int main(int argc, const char **argv) {
       runloop.setCOP(std::move(op));
     }
 
-    std::unique_ptr<LuaWrapper> LW(new LuaWrapper(executioner, xglobals));
+    //std::unique_ptr<Executioner> ex;
+    //std::unique_ptr<XGlobals> xg;
+    //std::unique_ptr<LuaWrapper> LW(new LuaWrapper(std::move(ex), std::move(xg)));
+    std::unique_ptr<LuaWrapper> LW(new LuaWrapper());
     *static_cast<LuaWrapper**>(lua_e_p2) = LW.get();
 
     /*@DEVI-this part is just registering our LuaWrapper member functions with lua so we can call them from lua.*/
@@ -2376,9 +2357,10 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "freejmptable", &LuaDispatch<&LuaWrapper::BruiserFreeJumpTable>);
     lua_register(LE.GetLuaState(), "dumpjmptable", &LuaDispatch<&LuaWrapper::BruiserDumpJumpTable>);
     lua_register(LE.GetLuaState(), "ramdump", &LuaDispatch<&LuaWrapper::BruiserRamDump>);
+    lua_register(LE.GetLuaState(), "xsize", &LuaDispatch<&LuaWrapper::BruiserLuaGetXSize>);
 
     runloop.setLW(std::move(LW));
-    runloop.run(command);
+    runloop.run();
 
     LE.Cleanup();
 

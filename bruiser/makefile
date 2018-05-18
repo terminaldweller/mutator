@@ -6,6 +6,7 @@ CC=clang
 CC?=clang
 CXX_FLAGS+=-I/usr/include -g
 CXX_FLAGS+=$(shell $(PY_CONF) --includes)
+CC_FLAGS+=-g
 BRUISER=bruiser
 LUA?=JIT
 LIB_LUA=./lua-5.3.4/src/liblua.a
@@ -45,14 +46,14 @@ linenoise.o:
 	$(CC) $(CC_FLAGS) linenoise/linenoise.c -c -o linenoise.o
 
 $(LIB_LUA):
-	$(MAKE) -C lua-5.3.4 linux
+	$(MAKE) -C lua-5.3.4/src linux a
 	@echo "building with vanilla"
 
 $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
 	@echo "building with jit"
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o  ffs.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:

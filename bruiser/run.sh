@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd $(dirname $0)
-"make"
-#"./bruiser"
-"./bruiser"  ../test/bruisertest/test.cpp --src
+#"./bruiser" --verbose --lua ./lua-scripts/demo1.lua
+"./bruiser" --lua ./lua-scripts/demo1.lua
+#"./bruiser"  ../test/bruisertest/test.cpp --src --verbose --lua ./lua-scripts/demo1.lua
 #gdb "./bruiser ../test/bruisertest/test.cpp --src"

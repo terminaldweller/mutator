@@ -83,6 +83,7 @@ class CLIArgParser(object):
         parser.add_argument("--reladyn", action='store_true', help=".rela.dyn entries", default=False)
         parser.add_argument("--relaplt", action='store_true', help=".rela.plt entries", default=False)
         parser.add_argument("--rodata", action='store_true', help="dump .rodata", default=False)
+        parser.add_argument("--disass", type=str, help="disassemblt a section")
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -928,8 +929,8 @@ class ELF(object):
                     for byte in obj:
                         if count%16 == 0:
                             for ch in strrep:
-                                if ord(ch) > 16 and ord(ch) < 127: print(ch, end = '')
-                                else: pass
+                                if ord(ch) > 32 and ord(ch) < 127: print(ch, end = '')
+                                else: print(" ", end="")
                             print()
                             strrep = []
                             print(format(count, "06x"), ': ', end='')
@@ -941,9 +942,9 @@ class ELF(object):
                             print(format(byte, '02x') + ' ', end='')
                         count += 1
                     for i in range(0, 16-count%16): print("   ", end="")
-                    #for ch in strrep:
-                        #if ord(ch) > 63 and ord(ch) < 100: print(repr(ch), end = '')
-                        #else: pass
+                    for ch in strrep:
+                            if ord(ch) > 32 and ord(ch) < 127: print(ch, end = '')
+                            else: print(" ", end="")
                     print()
 
                 ret_dummy = []
@@ -1343,11 +1344,13 @@ class Rewriter(object):
         self.elf = ELF(so)
         self.elf.init(64)
         #shutil.copyfile(path, "/tmp/exe")
-        self.file_w = open("/tmp/exe", "wb")
         self.magic_section_number = int()
         self.new_name = new_name
+        self.shdr_new_size = []
+        self.shdr_new_offset = []
 
     def fix_section_offsets(self, section_name, new_size:int, new_section:bytes):
+        file_w = open(self.new_name, "wb")
         magic_number = int()
         for i in range(0, byte2int(self.elf.elfhdr.e_shnum)):
             name = self.elf.read_section_name(byte2int(self.elf.shhdr[i].sh_name))
@@ -1355,16 +1358,30 @@ class Rewriter(object):
                 self.magic_section_number = i
         print(self.magic_section_number)
 
-        end = int()
-        for i in range(self.magic_section_number-1, byte2int(self.elf.elfhdr.e_shnum)):
-            before = byte2int(self.elf.shhdr[i].sh_offset) + byte2int(self.elf.shhdr[i].sh_size)
-            print(before)
-            if before / byte2int(self.elf.shhdr[i].sh_addralign) == float(before / byte2int(self.elf.shhdr[i].sh_addralign)): pass
-            else:
-                end = ceil(before / byte2int(self.elf.shhdr[i].sh_addralign))
+        ### copy the sections before magic_number
+        ### write in the new section
+        ### fix section headers
 
-    def fix_section_size(self, section_name):
-        pass
+        end = int()
+        #for i in range(self.magic_section_number, byte2int(self.elf.elfhdr.e_shnum) + 1):
+        for i in range(0, byte2int(self.elf.elfhdr.e_shnum)):
+            if i > self.magic_section_number:
+                extra_chunk = end % byte2int(self.elf.shhdr[i].sh_addralign)
+                missing_chunk = byte2int(self.elf.shhdr[i].sh_addralign) - extra_chunk
+                assert missing_chunk > 0, "missing chunk is negative"
+                self.shdr_new_size.append(byte2int(self.elf.shhdr[i].sh_size))
+                self.shdr_new_offset.append(end + missing_chunk%byte2int(self.elf.shhdr[i].sh_addralign))
+                end = self.shdr_new_offset[-1] + self.shdr_new_size[-1]
+
+            elif i < self.magic_section_number:
+                self.shdr_new_size.append(byte2int(self.elf.shhdr[i].sh_size))
+                self.shdr_new_offset.append(byte2int(self.elf.shhdr[i].sh_offset))
+            elif i == self.magic_section_number:
+                self.shdr_new_size.append(new_size)
+                self.shdr_new_offset.append(byte2int(self.elf.shhdr[i].sh_offset))
+                end = byte2int(self.elf.shhdr[i].sh_offset) + new_size
+        for size in self.shdr_new_size: print(repr(i) + " new size is " + repr(size))
+        for offset in self.shdr_new_offset: print(repr(i) + " new offset is " + repr(offset))
 
 def premain(argparser):
     so = openSO_r(argparser.args.obj)
@@ -1409,6 +1426,17 @@ def premain(argparser):
             for i in md.disasm(bytes(code), 0x0):
                 print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
     elif argparser.args.phdynent: elf.dump_ph_dyn_entries()
+    elif argparser.args.disass:
+        for section in elf.shhdr:
+            name = elf.read_section_name(byte2int(section.sh_name))
+            if name == argparser.args.disass:
+                if byte2int(section.sh_flags) & 0x4 != 0x04:
+                    print("section is not executable...but, since you asked, here you go...")
+                elf.so.seek(byte2int(section.sh_offset))
+                code = elf.so.read(byte2int(section.sh_size))
+                md = Cs(CS_ARCH_X86, CS_MODE_64)
+                for i in md.disasm(bytes(code), 0x0):
+                    print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
     elif argparser.args.textasm:
         md = Cs(CS_ARCH_X86, CS_MODE_64)
         for i in md.disasm(bytes(elf.text_section), 0x0):

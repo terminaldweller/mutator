@@ -3,7 +3,8 @@
 CC?=gcc
 CC=gcc
 CC_FLAGS=-fpic -O0 -g -v --debug
-LD_FLAGS= -l bfd
+#LD_FLAGS= -l bfd
+LD_FLAGS=
 TARGET=test
 ##################################RULES################################
 .DEFAULT:all

@@ -12,14 +12,14 @@
 -- objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
 --
 --------------------------------------------------------------------------------------------------------------
-elf_file = "../bfd/test/test.so"
+elf_file = "/home/bloodstalker/devi/hell2/bfd/test/test.so"
 --elf_file = "/home/bloodstalker/devi/hell2/bfd/test/test.so"
 --elf_file = "../bfd/test/test"
 
 function getGlobalTable()
   local return_table = {}
   local names = objload("elf_get_obj_names", elf_file, "symbol_list")
-  local sizes = objload("elf_get_obj_sizes", elf_file, "symbol_list")
+  local sizes = objload("elf_get_obj_sizes", elf_file, "bytes")
   for i=1,#names,1 do
     return_table[names[i]] = sizes[i]
   end
@@ -34,7 +34,7 @@ function printObjNames()
 end
 
 function printObjSizes()
-  local c = objload("elf_get_obj_sizes", elf_file, "symbol_list")
+  local c = objload("elf_get_obj_sizes", elf_file, "bytes")
   for k,v in ipairs(c) do
     print(k,v)
   end
@@ -63,7 +63,7 @@ end
 function findMain()
   local c = objload("elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
-    if v == "'main'" then 
+    if v == "main" then 
       io.write("main index is".." "..k.."\n")
       return k
     end
@@ -135,8 +135,7 @@ function main()
     io.write(string.format('%02x', v), " ")
   end
   io.write("\n")
-
-  local C_main_code = codeTableByName("'main'")
+local C_main_code = codeTableByName("'main'")
   for k, v in ipairs(C_main_code) do
     io.write(v, " ")
   end
@@ -152,6 +151,14 @@ function main()
 
   printFuncSizes()
 
+  print("passthrough_code: ")
+  for k,v in pairs(passthrough_code) do
+    io.write(v," ")
+  end
+  io.write("\n")
+
+
+  print("xsize = "..xsize())
   xobjregister(add2_code, "add2")
   xobjregister(sub2_code, "sub2")
   xobjregister(adddouble_code, "adddouble")
@@ -159,6 +166,12 @@ function main()
   xobjregister(triple_code, "triple")
   xobjregister(quad_code, "quad")
   xobjregister(passthrough_code, "passthrough")
+  print("xsize = "..xsize())
+
+  local x_list = xobjlist()
+  for k,v in pairs(x_list) do
+    print(k,v)
+  end
 
   a=xcall(2,{"uint32","uint32"},"uint32",0, {30,20})
   print("call add result", a)
@@ -167,7 +180,7 @@ function main()
 
   arg1 = 100
   arg2 = 200
-  a=xcall(2,{"sint32", "sint32"},"sint32",1, {arg1,arg2})
+  a=xcall(2,{"sint32", "sint32"},"sint32","sub2", {arg1,arg2})
   print("xcall returned:",a)
 
   if a ~= -100 then print("test failed") end
@@ -188,6 +201,7 @@ function main()
   print("xcall returned:",a)
   if (a ~= "i live!") then print("test failed"); os.exit(1) end
 
+  -- nested call
   --a=xcall(4,{"sint32", "sint32", "sint32", "sint32"},"sint32",5, {10,20,30,40})
   --print("xcall returned:",a)
   --if a ~= 100 then print("test failed") end

@@ -17,6 +17,9 @@ When an alpha version is ready, `obfuscator` will get its own mirror repo.<br/>
 * Provide an option to choose which hashing function to use. Ideally these alternative hashing algorithms would have variable length digests. Ther is also the idea of using different seeds to generate different digests for the same identifier names across each obfuscation.<br/>
 * Windows support<br/>
 
+### Running the Test
+running `run.sh` should do the trick. Do note that you need to regenerate the compilation database for the test under the `test` directory to work. You could use `bear`. If you already have `bear`, just run `make clean && bear make`.<br/>
+
 ## Notes
 * Currently the hash function that is being used is `std::hash<>`. The GCC implementation will be probably the default option since the digest is shorter than 32 characters long. The decision was made since quite a few embedded C/C++ compilers can't correctly handle identifiers longer than 32 characters.<br/>
 * Obfuscator uses the Clang Frontend(CFE) libraries. Most embedded hardware require the use of their custom toolchains and that can result in clang complaining about custom pragmas.<br/>

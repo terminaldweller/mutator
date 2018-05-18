@@ -163,7 +163,9 @@ void* ffi_callX(int argc, const char** arg_string, ffi_type rtype, void* x_ptr, 
     return NULL;
   }
 
+  fprintf(stdout, "before the ffi call\n");
   ffi_call(&cif, FFI_FN(x_ptr), &ret, values);
+  fprintf(stdout, "after the ffi call\n");
   return ret;
 }
 

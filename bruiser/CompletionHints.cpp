@@ -32,7 +32,8 @@ namespace bruiser {
   void ShellCompletion(const char* __buf, linenoiseCompletions* __lc) {
     if (__buf != NULL) {
       for(auto &iter : LUA_FUNCS) {
-        if (iter.find(__buf) != std::string::npos) {
+        //if (iter.find(__buf) != std::string::npos) {
+        if (iter.find(__buf) == 0U) {
           linenoiseAddCompletion(__lc, iter.c_str());
         }
       }

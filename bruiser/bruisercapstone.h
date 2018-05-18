@@ -56,7 +56,7 @@ JMP_S_T* iter_next_y(JMP_S_T* arg);
 JMP_S_T* iter_next_n(JMP_S_T* arg);
 
 uint32_t get_textsection_length(void);
-uintptr_t get_symbol_rt_address(const char* symbol_name);
+uintptr_t* get_symbol_rt_address(const char* symbol_name);
 void int2byte(int value, uint8_t* ret_value, size_t size);
 void leb128_encode_s(int32_t value, uint8_t* ret_value, size_t size);
 void leb128_encode_u(uint32_t value, uint8_t* ret_value, size_t size);

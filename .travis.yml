@@ -28,7 +28,7 @@ before_script:
   - sudo add-apt-repository ppa:fkrull/deadsnakes -y
   - sudo apt-get update -y
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-  - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
+    #- wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
   - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
@@ -51,7 +51,7 @@ before_script:
   - llvm-config-5.0 --has-rtti
 
 script: 
-  - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG -j2
+  - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG CC=clang-5.0 -j2
 
 after_failure:
   - find . -maxdepth 1 -name "core*"
