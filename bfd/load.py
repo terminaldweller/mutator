@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 #***************************************************Project Mutator****************************************************/
 # yet another elfdump in python
 #*Copyright (C) 2018 Farzad Sadeghi

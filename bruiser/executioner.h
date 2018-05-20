@@ -60,6 +60,14 @@ namespace { // start of anonymous namespace
 
 int getMemorySize(void) {return MEMORY_SIZE;}
 
+void emitByte(uint8_t _byte, std::vector<uint8_t>& _code) {
+  _code.push_back(_byte);
+}
+
+void emitBytes(std::vector<uint8_t>& _bytes, std::vector<uint8_t>& _code) {
+  for (auto &iter : _bytes) {emitByte(iter, _code);}
+}
+
 std::pair<void*, size_t> loadObjsInXMem(std::vector<uint8_t>& _obj_code) {
   size_t code_size = _obj_code.size();
   void* program_memory = alloc_writeable_memory(code_size);
@@ -75,72 +83,13 @@ std::pair<void*, size_t> loadObjsInXMem(std::vector<uint8_t>& _obj_code) {
   return std::make_pair(program_memory, code_size);
 }
 
-class Executioner {
-  public:
-    Executioner() {}
-
-#if 0
-    Executioner() {
-      std::cout << RED << "vptrs size on executioner ctor: " << vptrs.size() << NORMAL << "\n";
-      this->vptrs.reserve(100);
-      this->xvoidptrs.reserve(100);
-    }
-#endif
-
-#if 0
-    ~Executioner() {
-      for (auto &iter : xvoidptrs) {
-        if (iter != nullptr) {
-          if (munmap(iter, sizeof(void*)) < 0) {
-            perror("could not unmap vmemory.");
-          }
-        }
-      }
-    }
-#endif
-
-  //private:
-    //Executioner(const Executioner&);
-    //Executioner& operator=(const Executioner&);
-  //public:
-    //Executioner(Executioner&& x) = default;
-    //Executioner &operator=(Executioner&& x) = default;
-
-  public:
-
-    void emitByte(uint8_t _byte, std::vector<uint8_t>& _code) {
-      _code.push_back(_byte);
-    }
-
-    void emitBytes(std::vector<uint8_t>& _bytes, std::vector<uint8_t>& _code) {
-      for (auto &iter : _bytes) {this->emitByte(iter, _code);}
-    }
-
-#if 0
-    void pushvptr(void* _vptr, std::string _name, std::vector<std::pair<void*, std::string>>) {
-      this->vptrs.push_back(std::make_pair(_vptr, _name));
-    }
-
-    std::pair<void*, std::string> getvptrbyindex(unsigned int _index) {
-      if (this->vptrs.size() - 1 >= _index) {
-        return this->vptrs[_index];
-      }
-      return std::make_pair(nullptr, "");
-    }
-
-    std::pair<void*, std::string> getvptrbyname(const char* name) {
-      for (auto &iter : this->vptrs) {
-        if (std::strcmp(name, iter.second.c_str()) == 0) return iter;
-        std::cout << "xobj name match\n";
-      }
-      return std::make_pair(nullptr, "");
-    }
-#endif
-
-  //private:
-    //std::vector<std::pair<void*, std::string>> vptrs;
-    //std::vector<void*> xvoidptrs;
-};
+void deallocatedXObj(std::vector<std::tuple<void*, std::string, uint32_t>> _vptrs) {
+  std::cout << GREEN << "deallocating xobjs..." << NORMAL << "\n";
+  for (auto& iter : _vptrs) {
+    int res = munmap(std::get<0>(iter), std::get<2>(iter));
+    if (res != 0) PRINT_WITH_COLOR_LB(RED, "could not unmap xobjs.");
+  }
+}
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 class XGlobals {

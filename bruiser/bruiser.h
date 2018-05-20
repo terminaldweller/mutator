@@ -161,7 +161,10 @@ help CMDHelp[] = {
   {"getjmptable", "getjmptable(size, code)", "get a table of all jumps", "", "returns a pointer to the head of the jump table linked-list as lightuserdata"},
   {"freejmptable", "freejmptable(head)", "free the jmp table linked-list", "", "nothing"},
   {"dumpjmptable", "dumpjmptable(head)", "dumps the jmp table linked-list", "", "nothing"},
-  {"ramdump", "ramdump(pid)", "dumps the ram", "", "ram contents"}
+  {"ramdump", "ramdump(pid)", "dumps the ram", "", "ram contents"},
+  {"xsize", "xsize()", "returns the number of currently registered xobjs", "", "nothing"},
+  {"xclear", "xclear()", "deallocates all xobjs, freeing memory", "", "nothing"},
+  {"xmemusage", "xmemusage()", "returns how much memory the xobjcts are occupying", "", "total memory used by xobjects"}
 };
 /**********************************************************************************************************************/
 /**

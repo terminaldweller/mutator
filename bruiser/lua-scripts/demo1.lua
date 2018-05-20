@@ -121,7 +121,7 @@ function printFuncSizes()
   end
 end
 
-function main()
+function demo1()
   pwd()
   printObjNames()
   printObjSizes()
@@ -209,8 +209,14 @@ local C_main_code = codeTableByName("'main'")
   a = xobjlist()
   print("the offset of quad and add2 is : ", a["quad"] - a["add2"])
 
+  mem_size = xmemusage()
+  print("memory used "..mem_size)
+  xclear()
+  mem_size = xmemusage()
+  print("memory used "..mem_size)
+
 end
 
-main()
+demo1()
 --------------------------------------------------------------------------------------------------------------
 

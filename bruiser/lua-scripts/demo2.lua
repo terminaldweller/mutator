@@ -11,7 +11,7 @@ function get_jmp_type(val)
   return "U"
 end
 
-function main()
+function demo21()
   xobj.getSO(elf_file)
   local add2_code = xobj.codeTableByName_number("'add2'")
   local sub2_code = xobj.codeTableByName_number("'sub2'")
@@ -20,8 +20,6 @@ function main()
   local triple_code = xobj.codeTableByName_number("'triple'")
   local quad_code = xobj.codeTableByName_number("'quad'")
   local passthrough_code = xobj.codeTableByName_number("'passthrough'")
-
-  --xobj.printFuncSizes()
 
   xobjregister(add2_code, "add2")
   xobjregister(sub2_code, "sub2")
@@ -32,7 +30,7 @@ function main()
   xobjregister(passthrough_code, "passthrough")
 end
 
-function pretty_dump()
+function demo22()
   count = 0
   local text_section = xobj.getTextSection(elf_exe)
   io.write(colors("%{blue}".."    ".."\t".."00 ".."01 ".."02 ".."03 ".."04 ".."05 ".."06 ".."07 ".."08 ".."09 ".."0A ".."0B ".."0C ".."0D ".."0E ".."0F"))
@@ -118,9 +116,10 @@ function get_jmp_table()
 end
 
 --main()
-pretty_dump()
 --test()
 --jmp_t_test()
 --integ_test()
---asm_rewriter_pretty()
+asm_rewriter_pretty()
 --dump_jmp_table()
+demo21()
+demo22()

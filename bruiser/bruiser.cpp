@@ -81,7 +81,7 @@ using namespace clang::tooling;
 /**********************************************************************************************************************/
 /*global vars*/
 namespace { // start of anonymous namespace
-  std::vector<std::pair<void*, std::string>> vptrs;
+  std::vector<std::tuple<void*, std::string, uint32_t>> vptrs;
   static llvm::cl::OptionCategory BruiserCategory("Empty");
   std::vector<std::string> PushToLua;
 
@@ -1465,13 +1465,31 @@ class LuaWrapper
         std::cout << "xobj will be registered as " << YELLOW << xobj_name << NORMAL << ". " << "it is recommended to use a post- or pre-fix for the xobj names to avoid namespace pollution." "\n";
         std::cout << GREEN << "pointer: " << BLUE << xobj.first << " " << GREEN << "size: " << BLUE << xobj.second << NORMAL << "\n";
       }
-      vptrs.push_back(std::make_pair(xobj.first, xobj_name));
+      vptrs.push_back(std::make_tuple(xobj.first, xobj_name, xobj.second));
       return 0;
     }
 
     int BruiserLuaGetXSize(lua_State* __ls) {
       int ret = vptrs.size();
       lua_pushinteger(__ls, ret);
+      return 1;
+    }
+
+    int BruiserLuaXObjDeallocate(lua_State* __ls) {
+      int argc = lua_gettop(__ls);
+      if (argc != 0) PRINT_WITH_COLOR_LB(RED, "discarding arg...");
+      deallocatedXObj(vptrs);
+      vptrs.clear();
+      return 0;
+    }
+
+    int BruiserLuaGetXMemSize(lua_State* __ls) {
+      int argc = lua_gettop(__ls);
+      int sum = 0;
+      for (auto& iter : vptrs) {
+        sum += std::get<2>(iter);
+      }
+      lua_pushinteger(__ls, sum);
       return 1;
     }
 
@@ -1484,10 +1502,10 @@ class LuaWrapper
 
       void* x_ptr; 
       if (lua_type(__ls, 4) == LUA_TNUMBER) {
-        if (vptrs.size() - 1 > lua_tointeger(__ls, 4)) x_ptr = vptrs[lua_tointeger(__ls, 4)].first;
+        if (vptrs.size() - 1 > lua_tointeger(__ls, 4)) x_ptr = std::get<0>(vptrs[lua_tointeger(__ls, 4)]);
       } else if (lua_type(__ls, 4) == LUA_TSTRING) {
         for (auto& iter : vptrs) {
-          if (iter.second == lua_tostring(__ls ,4)) x_ptr = iter.first;
+          if (std::get<1>(iter) == lua_tostring(__ls ,4)) x_ptr = std::get<0>(iter);
         }
       } else {
         PRINT_WITH_COLOR_LB(RED, "argument 4 is neihter a number nor a string.");
@@ -1614,10 +1632,10 @@ class LuaWrapper
       }
       lua_newtable(__ls);
       for (auto& iter : vptrs) {
-        if (Verbose) std::cout << CYAN << iter.second << NORMAL;
-        lua_pushstring(__ls, iter.second.c_str());
-        if (Verbose) std::cout << " " << MAGENTA << (long int)iter.first << NORMAL <<"\n";
-        lua_pushinteger(__ls, (long int)iter.first);
+        if (Verbose) std::cout << CYAN << std::get<1>(iter) << NORMAL;
+        lua_pushstring(__ls, std::get<1>(iter).c_str());
+        if (Verbose) std::cout << " " << MAGENTA << std::get<0>(iter) << NORMAL <<"\n";
+        lua_pushinteger(__ls, (uint64_t)std::get<0>(iter));
         lua_settable(__ls, -3);
       }
       return 1;
@@ -2358,6 +2376,8 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "dumpjmptable", &LuaDispatch<&LuaWrapper::BruiserDumpJumpTable>);
     lua_register(LE.GetLuaState(), "ramdump", &LuaDispatch<&LuaWrapper::BruiserRamDump>);
     lua_register(LE.GetLuaState(), "xsize", &LuaDispatch<&LuaWrapper::BruiserLuaGetXSize>);
+    lua_register(LE.GetLuaState(), "xclear", &LuaDispatch<&LuaWrapper::BruiserLuaXObjDeallocate>);
+    lua_register(LE.GetLuaState(), "xmemusage", &LuaDispatch<&LuaWrapper::BruiserLuaGetXMemSize>);
 
     runloop.setLW(std::move(LW));
     runloop.run();
