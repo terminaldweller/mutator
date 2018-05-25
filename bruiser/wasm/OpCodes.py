@@ -11,6 +11,14 @@ class RelocType(Enum):
     R_WEBASSEMBLY_MEMORY_ADDR_I32 = 5
     R_WEBASSEMBLY_TYPE_INDEX_LEB = 6
     R_WEBASSEMBLY_GLOBAL_INDEX_LEB = 7
+    R_WEBASSEMPLY_FUNCTION_OFFSET_I32 = 8
+    R_WEBASSEMBLY_SECTION_OFFSET_I32 = 9
+
+class LinkingSubsection(Enum):
+    WASM_SEGMENT_INFO = 5
+    WASM_INIT_FUNCS = 6
+    WASM_COMDAT_INFO = 7
+    WASM_SYMBOL_TABLE = 8
 
 class TypeType(Enum):
     none = 1
@@ -18,6 +26,12 @@ class TypeType(Enum):
     lebs = 3
     flot = 4
     dobl = 5
+
+class Syminfo_Kind():
+    SYMTAB_FUNCTION = 0
+    SYMTAB_DATA = 1
+    SYMTAB_GLOBAL = 2
+    SYMTAB_SECTION = 3
 
 TypeKS = [['uint8', 8, TypeType.none], ['uint16', 16, TypeType.none],
           ['uint32', 32, TypeType.none], ['uint64', 64, TypeType.none],

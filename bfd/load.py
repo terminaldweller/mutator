@@ -16,6 +16,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
+#**********************************************************************************************************************/
 import argparse
 import sys
 import readline
@@ -1451,7 +1452,9 @@ def main():
     if argparser.args.dbg:
         try:
             premain(argparser)
-        except:
+        except Exception as e:
+            print(e.__doc__)
+            if e.message: print(e.message)
             signal.signal(signal.SIGINT, SigHandler_SIGINT)
             variables = globals().copy()
             variables.update(locals())
