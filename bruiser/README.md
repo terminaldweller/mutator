@@ -9,6 +9,10 @@ It will feature non-blind selective mutations. You can ask it to list informatio
 
 For working demos you can skip to the end of the README.<br/>
 
+### Building
+Running `make` from bruiser's make or `make bruiser` from the main makefile in the root directory of mutator will take care of that given that you already have all the requirements taken care of.<br/>
+It is generally a good idea to run `make deepclean` on bruiser's makefile on every pull since I occasionally have to make changes to Lua's sources or makefile.<br/>
+
 ### How does it work?
 To put it simply, bruiser is an interactive lua interpreter that uses linenoise for shell-like features(history, tab-completion, auto-suggestion). You get the full power of lua plus the bruiser functions whcih are implemented as lua scripts that call back to the cpp code to get things done.<br/>
 To put this into perspective, think you run `list vars` in bruiser. It gets you the list of vars but that's it. You can't save them to a file or do anything else with them. With the old way of doing things I had to add a command that did that and then you could do it but what if you wanted to do something else? What then? Well you get the idea. That would also mean that bruiser's language would be made up gradually which would result in something ugly and warrant a lot of rewrites.<br/>
@@ -24,18 +28,11 @@ The plan is to add both and for the user to be able to pick which one to use whe
 The current implementation loads all lua libraries which also includes it's `os` library. To give you an idea, `os.execute()` is very similar to `system()` in C. This decision has been made to speed up testing and the dev process.<br/>
 Also like `mutatord` and `mutatorclient`, bruiser does not need any sudo access.<br/>
 
-### Non-blind Selective mutation?
-Bruiser looks at your code, learns your code and then decides how to mutate your code. That's non-blind selective mutation. Now onto a real explanation:<br/>
-`m0` generates two sets of reports. One is the rules it checks on code which is for the better part, at the time of writing this very similar to Misra-c. The second report is the ancestry of the node that caused `m0` to tag a node in the first report. The second report is an experimental first attempt at narrowing down the parts of the code that would be better targets for mutation.<br/>
-The second point concerns the mutation operators. The classical mutation operators are blind. Let me demonstrate with an example:<br/>
-Imagine we have a classical mutation operator that mutates all `+` operators to `-`. This mutation operator is blind. To put it in simple terms, it takes in text and spits out text with no regards to syntax or semantics.<br/>
-`bruiser` will not be using classical blind mutation operators.<br/>
-
 ### Useful Lua Scripts
 The dir named `lua-scripts` houses demos, examples and useful lua scripts for bruiser.<br/>
 If you happen to write a Lua script for bruiser that you think other people will find useful, then please add it to `lua-scripts` on your fork and make a PR.<br/>
 
-### Exampless
+### Examples
 First you should clone the mutator repo and run `git submodule init` and `git submodule update` to get the third-party repos that enable mutator to run.<br/>
 To build bruiser you can either run the makefile in bruiser's directory, then run `make` or just run the makefile at mutator's root directory and run `make bruiser`.<br/>
 After building bruiser, you can run it like any other mutator tool. So for example if you want to run bruiser on its test file run:<br/>

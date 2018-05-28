@@ -1,0 +1,17 @@
+#!/bin/bash
+# needs wabt, binaryen and clang's wasm backend to work.
+# https://github.com/WebAssembly/binaryen
+# https://github.com/WebAssembly/wabt
+# as far as i know, up to clang 6, you need to
+# explicitly ask for the wasm backend to be built.
+# you can look at llvm-build.sh in this directory for the
+# llvm/clang build command i use.
+
+fullname=$1
+namelength=${#fullname}
+offset=$((${#fullname} - 2))
+filename=${fullname:0:$offset}
+"clang" -emit-llvm --target=wasm32 -Oz "$1" -c
+"llc" -asm-verbose=false -o $filename.s $filename.bc
+"s2wasm" $filename.s > $filename.wast
+"wast2wasm" $filename.wast -o $filename.wasm
