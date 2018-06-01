@@ -118,6 +118,7 @@ cl::opt<bool> SRC("src", cl::desc("source file is needed"), cl::init(false), cl:
 cl::opt<bool> KEEPALIVE("keepalive", cl::desc("drop to cli after running script in non-cli mode"), cl::init(false), cl::cat(BruiserCategory), cl::ZeroOrMore);
 cl::opt<std::string> NonCLILuaScript("lua", cl::desc("specifies a lua script for bruiser to run in non-interactive mode"), cl::init(""), cl::cat(BruiserCategory), cl::Optional);
 cl::opt<std::string> LuaDefault("luadefault", cl::desc("the path to the luadefault file. the default option is where the bruiser executable is."), cl::init(""), cl::cat(BruiserCategory), cl::ZeroOrMore);
+cl::opt<std::string> SHELL_HISTORY_FILE("history", cl::desc("path to bruiser's history file"), cl::init("./bruiser-history.lua"), cl::cat(BruiserCategory), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 template <typename T>
 int pushLuaTableInt(lua_State* __ls, std::vector<T> vec) {
@@ -2217,7 +2218,7 @@ class RunLoop
       /*cli execution loop*/
       while((command = linenoise(">>>")) != NULL) {
         linenoiseHistoryAdd(command);
-        linenoiseHistorySave(SHELL_HISTORY_FILE);
+        linenoiseHistorySave(SHELL_HISTORY_FILE.c_str());
         le.RunChunk(command);
         linenoiseFree(command);
       }
@@ -2288,14 +2289,14 @@ int main(int argc, const char **argv) {
   std::transform(argv_n.begin(), argv_n.end(), std::back_inserter(vc), convert);
 
   /*initializing the log*/
-  bruiser::BruiserReport BruiserLog;
+  //bruiser::BruiserReport BruiserLog;
 
   /*linenoise init*/
   linenoiseSetCompletionCallback(bruiser::ShellCompletion);
   linenoiseSetHintsCallback(bruiser::ShellHints);
   /*setting up the initial history size to SHELL_HISTORY_SIZE*/
   linenoiseHistorySetMaxLen(SHELL_HISTORY_SIZE);
-  linenoiseHistoryLoad(SHELL_HISTORY_FILE);
+  linenoiseHistoryLoad(SHELL_HISTORY_FILE.c_str());
   linenoiseSetMultiLine(1);
 
   /*start running bruiser*/

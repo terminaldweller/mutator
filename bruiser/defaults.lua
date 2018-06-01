@@ -10,10 +10,10 @@ function default_luarocks_modules()
     local path = string.match(line, "LUA_PATH%s*=%s*('.+')")
     local cpath = string.match(line, "LUA_CPATH%s*=%s*('.+')")
     if path ~= nil then 
-      package.path = package.path..";"..path
+      package.path = package.path..";"..string.sub(path, 2, -2)
     end
     if cpath ~= nil then
-      package.cpath = package.cpath..";"..cpath
+      package.cpath = package.cpath..";"..string.sub(cpath, 2, -2)
     end
   end
 

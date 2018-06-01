@@ -12,11 +12,13 @@
 -- objload("elf_get_func_code", "../bfd/test/test.so", "code_list")
 --
 --------------------------------------------------------------------------------------------------------------
+local pack_name = ...
+local Demo1 = {}
 elf_file = "/home/bloodstalker/devi/hell2/bfd/test/test.so"
 --elf_file = "/home/bloodstalker/devi/hell2/bfd/test/test.so"
 --elf_file = "../bfd/test/test"
 
-function getGlobalTable()
+function Demo1.getGlobalTable()
   local return_table = {}
   local names = objload("elf_get_obj_names", elf_file, "symbol_list")
   local sizes = objload("elf_get_obj_sizes", elf_file, "bytes")
@@ -26,28 +28,28 @@ function getGlobalTable()
   return return_table
 end
 
-function printObjNames()
+function Demo1.printObjNames()
   local c = objload("elf_get_obj_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
-function printObjSizes()
+function Demo1.printObjSizes()
   local c = objload("elf_get_obj_sizes", elf_file, "bytes")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
-function printFuncNames()
+function Demo1.printFuncNames()
   local c = objload("elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
-function printFuncCode()
+function Demo1.printFuncCode()
   local c = objload("elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(c) do
     print(k,v)
@@ -60,7 +62,7 @@ function printFuncCode()
   end
 end
 
-function findMain()
+function Demo1.findMain()
   local c = objload("elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     if v == "main" then 
@@ -70,7 +72,7 @@ function findMain()
   end
 end
 
-function codeTables()
+function Demo1.codeTables()
   local return_table = {}
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
@@ -80,7 +82,7 @@ function codeTables()
   return return_table
 end
 
-function codeTableByName(name)
+function Demo1.codeTableByName(name)
   local return_table = {}
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
@@ -95,7 +97,7 @@ function codeTableByName(name)
   return nil
 end
 
-function codeTableByName_number(name)
+function Demo1.codeTableByName_number(name)
   local return_table = {}
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
@@ -110,7 +112,7 @@ function codeTableByName_number(name)
   return nil
 end
 
-function printFuncSizes()
+function Demo1.printFuncSizes()
   local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
   local code_table = objload("elf_get_func_code", elf_file, "code_list")
   local counter = 1
@@ -121,35 +123,35 @@ function printFuncSizes()
   end
 end
 
-function demo1()
+function Demo1.demo1()
   pwd()
-  printObjNames()
-  printObjSizes()
-  printFuncNames()
-  printFuncCode()
-  findMain()
+  Demo1.printObjNames()
+  Demo1.printObjSizes()
+  Demo1.printFuncNames()
+  Demo1.printFuncCode()
+  Demo1.findMain()
 
-  local code_table = codeTables()
+  local code_table = Demo1.codeTables()
   print(code_table["'main'"])
   for k,v in ipairs(code_table["'main'"]) do
     io.write(string.format('%02x', v), " ")
   end
   io.write("\n")
-local C_main_code = codeTableByName("'main'")
+local C_main_code = Demo1.codeTableByName("'main'")
   for k, v in ipairs(C_main_code) do
     io.write(v, " ")
   end
   io.write("\n")
 
-  local add2_code = codeTableByName_number("'add2'")
-  local sub2_code = codeTableByName_number("'sub2'")
-  local adddouble_code = codeTableByName_number("'adddouble'")
-  local subdouble_code = codeTableByName_number("'subdouble'")
-  local triple_code = codeTableByName_number("'triple'")
-  local quad_code = codeTableByName_number("'quad'")
-  local passthrough_code = codeTableByName_number("'passthrough'")
+  local add2_code = Demo1.codeTableByName_number("'add2'")
+  local sub2_code = Demo1.codeTableByName_number("'sub2'")
+  local adddouble_code = Demo1.codeTableByName_number("'adddouble'")
+  local subdouble_code = Demo1.codeTableByName_number("'subdouble'")
+  local triple_code = Demo1.codeTableByName_number("'triple'")
+  local quad_code = Demo1.codeTableByName_number("'quad'")
+  local passthrough_code = Demo1.codeTableByName_number("'passthrough'")
 
-  printFuncSizes()
+  Demo1.printFuncSizes()
 
   print("passthrough_code: ")
   for k,v in pairs(passthrough_code) do
@@ -217,6 +219,10 @@ local C_main_code = codeTableByName("'main'")
 
 end
 
-demo1()
+if type(package.loaded[pack_name]) ~= "userdata" then
+  Demo1.demo1()
+else
+  return Demo1
+end
 --------------------------------------------------------------------------------------------------------------
 
