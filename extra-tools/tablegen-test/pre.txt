@@ -1,0 +1,2 @@
+enum jmp_type {NONE=0, JMP=1, JNE=2, JE=3};
+#define JMP_T enum jmp_type

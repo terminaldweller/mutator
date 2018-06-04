@@ -192,16 +192,16 @@ typedef int32_t varuint32;
 #endif
 
   typedef struct Wasm_Module {
-    W_Import_Section import_section;
-    W_Function_Section function_section;
-    W_Table_Section table_section;
-    W_Memory_Section memory_section;
-    W_Global_Section global_section;
-    W_Export_Section export_section;
-    W_Start_Section start_section;
-    W_Element_Section element_section;
-    W_Code_Section code_section;
-    W_Data_Section data_section;
+    W_Import_Section* import_section;
+    W_Function_Section* function_section;
+    W_Table_Section* table_section;
+    W_Memory_Section* memory_section;
+    W_Global_Section* global_section;
+    W_Export_Section* export_section;
+    W_Start_Section* start_section;
+    W_Element_Section* element_section;
+    W_Code_Section* code_section;
+    W_Data_Section* data_section;
     void** W_Custom_Sections;
     char* name;
   }Wasm_Module;
