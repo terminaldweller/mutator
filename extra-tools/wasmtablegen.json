@@ -1,0 +1,5 @@
+{"jmp_s_t": {"field_name": ["type", "location", "size", "next", "next_y", "next_n", "address", "address_y", "address_n", "y", "n", "z"],
+    "field_type": ["JMP_T", "uint64_t", "uint8_t", "struct jmp_s_t*", "struct jmp_s_t*", "struct jmp_s_t*", "uint64_t", "uint64_t", "uint64_t", "bool", "bool", "bool"],
+    "methods": ["convert", "check", "push_self","push_args", "new", "gc", "tostring" ],
+    "lua_type": ["integer", "integer", "integer", "lightuserdata", "lightuserdata", "lightuserdata", "integer", "integer", "integer", "integer", "integer", "integer"]
+}}
