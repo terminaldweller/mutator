@@ -1,6 +1,6 @@
 
-xobj = require("lua-scripts.xobj")
-asmrw = require("lua-scripts.asmrw")
+xobj = require("xobj")
+asmrw = require("asmrw")
 
 function test()
   local elf_exe = "../bfd/test/test"

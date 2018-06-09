@@ -17,10 +17,11 @@ C_SRCS=$(wildcard *.c)
 #for some reason without ld the build fails on ubuntu trusty on travis
 #EXTRA_LD_FLAGS+=-lpthread -ldl -lutil -lm -Xlinker -lpython3
 EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone -L./lua-5.3.4/src -llua
+TBG_OBJLIST_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.o, $(wildcard ./luatablegen/*.c))
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY: all clean help
+.PHONY: all clean help tablegen
 
 all: $(BRUISER)
 
@@ -45,6 +46,10 @@ dependc:.dependc
 linenoise.o:
 	$(CC) $(CC_FLAGS) linenoise/linenoise.c -c -o linenoise.o
 
+tablegen:
+	../extra-tools/tablegen-test/run.sh
+	$(MAKE) -C luatablegen
+
 $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4/src linux a
 	@echo "building with vanilla"
@@ -53,13 +58,14 @@ $(LIB_LUA_JIT):
 	$(MAKE) -C LuaJIT
 	@echo "building with jit"
 
-$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
+$(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
 	rm -f *.o *~ $(BRUISER)
 	rm .depend
 	rm .dependc
+	$(MAKE) -C luatablegen clean
 
 deepclean:
 	rm -f *.o *~ $(BRUISER)
@@ -67,6 +73,7 @@ deepclean:
 	rm .dependc
 	$(MAKE) -C lua-5.3.4 clean
 	$(MAKE) -C LuaJIT clean
+	$(MAKE) -C luatablegen clean
 
 help:
 	@echo 'there is help.'

@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "asmrewriter.h"
 #include "ramdump.h"
 #include "ffs.h"
+#include "./luatablegen/wasm_tables.h"
 /*standard headers*/
 #include <exception>
 #include <fstream>
@@ -252,6 +253,10 @@ class LuaEngine
     void registerJMPTable(void) {
       jmpt_register(LS);
       lua_pop(LS, 1);
+    }
+
+    void registerAutogenTables(void) {
+      reg_tablegen_tables(LS);
     }
 
     void RunLuaDefaults(void) {
@@ -2305,6 +2310,7 @@ int main(int argc, const char **argv) {
     LE.LoadEverylib();
     LE.RunLuaDefaults();
     LE.registerJMPTable();
+    LE.registerAutogenTables();
     void* lua_e_p = lua_getextraspace_wrapper(LE.GetLuaState(), 0);
     void* lua_e_p2 = lua_getextraspace_wrapper(LE.GetLuaState(), 1);
     RunLoop runloop(LE.GetLuaState(), LE);

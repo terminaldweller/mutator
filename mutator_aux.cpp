@@ -36,50 +36,36 @@ using namespace clang;
 namespace Devi {
 /*a simple function that checks the sourcelocations for a macro expansion. returns the sourcelocation without
 macro expansion address.*/
-SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocation SL, Rewriter &Rewrite, std::string Kind)
-{
+#if 1
+SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocation SL, Rewriter &Rewrite, std::string Kind) {
   /*does the sourcelocation include a macro expansion?*/
-  if ( SL.isMacroID() )
-  {
+  if ( SL.isMacroID()) {
     /*get the expansion range which is startloc and endloc*/
     std::pair <SourceLocation, SourceLocation> expansionRange = Rewrite.getSourceMgr().getImmediateExpansionRange(SL);
-
-    if (Kind == "start")
-    {
+    if (Kind == "start") {
       return (expansionRange.first);
-    }
-    else if (Kind == "end")
-    {
+    } else if (Kind == "end") {
       return (expansionRange.second);
-    }
-    else
-    {
+    } else {
       std::cout << "the third argument of Devi::SourceLocationHasMacro is invalid." << std::endl;
     }
-
-  }
-  else
-  {
+  } else {
     return (SL);
   }
-
   return (SL);
 }
+#endif
 
 SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite)
 {
-  if (__sl.isMacroID())
-  {
+  if (__sl.isMacroID()) {
     return __rewrite.getSourceMgr().getSpellingLoc(__sl);
-  }
-  else
-  {
+  } else {
     return __sl;
   }
 }
 
-SourceLocation getSLSpellingLoc(SourceLocation __sl, Rewriter &__rewrite)
-{
+SourceLocation getSLSpellingLoc(SourceLocation __sl, Rewriter &__rewrite) {
   if (__sl.isMacroID()) {return __rewrite.getSourceMgr().getSpellingLoc(__sl);}
   else {return __sl;}
 }
@@ -87,106 +73,74 @@ SourceLocation getSLSpellingLoc(SourceLocation __sl, Rewriter &__rewrite)
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
 /*the first argument is the option SysHeader from the mutator-lvl0 cl.*/
-bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL)
-{
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL) {
   ASTContext *const ASTC = MR.Context;
   const SourceManager &SM = ASTC->getSourceManager();
 
-  if (SM.isInSystemHeader(SL) && !SysHeaderFlag)
-  {
+  if (SM.isInSystemHeader(SL) && !SysHeaderFlag) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
 
-bool IsTheMatchInSysHeader(bool SysHeaderFlag, const SourceManager &SM, SourceLocation SL)
-{
-  if (SM.isInSystemHeader(SL) && !SysHeaderFlag)
-  {
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, const SourceManager &SM, SourceLocation SL) {
+  if (SM.isInSystemHeader(SL) && !SysHeaderFlag) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
 
-bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader, SourceLocation SL)
-{
-  if (SysHeader && !SysHeaderFlag)
-  {
+bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader, SourceLocation SL) {
+  if (SysHeader && !SysHeaderFlag) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
 
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader)
 {
-  if (SysHeader && !SysHeaderFlag)
-  {
+  if (SysHeader && !SysHeaderFlag) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
-bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL)
-{
+bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL) {
   ASTContext *const ASTC = MR.Context;
   const SourceManager &SM = ASTC->getSourceManager();
-
-  if (SM.isInMainFile(SL) || (!SM.isInMainFile(SL) && !MainFileFlag))
-  {
+  if (SM.isInMainFile(SL) || (!SM.isInMainFile(SL) && !MainFileFlag)) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
 
-bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLocation SL)
-{
-  if (SM.isInMainFile(SL) || (!SM.isInMainFile(SL) && !MainFileFlag))
-  {
+bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLocation SL) {
+  if (SM.isInMainFile(SL) || (!SM.isInMainFile(SL) && !MainFileFlag)) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
 
-bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL)
-{
-  if (MainFile || (!MainFile && !MainFileFlag))
-  {
+bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL) {
+  if (MainFile || (!MainFile && !MainFileFlag)) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
 
-bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile)
-{
-  if (MainFile || (!MainFile && !MainFileFlag))
-  {
+bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile) {
+  if (MainFile || (!MainFile && !MainFileFlag)) {
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }

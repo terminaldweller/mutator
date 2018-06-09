@@ -97,7 +97,7 @@ typedef int32_t varuint32;
   }W_Import_Section_Entry;
 
   typedef struct {
-    int count;
+    varuint32 count;
     W_Import_Section_Entry** entries;
   }W_Import_Section;
 
@@ -119,7 +119,7 @@ typedef int32_t varuint32;
 
   typedef struct {
     global_type_t* type;
-    init_expr_t init;
+    init_expr_t* init;
   }W_Global_Entry;
 
   typedef struct {
@@ -131,7 +131,7 @@ typedef int32_t varuint32;
     varuint32 field_len;
     char* field_str;
     enum external_kind_t kind;
-    int varuint32;
+    varuint32 index;
   }W_Export_Entry;
 
   typedef struct {
@@ -145,7 +145,7 @@ typedef int32_t varuint32;
 
   typedef struct {
     varuint32 index;
-    init_expr_t offset;
+    init_expr_t* offset;
     varuint32 num_length;
     varuint32* elems;
   }W_Elem_Segment;
@@ -175,14 +175,14 @@ typedef int32_t varuint32;
 
   typedef struct {
     varuint32 index;
-    init_expr_t offset;
+    init_expr_t* offset;
     varuint32 size;
     char* data;
   }W_Data_Segment;
 
   typedef struct {
     varuint32 count;
-    struct W_Data_Segment** entries;
+    W_Data_Segment** entries;
   }W_Data_Section;
 
 #if 0
@@ -192,6 +192,7 @@ typedef int32_t varuint32;
 #endif
 
   typedef struct Wasm_Module {
+    W_Type_Section* type_section;
     W_Import_Section* import_section;
     W_Function_Section* function_section;
     W_Table_Section* table_section;

@@ -1,5 +1,8 @@
 -- bruiser default script.
 -- This is run everytime bruiser is called.
+-- By default bruiser will look for a file named defaults.lua in the same 
+-- directory as its executable. you can change the file using the --luadefault 
+-- option.
 
 -- adds luarocks' path and cpath to bruiser
 function default_luarocks_modules()
