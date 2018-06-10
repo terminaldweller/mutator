@@ -1,0 +1,51 @@
+{   "init_expr_t":
+    {"field_name": ["size", "code"], "field_type": ["varuint32", "char*"], "lua_type": ["integer", "string"], "methods": ["convert", "check", "push_self", "push_args", "new"]},
+    "resizable_limit_t": 
+    {"field_name":["flags", "initial", "maximum"], "field_type": ["varuint1", "varuint32", "varuint32"], "lua_type": ["integer", "integer", "integer"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "global_type_t": 
+    {"field_name": ["value_type", "mutability"], "field_type": ["enum value_type_t", "varuint1"], "lua_type":["integer", "integer"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "table_type_t": 
+    {"field_name": ["element_type", "resizable_limit"],"field_type": ["varint7", "resizable_limit_t*"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "memory_type_t": 
+    {"field_name":["resizable_limit"], "field_type":["resizable_limit_t*"], "lua_type":["lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Type_Section_Entry": 
+    {"field_name": ["form", "param_count", "param_types", "return_count", "return_types"], "field_type":["varint7", "varuint32", "varint7*", "varuint1", "varint7*"], "lua_type":["integer", "integer", "lightuserdata", "integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args","new"]},
+    "W_Type_Section": 
+    {"field_name":["count", "entries"], "field_type": ["varuint32", "W_Type_Section_Entry**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Import_Section_Entry": 
+    {"field_name":["module_length", "module_str", "field_len", "field_str", "kind", "type"], "field_type":["varuint32", "char*", "varuint32", "char*", "enum external_kind_t", "void*"], "lua_type": ["integer", "string", "integer", "string", "integer", "lightuserdata"], "methods": ["convert", "check", "push_self", "push_args", "new"]},
+    "W_Import_Section": 
+    {"field_name":["count", "entries"], "field_type":["varuint32","W_Import_Section**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Function_Section": 
+    {"field_name":["count", "types"], "field_type":["varuint32", "varuint32*"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Table_Section":
+    {"field_name":["count", "entries"], "field_type":["varuint32", "table_type_t**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Memory_Section":
+    {"field_name":["count", "entries"], "field_type":["varuint32", "memory_type_t**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Global_Entry":
+    {"field_name":["type", "init"], "field_type":["global_type_t*", "init_expr_t*"], "lua_type":["lightuserdata", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Global_Section":
+    {"field_name":["count", "globals"], "field_type":["varuint32", "W_Global_Entry**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Export_Entry":
+    {"field_name":["field_len", "field_str", "kind", "index"], "field_type":["varuint32", "char*", "enum external_kind_t", "varuint32"], "lua_type":["integer", "string", "integer", "integer"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Export_Section":
+    {"field_name":["count", "entries"], "field_type": ["varuint32", "W_Export_Entry**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Start_Section":
+    {"field_name":["index"], "field_type":["varuint32"], "lua_type":["integer"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Elem_Segment":
+    {"field_name":["index", "offset", "num_length", "elems"], "field_type":["varuint32", "init_expr_t*", "varuint32", "varuint32*"], "lua_type":["integer", "lightuserdata", "integer", "integer"], "methods": ["convert", "check", "push_self", "push_args", "new"]},
+    "W_Element_Section":
+    {"field_name":["count", "entries"], "field_type":["varuint32", "W_Elem_Segment**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Local_Entry":
+    {"field_name":["count", "type"], "field_type":["varuint32", "enum value_type_t"], "lua_type":["integer", "integer"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Function_Body":
+    {"field_name":["body_size", "local_count", "locals", "code"], "field_type":["varuint32", "varuint32", "W_Local_Entry**", "char*"], "lua_type":["integer", "integer", "lightuserdata", "string"], "methods": ["convert", "check", "push_self", "push_args", "new"]},
+    "W_Code_Section":
+    {"field_name":["count", "bodies"], "field_type":["varuint32", "W_Function_Body**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Data_Segment":
+    {"field_name":["index", "offset", "size", "data"], "field_type":["varuint32", "init_expr_t*", "varuint32", "char*"], "lua_type":["integer", "lightuserdata", "integer", "string"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "W_Data_Section":
+    {"field_name": ["count", "entries"], "field_type":["varuint32", "W_Data_Segment**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    "Wasm_Module":
+    {"field_name":["type_section", "import_section", "function_section", "table_section", "memory_section", "global_section", "export_section", "start_section", "element_section", "code_section", "data_section", "W_Custom_Sections", "name"], "field_type":["W_Type_Section*", "W_Import_Section*", "W_Function_Section*", "W_Table_Section*", "W_Memory_Section*", "W_Global_Section*", "W_Export_Section*", "W_Start_Section*", "W_Element_Section*", "W_Code_Section*", "W_Data_Section*", "void**", "char*"], "lua_type":["lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata", "lightuserdata","string"], "methods":["convert", "check", "push_self", "push_args", "new"]}
+}
