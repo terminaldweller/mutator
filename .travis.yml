@@ -50,6 +50,7 @@ before_script:
   - python3-config --includes
   - python3-config --ldflags
   - llvm-config-5.0 --has-rtti
+  - (cd bruiser && bash ./tablegen.sh)
 
 script: 
   - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG CC=clang-5.0 -j2

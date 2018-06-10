@@ -21,7 +21,7 @@ TBG_OBJLIST_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.o, $(wildcard ./lu
 ######################################RULES####################################
 .DEFAULT: all
 
-.PHONY: all clean help tablegen
+.PHONY: all clean help
 
 all: $(BRUISER)
 
@@ -46,8 +46,13 @@ dependc:.dependc
 linenoise.o:
 	$(CC) $(CC_FLAGS) linenoise/linenoise.c -c -o linenoise.o
 
-tablegen:
-	../extra-tools/tablegen-test/run.sh
+./wasmtablegen.json:
+	if [[ ls -l ./luatablegen | wc -l  == 2 ]];then ./tablegen.sh;else :;fi
+
+./luatablegen/%.c: ./wasmtablegen.json
+	./tablegen.sh
+
+./luatablegen/%.o:./luatablegen/%.c
 	$(MAKE) -C luatablegen
 
 $(LIB_LUA):
@@ -59,6 +64,7 @@ $(LIB_LUA_JIT):
 	@echo "building with jit"
 
 $(BRUISER): $(BRUISER).o ../mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
+	@echo $(TBG_OBJLIST_INC)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 clean:
