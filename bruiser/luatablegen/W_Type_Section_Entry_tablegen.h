@@ -5,6 +5,7 @@
 #include "../lua-5.3.4/src/lualib.h"
 #include <inttypes.h>
 #include <stdbool.h>
+
 #ifndef _W_Type_Section_Entry_H
 #define _W_Type_Section_Entry_H
 #ifdef __cplusplus

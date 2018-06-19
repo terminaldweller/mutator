@@ -372,8 +372,10 @@ class PyExec {
 
       PySys_SetArgv(argc, argv);
       pName = PyUnicode_DecodeFSDefault(py_script_name.c_str());
-      std::string command = "import sys\nsys.path.append(\"" + bruiser_path + "/../bfd\")\n";
-      PyRun_SimpleString(command.c_str());
+      std::string command_1 = "import sys\nsys.path.append(\"" + bruiser_path + "/../bfd\")\n";
+      std::string command_2 = "sys.path.append(\"" + bruiser_path + "/wasm\")\n";
+      PyRun_SimpleString(command_1.c_str());
+      PyRun_SimpleString(command_2.c_str());
       pModule = PyImport_Import(pName);
       Py_DECREF(pName);
 
@@ -1349,6 +1351,25 @@ class LuaWrapper
     {
       linenoiseClearScreen();
       return 0;
+    }
+
+    int BruiserLuaDWASMPy(lua_State* __ls) {
+      int numargs = lua_gettop(__ls);
+      std::string filename = "dwasm";
+      std::string funcname;
+      std::string objjpath;
+      std::string action;
+      if (numargs != 3) {
+        PRINT_WITH_COLOR_LB(RED, "wrong number of args. expected 3.");
+        return 0;
+      }
+      funcname = lua_tostring(__ls, 1);
+      objjpath = lua_tostring(__ls, 2);
+      action = lua_tostring(__ls, 3);
+      if (funcname == "" || objjpath == "" || action == "") {
+        PRINT_WITH_COLOR_LB(RED,"bad arg. nil passed. expected a value.");
+      }
+      PyExec py(filename.c_str(), funcname.c_str(), objjpath.c_str());
     }
 
     int BruiserPyLoader(lua_State* __ls ) {
@@ -2385,6 +2406,7 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "xsize", &LuaDispatch<&LuaWrapper::BruiserLuaGetXSize>);
     lua_register(LE.GetLuaState(), "xclear", &LuaDispatch<&LuaWrapper::BruiserLuaXObjDeallocate>);
     lua_register(LE.GetLuaState(), "xmemusage", &LuaDispatch<&LuaWrapper::BruiserLuaGetXMemSize>);
+    lua_register(LE.GetLuaState(), "dwasm", &LuaDispatch<&LuaWrapper::BruiserLuaDWASMPy>);
 
     runloop.setLW(std::move(LW));
     runloop.run();

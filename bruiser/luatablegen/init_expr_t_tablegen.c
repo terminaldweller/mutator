@@ -5,11 +5,6 @@
 #include "../lua-5.3.4/src/lualib.h"
 #include <inttypes.h>
 #include <stdbool.h>
-#ifndef _init_expr_t_H
-#define _init_expr_t_H
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include "./init_expr_t_tablegen.h"
 
 #include "../wasm.h"
@@ -105,10 +100,5 @@ int init_expr_t_register(lua_State* __ls) {
 	lua_pop(__ls, 1);
 return 1;
 }
-
-#ifdef __cplusplus
-}
-#endif //end of extern c
-#endif //end of inclusion guard
 
 

@@ -14,7 +14,7 @@ EXTERN_C = ['#ifdef __cplusplus\nextern "C" {\n#endif\n', '#ifdef __cplusplus\n}
 BEGIN_NOTE = "//Generated Automatically by luatablegen."
 HEADER_LIST = ['#include "HHHlua.h"\n', '#include "HHHlauxlib.h"\n',
                '#include "HHHlualib.h"\n', '#include <inttypes.h>\n',
-               '#include <stdbool.h>']
+               '#include <stdbool.h>\n']
 CONVERT = ['static XXX* convert_XXX (lua_State* __ls, int index) {\n',
            '\tXXX* dummy = (XXX*)lua_touserdata(__ls, index);\n',
            '\tif (dummy == NULL) printf("XXX:bad user data type.\\n");\n',
@@ -90,6 +90,7 @@ class Argparser(object):
         parser.add_argument("--outfile", type=str, help="name of the output file if signlefile is set, ignored otherwise")
         parser.add_argument("--headeraggr", type=str, help="header aggregate file name")
         parser.add_argument("--lualibpath", type=str, help="where the lua module file will be placed")
+        parser.add_argument("--docpath", type=str, help="where the doc file will be placed")
         self.args = parser.parse_args()
 
 class TbgParser(object):
@@ -105,8 +106,8 @@ class TbgParser(object):
                 c_source.write(header.replace("HHH", self.argparser.args.luaheader+"/"))
             else:
                 c_source.write(header.replace("HHH", ""))
-        c_source.write(HEADER_GUARD[0].replace("XXX", struct_name))
-        c_source.write(EXTERN_C[0])
+        if not is_source: c_source.write(HEADER_GUARD[0].replace("XXX", struct_name))
+        if not is_source: c_source.write(EXTERN_C[0])
         if is_source: c_source.write("#include " + '"./' +h_filename+ '"\n')
         c_source.write("\n")
         if self.argparser.args.pre:
@@ -241,7 +242,7 @@ class TbgParser(object):
         for line in TABLE_REGISTER:
             c_source.write(line.replace("XXX", struct_name))
 
-    def end(self, c_source):
+    def end(self, c_source, is_source):
         if self.argparser.args.post:
             c_source.write("\n")
             post_file = open(self.argparser.args.post)
@@ -249,9 +250,19 @@ class TbgParser(object):
                 c_source.write(line)
             post_file.clsoe()
         c_source.write("\n")
-        c_source.write(EXTERN_C[1])
-        c_source.write(HEADER_GUARD[1])
+        if not is_source: c_source.write(EXTERN_C[1])
+        if not is_source: c_source.write(HEADER_GUARD[1])
         c_source.write("\n")
+
+    def docgen_md(self, d_source, struct_name, field_names, field_types, lua_types):
+        d_source.write("## wasm tables method list:\n")
+        for field_name,lua_type in zip(field_names, lua_types):
+            d_source.write(struct_name + ":" + field_name + "()" + " -- ")
+            d_source.write(lua_type + "<br/>" + "\n")
+        for field_name,lua_type in zip(field_names, lua_types):
+            d_source.write("set_" + struct_name + ":" + field_name + "()" + " -- ")
+            d_source.write(lua_type + "<br/>" + "\n")
+        d_source.write("\n")
 
     def luagen(self):
         l_source = open(self.argparser.args.lualibpath, "w")
@@ -280,6 +291,8 @@ class TbgParser(object):
         table_reg_list = []
         if self.argparser.args.singlefile:
             c_source = open(self.argparser.args.outfile, "w")
+        if self.argparser.args.docpath:
+            d_source = open(self.argparser.args.docpath, "w")
         for k, v in self.tbg_file.items():
             struct_name = k
             field_names = v['field_name']
@@ -298,10 +311,7 @@ class TbgParser(object):
                     header_aggr_list.append("./" + h_filename)
                     h_source = open(self.argparser.args.out + "/" + h_filename, "w")
             # source file
-            # TODO - the c source file is getting a header guard and cpp
-            # inclusion macros
             self.begin(c_source, struct_name, h_filename, True)
-            #self.struct(c_source, field_names, field_types, struct_name)
             self.convert(c_source, struct_name)
             self.check(c_source, struct_name)
             self.push_self(c_source, struct_name)
@@ -312,7 +322,7 @@ class TbgParser(object):
             self.register_table_methods(c_source, struct_name, field_names)
             self.register_table_meta(c_source, struct_name)
             self.register_table(c_source, struct_name)
-            self.end(c_source)
+            self.end(c_source, True)
             if not self.argparser.args.singlefile: c_source.close()
             # header file
             self.begin(h_source, struct_name, h_filename, False)
@@ -327,7 +337,10 @@ class TbgParser(object):
                 h_source.write(SETTER_GEN[0].replace("XXX", struct_name).replace("YYY", field_name).replace(" {\n", ";\n"))
             table_reg_list.append(struct_name + "_register(__ls);\n")
             h_source.write(TABLE_REGISTER[0].replace("XXX", struct_name).replace(" {\n", ";\n"))
-            self.end(h_source)
+            self.end(h_source, False)
+            # docs
+            if self.argparser.args.docpath:
+                self.docgen_md(d_source, struct_name, field_names, field_types, lua_types)
         # header aggregate
         if self.argparser.args.headeraggr:
             name = self.argparser.args.headeraggr

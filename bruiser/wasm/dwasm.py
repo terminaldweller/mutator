@@ -5,8 +5,13 @@ import code
 import readline
 import signal
 import sys
-from parse import Argparser, premain, SigHandler_SIGINT
+from parse import Argparser, premain, SigHandler_SIGINT,PythonInterpreter
 from utils import ParseFlags
+
+def getWASMModule():
+    module_path = sys.argv[1]
+    interpreter = PythonInterpreter()
+    module = interpreter.parse(module_path)
 
 def main():
     signal.signal(signal.SIGINT, SigHandler_SIGINT)

@@ -9,6 +9,12 @@ BUILD_MODE?=COV_NO_CLANG_1Z
 SHELL:=/bin/bash
 MAKEFLAGS+=--warn-undefined-variables
 
+ADD_SANITIZERS_CC= -g -fsanitize=address -fno-omit-frame-pointer
+ADD_SANITIZERS_LD= -g -fsanitize=address
+MEM_SANITIZERS_CC= -g -fsanitize=memory -fno-omit-frame-pointer
+MEM_SANITIZERS_LD= -g -fsanitize=memory
+UB_SANITIZERS_CC= -g  -fsanitize=undefined -fno-omit-frame-pointer
+UB_SANITIZERS_LD= -g  -fsanitize=undefined
 
 CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 CC_FLAGS=
@@ -64,6 +70,41 @@ EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell
  -std=c++17 -stdlib=libstdc++ -UNDEBUG -fexceptions
 EXTRA_LD_FLAGS=-v
 endif
+
+##############################################################################################################################
+ifeq ($(BUILD_MODE), ADDSAN)
+ifeq ($(CXX), g++)
+$(error This build mode is only useable with clang++.)
+endif
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
+ -std=c++17 -stdlib=libstdc++ -UNDEBUG -fexceptions
+EXTRA_CXX_FALGS+=$(ADD_SANITIZERS_CC)
+EXTRA_LD_FLAGS=-v
+EXTRA_LD_FLAGS+=$(ADD_SANITIZERS_LD)
+endif
+
+ifeq ($(BUILD_MODE), MEMSAN)
+ifeq ($(CXX), g++)
+$(error This build mode is only useable with clang++.)
+endif
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
+ -std=c++17 -stdlib=libstdc++ -UNDEBUG -fexceptions
+EXTRA_CXX_FALGS+=$(MEM_SANITIZERS_CC)
+EXTRA_LD_FLAGS=-v
+EXTRA_LD_FLAGS+=$(MEM_SANITIZERS_LD)
+endif
+
+ifeq ($(BUILD_MODE), UBSAN)
+ifeq ($(CXX), g++)
+$(error This build mode is only useable with clang++.)
+endif
+EXTRA_CXX_FALGS=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
+ -std=c++17 -stdlib=libstdc++ -UNDEBUG -fexceptions
+EXTRA_CXX_FALGS+=$(UB_SANITIZERS_CC)
+EXTRA_LD_FLAGS=-v
+EXTRA_LD_FLAGS+=$(UB_SANITIZERS_LD)
+endif
+##############################################################################################################################
 
 ifeq ($(BUILD_MODE), COV_NO_CLANG_14)
 ifeq ($(CXX), g++)

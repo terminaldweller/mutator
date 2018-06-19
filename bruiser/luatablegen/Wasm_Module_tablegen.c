@@ -5,11 +5,6 @@
 #include "../lua-5.3.4/src/lualib.h"
 #include <inttypes.h>
 #include <stdbool.h>
-#ifndef _Wasm_Module_H
-#define _Wasm_Module_H
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include "./Wasm_Module_tablegen.h"
 
 #include "../wasm.h"
@@ -292,10 +287,5 @@ int Wasm_Module_register(lua_State* __ls) {
 	lua_pop(__ls, 1);
 return 1;
 }
-
-#ifdef __cplusplus
-}
-#endif //end of extern c
-#endif //end of inclusion guard
 
 
