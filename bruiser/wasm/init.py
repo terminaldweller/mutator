@@ -1,5 +1,5 @@
 from utils import Colors, init_interpret, ParseFlags
-from OpCodes import WASM_OP_Code
+from opcodes import WASM_OP_Code
 from section_structs import Code_Section, Func_Body, WASM_Ins, Resizable_Limits, Memory_Section
 from execute import *
 import datetime as dti

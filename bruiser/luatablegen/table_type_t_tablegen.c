@@ -69,7 +69,7 @@ static int setter_table_type_t_element_type(lua_State* __ls) {
 }
 static int setter_table_type_t_resizable_limit(lua_State* __ls) {
 	table_type_t* dummy = check_table_type_t(__ls, 1);
-	dummy->resizable_limit = luaL_checkudata(__ls, 2, "table_type_t");
+	dummy->resizable_limit = luaL_checkudata(__ls, 2, "resizable_limit_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

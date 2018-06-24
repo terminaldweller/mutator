@@ -102,7 +102,7 @@ static int setter_W_Type_Section_Entry_param_count(lua_State* __ls) {
 }
 static int setter_W_Type_Section_Entry_param_types(lua_State* __ls) {
 	W_Type_Section_Entry* dummy = check_W_Type_Section_Entry(__ls, 1);
-	dummy->param_types = luaL_checkudata(__ls, 2, "W_Type_Section_Entry");
+	dummy->param_types = luaL_checkudata(__ls, 2, "param_types_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
@@ -114,7 +114,7 @@ static int setter_W_Type_Section_Entry_return_count(lua_State* __ls) {
 }
 static int setter_W_Type_Section_Entry_return_types(lua_State* __ls) {
 	W_Type_Section_Entry* dummy = check_W_Type_Section_Entry(__ls, 1);
-	dummy->return_types = luaL_checkudata(__ls, 2, "W_Type_Section_Entry");
+	dummy->return_types = luaL_checkudata(__ls, 2, "return_types_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

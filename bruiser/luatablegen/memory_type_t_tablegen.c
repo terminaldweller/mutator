@@ -54,7 +54,7 @@ static int getter_memory_type_t_resizable_limit(lua_State* __ls) {
 
 static int setter_memory_type_t_resizable_limit(lua_State* __ls) {
 	memory_type_t* dummy = check_memory_type_t(__ls, 1);
-	dummy->resizable_limit = luaL_checkudata(__ls, 2, "memory_type_t");
+	dummy->resizable_limit = luaL_checkudata(__ls, 2, "resizable_limit_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

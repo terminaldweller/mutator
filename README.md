@@ -12,7 +12,9 @@
 
 - [Overview](#overview)
   - [bruiser](#bruiser)
-  - [load.py](#load.py)
+  - [delf](#delf)
+  - [dwasm](#dwasm)
+  - [luatablegen](#luatablegen)
   - [obfuscator](#obfuscator)
   - [m0](#m0)
   - [Safercpp](#safercpp)
@@ -57,9 +59,16 @@ Essentially bruiser is a Lua REPL plus:
 * Through the ASMRewriter functionality you can manipulate the machine code and push it back in the object. For more detail you can look at the wiki or check out bruiser's README.md.<br/>
 * Luarocks: You can use your Luarocks modules/libraries in bruiser too. Just make sure `luarocks` is in your path and bruiser will take care of the rest.<br/>
 
-### load.py 
-`load.py` is a custom ELF dump script developed for bruiser. bruiser uses it to interact with ELF files.<br/>
+### delf 
+`delf` is a custom ELF dump script developed for bruiser. bruiser uses it to interact with ELF files.<br/>
 You can also use the script as a standalone to dump info on the ELF file to stdout.<br/>
+
+### dwasm
+'dwasm' is a custom WASM dump script. bruiser uses it to interact with WASM object files.<br/>
+The script is also usable in an standalone manner.<br/>
+
+### luatablegen
+`luatablegen` is a python script that takes a json file including the details of a C structure, and generates C source and header files, a lua file including some convinience fields for the lua table and a markdown file including a summary of the table fields and their expected arg types and return types.<br/>
 
 ### obfuscator 
 Is a C/C++ source code obfuscator.<br/>

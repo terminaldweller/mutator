@@ -1,4 +1,4 @@
-from OpCodes import *
+from opcodes import *
 from utils import Colors, ror, rol
 import numpy as np
 import math

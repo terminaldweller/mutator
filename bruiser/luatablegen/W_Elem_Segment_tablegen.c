@@ -87,7 +87,7 @@ static int setter_W_Elem_Segment_index(lua_State* __ls) {
 }
 static int setter_W_Elem_Segment_offset(lua_State* __ls) {
 	W_Elem_Segment* dummy = check_W_Elem_Segment(__ls, 1);
-	dummy->offset = luaL_checkudata(__ls, 2, "W_Elem_Segment");
+	dummy->offset = luaL_checkudata(__ls, 2, "offset_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

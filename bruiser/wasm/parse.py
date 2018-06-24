@@ -6,9 +6,9 @@ import sys
 import re
 from section_structs import *
 from utils import *
-from OpCodes import *
+from opcodes import *
 from copy import deepcopy
-from TBInit import *
+from init import *
 import readline
 import code
 import signal

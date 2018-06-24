@@ -69,7 +69,7 @@ static int setter_W_Export_Section_count(lua_State* __ls) {
 }
 static int setter_W_Export_Section_entries(lua_State* __ls) {
 	W_Export_Section* dummy = check_W_Export_Section(__ls, 1);
-	dummy->entries = luaL_checkudata(__ls, 2, "W_Export_Section");
+	dummy->entries = luaL_checkudata(__ls, 2, "entries_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

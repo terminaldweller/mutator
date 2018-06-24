@@ -69,7 +69,7 @@ static int setter_W_Code_Section_count(lua_State* __ls) {
 }
 static int setter_W_Code_Section_bodies(lua_State* __ls) {
 	W_Code_Section* dummy = check_W_Code_Section(__ls, 1);
-	dummy->bodies = luaL_checkudata(__ls, 2, "W_Code_Section");
+	dummy->bodies = luaL_checkudata(__ls, 2, "bodies_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

@@ -20,7 +20,6 @@ setmetatable(resizable_limit_t, {__call =
 setmetatable(global_type_t, {__call =
 	function(self, arg0, arg1)
 		local t = self.new(arg0, arg1)
-    print("created",t)
 		return t
 	end
 	}

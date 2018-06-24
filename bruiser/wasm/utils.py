@@ -1,4 +1,4 @@
-from OpCodes import *
+from opcodes import *
 import numpy as np
 import struct as stc
 

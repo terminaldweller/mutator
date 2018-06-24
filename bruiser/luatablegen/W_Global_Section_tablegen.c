@@ -69,7 +69,7 @@ static int setter_W_Global_Section_count(lua_State* __ls) {
 }
 static int setter_W_Global_Section_globals(lua_State* __ls) {
 	W_Global_Section* dummy = check_W_Global_Section(__ls, 1);
-	dummy->globals = luaL_checkudata(__ls, 2, "W_Global_Section");
+	dummy->globals = luaL_checkudata(__ls, 2, "globals_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

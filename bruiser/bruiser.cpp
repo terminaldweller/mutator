@@ -1375,22 +1375,24 @@ class LuaWrapper
     int BruiserPyLoader(lua_State* __ls ) {
       int numargs = lua_gettop(__ls);
       //std::string filename = "../bfd/load.py";
-      std::string filename = "load";
+      //std::string filename = "load";
+      std::string filename;
       std::string funcname;
       std::string objjpath;
       std::string action;
 
-      if (numargs == 3) {
+      if (numargs == 4) {
         if (Verbose) std::cout << CYAN << "got args." << NORMAL << "\n";
-        funcname = lua_tostring(__ls, 1);
-        if (funcname == "") PRINT_WITH_COLOR_LB(RED, "first argument is nil");
-        objjpath = lua_tostring(__ls, 2);
-        if (objjpath == "") PRINT_WITH_COLOR_LB(RED, "second argument is nil");
-        action = lua_tostring(__ls, 3);
-        if (action == "") PRINT_WITH_COLOR_LB(RED, "third argument is nil");
+        filename = lua_tostring(__ls, 1);
+        if (filename == "") PRINT_WITH_COLOR_LB(RED, "first argument is nil");
+        funcname = lua_tostring(__ls, 2);
+        if (funcname == "") PRINT_WITH_COLOR_LB(RED, "second argument is nil");
+        objjpath = lua_tostring(__ls, 3);
+        if (objjpath == "") PRINT_WITH_COLOR_LB(RED, "third argument is nil");
+        action = lua_tostring(__ls, 4);
+        if (action == "") PRINT_WITH_COLOR_LB(RED, "fourth argument is nil");
         std::cout << NORMAL;
-      }
-      else {
+      } else {
         std::cout << RED << "wrong number of arguments provided. should give the python script name, python func name and the return type.\n" << NORMAL;
         return EXIT_FAILURE;
       }

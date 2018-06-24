@@ -129,7 +129,7 @@ static int setter_W_Import_Section_Entry_kind(lua_State* __ls) {
 }
 static int setter_W_Import_Section_Entry_type(lua_State* __ls) {
 	W_Import_Section_Entry* dummy = check_W_Import_Section_Entry(__ls, 1);
-	dummy->type = luaL_checkudata(__ls, 2, "W_Import_Section_Entry");
+	dummy->type = luaL_checkudata(__ls, 2, "type_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

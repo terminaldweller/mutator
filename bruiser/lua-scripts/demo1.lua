@@ -20,8 +20,8 @@ elf_file = "/home/bloodstalker/devi/hell2/bfd/test/test.so"
 
 function Demo1.getGlobalTable()
   local return_table = {}
-  local names = objload("elf_get_obj_names", elf_file, "symbol_list")
-  local sizes = objload("elf_get_obj_sizes", elf_file, "bytes")
+  local names = objload("load", "elf_get_obj_names", elf_file, "symbol_list")
+  local sizes = objload("load", "elf_get_obj_sizes", elf_file, "bytes")
   for i=1,#names,1 do
     return_table[names[i]] = sizes[i]
   end
@@ -29,28 +29,28 @@ function Demo1.getGlobalTable()
 end
 
 function Demo1.printObjNames()
-  local c = objload("elf_get_obj_names", elf_file, "symbol_list")
+  local c = objload("load", "elf_get_obj_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function Demo1.printObjSizes()
-  local c = objload("elf_get_obj_sizes", elf_file, "bytes")
+  local c = objload("load", "elf_get_obj_sizes", elf_file, "bytes")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function Demo1.printFuncNames()
-  local c = objload("elf_get_func_names", elf_file, "symbol_list")
+  local c = objload("load", "elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function Demo1.printFuncCode()
-  local c = objload("elf_get_func_code", elf_file, "code_list")
+  local c = objload("load", "elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(c) do
     print(k,v)
     if #v ~= 0 then
@@ -63,7 +63,7 @@ function Demo1.printFuncCode()
 end
 
 function Demo1.findMain()
-  local c = objload("elf_get_func_names", elf_file, "symbol_list")
+  local c = objload("load", "elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     if v == "main" then 
       io.write("main index is".." "..k.."\n")
@@ -74,8 +74,8 @@ end
 
 function Demo1.codeTables()
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   for i=1,#func_name_table,1 do
     return_table[func_name_table[i]] = code_table[i]
   end
@@ -84,8 +84,8 @@ end
 
 function Demo1.codeTableByName(name)
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(func_name_table) do
     if v == name then
       for k1, v1 in ipairs(code_table[k]) do
@@ -99,8 +99,8 @@ end
 
 function Demo1.codeTableByName_number(name)
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(func_name_table) do
     if v == name then
       for k1, v1 in ipairs(code_table[k]) do
@@ -113,8 +113,8 @@ function Demo1.codeTableByName_number(name)
 end
 
 function Demo1.printFuncSizes()
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   local counter = 1
   print("function sizes:")
   for k, v in ipairs(code_table) do

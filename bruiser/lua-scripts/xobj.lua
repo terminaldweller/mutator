@@ -26,8 +26,8 @@ end
 
 function xobj.getGlobalTable()
   local return_table = {}
-  local names = objload("elf_get_obj_names", elf_file, "symbol_list")
-  local sizes = objload("elf_get_obj_sizes", elf_file, "symbol_list")
+  local names = objload("load", "elf_get_obj_names", elf_file, "symbol_list")
+  local sizes = objload("load", "elf_get_obj_sizes", elf_file, "symbol_list")
   for i=1,#names,1 do
     return_table[names[i]] = sizes[i]
   end
@@ -35,28 +35,28 @@ function xobj.getGlobalTable()
 end
 
 function xobj.printObjNames()
-  local c = objload("elf_get_obj_names", elf_file, "symbol_list")
+  local c = objload("load", "elf_get_obj_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function xobj.printObjSizes()
-  local c = objload("elf_get_obj_sizes", elf_file, "symbol_list")
+  local c = objload("load", "elf_get_obj_sizes", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function xobj.printFuncNames()
-  local c = objload("elf_get_func_names", elf_file, "symbol_list")
+  local c = objload("load", "elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     print(k,v)
   end
 end
 
 function xobj.printFuncCode()
-  local c = objload("elf_get_func_code", elf_file, "code_list")
+  local c = objload("load", "elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(c) do
     print(k,v)
     if #v ~= 0 then
@@ -69,7 +69,7 @@ function xobj.printFuncCode()
 end
 
 function xobj.findMain()
-  local c = objload("elf_get_func_names", elf_file, "symbol_list")
+  local c = objload("load", "elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
     if v == "'main'" then 
       io.write("main index is".." "..k.."\n")
@@ -80,8 +80,8 @@ end
 
 function xobj.codeTables()
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   for i=1,#func_name_table,1 do
     return_table[func_name_table[i]] = code_table[i]
   end
@@ -90,8 +90,8 @@ end
 
 function xobj.codeTableByName(name)
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(func_name_table) do
     if v == name then
       for k1, v1 in ipairs(code_table[k]) do
@@ -105,8 +105,8 @@ end
 
 function xobj.codeTableByName_number(name)
   local return_table = {}
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   for k,v in ipairs(func_name_table) do
     if v == name then
       for k1, v1 in ipairs(code_table[k]) do
@@ -119,8 +119,8 @@ function xobj.codeTableByName_number(name)
 end
 
 function xobj.printFuncSizes()
-  local func_name_table = objload("elf_get_func_names", elf_file, "symbol_list")
-  local code_table = objload("elf_get_func_code", elf_file, "code_list")
+  local func_name_table = objload("load", "elf_get_func_names", elf_file, "symbol_list")
+  local code_table = objload("load", "elf_get_func_code", elf_file, "code_list")
   local counter = 1
   print("function sizes:")
   for k, v in ipairs(code_table) do
@@ -130,11 +130,11 @@ function xobj.printFuncSizes()
 end
 
 function xobj.getTextSection(elf_exe)
-  return objload("elf_get_text_section", elf_exe, "bytes")
+  return objload("load", "elf_get_text_section", elf_exe, "bytes")
 end
 
 function xobj.getRODataSection(elf_exe)
-  return objload("elf_get_rodata_section", elf_exe, "bytes")
+  return objload("load", "elf_get_rodata_section", elf_exe, "bytes")
 end
 
 function xobj.CSDump(code)

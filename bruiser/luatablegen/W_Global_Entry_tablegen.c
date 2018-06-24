@@ -63,13 +63,13 @@ static int getter_W_Global_Entry_init(lua_State* __ls) {
 
 static int setter_W_Global_Entry_type(lua_State* __ls) {
 	W_Global_Entry* dummy = check_W_Global_Entry(__ls, 1);
-	dummy->type = luaL_checkudata(__ls, 2, "W_Global_Entry");
+	dummy->type = luaL_checkudata(__ls, 2, "type_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_W_Global_Entry_init(lua_State* __ls) {
 	W_Global_Entry* dummy = check_W_Global_Entry(__ls, 1);
-	dummy->init = luaL_checkudata(__ls, 2, "W_Global_Entry");
+	dummy->init = luaL_checkudata(__ls, 2, "init_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

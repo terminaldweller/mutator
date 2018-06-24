@@ -93,7 +93,7 @@ static int setter_W_Function_Body_local_count(lua_State* __ls) {
 }
 static int setter_W_Function_Body_locals(lua_State* __ls) {
 	W_Function_Body* dummy = check_W_Function_Body(__ls, 1);
-	dummy->locals = luaL_checkudata(__ls, 2, "W_Function_Body");
+	dummy->locals = luaL_checkudata(__ls, 2, "locals_t");
 	lua_settop(__ls, 1);
 	return 1;
 }

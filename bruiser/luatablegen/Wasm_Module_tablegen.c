@@ -162,73 +162,73 @@ static int getter_Wasm_Module_name(lua_State* __ls) {
 
 static int setter_Wasm_Module_type_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->type_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->type_section = luaL_checkudata(__ls, 2, "type_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_import_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->import_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->import_section = luaL_checkudata(__ls, 2, "import_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_function_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->function_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->function_section = luaL_checkudata(__ls, 2, "function_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_table_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->table_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->table_section = luaL_checkudata(__ls, 2, "table_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_memory_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->memory_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->memory_section = luaL_checkudata(__ls, 2, "memory_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_global_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->global_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->global_section = luaL_checkudata(__ls, 2, "global_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_export_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->export_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->export_section = luaL_checkudata(__ls, 2, "export_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_start_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->start_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->start_section = luaL_checkudata(__ls, 2, "start_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_element_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->element_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->element_section = luaL_checkudata(__ls, 2, "element_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_code_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->code_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->code_section = luaL_checkudata(__ls, 2, "code_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_data_section(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->data_section = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->data_section = luaL_checkudata(__ls, 2, "data_section_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
 static int setter_Wasm_Module_W_Custom_Sections(lua_State* __ls) {
 	Wasm_Module* dummy = check_Wasm_Module(__ls, 1);
-	dummy->W_Custom_Sections = luaL_checkudata(__ls, 2, "Wasm_Module");
+	dummy->W_Custom_Sections = luaL_checkudata(__ls, 2, "W_Custom_Sections_t");
 	lua_settop(__ls, 1);
 	return 1;
 }
