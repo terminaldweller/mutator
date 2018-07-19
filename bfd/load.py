@@ -84,7 +84,8 @@ class CLIArgParser(object):
         parser.add_argument("--reladyn", action='store_true', help=".rela.dyn entries", default=False)
         parser.add_argument("--relaplt", action='store_true', help=".rela.plt entries", default=False)
         parser.add_argument("--rodata", action='store_true', help="dump .rodata", default=False)
-        parser.add_argument("--disass", type=str, help="disassemblt a section")
+        parser.add_argument("--disass", type=str, help="disassembls a section by name in section headers")
+        parser.add_argument("--disassp", type=int, help="disassembls a section by index in program headers")
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -167,11 +168,11 @@ def ffs(offset,header_list, numbered, *args):
 
     if numbered:
         numbers_f.extend(range(1, len(args[-1])+1))
-        max_column_width.append(max([len(repr(number)) for number in numbers_f]))
+        max_column_width.append(max([len(repr(number)) for number in numbers_f]) if  numbers_f else 6)
         header_list.insert(0, "idx")
 
     for arg in args:
-        max_column_width.append(max([len(repr(argette)) for argette in arg]))
+        max_column_width.append(max([len(repr(argette)) for argette in arg]) if arg else 6)
 
     index = range(0, len(header_list))
     for header, width, i in zip(header_list, max_column_width, index):
@@ -1205,12 +1206,13 @@ class ELF(object):
                 section_whole = self.so.read(byte2int(section.sh_size))
                 size = byte2int(section.sh_size)
                 entsize = byte2int(section.sh_entsize)
-        for i in range(0, int(size/entsize)):
-            dummy["r_offset"] = byte2int(section_whole[i*entsize:i*entsize+step])
-            dummy["r_info"] = byte2int(section_whole[i*entsize+step:i*entsize+(step*2)])
-            dummy["r_addend"] = byte2int(section_whole[i*entsize+(step*2):i*entsize+(step*3)], sign=True)
-            to_pop.append(dummy)
-            dummy = {}
+        if entsize != 0:
+            for i in range(0, int(size/entsize)):
+                dummy["r_offset"] = byte2int(section_whole[i*entsize:i*entsize+step])
+                dummy["r_info"] = byte2int(section_whole[i*entsize+step:i*entsize+(step*2)])
+                dummy["r_addend"] = byte2int(section_whole[i*entsize+(step*2):i*entsize+(step*3)], sign=True)
+                to_pop.append(dummy)
+                dummy = {}
 
     def pop_rel(self, section_name, section_whole, to_pop):
         size = int()
@@ -1438,6 +1440,17 @@ def premain(argparser):
                 md = Cs(CS_ARCH_X86, CS_MODE_64)
                 for i in md.disasm(bytes(code), 0x0):
                     print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
+    elif argparser.args.disassp != None:
+        index = argparser.args.disassp
+        # section not executable message
+        if byte2int(elf.phdr[index].p_flags) & 0x1 != 1: print("program header section is not executable but since you asked...")
+        header_offset = elf.phdr[index].p_offset
+        header_size = elf.phdr[index].p_filesz
+        elf.so.seek(byte2int(header_offset))
+        code = elf.so.read(byte2int(header_size))
+        md = Cs(CS_ARCH_X86, CS_MODE_64)
+        for i in md.disasm(bytes(code), 0x0):
+            print(hex(i.address).ljust(7), i.mnemonic.ljust(7), i.op_str)
     elif argparser.args.textasm:
         md = Cs(CS_ARCH_X86, CS_MODE_64)
         for i in md.disasm(bytes(elf.text_section), 0x0):

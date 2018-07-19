@@ -65,7 +65,7 @@ end
 function Demo1.findMain()
   local c = objload("load", "elf_get_func_names", elf_file, "symbol_list")
   for k,v in ipairs(c) do
-    if v == "main" then 
+    if v == "main" then
       io.write("main index is".." "..k.."\n")
       return k
     end

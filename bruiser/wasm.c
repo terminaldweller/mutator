@@ -22,20 +22,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "./lua-5.3.4/src/lauxlib.h"
 #include "./lua-5.3.4/src/lualib.h"
 #include "./wasm.h"
+#include <Python.h>
 /**********************************************************************************************************************/
-static Wasm_Module* convert_wasm_module(lua_State* ls, int index) {
-  Wasm_Module* dummy = lua_touserdata(ls, index);
-  if (dummy == NULL) {printf("convert_wasm_module: bad userdata.\n");}
-  return dummy;
-}
 
-static Wasm_Module* check_wasm_module(lua_State* ls, int index) {
-  Wasm_Module* dummy;
-  luaL_checktype(ls, index, LUA_TUSERDATA);
-  dummy = (Wasm_Module*)luaL_checkudata(ls, index, "wasm_module");
-  if (dummy == NULL) {printf("check_wasm_module: bad userdata.\n");}
-  return dummy;
-}
 
 #pragma weak main
 int main(int argc, char** argv) {

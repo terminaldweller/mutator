@@ -25,13 +25,11 @@ class ParsedStruct:
         self.version_number = int()
         self.section_list = []
 
-
 # like the above. currently unused
 class ParsedStructV2:
     def __init__(self, version_number, section_list):
         self.version_number = version_number
         self.section_list = section_list
-
 
 # @DEVI-Deprecated-convert a bytearray to int
 def Conver2Int(little_endian, size, bytelist):
@@ -971,6 +969,7 @@ def premain(argparser):
     if argparser.args.wasm:
         for file_path in argparser.args.wasm:
             module = interpreter.parse(file_path)
+            print(type(module))
             interpreter.appendmodule(module)
             if argparser.args.dbg or argparser.args.dbgsection:
                 interpreter.dump_sections(module, argparser.args.dbgsection)
@@ -988,8 +987,8 @@ def premain(argparser):
                 DumpLinearMems(ms.Linear_Memory, argparser.getMEMDUMP())
             if argparser.args.run:
                 vm.run()
-            # merklizer = Merklizer(ms.Linear_Memory[0][0:512], module)
-            # treelength, hashtree = merklizer.run()
+            #merklizer = Merklizer(ms.Linear_Memory[0][0:512], module)
+            #treelength, hashtree = merklizer.run()
 
     if argparser.args.interactive:
         variables = globals().copy()

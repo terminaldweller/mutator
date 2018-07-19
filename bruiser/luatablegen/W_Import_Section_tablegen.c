@@ -41,7 +41,7 @@ int W_Import_Section_push_args(lua_State* __ls, W_Import_Section* _st) {
 int new_W_Import_Section(lua_State* __ls) {
 	lua_checkstack(__ls, 2);
 	varuint32 count = luaL_optinteger(__ls,-2,0);
-	W_Import_Section** entries = lua_touserdata(__ls,-1);
+	W_Import_Section_Entry** entries = lua_touserdata(__ls,-1);
 	W_Import_Section* dummy = push_W_Import_Section(__ls);
 	dummy->count = count;
 	dummy->entries = entries;

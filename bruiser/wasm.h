@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "./lua-5.3.4/src/lua.h"
 #include "./lua-5.3.4/src/lauxlib.h"
 #include "./lua-5.3.4/src/lualib.h"
+//#include <Python.h>
 
 #ifdef __cplusplus
 extern "C" {

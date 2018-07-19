@@ -19,7 +19,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*/
 /**********************************************************************************************************************/
 #include "ffs.h"
-// @DEVI-the acceptable indexes right now are 0 and 19 since we are only reserving 2 void* slots in luaconf.h.
+// @DEVI-the acceptable indexes right now are 0 and 19 since we are only reserving 20 void* slots in luaconf.h.
 void* lua_getextraspace_wrapper(lua_State* __ls, int index) {
   return lua_getextraspace(__ls) + sizeof(void*)*index;
 }

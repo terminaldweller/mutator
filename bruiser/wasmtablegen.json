@@ -15,7 +15,7 @@
     "W_Import_Section_Entry": 
     {"field_name":["module_length", "module_str", "field_len", "field_str", "kind", "type"], "field_type":["varuint32", "char*", "varuint32", "char*", "enum external_kind_t", "void*"], "lua_type": ["integer", "string", "integer", "string", "integer", "lightuserdata"], "methods": ["convert", "check", "push_self", "push_args", "new"]},
     "W_Import_Section": 
-    {"field_name":["count", "entries"], "field_type":["varuint32","W_Import_Section**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
+    {"field_name":["count", "entries"], "field_type":["varuint32","W_Import_Section_Entry**"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
     "W_Function_Section": 
     {"field_name":["count", "types"], "field_type":["varuint32", "varuint32*"], "lua_type":["integer", "lightuserdata"], "methods":["convert", "check", "push_self", "push_args", "new"]},
     "W_Table_Section":

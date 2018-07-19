@@ -345,7 +345,7 @@ class LuaEngine
 /**********************************************************************************************************************/
 class PyExec {
   public:
-    PyExec(std::string __py_script_name, std::string __py_func_name, std::string __obj_path ) : 
+    PyExec(std::string __py_script_name, std::string __py_func_name, std::string __obj_path ) :
       py_script_name(__py_script_name), py_func_name(__py_func_name), obj_path(__obj_path) {}
     ~PyExec() {
       Py_Finalize();
@@ -529,6 +529,9 @@ class PyExec {
         }
       }
       return 0;
+    }
+
+    int getWasmModule(void) {
     }
 
     void killPyObj(void) {
@@ -1454,6 +1457,8 @@ class LuaWrapper
           lua_pushinteger(__ls, iter);
           lua_settable(__ls, -3);
         }
+      } else if (action == "wasm_module") {
+        py.getWasmModule();
       }
 
       if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "done.");
@@ -1529,7 +1534,7 @@ class LuaWrapper
       // 2-table of strings
       std::string ffi_ret_type_string = lua_tostring(__ls, 3);
 
-      void* x_ptr; 
+      void* x_ptr;
       if (lua_type(__ls, 4) == LUA_TNUMBER) {
         if (vptrs.size() - 1 > lua_tointeger(__ls, 4)) x_ptr = std::get<0>(vptrs[lua_tointeger(__ls, 4)]);
       } else if (lua_type(__ls, 4) == LUA_TSTRING) {
@@ -1627,7 +1632,6 @@ class LuaWrapper
       if (x_ptr != nullptr) {
         result = ffi_callX(argc, args, ret_type, x_ptr, values);
         if (result == nullptr) {PRINT_WITH_COLOR_LB(RED, "ffi_callX returned null.");return 0;}
-        
         if (std::strcmp(ffi_ret_type_string.c_str(), "void") == 0) {lua_pushnil(__ls);}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "uint8") == 0) {lua_pushinteger(__ls, ffi_reinterpret_uint8_t(result));}
         else if (std::strcmp(ffi_ret_type_string.c_str(), "sint8") == 0) {lua_pushinteger(__ls, ffi_reinterpret_int8_t(result));}
@@ -2052,7 +2056,7 @@ class LuaWrapper
     int BruiserLuaGetPath(lua_State* __ls) {
       unsigned int returncount = 0;
 
-      for (auto &iter : ShellGlobalInstance.PATH){ 
+      for (auto &iter : ShellGlobalInstance.PATH){
         lua_pushstring(__ls, iter.c_str());
         std::cout << BLUE << iter.c_str() << NORMAL << "\n";
         returncount++;
