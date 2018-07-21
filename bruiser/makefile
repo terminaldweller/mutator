@@ -74,6 +74,9 @@ clean:
 	rm .dependc
 	$(MAKE) -C luatablegen clean
 
+install:
+	mkdir $$(HOME)/.bruiser
+
 deepclean:
 	rm -f *.o *~ $(BRUISER)
 	rm .depend

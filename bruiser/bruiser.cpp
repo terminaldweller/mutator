@@ -87,7 +87,7 @@ namespace { // start of anonymous namespace
   std::vector<std::string> PushToLua;
 
   bruiser::M0_ERR m0_err [[maybe_unused]];
-  bruiser::BruiserReport BruiseRep;
+  //bruiser::BruiserReport BruiseRep;
 
   struct ShellGlobal {
     ShellGlobal() = default;
@@ -822,7 +822,7 @@ public:
       /*@DEVI-obviously the best way to do this is to use the main signature already used, instead of going with a general predefined one. the current form is a temp.*/
       Rewrite.InsertTextAfter(SLE.getLocWithOffset(1U), StringRef("\n\nint main(int argc, const char **argv)\n{\n\treturn sub_main(argc, argv);\n}\n"));
 
-      BruiseRep.PrintToLog("hijacked main main.");
+      //BruiseRep.PrintToLog("hijacked main main.");
     }
   }
 
@@ -2315,6 +2315,7 @@ int main(int argc, const char **argv) {
     if (strcmp(argv[i], "--keepalive") == 0) {KEEPALIVE = true; continue;}
     if (strcmp(argv[i], "--lua") == 0) {NonCLILuaScript = argv[i+1]; argc_n--; continue;}
     if (strcmp(argv[i], "--luadefault") == 0) {LuaDefault = argv[i+1]; argc_n--; continue;}
+    if (strcmp(argv[i], "--history") == 0) {SHELL_HISTORY_FILE = argv[i+1]; argc_n--; continue;}
     argv_n.push_back(argv[i]);
     argc_n++;
   }

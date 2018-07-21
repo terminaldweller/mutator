@@ -52,25 +52,28 @@ mutator is a suite of tools aimed at analysis and automation of C,C++ and machin
 Here's a detailed list of what's currently available:<br/>
 
 ### bruiser
-Essentially bruiser is a Lua REPL plus: 
-* You get tab-completion, suggestions and history(like a shell).<br> 
+Essentially bruiser is a Lua REPL plus:
+* You get tab-completion, suggestions and history(like a shell).<br>
 * bruiser comes with its own extensions and libraries implemented in C and Cpp.<br/>
 * Through bruiser's Xobj feature, you can pull in functions from object code, run them and get the result back.<br/>
 * Through the ASMRewriter functionality you can manipulate the machine code and push it back in the object. For more detail you can look at the wiki or check out bruiser's README.md.<br/>
 * Luarocks: You can use your Luarocks modules/libraries in bruiser too. Just make sure `luarocks` is in your path and bruiser will take care of the rest.<br/>
 
-### delf 
+### delf
 `delf` is a custom ELF dump script developed for bruiser. bruiser uses it to interact with ELF files.<br/>
 You can also use the script as a standalone to dump info on the ELF file to stdout.<br/>
+delf is also hosted ona mirror repo (here)[https://github.com/bloodstalker/delf].<br/>
 
 ### dwasm
 'dwasm' is a custom WASM dump script. bruiser uses it to interact with WASM object files.<br/>
 The script is also usable in an standalone manner.<br/>
+dwasm is also hosted on a mirror repo (here)[https://github.com/bloodstalker/dwasm].<br/>
 
 ### luatablegen
 `luatablegen` is a python script that takes a json file including the details of a C structure, and generates C source and header files, a lua file including some convinience fields for the lua table and a markdown file including a summary of the table fields and their expected arg types and return types.<br/>
+luatablegen is also hosted on a mirror repo (here)[https://github.com/bloodstalker/luatablegen].<br/>
 
-### obfuscator 
+### obfuscator
 Is a C/C++ source code obfuscator.<br/>
 
 ### m0
@@ -79,7 +82,7 @@ m0's reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=
 `m0` also accpets a formatted file as its input, passing it all the options needed to run it. This feature is only available if `m0` is called through `mutator.sh`. For an example please look below.<br/>
 Also to refrain from confusions, `m0`'s executable is actually named `mutator-lvl0` but for the sake of berevity it will be referred to as m0.<br/>
 
-### Safercpp 
+### Safercpp
 Runs the automatic refactoring sets on your source code, automatically changing your code to use the SaferCpp libraries.<br/>
 SaferCPlusPlus is essentially a collection of safe data types that are compatible with, and can substitute for, common unsafe native C++ types. You can read more [here](https://github.com/duneroadrunner/SaferCPlusPlus).<br/>
 
@@ -194,12 +197,12 @@ Here Are the build options:<br/>
 * Running `make target-name` will only build the target. So for example, if you are only interested in building the Misra-C rule checker you can run `make mutator-lvl0`.<br/>
 * The makefile option `CXX` tells the makefile which compiler to use. The default value is `clang++`. Currently the only two supported values are `clang++` and `g++`.<br/>
 * The makefile option `BUILD_MODE` determines the build mode regarding coverage and support for builds with `g++`.<br/>
-	* `COV_USE` and `COV_GEN` are for use with the `profdata` format. This option can only be used to build with `clang++`.<br/>
-	* `COV_GNU` will generate `gcov` compliant coverage data. This option can only be used to build with `clang++`.<br/>
-	* `COV_NO_CLANG` will build the executable with no source coverage instrumentation. This option can only be used to build with `clang++`.<br/>
-	* `COV_NO_CLANG_1Z` will build with support for C++1z support. I use this for dev builds.<br/>
-	* `WIN_BUILD` will later be used to support Windows builds. It assumes there is a llvm-config and it's in windows path.<br/>
-	* `GNU_MODE` will build the executable with no source code coverage instrumentation for `g++`. Can only be used to build with `g++`.<br/>
+  * `COV_USE` and `COV_GEN` are for use with the `profdata` format. This option can only be used to build with `clang++`.<br/>
+  * `COV_GNU` will generate `gcov` compliant coverage data. This option can only be used to build with `clang++`.<br/>
+  * `COV_NO_CLANG` will build the executable with no source coverage instrumentation. This option can only be used to build with `clang++`.<br/>
+  * `COV_NO_CLANG_1Z` will build with support for C++1z support. I use this for dev builds.<br/>
+  * `WIN_BUILD` will later be used to support Windows builds. It assumes there is a llvm-config and it's in windows path.<br/>
+  * `GNU_MODE` will build the executable with no source code coverage instrumentation for `g++`. Can only be used to build with `g++`.<br/>
 * The `LLVM_CONF` option is used to tell the compiler which `llvm-config` to use. The default value is `llvm-config`.<br/>
 * The `PY_CONF` option tells make which `python-config` to use. The default is `python3-config`.<br/>
 
@@ -233,22 +236,22 @@ To run any of the executables, just give a filename or a whitespace-separated li
 To run the executables with the mutator UI, you can use `mutator.sh`. For a list of available options, you can type `./mutator.sh -h`.<br/>
 
 * `-h, --help` prints out the help.<br/>
-* `-f,	--file` tells mutator to run the commands from the file.<br/>
+* `-f,  --file` tells mutator to run the commands from the file.<br/>
 * `-c, --command` specifies the command you want to use.<br/>
-	* `clean` runs make clean.<br/>
-	* `build-all` runs make all.<br/>
-	* `run` runs the `mutator` and `mutator-lvl2` executables on the inputs.<br/>
-	* `default` runs build-all and then run.<br/>
-	* `format` calls `clang-format` to format the mutant. Later to be used for the test command.<br/>
-	* `test` runs the tests on the executables and checks the results (not implemented yet).<br/>
-	* `misrac` checks for misrac rules.<br/>
+  * `clean` runs make clean.<br/>
+  * `build-all` runs make all.<br/>
+  * `run` runs the `mutator` and `mutator-lvl2` executables on the inputs.<br/>
+  * `default` runs build-all and then run.<br/>
+  * `format` calls `clang-format` to format the mutant. Later to be used for the test command.<br/>
+  * `test` runs the tests on the executables and checks the results (not implemented yet).<br/>
+  * `misrac` checks for misrac rules.<br/>
 * `-v, --version` prints out the version.<br/>
 * `-i, --input, -input` lets you choose the input file(or a white-space-separated list of files) that is going to be passed to the mutator executable(s).<br/>
 * `-o, --output, -output` lets you choose where to put the mutant.<br/>
-* `-pp,	--print-pretty`, prints the output in a pretty format in a new file. The new file has the same name with a "-pretty" added to the name in the same directory.<br/>
-* `-t,	--test`, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind. For example: `-test mutator-lvl0 valgrind`.<br/>
-* `-opts 	--options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
-* `-copts	--customoptions`, just like `-opts` but passes the custom options defined for each executable. It is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
+* `-pp, --print-pretty`, prints the output in a pretty format in a new file. The new file has the same name with a "-pretty" added to the name in the same directory.<br/>
+* `-t,  --test`, runs the tests on the built executables. It should be followed by an executable name and the test to run on it. The accepted options are: tdd,valgrind. For example: `-test mutator-lvl0 valgrind`.<br/>
+* `-opts  --options, pass options to the executable(s). The executables support all the clang options. please enclose all the options in double quatation. This is basically a pass-through option. Everything appearing inside will be passed through to the executable.`<br/>
+* `-copts --customoptions`, just like `-opts` but passes the custom options defined for each executable. It is pass-through. Example: `-copts "-MainOnly=false -SysHeader"`.<br/>
 
 `m0` options:<br/>
 
@@ -404,7 +407,7 @@ If you run into an issue please make a new issue.<br/>
 
 ### Suggestions and Feature Requests
 You can make a new issue for requests and suggestion. Label them with "Feauture Request".<br/>
-Besides that, If you have any suggestions or have any feature requests for project mutator, you can send them to `thabogre@gmail.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/> 
+Besides that, If you have any suggestions or have any feature requests for project mutator, you can send them to `thabogre@gmail.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/>
 
 ### TODO List
 For a list of things that need to be done, take a look at the list of issues.<br/>
