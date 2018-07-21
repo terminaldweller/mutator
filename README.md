@@ -62,16 +62,16 @@ Essentially bruiser is a Lua REPL plus:
 ### delf
 `delf` is a custom ELF dump script developed for bruiser. bruiser uses it to interact with ELF files.<br/>
 You can also use the script as a standalone to dump info on the ELF file to stdout.<br/>
-delf is also hosted ona mirror repo (here)[https://github.com/bloodstalker/delf].<br/>
+delf is also hosted ona mirror repo [here](https://github.com/bloodstalker/delf).<br/>
 
 ### dwasm
 'dwasm' is a custom WASM dump script. bruiser uses it to interact with WASM object files.<br/>
 The script is also usable in an standalone manner.<br/>
-dwasm is also hosted on a mirror repo (here)[https://github.com/bloodstalker/dwasm].<br/>
+dwasm is also hosted on a mirror repo [here](https://github.com/bloodstalker/dwasm).<br/>
 
 ### luatablegen
 `luatablegen` is a python script that takes a json file including the details of a C structure, and generates C source and header files, a lua file including some convinience fields for the lua table and a markdown file including a summary of the table fields and their expected arg types and return types.<br/>
-luatablegen is also hosted on a mirror repo (here)[https://github.com/bloodstalker/luatablegen].<br/>
+luatablegen is also hosted on a mirror repo [here](https://github.com/bloodstalker/luatablegen).<br/>
 
 ### obfuscator
 Is a C/C++ source code obfuscator.<br/>
