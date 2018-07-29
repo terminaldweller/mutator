@@ -752,7 +752,6 @@ class IfBreaker : public MatchFinder::MatchCallback
         NameFinder::runDeclRefExprMatcher DRENameMatcher(Rewrite);
 
         DRENameMatcher.runMatcher(StringRef(), *MR.Context);
-
       }
 
       if (MR.Nodes.getNodeAs<clang::BinaryOperator>("dous") != nullptr)

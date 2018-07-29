@@ -371,7 +371,7 @@ int main(int argc, char** argv) {
   printf("new size is %d.\n", new_size);
   for (int i = new_size; i < 44; ++i) {asm_code2[i] = 0;}
   for (int i = 0; i < 44; ++i) {printf("%02x ", asm_code2[i]);}
-  
+
   printf("\n----------------------------------------------------------\n");
   printf("etext: %10p\n", &etext);
   printf("edata: %10p\n", &edata);

@@ -86,6 +86,8 @@ class CLIArgParser(object):
         parser.add_argument("--rodata", action='store_true', help="dump .rodata", default=False)
         parser.add_argument("--disass", type=str, help="disassembls a section by name in section headers")
         parser.add_argument("--disassp", type=int, help="disassembls a section by index in program headers")
+        parser.add_argument("--got", action="store_true", help="dump .got section", default=False)
+        parser.add_argument("--gotplt", action="store_true", help="dump .got.plt section",default=False)
         self.args = parser.parse_args()
         if self.args.obj is None:
             raise Exception("no object file provided. please specify an object with --obj.")
@@ -540,6 +542,41 @@ class X86_64_REL_TYPE:
     R_AMD64_SIZE32 = 32
     R_AMD64_SIZE64 = 33
 
+class X86_64_REL_TYPE_2:
+    R_X86_64_NONE = 0
+    R_X86_64_64 = 1
+    R_X86_64_PC32 = 2
+    R_X86_64_GOT32 = 3
+    R_X86_64_PLT32 = 4
+    R_X86_64_COPY = 5
+    R_X86_64_GLOB_DAT = 6
+    R_X86_64_JUMP_SLOT = 7
+    R_X86_64_RELATIVE = 8
+    R_X86_64_GOTPCREL = 9
+    R_X86_64_32 = 10
+    R_X86_64_32S = 11
+    R_X86_64_16 = 12
+    R_X86_64_PC16 = 13
+    R_X86_64_64_8 = 14
+    R_X86_64_PC8 = 15
+    R_X86_64_DTPMOD64 = 16
+    R_X86_64_DTPOFF64 = 17
+    R_X86_64_TPOFF64 = 18
+    R_X86_64_TLSGD = 19
+    R_X86_64_TLSLD = 20
+    R_X86_64_DTPOFF32 = 21
+    R_X86_64_GOTTPOFF = 22
+    R_X86_64_TPOFF32 = 23
+    R_X86_64_PC64 = 24
+    R_X86_64_GOTOFF64 = 25
+    R_X86_64_GOTPC32 = 26
+    R_X86_64_SIZE32 = 32
+    R_X86_64_SIZE64 = 33
+    R_X86_64_GOTPC32_TLDSEC = 34
+    R_X86_64_TLDSEC_CALL = 35
+    R_X86_64_TLDSEC = 36
+    R_X86_64_IRELATIVE = 37
+
 def get_x86_64_rel_type(val):
     if val == X86_64_REL_TYPE.R_AMD64_NONE: return "R_386_NONE"
     elif val == X86_64_REL_TYPE.R_AMD64_64: return "R_AMD64_64"
@@ -562,6 +599,42 @@ def get_x86_64_rel_type(val):
     elif val == X86_64_REL_TYPE.R_AMD64_GOTPC32: return "R_AMD64_GOTPC32"
     elif val == X86_64_REL_TYPE.R_AMD64_SIZE32: return "R_AMD64_SIZE32"
     elif val == X86_64_REL_TYPE.R_AMD64_SIZE64: return "R_AMD64_SIZE64"
+    else: return "UNKNOWN"
+
+def get_x86_64_rel_type_2(val):
+    if val == X86_64_REL_TPE_2.R_X86_64_NONE: return"R_X86_64_NONE"
+    elif val == X86_64_REL_TPE_2.R_X86_64_64: return"R_X86_64_64"
+    elif val == X86_64_REL_TPE_2.R_X86_64_PC32: return"R_X86_64_PC32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_GOT32: return"R_X86_64_GOT32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_PLT32: return"R_X86_64_PLT32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_COPY: return"R_X86_64_COPY"
+    elif val == X86_64_REL_TPE_2.R_X86_64_GLOB_DAT: return"R_X86_64_GLOB_DAT"
+    elif val == X86_64_REL_TPE_2.R_X86_64_JUMP_SLOT: return"R_X86_64_JUMP_SLOT"
+    elif val == X86_64_REL_TPE_2.R_X86_64_RELATIVE: return"R_X86_64_RELATIVE"
+    elif val == X86_64_REL_TPE_2.R_X86_64_GOTPCREL: return"R_X86_64_GOTPCREL"
+    elif val == X86_64_REL_TPE_2.R_X86_64_32: return"R_X86_64_32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_32S: return"R_X86_64_32S"
+    elif val == X86_64_REL_TPE_2.R_X86_64_16: return"R_X86_64_16"
+    elif val == X86_64_REL_TPE_2.R_X86_64_PC16: return"R_X86_64_PC16"
+    elif val == X86_64_REL_TPE_2.R_X86_64_64_8: return"R_X86_64_64_8"
+    elif val == X86_64_REL_TPE_2.R_X86_64_PC8: return"R_X86_64_PC8"
+    elif val == X86_64_REL_TPE_2.R_X86_64_DTPMOD64: return"R_X86_64_DTPMOD64"
+    elif val == X86_64_REL_TPE_2.R_X86_64_DTPOFF64: return"R_X86_64_DTPOFF64"
+    elif val == X86_64_REL_TPE_2.R_X86_64_TPOFF64: return"R_X86_64_TPOFF64"
+    elif val == X86_64_REL_TPE_2.R_X86_64_TLSGD: return"R_X86_64_TLSGD"
+    elif val == X86_64_REL_TPE_2.R_X86_64_TLSLD: return"R_X86_64_TLSLD"
+    elif val == X86_64_REL_TPE_2.R_X86_64_DTPOFF32: return"R_X86_64_DTPOFF32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_GOTTPOFF: return"R_X86_64_GOTTPOFF"
+    elif val == X86_64_REL_TPE_2.R_X86_64_TPOFF32: return"R_X86_64_TPOFF32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_PC64: return"R_X86_64_PC64"
+    elif val == X86_64_REL_TPE_2.R_X86_64_GOTOFF64: return"R_X86_64_GOTOFF64"
+    elif val == X86_64_REL_TPE_2.R_X86_64_GOTPC32: return"R_X86_64_GOTPC32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_SIZE32: return"R_X86_64_SIZE32"
+    elif val == X86_64_REL_TPE_2.R_X86_64_SIZE64: return"R_X86_64_SIZE64"
+    elif val == X86_64_REL_TPE_2.R_X86_64_GOTPC32_TLDSEC: return"R_X86_64_GOTPC32_TLDSEC"
+    elif val == X86_64_REL_TPE_2.R_X86_64_TLDSEC_CALL: return"R_X86_64_TLDSEC_CALL"
+    elif val == X86_64_REL_TPE_2.R_X86_64_TLDSEC: return"R_X86_64_TLDSEC"
+    elif val == X86_64_REL_TPE_2.R_X86_64_IRELATIVE: return"R_X86_64_IRELATIVE"
     else: return "UNKNOWN"
 
 class ELF_ST_BIND:
@@ -738,6 +811,14 @@ class ELF(object):
         self.rela_plt = []
         self.rela_plt_ents = []
         self.rodata = []
+        self.plt = []
+        self.got = []
+        self.got_plt = []
+        self.plt_got = []
+        self.plt_ents = []
+        self.plt_got_ents = []
+        self.got_ents = []
+        self.got_plt_ents = []
 
     def init(self, size):
         self.size = size
@@ -1234,6 +1315,41 @@ class ELF(object):
             to_pop.append(dummy)
             dummy = {}
 
+    #FIXME-ELF64 only
+    def pop_got(self):
+        for shhdr in self.shhdr:
+            name = self.read_section_name(byte2int(shhdr.sh_name))
+            if name == ".got":
+                self.so.seek(byte2int(shhdr.sh_offset))
+                self.got = self.so.read(byte2int(shhdr.sh_size))
+                self.so.seek(byte2int(shhdr.sh_offset))
+                for i in range(0, int(byte2int(shhdr.sh_size)/8)):
+                    self.got_ents.append(byte2int(self.so.read(8)))
+
+    #FIXME-ELF64 only
+    def pop_got_plt(self):
+        for shhdr in self.shhdr:
+            name = self.read_section_name(byte2int(shhdr.sh_name))
+            if name == ".got.plt":
+                self.so.seek(byte2int(shhdr.sh_offset))
+                self.got_plt = self.so.read(byte2int(shhdr.sh_size))
+                self.so.seek(byte2int(shhdr.sh_offset))
+                for i in range(0, int(byte2int(shhdr.sh_size)/8)):
+                    self.got_plt_ents.append(byte2int(self.so.read(8)))
+
+    def dump_got(self):
+        header = ["value"]
+        value_list = [entry for entry in self.got_ents]
+        lines = ffs(2, header, True, value_list)
+        for line in lines:
+            print(line)
+
+    def dump_got_plt(self):
+        header = ["value"]
+        value_list = [entry for entry in self.got_plt_ents]
+        lines = ffs(2, header, True, value_list)
+        for line in lines:
+            print(line)
 
 class obj_loader():
     def __init__(self, bytes):
@@ -1458,6 +1574,12 @@ def premain(argparser):
     elif argparser.args.dynsecents: elf.dump_dyn_sec_ents(elf.dyn_section_ents)
     elif argparser.args.reladyn: elf.dump_rela(elf.rela_dyn_ents)
     elif argparser.args.relaplt: elf.dump_rela(elf.rela_plt_ents)
+    elif argparser.args.got:
+        elf.pop_got()
+        elf.dump_got()
+    elif argparser.args.gotplt:
+        elf.pop_got_plt()
+        elf.dump_got_plt()
     else: print("why even bother if you were not gonna type anythng decent in?")
 
 def main():
