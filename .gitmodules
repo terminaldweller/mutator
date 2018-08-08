@@ -4,3 +4,6 @@
 [submodule "bruiser/LuaJIT"]
 	path = bruiser/LuaJIT
 	url = https://github.com/LuaJIT/LuaJIT
+[submodule "bruiser/faultreiber"]
+	path = bruiser/faultreiber
+	url = https://github.com/bloodstalker/faultreiber
