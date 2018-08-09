@@ -23,11 +23,18 @@ depend: .depend
 .cpp.o:
 	$(CXX) -v $(CXX_FLAGS) -c $< -o $@
 
-$(OBSC): $(OBSC).o ../mutator_aux.o
+./keccak-tiny/.o:./keccak-tiny/.c
+	$(CC) $(CC_FLAGS) -c $< -o $@
+
+$(OBSC): $(OBSC).o ../mutator_aux.o ./keccak-tiny/keccak-tiny.o
 	$(CXX) -v $^ $(LD_FLAGS) -o $@
 
 clean:
-	rm -f *.o *~ $(OBSC)
+	rm -f *.o *~ $(OBSC) *.out ./keccak-tiny/*.o
+	rm ./.depend
+
+deepclean:
+	rm -f *.o *~ $(OBSC) *.out FILE*.cpp FILE*.hpp ./keccak-tiny/*.o
 	rm ./.depend
 
 help:

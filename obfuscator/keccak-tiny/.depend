@@ -1,0 +1,8 @@
+keccak-tiny-unrolled.o: keccak-tiny-unrolled.c keccak-tiny.h
+keccak-tiny.o: keccak-tiny.c keccak-tiny.h
+
+keccak-tiny-unrolled.odbg: keccak-tiny-unrolled.c keccak-tiny.h 
+keccak-tiny.odbg: keccak-tiny.c keccak-tiny.h
+
+keccak-tiny-unrolled.ocov: keccak-tiny-unrolled.c keccak-tiny.h 
+keccak-tiny.ocov: keccak-tiny.c keccak-tiny.h

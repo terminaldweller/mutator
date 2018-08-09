@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*included modules*/
 /*project headers*/
 #include "../mutator_aux.h"
+#include "./keccak-tiny/keccak-tiny.hpp"
 /*standard headers*/
 #include <cassert>
 #include <cstdlib>
