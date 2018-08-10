@@ -8,21 +8,22 @@ If you have suggestions or recommendations for features to add, please make an i
 When an alpha version is ready, `obfuscator` will get its own mirror repo.<br/>
 
 ### Implemented Features
-* Identifier Obfuscation: Swaps the name of all identifiers with their hash. <br/>
+* Identifier Obfuscation: Swaps the name of all identifiers with their hash.<br/>
 * Comment Deletion: Deletes all comments.<br/>
+* SHAKE: you can choose to use SHAKE128 or SHAKE256 as the hashing function.<br/>
 
 ### Future Features
 * Obfuscation Exclusion List: obfuscator will accept a list of idenftifiers and their namespace and will not obfuscate those. This feature is added so the user can refrain from obfuscating the standard library.<br/>
 * Support directory-wide and multiple files as input.<br/>
-* Provide an option to choose which hashing function to use. Ideally these alternative hashing algorithms would have variable length digests. Ther is also the idea of using different seeds to generate different digests for the same identifier names across each obfuscation.<br/>
-* Windows support<br/>
 
 ### Running the Test
 running `run.sh` should do the trick. Do note that you need to regenerate the compilation database for the test under the `test` directory to work. You could use `bear`. If you already have `bear`, just run `make clean && bear make`.<br/>
 
 ## Notes
-* Currently the hash function that is being used is `std::hash<>`. The GCC implementation will be probably the default option since the digest is shorter than 32 characters long. The decision was made since quite a few embedded C/C++ compilers can't correctly handle identifiers longer than 32 characters.<br/>
 * Obfuscator uses the Clang Frontend(CFE) libraries. Most embedded hardware require the use of their custom toolchains and that can result in clang complaining about custom pragmas.<br/>
 * If you want the preprocessor conditionals that evaluate to false that pertain to source code inclusion to be removed, use your compiler to get the output of the preprocessor and then pass that to `obfuscator` or just outright don't include them in the source code since `obfuscator` will not look through things that are not included in the source code by the preprocessor.<br/>
 * Getting rid of the whitespaces in the source code is a moot point since reverting it is as easy as running something like `clang-format` on it, so the feature is not currently included in obfuscator.<br/>
 * At a leter point in time, obfuscator will be moved to a mirror repo of it's own or the mirror might become the main repo.<br/>
+
+## Thanks
+obfuscator uses [keccak-tiny](https://github.com/coruus/keccak-tiny).<br/>

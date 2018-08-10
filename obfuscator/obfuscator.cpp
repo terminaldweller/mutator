@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include <cstdlib>
 #include <dirent.h>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -57,6 +58,8 @@ namespace {
   static llvm::cl::OptionCategory ObfuscatorCat("Obfuscator custom options");
   std::string TMP_FILE = "";
 }
+cl::opt<uint32_t> SHAKE("shake", cl::desc("if set, the hashing algorithm changes to shake. the value determines whether to use shake128 or shake256."), cl::init(0), cl::cat(ObfuscatorCat), cl::ZeroOrMore);
+cl::opt<uint32_t> SHAKE_LEN("shake_len", cl::desc("length of the shake hash, the digest length will be twice this value."), cl::init(0), cl::cat(ObfuscatorCat), cl::ZeroOrMore);
 /**********************************************************************************************************************/
 //#define DBG
 // @DEVI-FIXME
@@ -70,9 +73,34 @@ namespace {
 #define TEMP_FILE "/tmp/obfuscator-tee"
 #endif
 /**********************************************************************************************************************/
+std::string hashWrapper(std::string name) {
+  if (!SHAKE) {
+    std::size_t hash = std::hash<std::string>{}(name);
+    return std::to_string(hash);
+  } else {
+    std::vector<uint8_t> in(name.begin(), name.end());
+    std::vector<uint8_t> out(256);
+    std::stringstream dummy_stream;
+    if (SHAKE == 128) {
+      if (SHAKE_LEN > 128) std::cout << "you have selected shake128 but the length is greater than 128.cant do it.\n";
+      shake128(&out[0], SHAKE_LEN, &in[0], name.length());
+      for (uint32_t i = 0; i < SHAKE_LEN; ++i) dummy_stream << std::hex << int(out[i]);
+      return std::string(dummy_stream.str());
+    }
+    else if (SHAKE == 256) {
+      if (SHAKE_LEN > 256) std::cout << "you have selected shake256 but the length is greater than 256.cant do it.\n";
+      shake256(&out[0], SHAKE_LEN, &in[0], name.length());
+      for (uint32_t i = 0; i < SHAKE_LEN; ++i) dummy_stream << std::hex << int(out[i]);
+      return std::string(dummy_stream.str());
+    } else {
+      return "";
+    }
+  }
+}
+
 /**
  * @brief Gets the list of all directories and sub-directories starting from a base directory.
- * @param _path where the the base directory is. 
+ * @param _path where the the base directory is.
  * @return Returns the list of all found dirs.
  * @warning WIP
  */
@@ -138,8 +166,7 @@ std::string nameMaker(std::string _name, std::string _extension, std::string _ex
  * @return Returns the new name.
  */
 std::string getHashedName(std::string _name) {
-  std::size_t hash = std::hash<std::string>{}(_name);
-  return "FILE" + std::to_string(hash);
+  return "FILE" + hashWrapper(_name);
 }
 
 /**
@@ -205,6 +232,7 @@ std::string getTempDir2() {
 
   return tmpdir_;
 }
+
 /**********************************************************************************************************************/
 /**
  * @brief MatchCallback for CallExpr.
@@ -217,8 +245,7 @@ class CalledFunc : public MatchFinder::MatchCallback {
       if (MR.Nodes.getNodeAs<clang::CallExpr>("calledfunc") != nullptr) {
         const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("calledfunc");
         std::string name = CE->getDirectCallee()->getNameInfo().getAsString();
-        std::size_t hash = std::hash<std::string>{}(name);
-        std::string newname = "ID" + std::to_string(hash);
+        std::string newname = "ID" + hashWrapper(name);
 #ifdef DBG
         std::cout << "CallExpr name: "  << name << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
@@ -246,8 +273,7 @@ class CalledVar : public MatchFinder::MatchCallback {
       if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("calledvar") != nullptr) {
         const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("calledvar");
         auto name = DRE->getNameInfo().getAsString();
-        std::size_t hash = std::hash<std::string>{}(name);
-        std::string newname = "ID" + std::to_string(hash);
+        std::string newname = "ID" + hashWrapper(name);
 #ifdef DBG
         std::cout << "DeclRefExpr name: "  << name << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
@@ -276,8 +302,7 @@ public:
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl");
       std::string funcname = FD->getNameInfo().getAsString();
       if (funcname == "main") return void();
-      std::size_t hash = std::hash<std::string>{}(funcname);
-      std::string newname = "ID" + std::to_string(hash);
+      std::string newname = "ID" + hashWrapper(funcname);
 #ifdef DBG
       std::cout << "Function name: "  << funcname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
@@ -306,8 +331,7 @@ public:
     if (MR.Nodes.getNodeAs<clang::VarDecl>("vardecl") != nullptr) {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("vardecl");
       std::string varname = VD->getIdentifier()->getName().str();
-      std::size_t hash = std::hash<std::string>{}(varname);
-      std::string newname = "ID" + std::to_string(hash);
+      std::string newname = "ID" + hashWrapper(varname);
 #ifdef DBG
       std::cout << "Var name: "  << varname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
@@ -347,8 +371,7 @@ class ClassDecl : public MatchFinder::MatchCallback {
         else {return void();}
         //auto TD = RD->getCanonicalDecl();
         std::string varname = RD->getIdentifier()->getName().str();
-        std::size_t hash = std::hash<std::string>{}(varname);
-        std::string newname = "ID" + std::to_string(hash);
+        std::string newname = "ID" + hashWrapper(varname);
 #ifdef DBG
         std::cout << "Record name: "  << varname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
@@ -379,8 +402,7 @@ public:
     if (!SM.isWrittenInMainFile(SL)) return void();
     CheckSLValidity(SL);
     std::string macroname = MacroNameTok.getIdentifierInfo()->getName().str();
-    std::size_t hash = std::hash<std::string>{}(macroname);
-    std::string newname = "ID" + std::to_string(hash);
+    std::string newname = "ID" + hashWrapper(macroname);
 #ifdef DBG
     std::cout << "Macro name: " << macroname << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
@@ -398,8 +420,7 @@ public:
     if (!SM.isWrittenInMainFile(SL)) return void();
     CheckSLValidity(SL);
     std::string macroname = MacroNameTok.getIdentifierInfo()->getName().str();
-    std::size_t hash = std::hash<std::string>{}(macroname);
-    std::string newname = "ID" + std::to_string(hash);
+    std::string newname = "ID" + hashWrapper(macroname);
 
     Rewrite.ReplaceText(SourceRange(SL, SL.getLocWithOffset(MacroNameTok.getLength() - 1)), newname);
   }
@@ -619,8 +640,8 @@ int main(int argc, const char **argv) {
   int ret = Tool.run(newFrontendActionFactory<ObfFrontendAction>().get());
   CommentWiper CW(SourcePathList);
   CW.run();
-  dumpHashFilenames(hashFilenames(SourcePathList));
-  dumpDirList(listDirs("./test"));
+  //dumpHashFilenames(hashFilenames(SourcePathList));
+  //dumpDirList(listDirs("./test"));
 #endif
 #if 0
   for (auto &iter : SourcePathList) {

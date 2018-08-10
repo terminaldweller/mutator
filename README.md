@@ -397,6 +397,7 @@ Project mutator uses the following libraries:
 * [JSON](https://github.com/nlohmann/json)
 * [SaferCPP](https://github.com/duneroadrunner/SaferCPlusPlus)
 * [LuaJIT](https://github.com/LuaJIT/LuaJIT)
+* [keccak-tiny](https://github.com/coruus/keccak-tiny)
 * Thanks to [Jonathan Brossard](https://github.com/endrazine) for [WCC](https://github.com/endrazine/wcc), specifically `wsh` which is the inspiration for `bruiser`. Check it out if you haven't already.<br/>
 
 All mutator source code is provided under GPL-3.0.<br/>

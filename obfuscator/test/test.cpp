@@ -1,4 +1,5 @@
 #include "./header.hpp"
+//#include <iostream>
 
 #if 0
 #include <fstream>
@@ -59,6 +60,7 @@ int main(int argc, const char **argv)
 #endif
   int aa = 100;
   int bb = 28;
+  //std::cout << "maybe i passed the test.";
 
   INTMAC1;
   INTMAC2;
