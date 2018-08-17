@@ -7,3 +7,6 @@
 [submodule "bruiser/faultreiber"]
 	path = bruiser/faultreiber
 	url = https://github.com/bloodstalker/faultreiber
+[submodule "bruiser/tablegen"]
+	path = bruiser/tablegen
+	url = https://github.com/bloodstalker/luatablegen
