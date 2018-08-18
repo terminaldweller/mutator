@@ -1,6 +1,6 @@
 CC=clang
 CC?=clang
-CC_FLAGS=$(shell $(PY_CONF) --includes)
+CC_FLAGS=$(shell $(PY_CONF) --includes) -fpic
 CC_EXTRA?=
 CC_FLAGS+=$(CC_EXTRA)
 SRCS=$(wildcard *.c)

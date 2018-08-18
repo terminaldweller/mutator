@@ -4,7 +4,6 @@ include macros.mk
 #######################################VARS####################################
 EXTRA_LD_FLAGS+=tinyxml2/tinyxml2.o
 
-
 TARGET0=mutator-lvl0
 TARGET1=mutator-lvl1
 TARGET2=mutator-lvl2
