@@ -4,7 +4,7 @@
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
 # Your platform. See PLATS for possible values.
-PLAT= none
+PLAT= linux
 
 CC= gcc -std=gnu99
 CFLAGS= -fpic -O2 -Wall -Wextra -DLUA_COMPAT_MODULE -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
@@ -49,7 +49,7 @@ ALL_A= $(LUA_A)
 # Targets start here.
 default: $(PLAT)
 
-all:	$(ALL_T)
+all:	$(ALL_A)
 
 o:	$(ALL_O)
 

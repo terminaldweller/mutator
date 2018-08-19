@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*included modules*/
 /*Project Headers*/
 #include "safercpp-arr.h"
-#include "../mutator_aux.h"
+#include "../m0/mutator_aux.h"
 /*Standard headers*/
 #include <string>
 #include <iostream>

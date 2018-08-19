@@ -1,15 +1,12 @@
-TARGET=bruiser
-LLVM_CONF?=llvm-config
-PY_CONF?=python3-config
-LIB_LUA=./lua-5.3.4/src/liblua.a
+TARGET=mutator-lvl0
 SHELL=bash
 SHELL?=bash
 CC=clang
 CC?=clang
-CC_FLAGS=-fpic -std=c11 $(shell $(PY_CONF) --includes)
+CFLAGS=-fpic -std=c11
 CXX=clang++
 CXX?=clang++
-CXX_FLAGS=-fpic -I/usr/include $(shell $(PY_CONF) --includes)
+CXX_FLAGS=-fpic
 CXX_EXTRA?=
 CTAGS_I_PATH?=./
 LD_FLAGS=
@@ -27,6 +24,7 @@ BUILD_MODE?=RELEASE
 OBJ_LIST:=$(patsubst %.cpp, %.o, $(wildcard *.cpp))
 ASM_LIST:=$(patsubst %.cpp, %.dis, $(wildcard *.cpp))
 
+LLVM_CONF?=llvm-config
 LLVM_CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 LLVM_CXX_FLAGS+=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include\
  -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
@@ -43,7 +41,7 @@ LLVM_LD_FLAGS+=$(shell $(LLVM_CONF) --ldflags --libs --system-libs)
 CXX_FLAGS+=$(LLVM_CXX_FLAGS)
 LD_FLAGS+=$(LLVM_LD_FLAGS)
 
-#MAKEFLAGS+=--warn-undefined-variables
+MAKEFLAGS+=--warn-undefined-variables
 ifeq ($(BUILD_MODE), ADDSAN)
 ifeq ($(CXX), g++)
 $(error This build mode is only useable with clang++.)
@@ -69,13 +67,8 @@ EXTRA_LD_FLAGS+=$(UB_SANITIZERS_LD)
 endif
 
 SRCS:=$(wildcard *.cpp)
-C_SRCS:=$(wildcard *.c)
 CXX_FLAGS+=$(CXX_EXTRA)
-EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone -L./lua-5.3.4/src -llua
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
-TBG_OBJLIST_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.o, $(wildcard ./luatablegen/*.c))
-TBG_OBJLIST_DBG_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.odbg, $(wildcard ./luatablegen/*.c))
-TBG_OBJLIST_COV_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.ocov, $(wildcard ./luatablegen/*.c))
 
 .DEFAULT:all
 
@@ -86,52 +79,38 @@ all:$(TARGET)
 everything:$(TARGET) A ASM SO $(TARGET)-dbg TAGS $(TARGET)-cov
 
 depend:.depend
-dependc:.dependc
 
 .depend:$(SRCS)
 	rm -rf .depend
 	$(CXX) -MM $(CXX_FLAGS) $^ > ./.depend
-	echo $(patsubst %.o:, %.odbg:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\_]+\.odbg/\n&/g' >> ./.depend
-	echo $(patsubst %.o:, %.ocov:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\_]+\.ocov/\n&/g' >> ./.depend
-
-.dependc:$(C_SRCS)
-	rm -rf .dependc
-	$(CC) -MM $(CC_FLAGS) $^ > ./.dependc
-	echo $(patsubst %.o:, %.odbg:, $(shell $(CC) -MM $(CC_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\_]+\.odbg/\n&/g' >> ./.dependc
-	echo $(patsubst %.o:, %.ocov:, $(shell $(CC) -MM $(CC_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\_]+\.ocov/\n&/g' >> ./.dependc
+	echo $(patsubst %.o:, %.odbg:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\_\-]+\.odbg/\n&/g' >> ./.depend
+	echo $(patsubst %.o:, %.ocov:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\_\-]+\.ocov/\n&/g' >> ./.depend
 
 -include ./.depend
--include ./.dependc
 
-.c.o:
-	$(CC) $(CC_FLAGS) -c $< -o $@
+../json/json.o:../json/json.hpp
+	$(MAKE) -C ../json json.o
 
-%.ocov:%.c
-	$(CC) $(CC_FLAGS) $(COV_CXX) -c $< -o $@
+../json/json.odbg:../json/json.hpp
+	$(MAKE) -C ../json json.odbg
 
-%.odbg:%.c
-	$(CC) $(CC_FLAGS) -g -c $< -o $@
+../json/json.ocov:../json/json.hpp
+	$(MAKE) -C ../json json.ocov
+
+../tinyxml2/tinyxml2.o:../tinyxml2/tinyxml2.cpp
+	$(MAKE) -C ../tinyxml2 tinyxml2.o
+
+../tinyxml2/tinyxml2.odbg:../tinyxml2/tinyxml2.cpp
+	$(MAKE) -C ../tinyxml2 tinyxml2.odbg
+
+../tinyxml2/tinyxml2.ocov:../tinyxml2/tinyxml2.cpp
+	$(MAKE) -C ../tinyxml2 tinyxml2.ocov
+
+./keccak-tiny/.o:./keccak-tiny/.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
-
-#../mutator_aux.o:../mutator_aux.cpp
-	#$(CXX) $(CXX_FLAGS) -c $< -o $@
-
-linenoise.o:
-	$(CC) $(CC_FLAGS) linenoise/linenoise.c -c -o linenoise.o
-
-./wasmtablegen.json:
-	if [[ ls -l ./luatablegen | wc -l  == 2 ]];then ./tablegen.sh;else :;fi
-
-./luatablegen/%.c: ./wasmtablegen.json
-	./tablegen.sh
-
-./luatablegen/%.o:./luatablegen/%.c
-	$(MAKE) -C luatablegen
-
-$(LIB_LUA):
-	$(MAKE) -C lua-5.3.4/src linux
 
 %.odbg:%.cpp
 	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
@@ -139,17 +118,16 @@ $(LIB_LUA):
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
+$(TARGET): $(TARGET).o ../tinyxml2/tinyxml2.o ./mutator_aux.o ./mutator_report.o ../json/json.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
-# currently broken since it needs a static libpython
-$(TARGET)-static: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
+$(TARGET)-static: $(TARGET).o ../tinyxml2/tinyxml2.o ./mutator_aux.o ./mutator_report.o ../json/json.o
 	$(CXX) $^ $(LD_FLAGS) -static -o $@
 
-$(TARGET)-dbg: $(TARGET).odbg ../m0/mutator_aux.odbg ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.odbg mutagen.o ORCmutation.o bruiserffi.odbg asmrewriter.odbg bruisercapstone.odbg ramdump.odbg ffs.odbg $(LIB_LUA) $(TBG_OBJLIST_DBG_INC)
+$(TARGET)-dbg: $(TARGET).odbg ../tinyxml2/tinyxml2.odbg ./mutator_aux.odbg ./mutator_report.odbg ../json/json.odbg
 	$(CXX) $^ $(LD_FLAGS) -g -o $@
 
-$(TARGET)-cov: $(TARGET).ocov ../m0/mutator_aux.ocov ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.ocov mutagen.o ORCmutation.o bruiserffi.ocov asmrewriter.ocov bruisercapstone.ocov ramdump.ocov ffs.ocov $(LIB_LUA) $(TBG_OBJLIST_COV_INC)
+$(TARGET)-cov: $(TARGET).ocov ../tinyxml2/tinyxml2.ocov ./mutator_aux.ocov ./mutator_report.ocov ../json/json.ocov
 	$(CXX) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov:
@@ -169,29 +147,27 @@ A:$(TARGET).a
 TAGS:tags
 
 tags:$(SRCS)
-	$(shell $(CXX) -c $(shell $(PY_CONF) --includes) $(shell $(LLVM_CONF) --cxxflags) -I$(shell $(LLVM_CONF)\
-		--src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include -I $(CTAGS_I_PATH) -M $(SRCS)|\
+	$(shell $(CXX) -c $(shell $(LLVM_CONF) --cxxflags) -I$(shell $(LLVM_CONF) --src-root)/tools/clang/include -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include -I $(CTAGS_I_PATH) -M $(SRCS)|\
 		sed -e 's/[\\ ]/\n/g'|sed -e '/^$$/d' -e '/\.o:[ \t]*$$/d'|\
 		ctags -L - --c++-kinds=+p --fields=+iaS --extra=+q)
 
 %.dis: %.o
 	objdump -r -d -M intel -S $< > $@
 
-$(TARGET).so: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
+$(TARGET).so: $(TARGET).o ../tinyxml2/tinyxml2.o ./mutator_aux.o ./mutator_report.o ../json/json.o
 	$(CXX) $^ $(LD_FLAGS) -shared -o $@
 
-$(TARGET).a: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
+$(TARGET).a: $(TARGET).o ../tinyxml2/tinyxml2.o ./mutator_aux.o ./mutator_report.o ../json/json.o
 	ar rcs $(TARGET).a $(TARGET).o
 
 clean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
-	$(MAKE) -C luatablegen clean
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov ./keccak-tiny/*.o
 
 deepclean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so tags $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov FILE*.cpp FILE*.hpp
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so tags $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov FILE*.cpp FILE*.hpp ./keccak-tiny/*.o
 	rm .depend
-	$(MAKE) -C lua-5.3.4 clean
-	$(MAKE) -C luatablegen clean
+	$(MAKE) -C ../tinyxml2 clean
+	$(MAKE) -C ../json clean
 
 help:
 	@echo "--all is the default target, runs $(TARGET) target"

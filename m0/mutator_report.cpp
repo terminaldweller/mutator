@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
-#include "tinyxml2/tinyxml2.h"
-#include "json/json.hpp"
+#include "../tinyxml2/tinyxml2.h"
+#include "../json/json.hpp"
 /*********************************************************************************************************************/
 using namespace clang;
 using namespace tinyxml2;

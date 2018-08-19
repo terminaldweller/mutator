@@ -1,8 +1,5 @@
 
-######################################INCLUDES#################################
 include macros.mk
-#######################################VARS####################################
-EXTRA_LD_FLAGS+=tinyxml2/tinyxml2.o
 
 TARGET0=mutator-lvl0
 TARGET1=mutator-lvl1
@@ -13,35 +10,21 @@ TARGETS=mutatorserver
 SFCPP01=safercpp-arr
 BRUISER=bruiser
 OBSC=obfuscator
-SRCS=$(wildcard *.cpp)
-######################################RULES####################################
+
 .DEFAULT: all
 
-.PHONY:all clean install help TAGS $(BRUISER) $(OBSC) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01)
+.PHONY:all clean install help $(BRUISER) $(OBSC) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01)
 
-all: $(TARGET0) $(TARGET1) $(TARGET2) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC)
+all: $(TARGET0) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC)
 
-depend:.depend
-
-.depend:$(SRCS)
-	rm -f ./.depend
-	$(CXX) -MM $(CXX_FLAGS) $^ > ./.depend
-
--include ./.depend
-
-.cpp.o:
-	$(CXX) $(CXX_FLAGS) -c $< -o $@
-	$(MAKE) -C tinyxml2 CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
-	$(MAKE) -C json CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
-
-$(TARGET1): $(TARGET1).o mutator_aux.o
+$(TARGET1):
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
-$(TARGET2): $(TARGET2).o mutator_aux.o
+$(TARGET2):
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
-$(TARGET0): $(TARGET0).o mutator_aux.o mutator_report.o
-	$(CXX) $^ $(LD_FLAGS) -o $@
+$(TARGET0):
+	$(MAKE) -C m0 CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
 $(SFCPP01):
 	$(MAKE) -C safercpp CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
@@ -61,18 +44,14 @@ $(TARGETD):
 $(TARGETS):
 	$(MAKE) -C daemon mutatorserver
 
-TAGS: $(SRCS)
-	$(CTAGS) $(SRCS)
-
 clean:
-	rm -f *.o *~ $(TARGET0) $(TARGET1) $(TARGET2)
-	rm ./.depend
 	$(MAKE) -C tinyxml2 clean
 	$(MAKE) -C json clean
 	$(MAKE) -C daemon clean
 	$(MAKE) -C safercpp clean
 	$(MAKE) -C bruiser clean
 	$(MAKE) -C obfuscator clean
+	$(MAKE) -C m0 clean
 
 install:
 	chmod +x ./mutator.sh
@@ -88,20 +67,4 @@ install:
 	$(shell echo MUTATOR_HOME=$$(pwd) > ./daemon/mutator.config)
 
 help:
-	@echo '- There is help.'
-	@echo '- All is the default.'
-	@echo '- install makes the scripts executable. Also creates the reliquary.'
-	@echo '- Clean.'
-	@echo '- TAGS will run ctags on the C/C++ source files.'
-	@echo '- You can use the target names as build targets to just build one executable.'
-	@echo '- LLVM_CONF will tell the makefile the name of llvm-config. llvm-config is the default.'
-	@echo '- CXX will let you set the compiler. currently the only accepted values are clang++ and g++. clang++ is the default.'
-	@echo '- BUILD_MODE will let you choose to build for different coverage formats. the default is COV_NO_CLANG. the supported values are:'
-	@echo '		COV_USE: adds the clang -fprofile-instr-use option(clang++ only mode).'
-	@echo '		COV_GEN: adds the clang -fprofile-instr-generate option(clang++ only mode).'
-	@echo '		COV_GNU: generates coverage for the build compatible with gcov(clang++ only mode).'
-	@echo '		COV_NO_CLANG: this build mode will not support any coverage format and is meant to be used with clang++(clang++ only mode).'
-	@echo '		COV_NO_CLANG_1Z: does not instrument the code for any coverage and uses -std=c++1z (clang++ only mode).'
-	@echo '		GNU_MODE: meant to be used for builds with g++. supports no coverage(g++ only mode).'
-	@echo '		WIN_MODE: to support windows builds'
-	@echo '- Press tab for more targets if you have zsh!'
+	@echo "Under Construction"

@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
-#include "tinyxml2/tinyxml2.h"
-#include "json/json.hpp"
+#include "../tinyxml2/tinyxml2.h"
+#include "../json/json.hpp"
 /*********************************************************************************************************************/
 using namespace clang;
 /*********************************************************************************************************************/
@@ -56,8 +56,7 @@ SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocat
 }
 #endif
 
-SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite)
-{
+SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite) {
   if (__sl.isMacroID()) {
     return __rewrite.getSourceMgr().getSpellingLoc(__sl);
   } else {
@@ -66,8 +65,8 @@ SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite)
 }
 
 SourceLocation getSLSpellingLoc(SourceLocation __sl, Rewriter &__rewrite) {
-  if (__sl.isMacroID()) {return __rewrite.getSourceMgr().getSpellingLoc(__sl);}
-  else {return __sl;}
+  if (__sl.isMacroID()) return __rewrite.getSourceMgr().getSpellingLoc(__sl);
+  else return __sl;
 }
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/

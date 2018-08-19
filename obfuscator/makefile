@@ -28,7 +28,7 @@ LLVM_CONF?=llvm-config
 LLVM_CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 LLVM_CXX_FLAGS+=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include\
  -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -stdlib=libstdc++ -std=c++17
+ -stdlib=libstdc++ -std=c++17 -fexceptions
 LLVM_LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
  -lclangDriver -lclangEdit -lclangFrontend -lclangFrontendTool\
  -lclangLex -lclangParse -lclangSema -lclangEdit -lclangASTMatchers\
@@ -76,20 +76,26 @@ LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 all:$(TARGET)
 
-everything:$(TARGET) A ASM SO $(TARGET)-static $(TARGET)-dbg TAGS $(TARGET)-cov
+everything:$(TARGET) A ASM SO $(TARGET)-dbg TAGS $(TARGET)-cov
 
 depend:.depend
 
 .depend:$(SRCS)
 	rm -rf .depend
 	$(CXX) -MM $(CXX_FLAGS) $^ > ./.depend
-	echo $(patsubst %.o:, %.odbg:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[a-z0-9\-\_]+\.odbg/\n&/g' >> ./.depend
-	echo $(patsubst %.o:, %.ocov:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[a-z0-9\-\_]+\.ocov/\n&/g' >> ./.depend
+	echo $(patsubst %.o:, %.odbg:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\-\_]+\.odbg/\n&/g' >> ./.depend
+	echo $(patsubst %.o:, %.ocov:, $(shell $(CXX) -MM $(CXX_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\-\_]+\.ocov/\n&/g' >> ./.depend
 
 -include ./.depend
 
-./keccak-tiny/.o:./keccak-tiny/.c
+./keccak-tiny/%.o:./keccak-tiny/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+./keccak-tiny/%.ocov:./keccak-tiny/%.c
+	$(CC) $(CFLAGS) $(COV_CXX) -c $< -o $@
+
+./keccak-tiny/%.odbg:./keccak-tiny/%.c
+	$(CC) $(CFLAGS) -g -c $< -o $@
 
 .cpp.o:
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -100,15 +106,16 @@ depend:.depend
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): $(TARGET).o ../mutator_aux.o ./keccak-tiny/keccak-tiny.o
+$(TARGET): $(TARGET).o ../m0/mutator_aux.o ./keccak-tiny/keccak-tiny.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
-$(TARGET)-static: $(TARGET).o ../mutator_aux.o ./keccak-tiny/keccak-tiny.o
+
+$(TARGET)-static: $(TARGET).o ../m0/mutator_aux.o ./keccak-tiny/keccak-tiny.o
 	$(CXX) $^ $(LD_FLAGS) -static -o $@
 
-$(TARGET)-dbg: $(TARGET).odbg ../mutator_aux.o ./keccak-tiny/keccak-tiny.o
+$(TARGET)-dbg: $(TARGET).odbg ../m0/mutator_aux.odbg ./keccak-tiny/keccak-tiny.odbg
 	$(CXX) $^ $(LD_FLAGS) -g -o $@
 
-$(TARGET)-cov: $(TARGET).ocov ../mutator_aux.o ./keccak-tiny/keccak-tiny.o
+$(TARGET)-cov: $(TARGET).ocov ../m0/mutator_aux.ocov ./keccak-tiny/keccak-tiny.ocov
 	$(CXX) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov:
@@ -135,17 +142,17 @@ tags:$(SRCS)
 %.dis: %.o
 	objdump -r -d -M intel -S $< > $@
 
-$(TARGET).so: $(TARGET).o ../mutator_aux.o ./keccak-tiny/keccak-tiny.o
+$(TARGET).so: $(TARGET).o ../m0/mutator_aux.o ./keccak-tiny/keccak-tiny.o
 	$(CXX) $^ $(LD_FLAGS) -shared -o $@
 
-$(TARGET).a: $(TARGET).o ../mutator_aux.o ./keccak-tiny/keccak-tiny.o
+$(TARGET).a: $(TARGET).o ../m0/mutator_aux.o ./keccak-tiny/keccak-tiny.o
 	ar rcs $(TARGET).a $(TARGET).o
 
 clean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov ./keccak-tiny/*.o
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov ./keccak-tiny/*.o ./keccak-tiny/*.ocov ./keccak-tiny/*.odbg
 
 deepclean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so tags $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov FILE*.cpp FILE*.hpp ./keccak-tiny/*.o
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so tags $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov FILE*.cpp FILE*.hpp ./keccak-tiny/*.o ./keccak-tiny/*.ocov ./keccak-tiny/*.odbg
 	rm .depend
 
 help:

@@ -41,31 +41,21 @@ using namespace clang;
 /*********************************************************************************************************************/
 namespace Devi {
 enum class NodeKind {NoValue, VarDecl, FieldDecl, RecordDecl, LabelDecl, FunctionDecl, TypedefDecl, ParmVarDecl, EnumDecl, EnumConstDecl};
-
 enum class Scope {NoValue, TU, Block};
-
 enum class FunctionDeclKind {NoValue, Definition, Declaration};
 /*********************************************************************************************************************/
 SourceLocation SourceLocationHasMacro(SourceLocation SL, Rewriter &Rewrite, std::string Kind);
-
 SourceLocation SourceLocationHasMacro(SourceLocation __sl, Rewriter &__rewrite);
-
 SourceLocation getSLSpellingLoc(SourceLocation __sl, Rewriter &__rewrite);
 /*********************************************************************************************************************/
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
-
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, const SourceManager &SM, SourceLocation SL);
-
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader, SourceLocation SL);
-
 bool IsTheMatchInSysHeader(bool SysHeaderFlag, bool SysHeader);
 /*********************************************************************************************************************/
 bool IsTheMatchInMainFile(bool MainFileFlag, const ast_matchers::MatchFinder::MatchResult &MR, SourceLocation SL);
-
 bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLocation SL);
-
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL);
-
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile);
 /*********************************************************************************************************************/
 /*end of namespace Devi*/

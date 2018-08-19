@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*project headers*/
 #include "bruiser.h"
 #include "CompletionHints.h"
-#include "../mutator_aux.h"
+#include "../m0/mutator_aux.h"
 #include "mutagen.h"
 #include "ORCmutation.h"
 #include "executioner.h"
