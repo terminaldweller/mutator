@@ -53,6 +53,10 @@ clean:
 	$(MAKE) -C obfuscator clean
 	$(MAKE) -C m0 clean
 
+deepclean: clean
+	$(MAKE) -C bruiser deepclean
+	$(MAKE) -C m0 deepclean
+
 install:
 	chmod +x ./mutator.sh
 	chmod +x ./extra-tools/ReportPrintPretty.sh

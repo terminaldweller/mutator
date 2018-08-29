@@ -97,18 +97,15 @@ std::vector<std::string> MacroNameString;
 std::vector<std::string> IncludeFileArr;
 
 /**********************************************************************************************************************/
-struct MutExHeaderNotFound : public std::exception
-{
+struct MutExHeaderNotFound : public std::exception {
 public:
   MutExHeaderNotFound(std::string FileName) : FName(FileName) {}
 
-  const char* what () const throw()
-  {
+  const char* what () const throw() {
     return "Header Not Found";
   }
 
-  std::string getFileName() const
-  {
+  std::string getFileName() const {
     return FName;
   }
 
@@ -117,10 +114,8 @@ private:
 };
 /**********************************************************************************************************************/
 /*@DEVI-struct for nullstmt*/
-struct NullStmtInfo
-{
-  NullStmtInfo (unsigned iColumn, unsigned iLine, std::string iFileName, bool iIsInMainFile, bool iIsInSysHeader)
-  {
+struct NullStmtInfo {
+  NullStmtInfo (unsigned iColumn, unsigned iLine, std::string iFileName, bool iIsInMainFile, bool iIsInSysHeader) {
     Column = iColumn;
     Line = iLine;
     FileName = iFileName;
@@ -138,12 +133,10 @@ struct NullStmtInfo
 std::vector<NullStmtInfo> NullStmtProto;
 /**********************************************************************************************************************/
 /*@DEVI-struct used for 8.8*/
-struct ExternObjInfo
-{
+struct ExternObjInfo {
   ExternObjInfo(unsigned int iLineNumber, unsigned int iColumnNumber, std::string iFileName\
                 , std::string iXObjSLStr, std::string iXObjNameStr, FileID iXObjFID \
-                , bool iHasMoreThanOneDefinition, bool iIsDefinition, bool iIsDeclaration)
-  {
+                , bool iHasMoreThanOneDefinition, bool iIsDefinition, bool iIsDeclaration) {
     LineNumber = iLineNumber;
     ColumnNumber = iColumnNumber;
     FileName = iFileName;
@@ -170,12 +163,10 @@ std::vector<ExternObjInfo> ExternObjInfoProto;
 /*@DEVI-end*/
 /**********************************************************************************************************************/
 /*@DEVI-struct used for rules 5.x*/
-struct IdentInfo
-{
+struct IdentInfo {
   IdentInfo(unsigned int iLine, unsigned int iColumn, std::string iFileName, std::string iName, \
             std::string iSLString, Devi::NodeKind iNK, bool iIsIncomplete, Devi::FunctionDeclKind IFDKind, \
-            Devi::Scope iScope, std::string iScopeFuncitonName, bool iIsValid, bool iIsStatic)
-  {
+            Devi::Scope iScope, std::string iScopeFuncitonName, bool iIsValid, bool iIsStatic) {
     Line = iLine;
     Column = iColumn;
     FileName = iFileName;
@@ -210,8 +201,7 @@ std::unordered_map<std::string, bool> umRuleList;
 /*@DEVI-end*/
 /**********************************************************************************************************************/
 /*mutator-lvl0 executable options*/
-enum MisraC
-{
+enum MisraC {
   NA=(0x1<<6), MisraC98=(0x1<<0), MisraC2004=(0x1<<2), MisraC2012=(0x1<<4), C1=(0x1<<1), C2=(0x1<<3), C3=(0x1<<5)
 };
 
@@ -229,135 +219,92 @@ cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"
 cl::opt<bool> SFRCPP("SFRCPP", cl::desc("Enables SaferCPlusPlus rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> mutagen("mutagen", cl::desc("runs mutagen after running the static tests"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 /**********************************************************************************************************************/
-class StringOptionsParser
-{
+class StringOptionsParser {
 friend class MutatorLVL0Tests;
 
 public:
   StringOptionsParser() {}
 
-  bool MC2Parser(void)
-  {
-    if (MCDA)
-    {
-      PopulateRuleList(false);
-    }
-    else if (MCEA)
-    {
-      PopulateRuleList(true);
-    }
-    
+  bool MC2Parser(void) {
+    if (MCDA) PopulateRuleList(false);
+    else if (MCEA) PopulateRuleList(true);
+
     ParseString();
-
     UpdateRuleList();
-
     return true;
   }
 
-  void Dump(bool InArg)
-  {
-    if (InArg)
-    {
-      for (auto &iter : umRuleList)
-      {
+  void Dump(bool InArg) {
+    if (InArg) {
+      for (auto &iter : umRuleList) {
         std::cout<< "Debug-umRuleList: " << "RLKey: " << iter.first << " " << "RLValue: " << iter.second << "\n";
       }
-
       std::cout << "\n";
-
-      for (auto &iter : ParsedString)
-      {
+      for (auto &iter : ParsedString) {
         std::cout << "Debug: " << "PSKey: " << iter.first << " " << "PSValue: " << iter.second << "\n";
       }
     }
   }
 
 private:
-  void PopulateRuleList(bool PopValue)
-  {
-    if (MisraCVersion < 0x4)
-    {
-      // C1 
+  void PopulateRuleList(bool PopValue) {
+    if (MisraCVersion < 0x4) {
+      // C1
       umRuleList.insert({"0", PopValue});
-      
       typedef std::multimap<std::string,std::string>::const_iterator Iter;
-      for (Iter iter = MC1EquivalencyMap.begin(), iterE = MC1EquivalencyMap.end(); iter != iterE; ++iter)
-      {
-        if (iter->first != std::prev(iter)->first)
-        {
+      for (Iter iter = MC1EquivalencyMap.begin(), iterE = MC1EquivalencyMap.end(); iter != iterE; ++iter) {
+        if (iter->first != std::prev(iter)->first) {
           umRuleList.insert({iter->first, PopValue});
         }
       }
     }
 
-    if (MisraCVersion < 0x10)
-    {
+    if (MisraCVersion < 0x10) {
       // C2
       typedef std::map<std::string, bool>::const_iterator Iter;
-      for (Iter iter = MC2OptsMap.begin(), iterE = MC2OptsMap.end(); iter != iterE; ++iter)
-      {
+      for (Iter iter = MC2OptsMap.begin(), iterE = MC2OptsMap.end(); iter != iterE; ++iter) {
         umRuleList.insert({iter->first, PopValue});
       }
-
     }
 
-    if (MisraCVersion < 0x40)
-    {
+    if (MisraCVersion < 0x40) {
       // C3
     }
   }
- 
-  void ParseString(void)
-  {
-#if 0
-    std::cout << "MCD:" << MCD << "\n";
-    std::cout << "MCE:" << MCE << "\n";
-#endif
 
+  void ParseString(void) {
     bool Disenable;
     std::string TempString;
 
-    if (MCDA)
-    {
+    if (MCDA) {
       Disenable = true;
       TempString = MCE;
-    }
-    else if (MCEA)
-    {
+    } else if (MCEA) {
       Disenable = false;
       TempString = MCD;
     }
-    
+
     size_t WhiteSpacePos = TempString.find(" ", 0U);
     size_t OldPosition = 0U;
 
-    if (WhiteSpacePos == std::string::npos)
-    {
+    if (WhiteSpacePos == std::string::npos) {
       ParsedString.push_back(std::make_pair(TempString, false));
-
       return void();
     }
 
-    while(WhiteSpacePos != std::string::npos)
-    {
+    while(WhiteSpacePos != std::string::npos) {
       OldPosition = WhiteSpacePos;
       WhiteSpacePos = TempString.find(" ", WhiteSpacePos + 1U);
-
-      if (WhiteSpacePos != std::string::npos)
-      {
+      if (WhiteSpacePos != std::string::npos) {
         ParsedString.push_back(std::make_pair(TempString.substr(OldPosition + 1U, WhiteSpacePos - OldPosition - 1U), Disenable));
       }
     }
   }
 
-  void UpdateRuleList(void)
-  {
-    for (auto &iter : umRuleList)
-    {
-      for (auto &yaiter : ParsedString)
-      {
-        if (iter.first == yaiter.first)
-        {
+  void UpdateRuleList(void) {
+    for (auto &iter : umRuleList) {
+      for (auto &yaiter : ParsedString) {
+        if (iter.first == yaiter.first) {
           iter.second = yaiter.second;
           break;
         }
@@ -366,7 +313,6 @@ private:
   }
 
   std::vector<std::pair<std::string, bool>> ParsedString;
-
   std::vector<std::pair<std::string, bool>> RuleList [[deprecated("now using umRuleList")]];
 };
 /**********************************************************************************************************************/
@@ -375,23 +321,13 @@ class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCm
 public:
   MCForCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ForStmt>("mcfor") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mcfor") != nullptr) {
       const ForStmt *FS = MR.Nodes.getNodeAs<clang::ForStmt>("mcfor");
-
       SourceLocation SL = FS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-#if 0
-      std::cout << "14.8 : " << "\"For\" statement has no braces {}: " << "\n";
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << "\n";
-#endif
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcfor- returned nullptr." << "\n";
     }
   }
@@ -404,23 +340,13 @@ class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCWhile
 public:
   MCWhileCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mcwhile") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mcwhile") != nullptr) {
       const WhileStmt *WS = MR.Nodes.getNodeAs<clang::WhileStmt>("mcwhile");
-
       SourceLocation SL = WS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
-#if 0
-      std::cout << "14.8 : " << "\"While\" statement has no braces {}: " << "\n";
-      std::cout << SL.printToString(*MR.SourceManager) << "\n" << "\n";
-#endif
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcwhile- returned nullptr." << "\n";
     }
   }
@@ -433,14 +359,10 @@ class MCElseCmpless : public MatchFinder::MatchCallback {
 public:
   MCElseCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::IfStmt>("mcelse") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::IfStmt>("mcelse") != nullptr) {
       const IfStmt *IS = MR.Nodes.getNodeAs<clang::IfStmt>("mcelse");
-
-      if (mutagen)
-      {
+      if (mutagen) {
         ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
       }
 
@@ -448,27 +370,20 @@ public:
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         std::cout << "14.9:" << "\"Else\" statement has no braces {}:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"Else\" statement has no braces {}: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.9", "\"Else\" statement has no braces {}: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcelse- returned nullptr." << "\n";
     }
   }
@@ -481,14 +396,11 @@ class MCIfCmpless : public MatchFinder::MatchCallback {
 public:
   MCIfCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::IfStmt>("mcif") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::IfStmt>("mcif") != nullptr) {
       const IfStmt *IS = MR.Nodes.getNodeAs<clang::IfStmt>("mcif");
 
-      if (mutagen)
-      {
+      if (mutagen) {
         ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
       }
 
@@ -496,27 +408,20 @@ public:
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         std::cout << "14.9:" << "\"If\" statement has no braces {}:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "14.9", "\"If\" statement has no braces {}: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "14.9", "\"If\" statement has no braces {}: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*IS), *MR.Context);
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcif- returned nullptr." << "\n";
     }
   }
@@ -525,87 +430,66 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class IfElseMissingFixer : public MatchFinder::MatchCallback
-{
+class IfElseMissingFixer : public MatchFinder::MatchCallback {
 public:
   IfElseMissingFixer (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::IfStmt>("mcifelse") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::IfStmt>("mcifelse") != nullptr) {
       const IfStmt *ElseIf = MR.Nodes.getNodeAs<clang::IfStmt>("mcifelse");
 
       SourceLocation IFESL = ElseIf->getLocStart();
       CheckSLValidity(IFESL);
       IFESL = Devi::SourceLocationHasMacro(IFESL, Rewrite, "start");
-      
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, IFESL))
-      {
-        return void();
-      }
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, IFESL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, IFESL)) return void();
+
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, IFESL)) {
         std::cout << "14.10:" << "\"If-Else If\" statement has no ending Else:";
         std::cout << IFESL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, IFESL, "14.10", "\"If-Else If\" statement has no ending Else: ");
         JSONDocOUT.JSONAddElement(MR.Context, IFESL, "14.10", "\"If-Else If\" statement has no ending Else: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ElseIf), *MR.Context);
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcifelse- returned nullptr." << "\n";
     }
   }
-
 
 private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCSwitchBrkless : public MatchFinder::MatchCallback
-{
+class MCSwitchBrkless : public MatchFinder::MatchCallback {
 public:
   MCSwitchBrkless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchbrk") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchbrk") != nullptr) {
       const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchbrk");
 
       SourceLocation SL = SS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         std::cout << "15.2:" << "\"SwitchStmt\" has a caseStmt that's missing a breakStmt:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "15.2", "\"SwitchStmt\" has a caseStmt that's missing a breakStmt: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*SS), *MR.Context);
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcswitchbrk- returned nullptr." << "\n";
     }
   }
@@ -614,42 +498,32 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCSwitchDftLess : public MatchFinder::MatchCallback
-{
+class MCSwitchDftLess : public MatchFinder::MatchCallback {
 public:
   MCSwitchDftLess (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchdft") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchdft") != nullptr) {
       const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitchdft");
 
       SourceLocation SL = SS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         std::cout << "15.3:" << "\"SwitchStmt\" does not have a defaultStmt:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "15.3", "\"SwitchStmt\" does not have a defaultStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "15.3", "\"SwitchStmt\" does not have a defaultStmt: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*SS), *MR.Context);
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcswitchdft- returned nullptr." << "\n";
     }
   }
@@ -659,13 +533,11 @@ private:
 };
 /**********************************************************************************************************************/
 /*misra-c 2004:15.1*/
-class MCSwitch151 : public MatchFinder::MatchCallback
-{
+class MCSwitch151 : public MatchFinder::MatchCallback {
 public:
   MCSwitch151 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     if (MR.Nodes.getNodeAs<clang::CompoundStmt>("mccmp151") != nullptr && MR.Nodes.getNodeAs<clang::CaseStmt>("mccase151") != nullptr)
     {
       const CompoundStmt *CS = MR.Nodes.getNodeAs<clang::CompoundStmt>("mccmp151");
@@ -675,15 +547,12 @@ public:
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
       ASTContext *const ASTC = MR.Context;
 
       ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*CS);
-      
+
       ast_type_traits::DynTypedNode ParentNode;
 
       /*@DEVI-assumptions:nothing has more than one parent in C.*/
@@ -694,25 +563,20 @@ public:
 
       std::string StringKind = ParentNodeKind.asStringRef().str();
 
-      if (StringKind != "SwitchStmt")
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      if (StringKind != "SwitchStmt") {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "15.1:" << "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "15.1", "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "15.1", "\"CaseStmt\" has a CompoundStmt ancestor that is not the child of the SwitchStmt: ");
 
-          if (mutagen)
-          {
+          if (mutagen) {
             ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CS), *MR.Context);
           }
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mccmp151- or -mccase151- returned nullptr." << "\n";
     }
   }
@@ -721,42 +585,32 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCSwitch155 : public MatchFinder::MatchCallback
-{
+class MCSwitch155 : public MatchFinder::MatchCallback {
 public:
   MCSwitch155 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitch155") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitch155") != nullptr) {
       const SwitchStmt *SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mcswitch155");
 
       SourceLocation SL = SS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         std::cout << "15.5:" << "\"SwitchStmt\" does not have a CaseStmt:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "15.5", "\"SwitchStmt\" does not have a CaseStmt: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "15.5", "\"SwitchStmt\" does not have a CaseStmt: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*SS), *MR.Context);
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcswitch155- returned nullptr." << "\n";
     }
   }
@@ -765,30 +619,22 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCFunction161 : public MatchFinder::MatchCallback
-{
+class MCFunction161 : public MatchFinder::MatchCallback {
 public:
   MCFunction161 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction161") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction161") != nullptr) {
       const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction161");
 
-      if (FD->isVariadic())
-      {
-        SourceLocation SL = FD->getLocStart(); 
+      if (FD->isVariadic()) {
+        SourceLocation SL = FD->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          return void();
-        }
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "16.1:" << "\"FunctionDecl\" is variadic:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -801,9 +647,7 @@ public:
           }
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcfunction161- returned nullptr." << "\n";
     }
   }
@@ -812,69 +656,47 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCFunction162 : public MatchFinder::MatchCallback
-{
+class MCFunction162 : public MatchFinder::MatchCallback {
 public:
   MCFunction162 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::CallExpr>("mc162callexpr") != nullptr && MR.Nodes.getNodeAs<clang::FunctionDecl>("mc162funcdec") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::CallExpr>("mc162callexpr") != nullptr && MR.Nodes.getNodeAs<clang::FunctionDecl>("mc162funcdec") != nullptr) {
       const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mc162funcdec");
       const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("mc162callexpr");
 
-      SourceLocation SL = FD->getLocStart(); 
+      SourceLocation SL = FD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        /*intentionally left blank*/
-      }
-      else
-      {
-        return void();
-      }
-
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {/*intentionally left blank*/}
+      else return void();
 
       std::string FuncNameStr = FD->getNameInfo().getAsString();
 
-      if (CE->getDirectCallee())
-      {
+      if (CE->getDirectCallee()) {
         const FunctionDecl *FDCalled = CE->getDirectCallee();
         std::string CalledFuncNameStr = FDCalled->getNameInfo().getAsString();
 
-        if (FuncNameStr == CalledFuncNameStr)
-        {
+        if (FuncNameStr == CalledFuncNameStr) {
           std::cout << "16.2:" << "\"FunctionDecl\" is recursive:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "16.2", "\"FunctionDecl\" is recursive: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "16.2", "\"FunctionDecl\" is recursive: ");
 
-          if (mutagen)
-          {
+          if (mutagen) {
             ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CE), *MR.Context);
           }
-        }
-        else
-        {
+        } else {
           /*intentionally left blank.*/
         }
-      }
-      else
-      {
+      } else {
         /*intentionally left blank.*/
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mc162funcdec- and/or -mc162callexpr- returned nullptr." << "\n";
     }
   }
@@ -883,38 +705,25 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCFunction164 : public MatchFinder::MatchCallback
-{
+class MCFunction164 : public MatchFinder::MatchCallback {
 public:
   MCFunction164 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunc164") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunc164") != nullptr) {
       const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunc164");
       const FunctionDecl *FDcl = FD->getDefinition();
 
       /*to guard against function that have a declaration that is not a definition only.*/
-      if (FDcl != nullptr)
-      {
-        SourceLocation SL = FD->getLocStart(); 
+      if (FDcl != nullptr) {
+        SourceLocation SL = FD->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          return void();
-        }
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
-          /*intentionally left blank*/
-        }
-        else
-        {
-          return void();
-        }
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {/*intentionally left blank*/}
+        else return void();
 
         SourceLocation SLDcl = FDcl->getLocStart();
         SLDcl = Devi::SourceLocationHasMacro(SLDcl, Rewrite, "start");
@@ -923,18 +732,12 @@ public:
 
         ArrayRef<ParmVarDecl*> FDclParmList = FDcl->parameters();
 
-        if ( FD->getNumParams() != FDcl->getNumParams())
-        {
+        if ( FD->getNumParams() != FDcl->getNumParams()) {
           std::cout << "numparam of functiondefinition and functionDecl dont match! : " << SL.printToString(*MR.SourceManager) << "\n" << "\n";
-        }
-        else
-        {
-          if (FD->getNumParams() != 0)
-          {
+        } else {
+          if (FD->getNumParams() != 0) {
             for (unsigned x = 0; x < FD->getNumParams(); ++x)
-            {
-              if (FDParmList[x]->getNameAsString() != FDclParmList[x]->getNameAsString())
-              {
+              if (FDParmList[x]->getNameAsString() != FDclParmList[x]->getNameAsString()) {
                 std::cout << "16.4:" << "FunctionDecl parameter names are not the same as function definition parameter names:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -942,18 +745,13 @@ public:
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "16.4", "FunctionDecl parameter names are not the same as function definition parameter names: ");
 
                 break;
-              }
-              else
-              {
+              } else {
                 /*intentionally left blank.*/
               }
             }
           }
         }
-      }
-    }
-    else
-    {
+      } else {
       std::cout << "matcher -mcfunc164- returned nullptr." << "\n";
     }
   }
@@ -962,64 +760,44 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCFunction166 : public MatchFinder::MatchCallback
-{
+class MCFunction166 : public MatchFinder::MatchCallback {
 public:
   MCFunction166 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::CallExpr>("mcfunc166") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::CallExpr>("mcfunc166") != nullptr) {
       const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("mcfunc166");
 
-      SourceLocation SL = CE->getLocStart(); 
+      SourceLocation SL = CE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       const FunctionDecl *FD = CE->getDirectCallee();
-
       DeclarationNameInfo DNI = FD->getNameInfo();
-
       std::string FuncNameString = DNI.getAsString();
-
       ASTContext *const ASTC = MR.Context;
-
       const SourceManager &SM = ASTC->getSourceManager();
 
       /*start of 20.4*/
-      if ((FuncNameString == "malloc" || FuncNameString == "calloc" || FuncNameString == "free" || FuncNameString == "realloc") && SM.isInSystemHeader(FD->getLocStart()))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+      if ((FuncNameString == "malloc" || FuncNameString == "calloc" || FuncNameString == "free" || FuncNameString == "realloc") && SM.isInSystemHeader(FD->getLocStart())) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {/*intentionally left blank*/}
+        else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "20.4:" << "Dynamic heap memory allocation used:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "20.4", "Dynamic heap memory allocation used: ");
-
           }
         }
       }
       /*end of 20.4*/
 
       /*start of 20.7*/
-      if ((FuncNameString == "longjmp") && SM.isInSystemHeader(FD->getLocStart()))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+      if ((FuncNameString == "longjmp") && SM.isInSystemHeader(FD->getLocStart())) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {/*intentionally left blank*/}
+        else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "20.7:" << "Use of lonjmp is illegal:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -1031,16 +809,11 @@ public:
       /*end of 20.7*/
 
       /*start of 20.10*/
-      if ((FuncNameString == "atof" || FuncNameString == "atoi" || FuncNameString == "atol") && SM.isInSystemHeader(FD->getLocStart()))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if ((FuncNameString == "atof" || FuncNameString == "atoi" || FuncNameString == "atol") && SM.isInSystemHeader(FD->getLocStart())) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "20.10:" << "Use of atof,atoi and atol is illegal:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -1052,16 +825,10 @@ public:
       /*end of 20.10*/
 
       /*start of 20.11*/
-      if ((FuncNameString == "abort" || FuncNameString == "exit" || FuncNameString == "getenv" || FuncNameString == "system") && SM.isInSystemHeader(FD->getLocStart()))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+      if ((FuncNameString == "abort" || FuncNameString == "exit" || FuncNameString == "getenv" || FuncNameString == "system") && SM.isInSystemHeader(FD->getLocStart())) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {/*intentionally left blank*/}
+        else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "20.11:" << "Use of abort,exit,getenv and system is illegal:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -1072,14 +839,9 @@ public:
       }
       /*end of 20.11*/
 
-      if (CE->getNumArgs() != FD->getNumParams())
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          /*intentionally left blank*/
-        }
-        else
-        {
+      if (CE->getNumArgs() != FD->getNumParams()) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {/*intentionally left blank*/}
+        else {
           if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
           {
             std::cout << "16.6:" << "CallExpr number of arguments does not equal the number of parameters in the declaration:";
@@ -1090,9 +852,7 @@ public:
           }
         }
       }
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcfunc166- returned nullptr." << "\n";
     }
   }
@@ -1102,32 +862,22 @@ private:
 };
 /**********************************************************************************************************************/
 /*the clang parser does not allow for such constructs.*/
-class [[maybe_unused]] MCFunction168 : public MatchFinder::MatchCallback
-{
+class [[maybe_unused]] MCFunction168 : public MatchFinder::MatchCallback {
 public:
   MCFunction168 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ReturnStmt>("mcfunc168") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ReturnStmt>("mcfunc168") != nullptr) {
       const ReturnStmt *RT = MR.Nodes.getNodeAs<clang::ReturnStmt>("mcfunc168");
 
       const Expr *RE [[maybe_unused]] = RT->getRetValue();
 
-      SourceLocation SL = RT->getLocStart(); 
+      SourceLocation SL = RT->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       SourceLocation SLE = RT->getLocEnd();
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
@@ -1137,13 +887,7 @@ public:
       SR.setEnd(SLE);
 
       std::string RetType = Rewrite.getRewrittenText(SR);
-
-#if 0
-      std::cout << RetType << "\n" << "\n";
-#endif
-    }
-    else
-    {
+    } else {
       std::cout << "matcher -mcfunc168- returned nullptr." << "\n";
     }
   }
@@ -1152,43 +896,31 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCFunction169 : public MatchFinder::MatchCallback
-{
+class MCFunction169 : public MatchFinder::MatchCallback {
 public:
   MCFunction169 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169") != nullptr) {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcfunc169");
 
-      SourceLocation SL = ICE->getLocStart(); 
+      SourceLocation SL = ICE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       CastKind CK = ICE->getCastKind();
 
-      if (CK == CK_FunctionToPointerDecay)
-      {
+      if (CK == CK_FunctionToPointerDecay) {
         std::cout << "16.9:" << "FunctionToPointerDecay:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "16.9", "FunctionToPointerDecay: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "16.9", "FunctionToPointerDecay: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
         }
       }
@@ -1201,22 +933,14 @@ private:
 /**********************************************************************************************************************/
 /*@DEVI-what is correct: match a pointer then run matcher for implicitcastexpressions of type arraytopointerdecay
 that have unary(--,++) and binary(-,+) operators as parents*/
-class [[deprecated("replaced by something that actually works"), maybe_unused]] MCPA171 : public MatchFinder::MatchCallback
-{
+class [[deprecated("replaced by something that actually works"), maybe_unused]] MCPA171 : public MatchFinder::MatchCallback {
 public:
   MCPA171 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171") != nullptr) {
       const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpa171");
-
       QualType QT [[maybe_unused]] = VD->getType();
-
-#if 0
-      std::cout << QT.getAsString() << "\n" << "\n";
-#endif
     }
   }
 
@@ -1226,11 +950,9 @@ private:
 /**********************************************************************************************************************/
 /*18.1 has false positives. incomplete types that have the same name as another incomplete
 type in another scope are unrecognizable by this code.*/
-class MCSU184 : public MatchFinder::MatchCallback
-{
+class MCSU184 : public MatchFinder::MatchCallback {
 public:
-  MCSU184 (Rewriter &Rewrite) : Rewrite(Rewrite)
-  {
+  MCSU184 (Rewriter &Rewrite) : Rewrite(Rewrite) {
     /*@DEVI-these push-backs generate garbage entries*/
     UnionInfoProto.push_back(UnionInfo());
 
@@ -1240,32 +962,23 @@ public:
     UnionCounter = 0U;
   }
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184") != nullptr) {
       alreadymatched = false;
-
       const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu184");
 
-      SourceLocation SL = RD->getLocStart(); 
+      SourceLocation SL = RD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       ASTContext* const ASTC = MR.Context;
       FullSourceLoc FSL = ASTC->getFullLoc(SL);
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {/*intentionally left blank*/}
+      else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "18.4:" << "Union declared:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
-
           XMLDocOut.XMLAddNode(MR.Context, SL, "18.4", "Union declared: ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "18.4", "Union declared: ");
         }
@@ -1273,44 +986,37 @@ public:
 
       std::string MatchedName = RD->getNameAsString();
 
-      for (unsigned x = 0; x < UnionCounter; ++x)
-      {
-        if (UnionInfoProto[x].UnionName == MatchedName)
-        {
+      for (unsigned x = 0; x < UnionCounter; ++x) {
+        if (UnionInfoProto[x].UnionName == MatchedName) {
           alreadymatched = true;
 
-          if (RD->isCompleteDefinition())
-          {
+          if (RD->isCompleteDefinition()) {
             UnionInfoProto[x].IsIncompleteType = false;
           }
         }
       }
 
-      if (alreadymatched == false)
-      {
+      if (alreadymatched == false) {
         UnionInfoProto.push_back(UnionInfo());
         UnionInfoProto[UnionCounter].UnionName = MatchedName;
         UnionInfoProto[UnionCounter].UnionSL = SL.printToString(*MR.SourceManager);
         UnionInfoProto[UnionCounter].FSL = FSL;
         UnionInfoProto[UnionCounter].SL = SL;
 
-        if (RD->isCompleteDefinition())
-        {
+        if (RD->isCompleteDefinition()) {
           /*this function has a declaration that is not a definition.*/
           UnionInfoProto[UnionCounter].IsIncompleteType = false;
         }
-
         UnionCounter++;
       }
     }
 
-    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu181struct") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu181struct") != nullptr) {
       alreadymatched = false;
 
       const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcsu181struct");
 
-      SourceLocation SL = RD->getLocStart(); 
+      SourceLocation SL = RD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -1319,54 +1025,38 @@ public:
 
       std::string MatchedName = RD->getNameAsString();
 
-      for (unsigned x = 0; x < StructCounter; ++x)
-      {
-        if (StructInfoProto[x].StructName == MatchedName)
-        {
+      for (unsigned x = 0; x < StructCounter; ++x) {
+        if (StructInfoProto[x].StructName == MatchedName) {
           alreadymatched = true;
-
-          if (RD->isCompleteDefinition())
-          {
+          if (RD->isCompleteDefinition()) {
             StructInfoProto[x].IsIncompleteType = false;
           }
         }
       }
 
-      if (alreadymatched == false)
-      {
+      if (alreadymatched == false) {
         StructInfoProto.push_back(StructInfo());
         StructInfoProto[StructCounter].StructName = MatchedName;
         StructInfoProto[StructCounter].StructSL = SL.printToString(*MR.SourceManager);
         StructInfoProto[StructCounter].FSL = FSL;
         StructInfoProto[StructCounter].SL = SL;
-
-        if (RD->isCompleteDefinition())
-        {
+        if (RD->isCompleteDefinition()) {
           StructInfoProto[StructCounter].IsIncompleteType = false;
         }
-
         StructCounter++;
       }
     }
   }
 
-  virtual void onEndOfTranslationUnit()
-  {
-    for (unsigned x = 0; x < StructCounter; ++x)
-    {
-      if (StructInfoProto[x].IsIncompleteType)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, StructInfoProto[x].FSL.isInSystemHeader(), StructInfoProto[x].SL))
-        {
+  virtual void onEndOfTranslationUnit() {
+    for (unsigned x = 0; x < StructCounter; ++x) {
+      if (StructInfoProto[x].IsIncompleteType) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, StructInfoProto[x].FSL.isInSystemHeader(), StructInfoProto[x].SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, StructInfoProto[x].FSL.getManager().isInMainFile(StructInfoProto[x].SL), StructInfoProto[x].SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, StructInfoProto[x].FSL.getManager().isInMainFile(StructInfoProto[x].SL), StructInfoProto[x].SL)) {
             std::cout << "18.1:" << "Incomplete struct declared:";
             std::cout << StructInfoProto[x].StructSL << ":" << "\n";
-
             XMLDocOut.XMLAddNode(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
             JSONDocOUT.JSONAddElement(StructInfoProto[x].FSL, StructInfoProto[x].SL, "18.1", "Incomplete struct declared: ");
           }
@@ -1374,18 +1064,12 @@ public:
       }
     }
 
-    for (unsigned x = 0; x < UnionCounter; ++x)
-    {
-      if (UnionInfoProto[x].IsIncompleteType)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, UnionInfoProto[x].FSL.isInSystemHeader(), UnionInfoProto[x].SL))
-        {
+    for (unsigned x = 0; x < UnionCounter; ++x) {
+      if (UnionInfoProto[x].IsIncompleteType) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, UnionInfoProto[x].FSL.isInSystemHeader(), UnionInfoProto[x].SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, UnionInfoProto[x].FSL.getManager().isInMainFile(UnionInfoProto[x].SL), UnionInfoProto[x].SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, UnionInfoProto[x].FSL.getManager().isInMainFile(UnionInfoProto[x].SL), UnionInfoProto[x].SL)) {
             std::cout << "18.1:" << "Incomplete union declared:";
             std::cout << UnionInfoProto[x].UnionSL << ":" << "\n";
 
@@ -1399,8 +1083,7 @@ public:
 
 
 private:
-  struct UnionInfo
-  {
+  struct UnionInfo {
     std::string UnionSL;
     FullSourceLoc FSL;
     SourceLocation SL;
@@ -1409,11 +1092,9 @@ private:
   };
 
   unsigned int UnionCounter;
-
   std::vector<UnionInfo> UnionInfoProto;
 
-  struct StructInfo
-  {
+  struct StructInfo {
     std::string StructSL;
     FullSourceLoc FSL;
     SourceLocation SL;
@@ -1422,51 +1103,38 @@ private:
   };
 
   unsigned StructCounter;
-
   bool alreadymatched = false;
-
   std::vector<StructInfo> StructInfoProto;
-
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCTypes6465 : public MatchFinder::MatchCallback
-{
+class MCTypes6465 : public MatchFinder::MatchCallback {
 public:
   MCTypes6465 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465") != nullptr) {
       const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mctype6465");
 
-      SourceLocation SL = FD->getLocStart(); 
+      SourceLocation SL = FD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       QualType QT = FD->getType();
       const clang::Type* TP = QT.getTypePtr();
 
-      if ( !(TP->hasUnsignedIntegerRepresentation() || TP->hasSignedIntegerRepresentation()))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if ( !(TP->hasUnsignedIntegerRepresentation() || TP->hasSignedIntegerRepresentation())) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             /*@DEVI-this part is ueless since the clang parser wont let such a bitfield through.*/
             std::cout << "6.4:" << "BitField has a type other than int or unsigned int:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
-
             XMLDocOut.XMLAddNode(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "6.4", "BitField has a type other than int or unsigned int: ");
 
-            if (mutagen)
-            {
+            if (mutagen) {
               ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FD), *MR.Context);
             }
           }
@@ -1476,26 +1144,19 @@ public:
       ASTContext *const ASTC = MR.Context;
       unsigned int BitWidth = FD->getBitWidthValue(*ASTC);
 
-      if (TP->hasSignedIntegerRepresentation())
-      {
-        if (BitWidth < 2U)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+      if (TP->hasSignedIntegerRepresentation()) {
+        if (BitWidth < 2U) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "6.5:" << "BitField of type signed integer has a length of less than 2 in bits:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "6.5", "BitField of type signed integer has a length of less than 2 in bits : ");
 
-              if (mutagen)
-              {
+              if (mutagen) {
                 ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FD), *MR.Context);
               }
             }
@@ -1509,28 +1170,24 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCDCDF81 : public MatchFinder::MatchCallback
-{
+class MCDCDF81 : public MatchFinder::MatchCallback {
 public:
-  MCDCDF81 (Rewriter &Rewrite) : Rewrite(Rewrite)
-  {
+  MCDCDF81 (Rewriter &Rewrite) : Rewrite(Rewrite) {
     /*@DEVI-the pushback generates garbage entries.*/
     FuncInfoProto.push_back(FuncInfo());
 
     VecC = 0U;
   };
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81") != nullptr) {
       alreadymatched = false;
 
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf81");
       DeclarationNameInfo DNI = FD->getNameInfo();
       std::string MatchedName = DNI.getAsString();
 
-      SourceLocation SL = FD->getLocStart(); 
+      SourceLocation SL = FD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -1545,27 +1202,19 @@ public:
       /*start of 8.5*/
       bool FunctionDeclaredInsideHeader = false;
 
-      if (FD->isThisDeclarationADefinition())
-      {
-        for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
-        {
-          if (SM.getFilename(SL).str() == IncludeFileArr[x])
-          {
+      if (FD->isThisDeclarationADefinition()) {
+        for (unsigned x = 0; x < IncludeFileArr.size(); ++x) {
+          if (SM.getFilename(SL).str() == IncludeFileArr[x]) {
             FunctionDeclaredInsideHeader = true;
           }
         }
       }
 
-      if (FunctionDeclaredInsideHeader)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (FunctionDeclaredInsideHeader) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "8.5:" << "Function definition inside a header file:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -1576,29 +1225,18 @@ public:
       }
       /*end of 8.5*/
 
-
       /*start of checks for 19.5*/
       /*has false positives. false positives go away if the main.c is not included(main.c includes another header)*/
-      if (FD->isThisDeclarationADefinition())
-      {
-        for (unsigned x = 0; x < MacroDefSourceLocation.size(); ++x)
-        {
+      if (FD->isThisDeclarationADefinition()) {
+        for (unsigned x = 0; x < MacroDefSourceLocation.size(); ++x) {
           if (FSL.isBeforeInTranslationUnitThan(MacroDefSourceLocation[x]) && \
               !FSLE.isBeforeInTranslationUnitThan(MacroDefSourceLocation[x]) && \
-              SM.isInMainFile(MacroDefSourceLocation[x]) && !SM.isInSystemHeader(MacroDefSourceLocation[x]))
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+              SM.isInMainFile(MacroDefSourceLocation[x]) && !SM.isInSystemHeader(MacroDefSourceLocation[x])) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 std::cout << "19.5:" << "Macro defined inside a block:";
-#if 0
-                std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << " " << MacroNameString[x] << "\n" << "\n";
-#endif
                 std::cout << MacroDefSourceLocation[x].printToString(*MR.SourceManager) << ":" << "\n";
 
                 XMLDocOut.XMLAddNode(MR.Context, MacroDefSourceLocation[x], "19.5", "Macro defined inside a block : ");
@@ -1608,20 +1246,14 @@ public:
           }
         }
 
-        for (unsigned x = 0; x < MacroUndefSourceLocation.size(); ++x)
-        {
+        for (unsigned x = 0; x < MacroUndefSourceLocation.size(); ++x) {
           if (FSL.isBeforeInTranslationUnitThan(MacroUndefSourceLocation[x]) && \
               !FSLE.isBeforeInTranslationUnitThan(MacroUndefSourceLocation[x]) && \
-              SM.isInMainFile(MacroUndefSourceLocation[x]) && !SM.isInSystemHeader(MacroUndefSourceLocation[x]))
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+              SM.isInMainFile(MacroUndefSourceLocation[x]) && !SM.isInSystemHeader(MacroUndefSourceLocation[x])) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 std::cout << "19.5:" << "Macro undefined inside a block:";
                 std::cout << MacroUndefSourceLocation[x].printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -1635,31 +1267,24 @@ public:
       /*end of checks for 19.5*/
 
       /*going through the already matched functions,making sure we are not adding duplicates.*/
-      for (unsigned x = 0; x < VecC; ++x)
-      {
-        if (FuncInfoProto[x].FuncNameString == MatchedName)
-        {
+      for (unsigned x = 0; x < VecC; ++x) {
+        if (FuncInfoProto[x].FuncNameString == MatchedName) {
           alreadymatched = true;
 
-          if (!FD->isThisDeclarationADefinition())
-          {
+          if (!FD->isThisDeclarationADefinition()) {
             FuncInfoProto[x].HasDecThatisNotDef = true;
           }
         }
       }
 
-      if (alreadymatched == false)
-      {
+      if (alreadymatched == false) {
         FuncInfoProto.push_back(FuncInfo());
         FuncInfoProto[VecC].FuncNameString = MatchedName;
 
-        if (!FD->isThisDeclarationADefinition())
-        {
+        if (!FD->isThisDeclarationADefinition()) {
           /*this function has a declaration that is not a definition.*/
           FuncInfoProto[VecC].HasDecThatisNotDef = true;
-        }
-        else
-        {
+        } else {
           /*save the sourcelocation only if the functiondecl is a definition.*/
           FuncInfoProto[VecC].StrcSL = SL.printToString(*MR.SourceManager);
           FuncInfoProto[VecC].FuncSL = SL;
@@ -1671,21 +1296,13 @@ public:
     }
   }
 
-  virtual void onEndOfTranslationUnit()
-  {
-
-    for (unsigned x = 0; x < VecC; ++x)
-    {
-      if (FuncInfoProto[x].HasDecThatisNotDef == false)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, FuncInfoProto[x].FuncFSL.isInSystemHeader(), FuncInfoProto[x].FuncSL))
-        {
+  virtual void onEndOfTranslationUnit() {
+    for (unsigned x = 0; x < VecC; ++x) {
+      if (FuncInfoProto[x].HasDecThatisNotDef == false) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, FuncInfoProto[x].FuncFSL.isInSystemHeader(), FuncInfoProto[x].FuncSL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, FuncInfoProto[x].FuncFSL.getManager().isInMainFile(FuncInfoProto[x].FuncSL), FuncInfoProto[x].FuncSL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, FuncInfoProto[x].FuncFSL.getManager().isInMainFile(FuncInfoProto[x].FuncSL), FuncInfoProto[x].FuncSL)) {
             std::cout << "8.1:" << "Function does not have a FunctionDecl that is not a definition:";
             std::cout << FuncInfoProto[x].StrcSL << ":" << "\n";
 
@@ -1708,35 +1325,23 @@ private:
   };
 
   std::vector<FuncInfo> FuncInfoProto;
-
   unsigned int VecC;
-
   bool alreadymatched = false;
-
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
 /*Notes:clang does not let 8.2 and 8.3 through.*/
 /*clang gives the implicitly-typed vardecl and functiondecl a default type in the AST so we cant use that.
 we should just get the rewritten text and do string searches inside. thats the only way i can think of.*/
-class [[maybe_unused]] MCDCDF82 : public MatchFinder::MatchCallback
-{
+class [[maybe_unused]] MCDCDF82 : public MatchFinder::MatchCallback {
 public:
   MCDCDF82 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf82") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf82") != nullptr) {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf82");
-
       std::string QualifiedName = VD->getQualifiedNameAsString();
-
       QualType QT [[maybe_unused]] = VD->getType();
-
-#if 0
-      std::cout << QualifiedName << "\n" << "\n";
-#endif
     }
   }
 
@@ -1745,73 +1350,52 @@ private:
 };
 /**********************************************************************************************************************/
 /*this class also matches aggregate types. a simple aggregate check should fix that, if need be.*/
-class MCInit91 : public MatchFinder::MatchCallback
-{
+class MCInit91 : public MatchFinder::MatchCallback {
 public:
   MCInit91 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91") != nullptr) {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit91");
 
-      SourceLocation SL = VD->getLocStart(); 
+      SourceLocation SL = VD->getLocStart();
       CheckSLValidity(SL);
       SourceLocation SLMID;
 
-      if (SL.isMacroID())
-      {
+      if (SL.isMacroID()) {
         SLMID = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       }
 
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-
       SourceLocation SLE = VD->getLocEnd();
       SourceLocation SLEMID;
 
-      if (SLE.isMacroID())
-      {
+      if (SLE.isMacroID()) {
         SLEMID = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
       }
 
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
-
       QualType QT = VD->getType();
-
       const clang::Type* TP = QT.getTypePtr();
-
       ASTContext *const ASTC = MR.Context;
-
       SourceManager &SM = ASTC->getSourceManager();
 
       /*start of 8.5*/
       bool VarDeclaredInsideHeader = false;
 
-      if (VD->isThisDeclarationADefinition(*ASTC) && !(!VD->isLocalVarDecl() && VD->isLocalVarDeclOrParm()))
-      {
-#if 0
-        std::cout << "XXXXXXXXXXXXXXXXXXXXXXXX" << " " << IncludeFileArr.size() << "\n";
-#endif
-        for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
-        {
-          if (SM.getFilename(SL).str() == IncludeFileArr[x])
-          {
+      if (VD->isThisDeclarationADefinition(*ASTC) && !(!VD->isLocalVarDecl() && VD->isLocalVarDeclOrParm())) {
+        for (unsigned x = 0; x < IncludeFileArr.size(); ++x) {
+          if (SM.getFilename(SL).str() == IncludeFileArr[x]) {
             VarDeclaredInsideHeader = true;
           }
         }
       }
 
-      if (VarDeclaredInsideHeader)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (VarDeclaredInsideHeader) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "8.5:" << "Variable definition inside a header file:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -1823,20 +1407,13 @@ public:
       /*end of 8.5*/
 
       /*start of 8.12*/
-      if (!VD->hasInit())
-      {
-        if (VD->hasExternalStorage())
-        {
-          if (TP->isIncompleteArrayType())
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+      if (!VD->hasInit()) {
+        if (VD->hasExternalStorage()) {
+          if (TP->isIncompleteArrayType()) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 /*end of 8.12*/
                 std::cout << "8.12:" << "External array type is incomplete and has no initialization:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -1844,8 +1421,7 @@ public:
                 XMLDocOut.XMLAddNode(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "8.12", "External array type is incomplete and has no initialization : ");
 
-                if (mutagen)
-                {
+                if (mutagen) {
                   ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*VD), *MR.Context);
                 }
               }
@@ -1854,17 +1430,15 @@ public:
         }
       }
       /*start of 9.2*/
-      else
-      {
-        if (TP->isArrayType() || TP->isStructureType())
-        {
+      else {
+        if (TP->isArrayType() || TP->isStructureType()) {
           /*JANKY*/
           const Expr* InitExpr [[maybe_unused]] = VD->getInit();
           SourceRange InitExprSR;
-          SourceLocation IESL = InitExpr->getLocStart(); 
+          SourceLocation IESL = InitExpr->getLocStart();
           CheckSLValidity(IESL);
           IESL = Devi::SourceLocationHasMacro(IESL, Rewrite, "start");
-      
+
           CheckSLValidity(IESL);
 
           SourceLocation IESLE = InitExpr->getLocEnd();
@@ -1876,16 +1450,11 @@ public:
           size_t openingcbraces = InitExprString.find("{", 0);
           size_t closingcbraces = InitExprString.find("}", 0);
 
-          if (openingcbraces == std::string::npos || closingcbraces == std::string::npos)
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+          if (openingcbraces == std::string::npos || closingcbraces == std::string::npos) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
 #if 0
                 std::cout << "9.2:" << "Curly braces not used:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -1901,18 +1470,12 @@ public:
       /*end of 9.2*/
 
       /*we only check for local static since global static is meaningless.*/
-      if (!VD->isStaticLocal() && VD->isLocalVarDecl())
-      {
-        if (!VD->hasInit())
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+      if (!VD->isStaticLocal() && VD->isLocalVarDecl()) {
+        if (!VD->hasInit()) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "9.1:" << "staic local variable does not have initialization:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -1923,44 +1486,29 @@ public:
         }
       }
     }
-
   }
 
 private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class [[maybe_unused]] MCInit92 : public MatchFinder::MatchCallback
-{
+class [[maybe_unused]] MCInit92 : public MatchFinder::MatchCallback {
 public:
   MCInit92 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92") != nullptr) {
       const InitListExpr* ILE = MR.Nodes.getNodeAs<clang::InitListExpr>("mcinit92");
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcinit92daddy");
 
-      SourceLocation SL = VD->getLocStart(); 
+      SourceLocation SL = VD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       unsigned int NumInits [[maybe_unused]] = ILE->getNumInits();
-
-#if 0
-      std::cout << NumInits << "\n" << "\n";
-#endif
     }
   }
 
@@ -1968,69 +1516,50 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCInit93 : public MatchFinder::MatchCallback
-{
+class MCInit93 : public MatchFinder::MatchCallback {
 public:
   MCInit93 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93") != nullptr && MR.Nodes.getNodeAs<clang::EnumDecl>("mcinit93daddy") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93") != nullptr && MR.Nodes.getNodeAs<clang::EnumDecl>("mcinit93daddy") != nullptr) {
       const EnumConstantDecl * ECD [[maybe_unused]] = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("mcinit93");
       const EnumDecl* ED = MR.Nodes.getNodeAs<clang::EnumDecl>("mcinit93daddy");
       /*do note that this pointer might very well be nullptr. we are actually counting on that.
       it tells us we could not match an integer initialization for this enumconstantdecl.*/
       const IntegerLiteral* IL = MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcinit93kiddy");
 
-      SourceLocation SL = ED->getLocStart(); 
+      SourceLocation SL = ED->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       newSourceLocation = SL;
 
-      if (oldSourceLocation != newSourceLocation)
-      {
+      if (oldSourceLocation != newSourceLocation) {
         someoneHasInit = false;
         everyoneHasInit = true;
         isFirstElement = true;
-        if (IL == nullptr)
-        {
+        if (IL == nullptr) {
           doesFirstElementHaveInit = false;
           everyoneHasInit = false;
-        }
-        else
-        {
+        } else {
           doesFirstElementHaveInit = true;
         }
-      }
-      else
-      {
+      } else {
         isFirstElement = false;
       }
 
-      if (oldSourceLocation == newSourceLocation)
-      {
-        if (IL == nullptr)
-        {
+      if (oldSourceLocation == newSourceLocation) {
+        if (IL == nullptr) {
           everyoneHasInit = false;
-        }
-        else
-        {
+        } else {
           someoneHasInit = true;
         }
 
-        if (doesFirstElementHaveInit)
-        {
-          if (!everyoneHasInit && someoneHasInit)
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+        if (doesFirstElementHaveInit) {
+          if (!everyoneHasInit && someoneHasInit) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 /*in breach of misrac*/
                 std::cout << "9.3:" << "first enumeration has integerliteral initialization but not all enumerations do:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -2038,30 +1567,20 @@ public:
                 XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration has integerliteral initialization but not all enumerations do : ");
 
-                if (mutagen)
-                {
+                if (mutagen) {
                   ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ECD), *MR.Context);
                 }
               }
             }
-          }
-          else
-          {
+          } else {
             /*doesnt mean anything*/
           }
-        }
-        else
-        {
-          if (IL != nullptr)
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+        } else {
+          if (IL != nullptr) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 /*in breach of misrac*/
                 std::cout << "9.3:" << "first enumeration does not have integerliteral initialization but at least one other enumeration does:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -2069,15 +1588,12 @@ public:
                 XMLDocOut.XMLAddNode(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "9.3", "first enumeration does not have integerliteral initialization but at least one other enumeration does : ");
 
-                if (mutagen)
-                {
+                if (mutagen) {
                   ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ECD), *MR.Context);
                 }
               }
             }
-          }
-          else
-          {
+          } else {
             /*doesnt mean anything*/
           }
         }
@@ -2102,43 +1618,31 @@ private:
 };
 
 /**********************************************************************************************************************/
-class MCExpr123 : public MatchFinder::MatchCallback
-{
+class MCExpr123 : public MatchFinder::MatchCallback {
 public:
   MCExpr123 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr123kiddy") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr123kiddy") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr123kiddy");
 
       SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       ASTContext *const ASTC = MR.Context;
 
-      if (EXP->HasSideEffects(*ASTC, true))
-      {
+      if (EXP->HasSideEffects(*ASTC, true)) {
         std::cout << "12.3:" << "sizeof working on an expr with a side-effect:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.3", "sizeof working on an expr with a side-effect : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.3", "sizeof working on an expr with a side-effect : ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
         }
       }
@@ -2149,43 +1653,31 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr124 : public MatchFinder::MatchCallback
-{
+class MCExpr124 : public MatchFinder::MatchCallback {
 public:
   MCExpr124 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr124") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr124") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr124");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       ASTContext *const ASTC = MR.Context;
 
-      if (EXP->HasSideEffects(*ASTC, true))
-      {
+      if (EXP->HasSideEffects(*ASTC, true)) {
         std::cout << "12.4:" << "Righ-hand expr has side-effect:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.4", "Righ-hand expr has side-effect");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
         }
       }
@@ -2197,18 +1689,15 @@ private:
 };
 /**********************************************************************************************************************/
 /*DEVI-if all operands are boolean, this class will still tag em as inconsistent(with misrac).*/
-class MCExpr125 : public MatchFinder::MatchCallback
-{
+class MCExpr125 : public MatchFinder::MatchCallback {
 public:
   MCExpr125 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("lrhs") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("lrhs") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("lrhs");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -2224,29 +1713,19 @@ public:
       SR.setEnd(SLE);
 
       std::string StrText = Rewrite.getRewrittenText(SR);
-      if (StrText[0] == '(' && StrText[StrText.length() - 1U] == ')')
-      {
+      if (StrText[0] == '(' && StrText[StrText.length() - 1U] == ')') {
         hasParantheses = true;
-      }
-      else
-      {
+      } else {
         hasParantheses = false;
       }
 
-      if (hasParantheses || SL.isMacroID())
-      {
+      if (hasParantheses || SL.isMacroID()) {
         /*intentionally left blank.*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "12.5:" << "RHS and/or LHS operands are not primary expressions:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -2265,45 +1744,32 @@ public:
 
 private:
   bool hasParantheses = false;
-
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr126 : public MatchFinder::MatchCallback
-{
+class MCExpr126 : public MatchFinder::MatchCallback {
 public:
   MCExpr126 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr126rl") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr126rl") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr126rl");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
-
-      if (!EXP->isKnownToHaveBooleanValue())
-      {
+      if (!EXP->isKnownToHaveBooleanValue()) {
         std::cout << "12.6:" << "RHS and/or LHS operands are not effectively-boolean values:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.6", "RHS and/or LHS operands are not effectively-boolean values : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.6", "RHS and/or LHS operands are not effectively-boolean values : ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
         }
       }
@@ -2314,45 +1780,33 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr127 : public MatchFinder::MatchCallback
-{
+class MCExpr127 : public MatchFinder::MatchCallback {
 public:
   MCExpr127 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr127rl") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr127rl") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr127rl");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       QualType QT = EXP->getType();
 
       const clang::Type* TP = QT.getTypePtr();
 
-      if (TP->hasSignedIntegerRepresentation() && TP->isIntegerType())
-      {
+      if (TP->hasSignedIntegerRepresentation() && TP->isIntegerType()) {
         std::cout << "12.7:" << "Bitwise operator has signed RHS and/or LHS operands:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.7", "Bitwise operator has signed RHS and/or LHS operands: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.7", "Bitwise operator has signed RHS and/or LHS operands: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
         }
       }
@@ -2363,31 +1817,21 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class [[maybe_unused]] MCExpr128 : public MatchFinder::MatchCallback
-{
+class [[maybe_unused]] MCExpr128 : public MatchFinder::MatchCallback {
 public:
   MCExpr128 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs") != nullptr && MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs") != nullptr && MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs") != nullptr) {
       const Expr* RHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs");
       const Expr* LHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs");
 
-      SourceLocation SL = RHS->getLocStart(); 
+      SourceLocation SL = RHS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       QualType RQT = RHS->getType();
       QualType LQT = LHS->getType();
@@ -2403,10 +1847,8 @@ public:
 
       llvm::APSInt Result;
 
-      if (RHS->isIntegerConstantExpr(Result, *ASTC, nullptr, true))
-      {
-        if ((Result >= (LHSSize - 1U)) || (Result <= 0))
-        {
+      if (RHS->isIntegerConstantExpr(Result, *ASTC, nullptr, true)) {
+        if ((Result >= (LHSSize - 1U)) || (Result <= 0)) {
           std::cout << "12.8:" << "shift size should be between zero and one less than the size of the LHS operand:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -2414,13 +1856,11 @@ public:
           JSONDocOUT.JSONAddElement(MR.Context, SL, "12.8", "shift size should be between zero and one less than the size of the LHS operand: ");
 
           /*@DEVI-FIXME-cant extract this one correctly*/
-          if (mutagen)
-          {
+          if (mutagen) {
             ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*RHS), *MR.Context);
           }
         }
       }
-
     }
   }
 
@@ -2428,45 +1868,33 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr129 : public MatchFinder::MatchCallback
-{
+class MCExpr129 : public MatchFinder::MatchCallback {
 public:
   MCExpr129 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr129") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr129") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr129");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       QualType QT = EXP->getType();
 
       const clang::Type* TP = QT.getTypePtr();
 
-      if (TP->isIntegerType() && TP->hasUnsignedIntegerRepresentation())
-      {
+      if (TP->isIntegerType() && TP->hasUnsignedIntegerRepresentation()) {
         std::cout << "12.9:" << "UnaryOperator - has an expr with an unsigned underlying type:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "12.9", "UnaryOperator - has an expr with an unsigned underlying type: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "12.9", "UnaryOperator - has an expr with an unsigned underlying type: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
         }
       }
@@ -2477,30 +1905,20 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr1210 : public MatchFinder::MatchCallback
-{
+class MCExpr1210 : public MatchFinder::MatchCallback {
 public:
   MCExpr1210 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr1210") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr1210") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr1210");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       std::cout << "12.10:" << "Comma used:";
       std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -2508,8 +1926,7 @@ public:
       XMLDocOut.XMLAddNode(MR.Context, SL, "12.10", "Comma used: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "12.10", "Comma used: ");
 
-      if (mutagen)
-      {
+      if (mutagen) {
         ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
       }
     }
@@ -2519,30 +1936,20 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr1213 : public MatchFinder::MatchCallback
-{
+class MCExpr1213 : public MatchFinder::MatchCallback {
 public:
   MCExpr1213 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1213") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1213") != nullptr) {
       const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1213");
 
-      SourceLocation SL = UO->getOperatorLoc(); 
+      SourceLocation SL = UO->getOperatorLoc();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       std::cout << "12.13:" << "Unary ++ or -- have been used in an expr with other operators:";
       std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -2550,8 +1957,7 @@ public:
       XMLDocOut.XMLAddNode(MR.Context, SL, "12.13", "Unary ++ or -- have been used in an expr with other operators: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "12.13", "Unary ++ or -- have been used in an expr with other operators: ");
 
-      if (mutagen)
-      {
+      if (mutagen) {
         ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*UO), *MR.Context);
       }
     }
@@ -2561,41 +1967,29 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCSE131 : public MatchFinder::MatchCallback
-{
+class MCCSE131 : public MatchFinder::MatchCallback {
 public:
   MCCSE131 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("cse131rlhs") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("cse131rlhs") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("cse131rlhs");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
-
-      if (EXP->isKnownToHaveBooleanValue())
-      {
+      if (EXP->isKnownToHaveBooleanValue()) {
         std::cout << "13.1:" << "assignment operator used in an expr that is known to return boolean:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "13.1", "assignment operator used in an expr that is known to return boolean: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "13.1", "assignment operator used in an expr that is known to return boolean: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
         }
       }
@@ -2606,41 +2000,29 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCSE132 : public MatchFinder::MatchCallback
-{
+class MCCSE132 : public MatchFinder::MatchCallback {
 public:
   MCCSE132 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mccse132") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mccse132") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse132");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
-
-      if (!EXP->isKnownToHaveBooleanValue())
-      {
+      if (!EXP->isKnownToHaveBooleanValue()) {
         std::cout << "13.2:" << "Implicit test of an expr against zero which is not known to return a boolean result:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "13.2", "Implicit test of an expr against zero which is not known to return a boolean result: ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "13.2", "Implicit test of an expr against zero which is not known to return a boolean result: ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
         }
       }
@@ -2651,24 +2033,21 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCSE1332 : public MatchFinder::MatchCallback
-{
+class MCCSE1332 : public MatchFinder::MatchCallback {
 public:
   MCCSE1332 (Rewriter &Rewrite) : Rewrite (Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mccse1332rl") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mccse1332rl") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse1332rl");
       const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mccse1332daddy");
 
-      SourceLocation SLD = BO->getLocStart(); 
+      SourceLocation SLD = BO->getLocStart();
       CheckSLValidity(SLD);
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
       NewSL = SLD;
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -2676,26 +2055,19 @@ public:
 
       const clang::Type* TP = QT.getTypePtr();
 
-      if (OldSL != NewSL)
-      {
-        if (TP->hasFloatingRepresentation())
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+      if (OldSL != NewSL) {
+        if (TP->hasFloatingRepresentation()) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "13.3:" << "Float type expression checked for equality/inequality:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.3", "Float type expression checked for equality/inequality: ");
 
-              if (mutagen)
-              {
+              if (mutagen) {
                 ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
               }
             }
@@ -2714,50 +2086,33 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCSE134 : public MatchFinder::MatchCallback
-{
+class MCCSE134 : public MatchFinder::MatchCallback {
 public:
   MCCSE134 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccse134") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccse134") != nullptr) {
       AlreadyHaveAHit = false;
 
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse134");
 
-      SourceLocation SL = FS->getLocStart(); 
+      SourceLocation SL = FS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
       const Expr* FSCond = FS->getCond();
       const Expr* FSInc = FS->getInc();
 
-#if 0
-      if (FSCond != nullptr)
-      {
-        std::string multix = Rewrite.getRewrittenText(FSCond->getSourceRange());
-        std::cout << "diagnostic" << ":" << multix << "\n";
-      }
-#endif
-
-      if (FSCond != nullptr)
-      {
+      if (FSCond != nullptr) {
         QualType QTCond = FSCond->getType();
 
         const clang::Type* TPCond = QTCond.getTypePtr();
 
-        if (TPCond->hasFloatingRepresentation())
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+        if (TPCond->hasFloatingRepresentation()) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "13.4:" << "Float type used in the controlling expression of a forstmt:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
               AlreadyHaveAHit = true;
@@ -2765,8 +2120,7 @@ public:
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
 
-              if (mutagen)
-              {
+              if (mutagen) {
                 ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FS), *MR.Context);
               }
             }
@@ -2774,22 +2128,15 @@ public:
         }
       }
 
-      if (FSInc != nullptr && !AlreadyHaveAHit)
-      {
+      if (FSInc != nullptr && !AlreadyHaveAHit) {
         QualType QTInc = FSInc->getType();
-
         const clang::Type* TPInc = QTInc.getTypePtr();
 
-        if (TPInc->hasFloatingRepresentation())
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+        if (TPInc->hasFloatingRepresentation()) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "13.4:" << "Float type used in the controlling expression of a forstmt:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
               AlreadyHaveAHit = true;
@@ -2797,8 +2144,7 @@ public:
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.4", "Float type used in the controlling expression of a forstmt: ");
 
-              if (mutagen)
-              {
+              if (mutagen) {
                 ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*FS), *MR.Context);
               }
             }
@@ -2810,7 +2156,6 @@ public:
 
 private:
   bool AlreadyHaveAHit = false;
-
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
@@ -2818,15 +2163,12 @@ private:
 /*if a for controlling var is modified in the body using a pointer, then this class wont find it.*/
 /*the class will only work properly only if there is one controlling loop variable.
 the behavior is undefined for more than one variable.*/
-class MCCSE136 : public MatchFinder::MatchCallback
-{
+class MCCSE136 : public MatchFinder::MatchCallback {
 public:
   MCCSE136 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mccse136kiddo") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mccse136kiddo") != nullptr) {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mccse136kiddo");
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse136daddy");
 
@@ -2835,32 +2177,24 @@ public:
       const Expr* FSCond [[maybe_unused]] = FS->getCond();
 
       /*underdev*/
-      if (FSCond != nullptr)
-      {
-        SourceLocation CSL = FSCond->getLocStart(); 
+      if (FSCond != nullptr) {
+        SourceLocation CSL = FSCond->getLocStart();
         CheckSLValidity(CSL);
         SourceLocation CSLE = FSCond->getLocEnd();
         SourceRange CSR;
         CSR.setBegin(CSL);
         CSR.setEnd(CSLE);
-
         std::string outstring = Rewrite.getRewrittenText(CSR);
-
-#if 0
-        std::cout << "XXXXXXXXXXXXXXXXXXXXXX" << outstring << "\n";
-#endif
       }
 
-
-      SourceLocation SLD = FS->getLocStart(); 
+      SourceLocation SLD = FS->getLocStart();
       CheckSLValidity(SLD);
       SLD = Devi::SourceLocationHasMacro(SLD, Rewrite, "start");
-      SourceLocation SL = DRE->getLocStart(); 
+      SourceLocation SL = DRE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (FSInit != nullptr && FSInc != nullptr)
-      {
+      if (FSInit != nullptr && FSInc != nullptr) {
         SourceLocation SLFSInit = FSInit->getLocStart();
         SLFSInit = Devi::SourceLocationHasMacro(SLFSInit, Rewrite, "start");
         SourceLocation SLFSInc = FSInc->getLocStart();
@@ -2872,30 +2206,21 @@ public:
 
         /*JANKY*/
         /*@DEVI-the third condition is put in place to accomodate the prefix unary increment or decrement operator.*/
-        if (SLFSInit == SL || SLFSInc == SL || SLFSInc.getLocWithOffset(2) == SL)
-        {
+        if (SLFSInit == SL || SLFSInc == SL || SLFSInc.getLocWithOffset(2) == SL) {
           ControlVarName = NameString;
-        }
-        else
-        {
-          if (ControlVarName == NameString)
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+        } else {
+          if (ControlVarName == NameString) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 std::cout << "13.6:" << "ForStmt controlling variable modified in the body of the loop:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
                 XMLDocOut.XMLAddNode(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
                 JSONDocOUT.JSONAddElement(MR.Context, SL, "13.6", "ForStmt controlling variable modified in the body of the loop: ");
 
-                if (mutagen)
-                {
+                if (mutagen) {
                   ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*DRE), *MR.Context);
                 }
               }
@@ -2909,34 +2234,23 @@ public:
 
 private:
   std::string ControlVarName;
-
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCF144 : public MatchFinder::MatchCallback
-{
+class MCCF144 : public MatchFinder::MatchCallback {
 public:
   MCCF144 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::GotoStmt>("mccf144") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::GotoStmt>("mccf144") != nullptr) {
       const GotoStmt* GS = MR.Nodes.getNodeAs<clang::GotoStmt>("mccf144");
 
-      SourceLocation SL = GS->getLocStart(); 
+      SourceLocation SL = GS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       std::cout << "14.4:" << "GotoStmt used:";
       std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -2950,30 +2264,20 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCF145 : public MatchFinder::MatchCallback
-{
+class MCCF145 : public MatchFinder::MatchCallback {
 public:
   MCCF145 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ContinueStmt>("mccf145") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ContinueStmt>("mccf145") != nullptr) {
       const ContinueStmt* CS = MR.Nodes.getNodeAs<clang::ContinueStmt>("mccf145");
 
-      SourceLocation SL = CS->getLocStart(); 
+      SourceLocation SL = CS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
-        return void();
-      }
-
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
-        return void();
-      }
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
       std::cout << "14.5:" << "ContinueStmt used:";
       std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
@@ -2998,7 +2302,7 @@ public:
     {
       const ForStmt* FS =  MR.Nodes.getNodeAs<clang::ForStmt>("mccffofo");
 
-      SL = FS->getLocStart(); 
+      SL = FS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
@@ -3007,7 +2311,7 @@ public:
     {
       const WhileStmt* WS =  MR.Nodes.getNodeAs<clang::WhileStmt>("mccfwuwu");
 
-      SL = WS->getLocStart(); 
+      SL = WS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
@@ -3016,7 +2320,7 @@ public:
     {
       const DoStmt* DS =  MR.Nodes.getNodeAs<clang::DoStmt>("mccfdodo");
 
-      SL = DS->getLocStart(); 
+      SL = DS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
@@ -3078,7 +2382,7 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mccf147");
 
-      SourceLocation SL = FD->getLocStart(); 
+      SourceLocation SL = FD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3140,7 +2444,7 @@ public:
     {
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccf148for");
 
-      SL = FS->getLocStart(); 
+      SL = FS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3165,7 +2469,7 @@ public:
     {
       const WhileStmt* WS = MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while");
 
-      SL = WS->getLocStart(); 
+      SL = WS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3190,7 +2494,7 @@ public:
     {
       const DoStmt* DS = MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do");
 
-      SL = DS->getLocStart(); 
+      SL = DS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3215,7 +2519,7 @@ public:
     {
       const SwitchStmt* SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch");
 
-      SL = SS->getLocStart(); 
+      SL = SS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3252,7 +2556,7 @@ public:
   {
     const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcswitch154");
 
-    SourceLocation SL = EXP->getLocStart(); 
+    SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
     SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3297,7 +2601,7 @@ public:
     {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcptc111");
 
-      SourceLocation SL = ICE->getLocStart(); 
+      SourceLocation SL = ICE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3452,7 +2756,7 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse137");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3491,7 +2795,6 @@ public:
       if (TP->isIntegerType())
       {
         ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*EXP);
-        
         ast_type_traits::DynTypedNode ParentNode;
         /*assumptions:nothing has more than one parent in C.*/
         if (!NodeList.empty()) ParentNode = NodeList[0];
@@ -3543,15 +2846,15 @@ public:
         FDDef = CE->getDirectCallee();
       }
 
-      SourceLocation CESL = CE->getLocStart(); 
+      SourceLocation CESL = CE->getLocStart();
       CheckSLValidity(CESL);
       CESL = Devi::SourceLocationHasMacro(CESL, Rewrite, "start");
 
-      SourceLocation FDDadSL = FDDad->getLocStart(); 
+      SourceLocation FDDadSL = FDDad->getLocStart();
       CheckSLValidity(FDDadSL);
       FDDadSL = Devi::SourceLocationHasMacro(FDDadSL, Rewrite, "start");
 
-      SourceLocation FDSL = FDDef->getLocStart(); 
+      SourceLocation FDSL = FDDef->getLocStart();
       CheckSLValidity(FDSL);
       FDSL = Devi::SourceLocationHasMacro(FDSL, Rewrite, "start");
 
@@ -3656,7 +2959,7 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction165");
 
-      SourceLocation SL = FD->getLocStart(); 
+      SourceLocation SL = FD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3693,10 +2996,10 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction1652");
 
-      SourceLocation SL = FD->getLocStart(); 
+      SourceLocation SL = FD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      SourceLocation SLE = FD->getBody()->getLocStart(); 
+      SourceLocation SLE = FD->getBody()->getLocStart();
       CheckSLValidity(SLE);
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
 
@@ -3751,7 +3054,7 @@ public:
     {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer171") ;
 
-      SourceLocation SL = DRE->getLocStart(); 
+      SourceLocation SL = DRE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3803,7 +3106,7 @@ public:
       const DeclRefExpr* DREL = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723lhs");
       const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcpointer1723daddy");
 
-      SourceLocation SL = BO->getLocStart(); 
+      SourceLocation SL = BO->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3855,7 +3158,7 @@ public:
     {
       const CastExpr* CE = MR.Nodes.getNodeAs<clang::CastExpr>("mcpointer174");
 
-      SourceLocation SL = CE->getLocStart(); 
+      SourceLocation SL = CE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3885,7 +3188,7 @@ public:
     {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742");
 
-      SourceLocation SL = DRE->getLocStart(); 
+      SourceLocation SL = DRE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3934,7 +3237,7 @@ public:
     {
       VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpointer175");
 
-      SL = VD->getLocStart(); 
+      SL = VD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -3945,7 +3248,7 @@ public:
     {
       FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mcpointer175field");
 
-      SL = FD->getSourceRange().getBegin(); 
+      SL = FD->getSourceRange().getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4055,7 +3358,7 @@ public:
       QualType QTEXP = EXP->getType();
       const clang::Type* TPEXP = QTEXP.getTypePtr();
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       SourceLocation SLE = EXP->getLocEnd();
@@ -4149,7 +3452,7 @@ public:
     {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcsu181arr");
 
-      SourceLocation SL = VD->getLocStart(); 
+      SourceLocation SL = VD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4186,7 +3489,7 @@ public:
     {
       const CStyleCastExpr* CSCE = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcptc11cstyle");
 
-      SourceLocation SL = CSCE->getLocStart(); 
+      SourceLocation SL = CSCE->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4318,7 +3621,7 @@ public:
       if ((ICE->getCastKind() == CK_IntegralCast) || (ICE->getCastKind() == CK_FloatingCast) || \
           (ICE->getCastKind() == CK_FloatingComplexCast) || (ICE->getCastKind() == CK_IntegralComplexCast))
       {
-        SourceLocation SL = ICE->getLocStart(); 
+        SourceLocation SL = ICE->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4484,21 +3787,21 @@ public:
           bool IsSignedCPXDaddy = false;
           bool IsUnsignedCPXDaddy = false;
           if (DaddyCPXElementType) {
-          	auto placeholderType = DaddyCPXElementType->getAsPlaceholderType();
-          	if (placeholderType) {
-          		IsSignedCPXDaddy = placeholderType->isSignedInteger();
-          		IsUnsignedCPXDaddy = placeholderType->isUnsignedInteger();
-          	}
+            auto placeholderType = DaddyCPXElementType->getAsPlaceholderType();
+            if (placeholderType) {
+              IsSignedCPXDaddy = placeholderType->isSignedInteger();
+              IsUnsignedCPXDaddy = placeholderType->isUnsignedInteger();
+            }
           }
 
           bool IsSignedCPXChild = false;
           bool IsUnsignedCPXChild = false;
           if (ChildCPXElementType) {
-          	auto placeholderType = ChildCPXElementType->getAsPlaceholderType();
-          	if (placeholderType) {
-          		IsSignedCPXChild = placeholderType->isSignedInteger();
-          		IsUnsignedCPXChild = placeholderType->isUnsignedInteger();
-          	}
+            auto placeholderType = ChildCPXElementType->getAsPlaceholderType();
+            if (placeholderType) {
+              IsSignedCPXChild = placeholderType->isSignedInteger();
+              IsUnsignedCPXChild = placeholderType->isUnsignedInteger();
+            }
           }
 
           if ((IsSignedCPXDaddy && IsUnsignedCPXChild) || (IsUnsignedCPXDaddy && IsSignedCPXChild))
@@ -4564,7 +3867,7 @@ public:
 
       const IdentifierInfo *II = ND->getIdentifier();
 
-      SourceLocation SL = ND->getLocStart(); 
+      SourceLocation SL = ND->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4630,7 +3933,7 @@ public:
 
       std::string VDName = VD->getIdentifier()->getName().str();
 
-      SourceLocation SL = VD->getLocStart(); 
+      SourceLocation SL = VD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4728,7 +4031,7 @@ public:
     {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf88var");
 
-      SourceLocation SL = VD->getLocStart(); 
+      SourceLocation SL = VD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4747,9 +4050,6 @@ public:
 
       for (auto &iter : ExternObjInfoProto)
       {
-#if 0
-        std::cout << "diagnostic2:" << "Variable:" << NDNameString << ":" << iter.XObjNameStr << "\n";
-#endif
         if (iter.XObjNameStr == NDNameString)
         {
           IsNewEntry = false;
@@ -4774,7 +4074,7 @@ public:
     {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf88function");
 
-      SourceLocation SL = FD->getLocStart(); 
+      SourceLocation SL = FD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4862,7 +4162,7 @@ public:
       {
         RawText = iter->getRawText(SM);
 
-        SourceLocation RCSL = iter->getLocStart(); 
+        SourceLocation RCSL = iter->getLocStart();
         CheckSLValidity(RCSL);
         RCSL = Devi::SourceLocationHasMacro(RCSL, Rewrite, "start");
 
@@ -4932,7 +4232,7 @@ public:
     {
       const ParmVarDecl* PVD = MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167");
 
-      SourceLocation SL = PVD->getLocStart(); 
+      SourceLocation SL = PVD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -4999,7 +4299,7 @@ public:
         RHSIsIntLit = true;
       }
 
-      SourceLocation SL = LHS->getLocStart(); 
+      SourceLocation SL = LHS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5062,7 +4362,7 @@ public:
     {
       const NullStmt* NS = MR.Nodes.getNodeAs<clang::NullStmt>("mccf143nullstmt");
 
-      SourceLocation SL = NS->getSemiLoc(); 
+      SourceLocation SL = NS->getSemiLoc();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5095,7 +4395,7 @@ public:
     {
       const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcexpr1212");
 
-      SourceLocation SL = RD->getLocStart(); 
+      SourceLocation SL = RD->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5130,7 +4430,7 @@ public:
     {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr1211");
 
-      SourceLocation SL = EXP->getLocStart(); 
+      SourceLocation SL = EXP->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5173,10 +4473,10 @@ public:
 #if 0
       bool TypeIsUSignedInt = false;
       if (CanonTP) {
-    	  auto placeholderType = CanonTP->getAsPlaceholderType();
-    	  if (placeholderType) {
-    		  TypeIsUSignedInt = placeholderType->isUnsignedInteger();
-    	  }
+        auto placeholderType = CanonTP->getAsPlaceholderType();
+        if (placeholderType) {
+          TypeIsUSignedInt = placeholderType->isUnsignedInteger();
+        }
       }
 #endif
 
@@ -5299,7 +4599,7 @@ public:
         const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105");
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::BinaryOperator>(*BO);
 
-        SL = BO->getLocStart(); 
+        SL = BO->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       }
@@ -5309,7 +4609,7 @@ public:
         const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno");
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::UnaryOperator>(*UO);
 
-        SL = UO->getLocStart(); 
+        SL = UO->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       }
@@ -5424,7 +4724,7 @@ public:
     {
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse135");
 
-      SourceLocation SL = FS->getLocStart(); 
+      SourceLocation SL = FS->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5508,7 +4808,7 @@ public:
       const IntegerLiteral* IL = MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcconst71int");
 
       SourceRange SR;
-      SL = IL->getLocStart(); 
+      SL = IL->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       SR.setBegin(SL);
@@ -5523,7 +4823,7 @@ public:
     {
       const clang::StringLiteral* StringLit = MR.Nodes.getNodeAs<clang::StringLiteral>("mcconst71string");
 
-      SL = StringLit->getLocStart(); 
+      SL = StringLit->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "strat");
 
@@ -5534,7 +4834,7 @@ public:
     {
       const CharacterLiteral* CL = MR.Nodes.getNodeAs<clang::CharacterLiteral>("mcconst71char");
 
-      SL = CL->getLocStart(); 
+      SL = CL->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5608,7 +4908,7 @@ public:
     {
       const TypedefDecl* BN = MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5640,7 +4940,7 @@ public:
     {
       const RecordDecl* BN = MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5693,7 +4993,7 @@ public:
     {
       const FieldDecl* BN = MR.Nodes.getNodeAs<clang::FieldDecl>("ident5field");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5747,7 +5047,7 @@ public:
     {
       const ParmVarDecl* BN = MR.Nodes.getNodeAs<clang::ParmVarDecl>("ident5parmvar");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5800,7 +5100,7 @@ public:
     {
       const FunctionDecl* BN = MR.Nodes.getNodeAs<clang::FunctionDecl>("ident5func");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5848,7 +5148,7 @@ public:
     {
       const VarDecl* BN = MR.Nodes.getNodeAs<clang::VarDecl>("ident5var");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5901,7 +5201,7 @@ public:
     {
       const EnumDecl* BN = MR.Nodes.getNodeAs<clang::EnumDecl>("ident5enum");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -5954,7 +5254,7 @@ public:
     {
       const LabelDecl* BN = MR.Nodes.getNodeAs<clang::LabelDecl>("ident5label");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -6007,7 +5307,7 @@ public:
     {
       const EnumConstantDecl* BN = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("ident5enumconst");
 
-      SourceLocation SL = BN->getLocStart(); 
+      SourceLocation SL = BN->getLocStart();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
@@ -6061,38 +5361,20 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-/**
- * @brief Tags all array declarations and uses of arrays through indexes.
- */
 class SFCPPARR01 : public MatchFinder::MatchCallback
 {
   public:
     SFCPPARR01 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    /**
-     * @brief The virtual method that runs the tagging.
-     *
-     * @param MR MatchFinder::MatchResulet 
-     */
-    virtual void run(const MatchFinder::MatchResult &MR)
-    {
-      if (MR.Nodes.getNodeAs<clang::VarDecl>("sfcpparrdecl") != nullptr)
-      {
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      if (MR.Nodes.getNodeAs<clang::VarDecl>("sfcpparrdecl") != nullptr) {
         const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("sfcpparrdecl");
-        
         SourceLocation SL = VD->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          return void();
-        }
-
-        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
-          return void();
-        }
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
         std::cout << "SaferCPP01" << ":" << "Native CPP array declared:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -6100,23 +5382,15 @@ class SFCPPARR01 : public MatchFinder::MatchCallback
         JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native CPP array declared:");
       }
 
-      if (MR.Nodes.getNodeAs<clang::CastExpr>("sfcpparrcastexpr") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::CastExpr>("sfcpparrcastexpr") != nullptr) {
         const CastExpr* CS = MR.Nodes.getNodeAs<clang::CastExpr>("sfcpparrcastexpr");
 
         SourceLocation SL = CS->getLocStart();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          return void();
-        }
-
-        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
-          return void();
-        }
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
         std::cout << "SaferCPP01" << ":" << "Native CPP array used:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -6132,15 +5406,8 @@ class SFCPPARR01 : public MatchFinder::MatchCallback
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          return void();
-        }
-
-        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
-          return void();
-        }
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) return void();
 
         std::cout << "SaferCPP01" << ":" << "Native CPP array field used:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -6379,7 +5646,7 @@ public:
                                    bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
                                    StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported)
   {
- 
+
     CheckSLValidity(HashLoc);
 
 #if defined(__linux__)
@@ -6587,7 +5854,7 @@ public:
   virtual void Defined(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range)
   {
 #if 1
-    SourceLocation SL [[maybe_unused]] = Range.getBegin(); 
+    SourceLocation SL [[maybe_unused]] = Range.getBegin();
     CheckSLValidity(SL);
 
 #if 0
@@ -6659,7 +5926,7 @@ public:
 
     if (MI != nullptr && DMD != nullptr)
     {
-      SourceLocation SL = MacroNameTok.getLocation(); 
+      SourceLocation SL = MacroNameTok.getLocation();
       CheckSLValidity(SL);
 
 #if 0
@@ -6754,7 +6021,7 @@ public:
 #if 1
     const MacroInfo* MI = MD->getMacroInfo();
 
-    SourceLocation SL = MacroNameTok.getLocation(); 
+    SourceLocation SL = MacroNameTok.getLocation();
     CheckSLValidity(SL);
 
 #if 0
@@ -7332,9 +6599,9 @@ public:
   virtual void Elif(SourceLocation Loc, SourceRange ConditionRange, ConditionValueKind ConditionValue, SourceLocation IfLoc)
   {
 #if 1
-    SourceLocation SLoc = SM.getSpellingLoc(Loc); 
+    SourceLocation SLoc = SM.getSpellingLoc(Loc);
     CheckSLValidity(SLoc);
-    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc); 
+    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
     CheckSLValidity(SIfLoc);
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
@@ -7390,9 +6657,9 @@ public:
   virtual void Endif (SourceLocation Loc, SourceLocation IfLoc)
   {
 #if 1
-    SourceLocation SLoc = SM.getSpellingLoc(Loc); 
+    SourceLocation SLoc = SM.getSpellingLoc(Loc);
     CheckSLValidity(SLoc);
-    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc); 
+    SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
     CheckSLValidity(SIfLoc);
 
     if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
@@ -7878,7 +7145,7 @@ public:
     HandlerForMCPTCCSTYLE(R), HandlerForATC101(R), HandlerForIdent51(R), HandlerForDCDF87(R), HandlerForDCDF88(R), HandlerForLangX23(R), \
     HandlerForFunction167(R), HandlerForCF143(R), HandlerForExpr1212(R), HandlerForExpr1211(R), HandlerForAtc105(R), HandlerForCSE135(R), \
     HandlerForTypes612(R), HandlerForConst71(R), HandlerForIdent5X(R), HandlerForSFCPPARR01(R), HandlerForSFCPPARR02(R), \
-    HandlerForSFCPPPNTR01(R), HandlerForSFCPPPNTR02(R) 
+    HandlerForSFCPPPNTR01(R), HandlerForSFCPPPNTR02(R)
   {
 
 /*@DEVI-disables all matchers*/
@@ -8489,7 +7756,7 @@ public:
   {
     DiagnosticConsumer::HandleDiagnostic(DiagLevel, Info);
 
-    SourceLocation SL = Info.getLocation(); 
+    SourceLocation SL = Info.getLocation();
     CheckSLValidity(SL);
 
     SourceManager &SM = Info.getSourceManager();
@@ -8623,7 +7890,7 @@ int main(int argc, const char **argv)
   CompilationDatabase &CDB [[maybe_unused]] = op.getCompilations();
   std::vector<CompileCommand> ComCom = CDB.getAllCompileCommands();
   std::vector<std::vector<std::string>> ExecCL;
-  
+
 #if defined(_MUT0_TEST)
   for (auto &iter : ComCom)
   {
@@ -8663,44 +7930,28 @@ int main(int argc, const char **argv)
     }
   }
 #endif
-  
+
   XMLDocOut.XMLCreateReport();
-
   JSONDocOUT.JSONCreateReport();
-
   IsThereJunkPreInclusion ITJPIInstance;
-
   ITJPIInstance.Check(SourcePathList);
-  
   int RunResult = 0;
 
-  try 
-  {
+  try {
     RunResult = Tool.run(newFrontendActionFactory<MyFrontendAction>().get());
-  }
-  catch (MutExHeaderNotFound &E1)
-  {
+  } catch (MutExHeaderNotFound &E1) {
     std::cerr << E1.what() << "\n";
-  }
-  catch (std::domain_error &E2)
-  {
+  } catch (std::domain_error &E2) {
     std::cerr << E2.what() << "\n";
-  }
-  catch(...)
-  {
+  } catch(...) {
     std::cerr << "Unexpected exception!\n";
   }
 
   CheckForNullStatements CheckForNull;
-
   CheckForNull.Check();
-
   onEndOfAllTUs::run();
-
   XMLDocOut.SaveReport();
-
   JSONDocOUT.CloseReport();
-  
   ME.DumpAll();
   ME.XMLReportAncestry();
 

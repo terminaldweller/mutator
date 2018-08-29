@@ -71,7 +71,7 @@ endif
 SRCS:=$(wildcard *.cpp)
 C_SRCS:=$(wildcard *.c)
 CXX_FLAGS+=$(CXX_EXTRA)
-EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone -L./lua-5.3.4/src -llua
+EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone -L./lua-5.3.4/src
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
 TBG_OBJLIST_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.o, $(wildcard ./luatablegen/*.c))
 TBG_OBJLIST_DBG_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.odbg, $(wildcard ./luatablegen/*.c))
@@ -118,8 +118,14 @@ dependc:.dependc
 #../mutator_aux.o:../mutator_aux.cpp
 	#$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-linenoise.o:
+linenoise.o: ./linenoise/linenoise.c
 	$(CC) $(CC_FLAGS) linenoise/linenoise.c -c -o linenoise.o
+
+linenoise.odbg: ./linenoise/linenoise.c
+	$(CC) $(CC_FLAGS) linenoise/linenoise.c -g -c -o linenoise.odbg
+
+linenoise.ocov: ./linenoise/linenoise.c
+	$(CC) $(CC_FLAGS) $(COV_CXX) linenoise/linenoise.c -c -o linenoise.ocov
 
 ./wasmtablegen.json:
 	if [[ ls -l ./luatablegen | wc -l  == 2 ]];then ./tablegen.sh;else :;fi
@@ -146,10 +152,10 @@ $(TARGET): $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o Co
 $(TARGET)-static: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
 	$(CXX) $^ $(LD_FLAGS) -static -o $@
 
-$(TARGET)-dbg: $(TARGET).odbg ../m0/mutator_aux.odbg ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.odbg mutagen.o ORCmutation.o bruiserffi.odbg asmrewriter.odbg bruisercapstone.odbg ramdump.odbg ffs.odbg $(LIB_LUA) $(TBG_OBJLIST_DBG_INC)
+$(TARGET)-dbg: $(TARGET).odbg ../m0/mutator_aux.odbg ../tinyxml2/tinyxml2.odbg linenoise.odbg CompletionHints.odbg mutagen.o ORCmutation.o bruiserffi.odbg asmrewriter.odbg bruisercapstone.odbg ramdump.odbg ffs.odbg $(LIB_LUA) $(TBG_OBJLIST_DBG_INC)
 	$(CXX) $^ $(LD_FLAGS) -g -o $@
 
-$(TARGET)-cov: $(TARGET).ocov ../m0/mutator_aux.ocov ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.ocov mutagen.o ORCmutation.o bruiserffi.ocov asmrewriter.ocov bruisercapstone.ocov ramdump.ocov ffs.ocov $(LIB_LUA) $(TBG_OBJLIST_COV_INC)
+$(TARGET)-cov: $(TARGET).ocov ../m0/mutator_aux.ocov ../tinyxml2/tinyxml2.ocov linenoise.ocov CompletionHints.ocov mutagen.o ORCmutation.o bruiserffi.ocov asmrewriter.ocov bruisercapstone.ocov ramdump.ocov ffs.ocov $(LIB_LUA) $(TBG_OBJLIST_COV_INC)
 	$(CXX) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov:
@@ -183,12 +189,17 @@ $(TARGET).so: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o
 $(TARGET).a: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
 	ar rcs $(TARGET).a $(TARGET).o
 
+runcov: $(TARGET)-cov
+	$(TARGET)-cov --lua ./lua-scripts/regtest.lua
+
+valgrind: $(TARGET)
+	valgrind --leak-check=yes $(TARGET) --lua ./lua-scripts/regtest.lua
+
 clean:
 	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
-	$(MAKE) -C luatablegen clean
 
-deepclean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so tags $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov FILE*.cpp FILE*.hpp
+deepclean: clean
+	rm tags
 	rm .depend
 	$(MAKE) -C lua-5.3.4 clean
 	$(MAKE) -C luatablegen clean

@@ -160,6 +160,9 @@ $(TARGET).so: $(TARGET).o ../tinyxml2/tinyxml2.o ./mutator_aux.o ./mutator_repor
 $(TARGET).a: $(TARGET).o ../tinyxml2/tinyxml2.o ./mutator_aux.o ./mutator_report.o ../json/json.o
 	ar rcs $(TARGET).a $(TARGET).o
 
+valgrind:
+	valgrind --leak-check=yes $(TARGET)
+
 clean:
 	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov ./keccak-tiny/*.o
 

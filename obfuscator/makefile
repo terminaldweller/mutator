@@ -151,8 +151,8 @@ $(TARGET).a: $(TARGET).o ../m0/mutator_aux.o ./keccak-tiny/keccak-tiny.o
 clean:
 	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov ./keccak-tiny/*.o ./keccak-tiny/*.ocov ./keccak-tiny/*.odbg
 
-deepclean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so tags $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov FILE*.cpp FILE*.hpp ./keccak-tiny/*.o ./keccak-tiny/*.ocov ./keccak-tiny/*.odbg
+deepclean: clean
+	rm tags FILE*.cpp FILE*.hpp
 	rm .depend
 
 help:

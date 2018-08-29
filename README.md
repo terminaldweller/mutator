@@ -171,7 +171,7 @@ Currently there is only the master branch which is the dev branch. All the as-of
 ### Building
 
 #### Requirements
-* `LLVM/Clang` 5.0 or higher<br/>
+* `LLVM/Clang` 5.0 or 6.0.<br/>
 * `libffi`<br/>
 * `libcapstone`<br/>
 * `libkeystone`<br/>
@@ -217,7 +217,7 @@ Note: if you are building the llvm and clang libraries from source, then the llv
 Also do note that building the llvm libraries from source in Debug mode will require big space on your harddrive and will need quite some RAM and needless say is slower. Release mode is less resource-greedy, of course.<br/>
 Finally if you are having problems with the build, you could take a look at `.travis.yml` or under `CITPreBuildDep.sh` under `extra-tools` for some hints or help apart from asking for help, of course.<br/>
 
-After building the executables, you need to run:<br/>
+After building the executables, you can run(i personally don't):<br/>
 
 ```bash
 
@@ -227,7 +227,7 @@ make install
 
 #### Windows
 
-First off, there is no official windows support and there are no plans to do so and the reason is simple. Right now I don't have the resources to do so.<br/>
+There is no official windows support and there are no plans to do so. Right now I don't have the resources to do so.<br/>
 Let me know if you decide to try this and/or have any problems with it.<br/>
 
 ### Running
