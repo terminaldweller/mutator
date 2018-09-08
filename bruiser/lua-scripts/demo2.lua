@@ -52,16 +52,20 @@ function test()
   print(dummy)
 end
 
+--[[
 setmetatable(jmp_s_t, {__call = function(self, arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)
                                   local t = self.new(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)
                                   print("created", t)
                                   return t
                                 end})
+]]--
 
+--[[
 function jmp_s_t:show(msg)
   print(msg, self, self:custom())
   return self
 end
+]]--
 
 function jmp_t_test()
   local t = jmp_s_t.new(1,2,3,nil,nil,nil,7,8,9,0,0,1)

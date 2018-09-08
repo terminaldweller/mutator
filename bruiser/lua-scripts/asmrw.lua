@@ -22,14 +22,14 @@ xobj = require("xobj")
 -- this will hold a copy of the original text section
 local text_buffer = {}
 
-setmetatable(jmp_s_t, {__call = 
-    function(self, arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)
-      local t = self.new(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)
-      print("created", t)
-      return t
-    end
-  }
-)
+--setmetatable(jmp_s_t, {__call = 
+    --function(self, arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)
+      --local t = self.new(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12)
+      --print("created", t)
+      --return t
+    --end
+  --}
+--)
 
 function asmrw.strings(exe)
   io.write(colors("%{cyan}".."lua:getting text section...\n"))
@@ -48,10 +48,10 @@ end
 function asmrw.strings_deep(exe)
 end
 
-function jmp_s_t:dump(msg)
-  print(msg, self:custom())
-  return self
-end
+--function jmp_s_t:dump(msg)
+  --print(msg, self:custom())
+  --return self
+--end
 
 function asmrw.get_head(elf_exe)
   local text_section = xobj.getTextSection(elf_exe)

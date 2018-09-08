@@ -298,6 +298,18 @@ static const luaL_Reg jmpt_meta[] = {
 };
 
 int jmpt_register(lua_State* __ls) {
+  lua_newtable(__ls);
+  luaL_setfuncs(__ls, jmpt_methods, 0);
+  luaL_newmetatable(__ls, "jmp_s_t");
+  luaL_setfuncs(__ls, jmpt_meta, 0);
+  lua_pushliteral(__ls, "__index");
+  lua_pushvalue(__ls, -3);
+  lua_rawset(__ls, -3);
+  lua_pushliteral(__ls, "__metatable");
+  lua_pushvalue(__ls, -3);
+  lua_rawset(__ls, -3);
+  return 1;
+#if 0
   luaL_openlib(__ls, "jmp_s_t", jmpt_methods, 0);
   luaL_newmetatable(__ls, "jmp_s_t");
   luaL_openlib(__ls, 0, jmpt_meta, 0);
@@ -309,6 +321,7 @@ int jmpt_register(lua_State* __ls) {
   lua_rawset(__ls, -3);
   lua_pop(__ls, 1);
   return 1;
+#endif
 }
 //@DEVI-after jmpt_register, the methods are still on the stack. remove them by lua_pop(__ls, 1)
 /**********************************************************************************************************************/
