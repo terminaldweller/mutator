@@ -298,6 +298,7 @@ static const luaL_Reg jmpt_meta[] = {
 };
 
 int jmpt_register(lua_State* __ls) {
+  lua_checkstack(__ls, 4);
   lua_newtable(__ls);
   luaL_setfuncs(__ls, jmpt_methods, 0);
   luaL_newmetatable(__ls, "jmp_s_t");
@@ -308,7 +309,8 @@ int jmpt_register(lua_State* __ls) {
   lua_pushliteral(__ls, "__metatable");
   lua_pushvalue(__ls, -3);
   lua_rawset(__ls, -3);
-  return 1;
+  lua_setglobal(__ls, "jmp_s_t");
+  return 0;
 #if 0
   luaL_openlib(__ls, "jmp_s_t", jmpt_methods, 0);
   luaL_newmetatable(__ls, "jmp_s_t");
