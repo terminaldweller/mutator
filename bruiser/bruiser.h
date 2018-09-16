@@ -163,7 +163,8 @@ help CMDHelp[] = {
   {"ramdump", "ramdump(pid)", "dumps the ram", "", "ram contents"},
   {"xsize", "xsize()", "returns the number of currently registered xobjs", "", "nothing"},
   {"xclear", "xclear()", "deallocates all xobjs, freeing memory", "", "nothing"},
-  {"xmemusage", "xmemusage()", "returns how much memory the xobjcts are occupying", "", "total memory used by xobjects"}
+  {"xmemusage", "xmemusage()", "returns how much memory the xobjcts are occupying", "", "total memory used by xobjects"},
+  {"getwasmobj", "getwasmobj(path)", "returns a wasm object", "", "a wasm object"}
 };
 /**********************************************************************************************************************/
 /**
@@ -317,7 +318,7 @@ class Daemonize
 struct ELFHDR_64 {
   public:
     ELFHDR_64() = default;
-    ELFHDR_64(__uint128_t _ident, uint16_t _type, uint16_t _machine, 
+    ELFHDR_64(__uint128_t _ident, uint16_t _type, uint16_t _machine,
         uint32_t _version, uint64_t _entry, uint64_t _phoff,  uint64_t _shoff, 
         uint32_t _flags, uint16_t _ehsize, uint16_t _phentsize, 
         uint16_t _phnum, uint16_t _shentsize, uint16_t _shnum, uint16_t _shstrndx) {

@@ -2,6 +2,10 @@ TARGET=bruiser
 LLVM_CONF?=llvm-config
 PY_CONF?=python3-config
 LIB_LUA=./lua-5.3.4/src/liblua.a
+FT_WASM_SO=./autogen/wasm/ft/autowasm.so
+FT_WASM_A=./autogen/wasm/ft/autowasm.a
+LTG_WASM_SO=./autogen/wasm/ltg/wasm_tables.so
+LTG_WASM_A=./autogen/wasm/ltg/wasm_tables.a
 SHELL=bash
 SHELL?=bash
 CC=clang
@@ -73,9 +77,9 @@ C_SRCS:=$(wildcard *.c)
 CXX_FLAGS+=$(CXX_EXTRA)
 EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone -L./lua-5.3.4/src
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
-TBG_OBJLIST_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.o, $(wildcard ./luatablegen/*.c))
-TBG_OBJLIST_DBG_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.odbg, $(wildcard ./luatablegen/*.c))
-TBG_OBJLIST_COV_INC=$(patsubst ./luatablegen/%.c, ./luatablegen/%.ocov, $(wildcard ./luatablegen/*.c))
+TBG_OBJLIST_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%.o, $(wildcard ./autogen/wasm/ltg/*.c))
+TBG_OBJLIST_DBG_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%.odbg, $(wildcard ./autogen/wasm/ltg/*.c))
+TBG_OBJLIST_COV_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%.ocov, $(wildcard ./autogen/wasm/ltg/*.c))
 
 .DEFAULT:all
 
@@ -127,11 +131,13 @@ linenoise.odbg: ./linenoise/linenoise.c
 linenoise.ocov: ./linenoise/linenoise.c
 	$(CC) $(CC_FLAGS) $(COV_CXX) linenoise/linenoise.c -c -o linenoise.ocov
 
-./wasmtablegen.json:
-	if [[ ls -l ./luatablegen | wc -l  == 2 ]];then ./tablegen.sh;else :;fi
+./autogen/wasm/ft/wasm.xml:
+	#if [[ ls -l ./autogen/wasm/ft/ | wc -l  == 2 ]];then ./autogen/wasm/ft.sh;else :;fi
+	./autogen/wasm/ft.sh
 
-./luatablegen/%.c: ./wasmtablegen.json
-	./tablegen.sh
+./autogen/wasm/ltg/wasm.xml:
+	#if [[ ls -l ./autogen/wasm/ltg/ | wc -l  == 2 ]];then ./autogen/wasm/ltg.sh;else :;fi
+	./autogen/wasm/ltg.sh
 
 ./luatablegen/%.o:./luatablegen/%.c
 	$(MAKE) -C luatablegen
@@ -139,17 +145,29 @@ linenoise.ocov: ./linenoise/linenoise.c
 $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4/src linux
 
+$(FT_WASM_SO): ./autogen/wasm/ft/wasm.xml
+	$(MAKE) -C ./autogen/wasm/ft SO
+
+$(FT_WASM_A): ./autogen/wasm/ft/wasm.xml
+	$(MAKE) -C ./autogen/wasm/ft A
+
+$(LTG_WASM_SO): ./autogen/wasm/ltg/wasm.xml
+	$(MAKE) -C ./autogen/wasm/ltg SO
+
+$(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
+	$(MAKE) -C ./autogen/wasm/ltg A
+
 %.odbg:%.cpp
 	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
 
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
+$(TARGET): $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(FT_WASM_A) $(LTG_WASM_A)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 # currently broken since it needs a static libpython
-$(TARGET)-static: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
+$(TARGET)-static: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(FT_WASM_A) $(LTG_WASM_A)
 	$(CXX) $^ $(LD_FLAGS) -static -o $@
 
 $(TARGET)-dbg: $(TARGET).odbg ../m0/mutator_aux.odbg ../tinyxml2/tinyxml2.odbg linenoise.odbg CompletionHints.odbg mutagen.o ORCmutation.o bruiserffi.odbg asmrewriter.odbg bruisercapstone.odbg ramdump.odbg ffs.odbg $(LIB_LUA) $(TBG_OBJLIST_DBG_INC)
@@ -193,16 +211,17 @@ runcov: $(TARGET)-cov
 	$(TARGET)-cov --lua ./lua-scripts/regtest.lua
 
 valgrind: $(TARGET)
-	valgrind --leak-check=yes $(TARGET) --lua ./lua-scripts/regtest.lua
+	- valgrind --leak-check=yes $(TARGET) --lua ./lua-scripts/regtest.lua
 
 clean:
 	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
 
 deepclean: clean
-	rm tags
-	rm .depend
+	- rm tags
+	- rm .depend
 	$(MAKE) -C lua-5.3.4 clean
-	$(MAKE) -C luatablegen clean
+	$(MAKE) -C ./autogen/wasm/ft clean
+	$(MAKE) -C ./autogen/wasm/ltg clean
 
 help:
 	@echo "--all is the default target, runs $(TARGET) target"

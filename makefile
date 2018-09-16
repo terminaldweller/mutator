@@ -56,6 +56,7 @@ clean:
 deepclean: clean
 	$(MAKE) -C bruiser deepclean
 	$(MAKE) -C m0 deepclean
+	$(MAKE) -C obfuscator deepclean
 
 install:
 	chmod +x ./mutator.sh

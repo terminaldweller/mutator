@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 cd $(dirname $0)
-"../../tablegen/luatablegen.py" --out ./ltg/ --luaheader ../../../lua-5.3.4/src --headeraggr ./ltg/wasm_tables.h --lualibpath ./ltg/wasm.lua --docpath ./ltg/wasm.md --xml ./ltg/wasm.xml --tbldefs ./ltg/
+"../../tablegen/luatablegen.py" --out ./ltg/ --luaheader ../../../lua-5.3.4/src --headeraggr ./ltg/wasm_tables.h --lualibpath ./ltg/wasm.lua --docpath ./ltg/wasm.md --xml ./ltg/wasm.xml --tbldefs ./ltg/ --name wasm
 clang-format ./ltg/*.c ./ltg/*.h -i
 for filename in ./ltg/*.c; do
   gcc -c $filename > /dev/null 2>&1

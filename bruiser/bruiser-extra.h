@@ -138,6 +138,7 @@ std::vector<std::string> LUA_FUNCS =
   "xsize()",
   "xclear()",
   "xmemusage()",
+  "getwasmobj(",
   "_G",
   "_VERSION",
   "assert",

@@ -32,7 +32,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "asmrewriter.h"
 #include "ramdump.h"
 #include "ffs.h"
-#include "./luatablegen/wasm_tables.h"
+#include <fcntl.h>
+#include "./autogen/wasm/ltg/wasm_tables.h"
+#include "./autogen/wasm/ft/aggregate.h"
 /*standard headers*/
 #include <exception>
 #include <fstream>
@@ -256,7 +258,7 @@ class LuaEngine
     }
 
     void registerAutogenTables(void) {
-      reg_tablegen_tables(LS);
+      reg_tablegen_tables_wasm(LS);
     }
 
     void RunLuaDefaults(void) {
@@ -532,6 +534,7 @@ class PyExec {
     }
 
     int getWasmModule(void) {
+      return 0;
     }
 
     void killPyObj(void) {
@@ -1372,6 +1375,7 @@ class LuaWrapper
         PRINT_WITH_COLOR_LB(RED,"bad arg. nil passed. expected a value.");
       }
       PyExec py(filename.c_str(), funcname.c_str(), objjpath.c_str());
+      return 0;
     }
 
     int BruiserPyLoader(lua_State* __ls ) {
@@ -1517,7 +1521,7 @@ class LuaWrapper
     }
 
     int BruiserLuaGetXMemSize(lua_State* __ls) {
-      int argc = lua_gettop(__ls);
+      int argc [[maybe_unused]] = lua_gettop(__ls);
       int sum = 0;
       for (auto& iter : vptrs) {
         sum += std::get<2>(iter);
@@ -1673,6 +1677,68 @@ class LuaWrapper
       return 1;
     }
 #endif
+
+    int BruiserLuaGetWASMObj(lua_State* __ls) {
+      if (lua_gettop(__ls) != 1) PRINT_WITH_COLOR_LB(RED, "at least one argument denoting the path is required.");
+      std::string obj_path = lua_tostring(__ls, 1);
+      int wasm_file = open(obj_path.c_str(), O_RDONLY);
+      wasm_lib_ret_t* lib_ret = read_aggr_wasm(wasm_file);
+      close(wasm_file);
+      lua_newtable(__ls);
+      lua_pushstring(__ls, "magic");
+      magic_number_push_args(__ls, lib_ret->obj->magic_number_container);
+      new_magic_number(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "version");
+      version_push_args(__ls, lib_ret->obj->version_container);
+      new_version(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "type_section");
+      W_Type_Section_push_args(__ls, lib_ret->obj->W_Type_Section_container);
+      new_W_Type_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "import_section");
+      W_Import_Section_push_args(__ls, lib_ret->obj->W_Import_Section_container);
+      new_W_Import_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "function_section");
+      W_Function_Section_push_args(__ls, lib_ret->obj->W_Function_Section_container);
+      new_W_Function_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "table_section");
+      W_Table_Section_push_args(__ls, lib_ret->obj->W_Table_Section_container);
+      new_W_Table_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "memory_section");
+      W_Memory_Section_push_args(__ls, lib_ret->obj->W_Memory_Section_container);
+      new_W_Memory_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "global_section");
+      W_Global_Section_push_args(__ls, lib_ret->obj->W_Global_Section_container);
+      new_W_Global_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "export_section");
+      W_Export_Section_push_args(__ls, lib_ret->obj->W_Export_Section_container);
+      new_W_Export_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "start_section");
+      W_Start_Section_push_args(__ls, lib_ret->obj->W_Start_Section_container);
+      new_W_Start_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "element_section");
+      W_Element_Section_push_args(__ls, lib_ret->obj->W_Element_Section_container);
+      new_W_Element_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "code_section");
+      W_Code_Section_push_args(__ls, lib_ret->obj->W_Code_Section_container);
+      new_W_Code_Section(__ls);
+      lua_settable(__ls, -3);
+      lua_pushstring(__ls, "data_section");
+      W_Data_Section_push_args(__ls, lib_ret->obj->W_Data_Section_container);
+      new_W_Data_Section(__ls);
+      lua_settable(__ls, -3);
+      return 1;
+    }
 
     int BruiserLuaXObjAllocGlobal(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
@@ -2413,6 +2479,7 @@ int main(int argc, const char **argv) {
     lua_register(LE.GetLuaState(), "xclear", &LuaDispatch<&LuaWrapper::BruiserLuaXObjDeallocate>);
     lua_register(LE.GetLuaState(), "xmemusage", &LuaDispatch<&LuaWrapper::BruiserLuaGetXMemSize>);
     lua_register(LE.GetLuaState(), "dwasm", &LuaDispatch<&LuaWrapper::BruiserLuaDWASMPy>);
+    lua_register(LE.GetLuaState(), "getwasmobj", &LuaDispatch<&LuaWrapper::BruiserLuaGetWASMObj>);
 
     runloop.setLW(std::move(LW));
     runloop.run();

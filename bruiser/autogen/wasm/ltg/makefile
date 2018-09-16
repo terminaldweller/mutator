@@ -1,12 +1,14 @@
+TARGET=wasm_tables
+SHELL=bash
+SHELL?=bash
 CC=clang
 CC?=clang
-CC_FLAGS=-fpic
+CC_FLAGS= -fPIC
 CC_EXTRA?=
-CC_FLAGS+=$(CC_EXTRA)
-SRCS=$(wildcard *.c)
-TBG_OBJLIST=$(patsubst %.c, %.o , $(wildcard *.c))
-TBG_OBJLIST_DBG=$(patsubst %.c, %.odbg , $(wildcard *.c))
-TBG_OBJLIST_COV=$(patsubst %.c, %.ocov , $(wildcard *.c))
+CTAGS_I_PATH?=./
+LD_FLAGS=
+LIB_LUA=../../../lua-5.3.4/src/liblua.a
+EXTRA_LD_FLAGS?=-lm -ldl
 ADD_SANITIZERS_CC= -g -fsanitize=address -fno-omit-frame-pointer
 ADD_SANITIZERS_LD= -g -fsanitize=address
 MEM_SANITIZERS_CC= -g -fsanitize=memory -fno-omit-frame-pointer
@@ -14,14 +16,47 @@ MEM_SANITIZERS_LD= -g -fsanitize=memory
 UB_SANITIZERS_CC= -g -fsanitize=undefined -fno-omit-frame-pointer
 UB_SANITIZERS_LD= -g -fsanitize=undefined
 COV_CC= -fprofile-instr-generate -fcoverage-mapping
+COV_LD= -fprofile-instr-generate
+# BUILD_MODES are=RELEASE(default), DEBUG,ADDSAN,MEMSAN,UBSAN
+BUILD_MODE?=RELEASE
+OBJ_LIST:=$(patsubst %.c, %.o, $(wildcard *.c))
+ASM_LIST:=$(patsubst %.c, %.dis, $(wildcard *.c))
+
+ifeq ($(BUILD_MODE), ADDSAN)
+ifeq ($(CC), gcc)
+$(error This build mode is only useable with clang.)
+endif
+CC_EXTRA+=$(ADD_SANITIZERS_CC)
+EXTRA_LD_FLAGS+=$(ADD_SANITIZERS_LD)
+endif
+
+ifeq ($(BUILD_MODE), MEMSAN)
+ifeq ($(CC), gcc)
+$(error This build mode is only useable with clang.)
+endif
+CC_EXTRA+=$(MEM_SANITIZERS_CC)
+EXTRA_LD_FLAGS+=$(MEM_SANITIZERS_LD)
+endif
+
+ifeq ($(BUILD_MODE), UBSAN)
+ifeq ($(CC), gcc)
+$(error This build mode is only useable with clang.)
+endif
+CC_EXTRA+=$(UB_SANITIZERS_CC)
+EXTRA_LD_FLAGS+=$(UB_SANITIZERS_LD)
+endif
+
+SRCS:=$(wildcard *.c)
+CC_FLAGS+=$(CC_EXTRA)
+LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 .DEFAULT:all
 
-.PHONY:all clean help
+.PHONY:all clean help ASM SO TAGS
 
-all:$(TBG_OBJLIST) $(TBG_OBJLIST_DBG) $(TBG_OBJLIST_COV)
-	@echo $(TBG_OBJLIST)
-	@echo $(TBG_OBJLIST_INC)
+all:$(TARGET)
+
+everything:$(TARGET) A ASM SO $(TARGET)-static $(TARGET)-dbg TAGS $(TARGET)-cov
 
 depend:.depend
 
@@ -42,10 +77,78 @@ depend:.depend
 %.ocov:%.c
 	$(CC) $(CC_FLAGS) $(COV_CC) -c $< -o $@
 
+$(LIB_LUA):
+	$(MAKE) -C ../../../lua-5.3.4/src linux
+
+$(TARGET): $(TARGET).o $(LIB_LUA) $(OBJ_LIST)
+	$(CC) $(LD_FLAGS) $^ -o $@
+
+$(TARGET)-static: $(TARGET).o $(LIB_LUA) $(OBJ_LIST)
+	$(CC) $^ $(LD_FLAGS) -static -o $@
+
+$(TARGET)-dbg: $(TARGET).odbg $(LIB_LUA) $(OBJ_LIST)
+	$(CC) $^ $(LD_FLAGS) -g -o $@
+
+$(TARGET)-cov: $(TARGET).ocov $(LIB_LUA) $(OBJ_LIST)
+	$(CC) $^ $(LD_FLAGS) $(COV_LD) -o $@
+
+cov:
+	@llvm-profdata merge -sparse ./default.profraw -o ./default.profdata
+	@llvm-cov show $(TARGET)-cov -instr-profile=default.profdata
+
+covrep:
+	@llvm-profdata merge -sparse ./default.profraw -o ./default.profdata
+	@llvm-cov report $(TARGET)-cov -instr-profile=default.profdata
+
+ASM:$(ASM_LIST)
+
+SO:$(TARGET).so
+
+A:$(TARGET).a
+
+TAGS:tags
+
+tags:$(SRCS)
+	$(shell $(CC) -c -I $(CTAGS_I_PATH) -M $(SRCS)|\
+		sed -e 's/[\\ ]/\n/g'|sed -e '/^$$/d' -e '/\.o:[ \t]*$$/d'|\
+		ctags -L - --c++-kinds=+p --fields=+iaS --extra=+q)
+
+%.dis: %.o
+	objdump -r -d -M intel -S $< > $@
+
+$(TARGET).so: $(TARGET).o $(LIB_LUA) $(OBJ_LIST)
+	$(CC) $^ $(LD_FLAGS) -shared -o $@
+
+$(TARGET).a: $(TARGET).o $(LIB_LUA) $(OBJ_LIST)
+	ar rcs $(TARGET).a $(OBJ_LIST)
+
+runcov: $(TARGET)-cov
+	$(TARGET)-cov
+
+valgrind: $(TARGET)
+	- valgrind --leak-check=yes $(TARGET)
+
 clean:
-	rm -f *.o *~ $(TARGET) *.ocov *.odbg
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
+
+deepclean: clean
+	if [[ -d tags ]];then rm tags;fi
 	rm .depend
+	$(MAKE) -C ../lua5 clean
 
 help:
-	@echo "all is the default target"
-	@echo "there is clean."
+	@echo "--all is the default target, runs $(TARGET) target"
+	@echo "--everything will build everything"
+	@echo "--SO will generate the so"
+	@echo "--ASM will generate assembly files"
+	@echo "--TAGS will generate tags file"
+	@echo "--$(TARGET) builds the dynamically-linked executable"
+	@echo "--$(TARGET)-dbg will generate the debug build. BUILD_MODE should be set to DEBUG to work"
+	@echo "--$(TARGET)-static will statically link the executable to the libraries"
+	@echo "--$(TARGET)-cov is the coverage build"
+	@echo "--cov will print the coverage report"
+	@echo "--covrep will print the line coverage report"
+	@echo "--A will build the static library"
+	@echo "--TAGS will build the tags file"
+	@echo "--clean"
+	@echo "--deepclean will clean almost everything"
