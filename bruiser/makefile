@@ -145,20 +145,22 @@ linenoise.ocov: ./linenoise/linenoise.c
 $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4/src linux
 
+CODE_GEN: $(FT_WASM_A) $(LTG_WASM_A)
+
 $(FT_WASM_SO): ./autogen/wasm/ft/wasm.xml
-	@$(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ft SO
 
 $(FT_WASM_A): ./autogen/wasm/ft/wasm.xml
-	@$(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ft A
 
 $(LTG_WASM_SO): ./autogen/wasm/ltg/wasm.xml
-	@$(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ltg SO
 
 $(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
-	@$(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ltg A
 
 %.odbg:%.cpp
@@ -167,7 +169,7 @@ $(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): $(FT_WASM_A) $(LTG_WASM_A) $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
+$(TARGET): CODE_GEN $(TARGET).o $(FT_WASM_A) $(LTG_WASM_A) ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 # currently broken since it needs a static libpython
