@@ -132,12 +132,12 @@ linenoise.ocov: ./linenoise/linenoise.c
 	$(CC) $(CC_FLAGS) $(COV_CXX) linenoise/linenoise.c -c -o linenoise.ocov
 
 ./autogen/wasm/ft/wasm.xml:
-	#if [[ ls -l ./autogen/wasm/ft/ | wc -l  == 2 ]];then ./autogen/wasm/ft.sh;else :;fi
-	./autogen/wasm/ft.sh
+	if [[ ls -l ./autogen/wasm/ft/ | wc -l  == 2 ]];then ./autogen/wasm/ft.sh;else :;fi
+	#./autogen/wasm/ft.sh
 
 ./autogen/wasm/ltg/wasm.xml:
-	#if [[ ls -l ./autogen/wasm/ltg/ | wc -l  == 2 ]];then ./autogen/wasm/ltg.sh;else :;fi
-	./autogen/wasm/ltg.sh
+	if [[ ls -l ./autogen/wasm/ltg/ | wc -l  == 2 ]];then ./autogen/wasm/ltg.sh;else :;fi
+	#./autogen/wasm/ltg.sh
 
 ./luatablegen/%.o:./luatablegen/%.c
 	$(MAKE) -C luatablegen
@@ -146,15 +146,19 @@ $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4/src linux
 
 $(FT_WASM_SO): ./autogen/wasm/ft/wasm.xml
+	@$(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ft SO
 
 $(FT_WASM_A): ./autogen/wasm/ft/wasm.xml
+	@$(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ft A
 
 $(LTG_WASM_SO): ./autogen/wasm/ltg/wasm.xml
+	@$(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ltg SO
 
 $(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
+	@$(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
 	$(MAKE) -C ./autogen/wasm/ltg A
 
 %.odbg:%.cpp
