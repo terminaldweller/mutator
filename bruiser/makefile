@@ -85,7 +85,7 @@ TBG_OBJLIST_COV_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%
 
 .PHONY:all clean help ASM SO TAGS CODE_GEN
 
-all:$(TARGET)
+all:exe
 
 everything:$(TARGET) A ASM SO $(TARGET)-dbg TAGS $(TARGET)-cov
 
@@ -169,7 +169,9 @@ $(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): CODE_GEN $(TARGET).o $(FT_WASM_A) $(LTG_WASM_A) ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
+exe: CODE_GEN $(TARGET)
+
+$(TARGET): $(TARGET).o $(FT_WASM_A) $(LTG_WASM_A) ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 # currently broken since it needs a static libpython
