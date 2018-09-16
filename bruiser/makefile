@@ -167,11 +167,11 @@ $(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(FT_WASM_A) $(LTG_WASM_A)
+$(TARGET): $(FT_WASM_A) $(LTG_WASM_A) $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
 # currently broken since it needs a static libpython
-$(TARGET)-static: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(FT_WASM_A) $(LTG_WASM_A)
+$(TARGET)-static: $(FT_WASM_A) $(LTG_WASM_A) $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -static -o $@
 
 $(TARGET)-dbg: $(TARGET).odbg ../m0/mutator_aux.odbg ../tinyxml2/tinyxml2.odbg linenoise.odbg CompletionHints.odbg mutagen.o ORCmutation.o bruiserffi.odbg asmrewriter.odbg bruisercapstone.odbg ramdump.odbg ffs.odbg $(LIB_LUA) $(TBG_OBJLIST_DBG_INC)
