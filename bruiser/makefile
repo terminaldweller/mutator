@@ -83,7 +83,7 @@ TBG_OBJLIST_COV_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%
 
 .DEFAULT:all
 
-.PHONY:all clean help ASM SO TAGS
+.PHONY:all clean help ASM SO TAGS CODE_GEN
 
 all:$(TARGET)
 
