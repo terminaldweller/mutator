@@ -62,7 +62,7 @@ int jmpt_push_args(lua_State* __ls, JMP_S_T* jmpt) {
   lua_pushinteger(__ls, jmpt->y);
   lua_pushinteger(__ls, jmpt->n);
   lua_pushinteger(__ls, jmpt->z);
-  return 0;
+  return 12;
 }
 
 int new_jmpt_2(lua_State* __ls) {

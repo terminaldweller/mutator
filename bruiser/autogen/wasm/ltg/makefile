@@ -20,6 +20,8 @@ COV_LD= -fprofile-instr-generate
 # BUILD_MODES are=RELEASE(default), DEBUG,ADDSAN,MEMSAN,UBSAN
 BUILD_MODE?=RELEASE
 OBJ_LIST:=$(patsubst %.c, %.o, $(wildcard *.c))
+OBJ_LIST_DBG:=$(patsubst %.c, %.odbg, $(wildcard *.c))
+OBJ_LIST_COV:=$(patsubst %.c, %.ocov, $(wildcard *.c))
 ASM_LIST:=$(patsubst %.c, %.dis, $(wildcard *.c))
 
 ifeq ($(BUILD_MODE), ADDSAN)
@@ -105,6 +107,8 @@ ASM:$(ASM_LIST)
 SO:$(TARGET).so
 
 A:$(TARGET).a
+ADBG:$(TARGET).adbg
+ACOV:$(TARGET).acov
 
 TAGS:tags
 
@@ -122,6 +126,12 @@ $(TARGET).so: $(TARGET).o $(LIB_LUA) $(OBJ_LIST)
 $(TARGET).a: $(TARGET).o $(LIB_LUA) $(OBJ_LIST)
 	ar rcs $(TARGET).a $(OBJ_LIST)
 
+$(TARGET).adbg: $(TARGET).odbg $(LIB_LUA) $(OBJ_LIST_DBG)
+	ar rcs $(TARGET).adbg $(OBJ_LIST_DBG)
+
+$(TARGET).acov: $(TARGET).ocov $(LIB_LUA) $(OBJ_LIST_COV)
+	ar rcs $(TARGET).acov $(OBJ_LIST_DBG)
+
 runcov: $(TARGET)-cov
 	$(TARGET)-cov
 
@@ -129,7 +139,7 @@ valgrind: $(TARGET)
 	- valgrind --leak-check=yes $(TARGET)
 
 clean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov $(TARGET).adbg $(TARGET).acov
 
 deepclean: clean
 	if [[ -d tags ]];then rm tags;fi

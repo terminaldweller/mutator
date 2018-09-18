@@ -3,35 +3,31 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/resource.h>
+#include <unistd.h>
 
-#include "./structs.h"
-#include "./read.h"
 #include "./aggregate.h"
-
+#include "./read.h"
+#include "./structs.h"
 
 #pragma weak main
-int main (int argc, char** argv) {
-  const rlim_t kStackSize = 160 * 1024 * 1024;   // min stack size = 16 MB
+int main(int argc, char **argv) {
+  const rlim_t kStackSize = 160 * 1024 * 1024; // min stack size = 16 MB
   struct rlimit rl;
   int result;
 
   result = getrlimit(RLIMIT_STACK, &rl);
-  if (result == 0)
-  {
-      if (rl.rlim_cur < kStackSize)
-      {
-          rl.rlim_cur = kStackSize;
-          result = setrlimit(RLIMIT_STACK, &rl);
-          if (result != 0)
-          {
-              fprintf(stderr, "setrlimit returned result = %d\n", result);
-          }
+  if (result == 0) {
+    if (rl.rlim_cur < kStackSize) {
+      rl.rlim_cur = kStackSize;
+      result = setrlimit(RLIMIT_STACK, &rl);
+      if (result != 0) {
+        fprintf(stderr, "setrlimit returned result = %d\n", result);
       }
+    }
   }
   int wasm = open("./test.wasm", O_RDONLY);
-  wasm_lib_ret_t* lib_ret = read_aggr_wasm(wasm);
+  wasm_lib_ret_t *lib_ret = read_aggr_wasm(wasm);
   printf("finished reading\n");
 
 #if 0
@@ -165,14 +161,14 @@ int main (int argc, char** argv) {
   printf("void_train first:0x%x\n", lib_ret->void_train[0]);
   printf("void_train first:0x%x\n", lib_ret->void_train[1]);
   printf("void_train self address:0x%x\n", lib_ret->void_train);
-  //free(lib_ret->void_train[0]);
-  //release_all(lib_ret->void_train, lib_ret->current_void_count);
-  //free(lib_ret->void_train[2]);
-  //free(lib_ret->void_train[1]);
-  //free(lib_ret->void_train[0]);
+  // free(lib_ret->void_train[0]);
+  // release_all(lib_ret->void_train, lib_ret->current_void_count);
+  // free(lib_ret->void_train[2]);
+  // free(lib_ret->void_train[1]);
+  // free(lib_ret->void_train[0]);
   for (int i = lib_ret->current_void_count - 1; i >= 0; --i) {
     printf("%d:0x%x ", i, lib_ret->void_train[i]);
-    //if (i == 1) continue;
+    // if (i == 1) continue;
     free(lib_ret->void_train[i]);
   }
   free(lib_ret->void_train);

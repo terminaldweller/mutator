@@ -126,11 +126,11 @@ cl::opt<std::string> SHELL_HISTORY_FILE("history", cl::desc("path to bruiser's h
 template <typename T>
 int pushLuaTableInt(lua_State* __ls, std::vector<T> vec) {
   int tableindex = 1;
-  lua_newtable(__ls);
   if (!lua_checkstack(__ls, 3)) {
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
     return -1;
   }
+  lua_newtable(__ls);
   for (auto& iter : vec) {
     lua_pushinteger(__ls, tableindex);
     tableindex++;
@@ -142,11 +142,11 @@ int pushLuaTableInt(lua_State* __ls, std::vector<T> vec) {
 
 int pushLuaTableString(lua_State* __ls, std::vector<std::string> vec) {
   int tableindex = 1;
-  lua_newtable(__ls);
   if (!lua_checkstack(__ls, 3)) {
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
     return -1;
   }
+  lua_newtable(__ls);
   for (auto& iter : vec) {
     lua_pushinteger(__ls, tableindex);
     tableindex++;
@@ -159,11 +159,11 @@ int pushLuaTableString(lua_State* __ls, std::vector<std::string> vec) {
 template <typename T>
 int pushLuaTableNumber(lua_State* __ls, std::vector<T> vec) {
   int tableindex = 1;
-  lua_newtable(__ls);
   if (!lua_checkstack(__ls, 3)) {
     PRINT_WITH_COLOR_LB(RED, "cant grow lua stack. current size is too small.");
     return -1;
   }
+  lua_newtable(__ls);
   for (auto& iter : vec) {
     lua_pushinteger(__ls, tableindex);
     tableindex++;
@@ -1682,69 +1682,226 @@ class LuaWrapper
       if (lua_gettop(__ls) != 1) PRINT_WITH_COLOR_LB(RED, "at least one argument denoting the path is required.");
       std::string obj_path = lua_tostring(__ls, 1);
       int wasm_file = open(obj_path.c_str(), O_RDONLY);
+      if (wasm_file < 0) {PRINT_WITH_COLOR_LB(RED, "bad file.");return 0;}
+      else {PRINT_WITH_COLOR_LB(GREEN, "good file");}
       wasm_lib_ret_t* lib_ret = read_aggr_wasm(wasm_file);
+      std::cout << RED << std::hex << lib_ret->obj->magic_number_container->magic_number << "\n";
+      std::cout << lib_ret->obj->version_container->version << NORMAL << "\n";
+      std::cout << "die die die\n";
       close(wasm_file);
+
+      //if (Verbose) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wall"
+#pragma clang diagnostic ignored "-Wextra"
+      if (Verbose) {
+        printf("magic_number:%x\n", lib_ret->obj->magic_number_container->magic_number);
+        printf("version:%x\n", lib_ret->obj->version_container->version);
+
+        printf("type section id:%d\n", lib_ret->obj->W_Type_Section_container->id);
+        printf("type section payloadlength:%d\n", lib_ret->obj->W_Type_Section_container->payloadlength);
+        printf("type_section entry count:%d\n", lib_ret->obj->W_Type_Section_container->count);
+        for (int i=0; i < lib_ret->obj->W_Type_Section_container->count; ++i) {
+          printf("param_count:%d\n",lib_ret->obj->W_Type_Section_container->entries[i]->param_count);
+          for (int j = 0; j < lib_ret->obj->W_Type_Section_container->entries[i]->param_count; ++j)
+            printf("param_types:%d\n",lib_ret->obj->W_Type_Section_container->entries[i]->param_types[j]);
+          printf("return_count:%d\n", lib_ret->obj->W_Type_Section_container->entries[i]->return_count);
+          for (int j = 0; j < lib_ret->obj->W_Type_Section_container->entries[i]->return_count; ++j)
+            printf("param_types:%d\n",lib_ret->obj->W_Type_Section_container->entries[i]->return_types[j]);
+        }
+        printf("import_section_id:%d\n", lib_ret->obj->W_Import_Section_container->id);
+        printf("import_section_payloadlength:%d\n", lib_ret->obj->W_Import_Section_container->payloadlength);
+        printf("import_section_count:%d\n", lib_ret->obj->W_Import_Section_container->count);
+        for(int i = 0; i < lib_ret->obj->W_Import_Section_container->count; ++i) {
+          printf("module_length:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->module_length);
+          printf("module_str:%s\n", lib_ret->obj->W_Import_Section_container->entries[i]->module_str);
+          printf("field_length:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->field_len);
+          printf("field_str:%s\n", lib_ret->obj->W_Import_Section_container->entries[i]->field_str);
+          printf("kind:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->kind);
+          if (lib_ret->obj->W_Import_Section_container->entries[i]->kind == 0)
+            printf("type:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->kind);
+          printf("\n");
+        }
+        printf("function_section_id:%d\n", lib_ret->obj->W_Function_Section_container->id);
+        printf("function_section_payloadlength:%d\n", lib_ret->obj->W_Function_Section_container->payloadlength);
+        printf("function_section_count:%d\n", lib_ret->obj->W_Function_Section_container->count);
+        for (int i = 0; i < lib_ret->obj->W_Function_Section_container->count; ++i)
+          printf("type:%d\n", lib_ret->obj->W_Function_Section_container->types[i]);
+
+        printf("table_section_id:%d\n", lib_ret->obj->W_Table_Section_container->id);
+        printf("table_section_payloadlength:%d\n", lib_ret->obj->W_Table_Section_container->payloadlength);
+        printf("table_section_count:%d\n", lib_ret->obj->W_Table_Section_container->count);
+        for (int i = 0; i < lib_ret->obj->W_Table_Section_container->count; ++i) {
+          printf("element_type:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->element_type);
+          printf("rl_flags:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->resizable_limit->flags);
+          printf("rl_initial:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->resizable_limit->initial);
+          printf("rl_maximum:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->resizable_limit->maximum);
+        }
+
+        printf("memory_section_id:%d\n", lib_ret->obj->W_Memory_Section_container->id);
+        printf("memory_section_payload_length:%d\n", lib_ret->obj->W_Memory_Section_container->payloadlength);
+        printf("rl_flags:%d\n", lib_ret->obj->W_Memory_Section_container->entries->resizable_limit->flags);
+        printf("rl_initial:%d\n", lib_ret->obj->W_Memory_Section_container->entries->resizable_limit->initial);
+        printf("rl_maximum:%d\n", lib_ret->obj->W_Memory_Section_container->entries->resizable_limit->maximum);
+
+        if (lib_ret->obj->W_Global_Section_container == NULL) printf("global section doesnt exist.\n");
+
+        printf("export_section_id:%d\n", lib_ret->obj->W_Export_Section_container->id);
+        printf("export_section_payloadlength:%d\n", lib_ret->obj->W_Export_Section_container->payloadlength);
+        printf("entry count:%d\n", lib_ret->obj->W_Export_Section_container->count);
+
+        for (int i = 0; i < lib_ret->obj->W_Export_Section_container->count; ++i) {
+          printf("field_len:%d\n", lib_ret->obj->W_Export_Section_container->entries[i]->field_len);
+          printf("field_str:%s\n", lib_ret->obj->W_Export_Section_container->entries[i]->field_str);
+          printf("kind:%d\n", lib_ret->obj->W_Export_Section_container->entries[i]->kind);
+          printf("index:%d\n", lib_ret->obj->W_Export_Section_container->entries[i]->index);
+        }
+
+        if (lib_ret->obj->W_Start_Section_container == NULL) printf("start section doesnt exist.\n");
+
+        printf("element_seciton_id:%d\n", lib_ret->obj->W_Element_Section_container->id);
+        printf("element_section_payloadlength:%d\n", lib_ret->obj->W_Element_Section_container->payloadlength);
+        printf("entry count:%d\n", lib_ret->obj->W_Element_Section_container->count);
+
+        for (int i = 0; i < lib_ret->obj->W_Element_Section_container->count; ++i) {
+          printf("index:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->index);
+          for (int j = 0; j < 3; ++j) {
+            printf("code:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->init->code[j]);
+          }
+          printf("num_length:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->num_length);
+          for (int j = 0; j < lib_ret->obj->W_Element_Section_container->entries[i]->num_length; ++j) {
+            printf("elems:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->elems[j]);
+          }
+        }
+
+        printf("code_section_id:%d\n", lib_ret->obj->W_Code_Section_container->id);
+        printf("code_section_payloadlength:%d\n", lib_ret->obj->W_Code_Section_container->payloadlength);
+        printf("count:%d\n", lib_ret->obj->W_Code_Section_container->count);
+
+        for (int i = 0; i < lib_ret->obj->W_Code_Section_container->count; ++i) {
+          printf("body_size:%d\n", lib_ret->obj->W_Code_Section_container->bodies[i]->body_size);
+          printf("local_count:%d\n", lib_ret->obj->W_Code_Section_container->bodies[i]->local_count);
+          if (lib_ret->obj->W_Code_Section_container->bodies[i]->local_count > 0) {
+            for (int j =0; j < lib_ret->obj->W_Code_Section_container->bodies[i]->local_count; ++j) {
+              for (int k = 0; k < lib_ret->obj->W_Code_Section_container->bodies[i]->locals[j]->count; ++k) {
+              }
+            }
+          }
+          printf("code:\n");
+          for (int j = 0; j < lib_ret->obj->W_Code_Section_container->bodies[i]->body_size; ++j) {
+            printf("%02x ", lib_ret->obj->W_Code_Section_container->bodies[i]->code[j]);
+          }
+          printf("\n");
+        }
+
+        printf("data_section_id:%d\n", lib_ret->obj->W_Data_Section_container->id);
+        printf("data_section_payloadlength:%d\n", lib_ret->obj->W_Data_Section_container->payloadlength);
+        printf("data seg count:%d\n", lib_ret->obj->W_Data_Section_container->count);
+
+        for (int i = 0; i < lib_ret->obj->W_Data_Section_container->count; ++i) {
+          printf("index:%d\n", lib_ret->obj->W_Data_Section_container->entries[i]->index);
+          printf("size:%d\n", lib_ret->obj->W_Data_Section_container->entries[i]->size);
+          printf("code:\n");
+          for (int j = 0; j < lib_ret->obj->W_Data_Section_container->entries[i]->size; ++j) {
+            printf("%c ", lib_ret->obj->W_Data_Section_container->entries[i]->data[j]);
+          }
+          printf("\n");
+          int j = 0;
+          printf("offset:\n");
+          while(1) {
+            printf("%02x ", lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j]);
+            if (lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j] == 11) {
+              break;
+            }
+            j++;
+          }
+          printf("\n");
+        }
+      }
+#pragma clang diagnostic pop
+
       lua_newtable(__ls);
       lua_pushstring(__ls, "magic");
       magic_number_push_args(__ls, lib_ret->obj->magic_number_container);
       new_magic_number(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "magic");
+
       lua_pushstring(__ls, "version");
       version_push_args(__ls, lib_ret->obj->version_container);
       new_version(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "version");
+
       lua_pushstring(__ls, "type_section");
+      std::cout << "1\n";
       W_Type_Section_push_args(__ls, lib_ret->obj->W_Type_Section_container);
+      std::cout << "2\n";
       new_W_Type_Section(__ls);
+      std::cout << "3\n";
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "type section");
+      return 1;
+#if 0
       lua_pushstring(__ls, "import_section");
       W_Import_Section_push_args(__ls, lib_ret->obj->W_Import_Section_container);
       new_W_Import_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "import section");
       lua_pushstring(__ls, "function_section");
       W_Function_Section_push_args(__ls, lib_ret->obj->W_Function_Section_container);
       new_W_Function_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "function section");
       lua_pushstring(__ls, "table_section");
       W_Table_Section_push_args(__ls, lib_ret->obj->W_Table_Section_container);
       new_W_Table_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "table section");
       lua_pushstring(__ls, "memory_section");
       W_Memory_Section_push_args(__ls, lib_ret->obj->W_Memory_Section_container);
       new_W_Memory_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "memory section");
       lua_pushstring(__ls, "global_section");
       W_Global_Section_push_args(__ls, lib_ret->obj->W_Global_Section_container);
       new_W_Global_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "global section");
       lua_pushstring(__ls, "export_section");
       W_Export_Section_push_args(__ls, lib_ret->obj->W_Export_Section_container);
       new_W_Export_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "export section");
       lua_pushstring(__ls, "start_section");
       W_Start_Section_push_args(__ls, lib_ret->obj->W_Start_Section_container);
       new_W_Start_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "start section");
       lua_pushstring(__ls, "element_section");
       W_Element_Section_push_args(__ls, lib_ret->obj->W_Element_Section_container);
       new_W_Element_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "element section");
       lua_pushstring(__ls, "code_section");
       W_Code_Section_push_args(__ls, lib_ret->obj->W_Code_Section_container);
       new_W_Code_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "code section");
       lua_pushstring(__ls, "data_section");
       W_Data_Section_push_args(__ls, lib_ret->obj->W_Data_Section_container);
       new_W_Data_Section(__ls);
       lua_settable(__ls, -3);
+      PRINT_WITH_COLOR_LB(BLUE, "data section");
       return 1;
+#endif
     }
 
     int BruiserLuaXObjAllocGlobal(lua_State* __ls) {
       int numargs = lua_gettop(__ls);
       if (numargs != 2) {PRINT_WITH_COLOR_LB(RED, "expected exactly two args. did not get that.");return 0;}
       std::string glob_name = lua_tostring(__ls , 1);
-      size_t size = lua_tointeger(__ls, 2);
+      size_t size [[maybe_unused]] = lua_tointeger(__ls, 2);
       //xglobals->reserve(size);
       return 0;
     }

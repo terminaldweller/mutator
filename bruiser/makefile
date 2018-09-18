@@ -4,8 +4,12 @@ PY_CONF?=python3-config
 LIB_LUA=./lua-5.3.4/src/liblua.a
 FT_WASM_SO=./autogen/wasm/ft/autowasm.so
 FT_WASM_A=./autogen/wasm/ft/autowasm.a
+FT_WASM_A_DBG=./autogen/wasm/ft/autowasm.adbg
+FT_WASM_A_COV=./autogen/wasm/ft/autowasm.acov
 LTG_WASM_SO=./autogen/wasm/ltg/wasm_tables.so
 LTG_WASM_A=./autogen/wasm/ltg/wasm_tables.a
+LTG_WASM_A_DBG=./autogen/wasm/ltg/wasm_tables.adbg
+LTG_WASM_A_COV=./autogen/wasm/ltg/wasm_tables.acov
 SHELL=bash
 SHELL?=bash
 CC=clang
@@ -83,7 +87,7 @@ TBG_OBJLIST_COV_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%
 
 .DEFAULT:all
 
-.PHONY:all clean help ASM SO TAGS CODE_GEN
+.PHONY:all clean help ASM SO TAGS CODE_GEN CODE_GEN_DBG CODE_GEN_COV
 
 all:exe
 
@@ -145,23 +149,50 @@ linenoise.ocov: ./linenoise/linenoise.c
 $(LIB_LUA):
 	$(MAKE) -C lua-5.3.4/src linux
 
-CODE_GEN: $(FT_WASM_A) $(LTG_WASM_A)
+CODE_GEN: $(FT_WASM_A) $(LTG_WASM_A) $(FT_WASM_SO) $(LTG_WASM_SO)
+
+CODE_GEN_DBG: $(FT_WASM_A_DBG) $(LTG_WASM_A_DBG)
+
+CODE_GEN_COV: $(FT_WASM_A_COV) $(LTG_WASM_A_COV)
+
+define check_ft_codegen
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
+endef
+define check_ltg_codegen
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
+endef
 
 $(FT_WASM_SO): ./autogen/wasm/ft/wasm.xml
-	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
+	$(check_ft_codegen)
 	$(MAKE) -C ./autogen/wasm/ft SO
 
 $(FT_WASM_A): ./autogen/wasm/ft/wasm.xml
-	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
+	$(check_ft_codegen)
 	$(MAKE) -C ./autogen/wasm/ft A
 
+$(FT_WASM_A_DBG): ./autogen/wasm/ft/wasm.xml
+	$(check_ft_codegen)
+	$(MAKE) -C ./autogen/wasm/ft ADBG
+
+$(FT_WASM_A_COV): ./autogen/wasm/ft/wasm.xml
+	$(check_ft_codegen)
+	$(MAKE) -C ./autogen/wasm/ft ACOV
+
 $(LTG_WASM_SO): ./autogen/wasm/ltg/wasm.xml
-	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
+	$(check_ltg_codegen)
 	$(MAKE) -C ./autogen/wasm/ltg SO
 
 $(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
-	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
+	$(check_ltg_codegen)
 	$(MAKE) -C ./autogen/wasm/ltg A
+
+$(LTG_WASM_A_DBG): ./autogen/wasm/ltg/wasm.xml
+	$(check_ltg_codegen)
+	$(MAKE) -C ./autogen/wasm/ltg ADBG
+
+$(LTG_WASM_A_COV): ./autogen/wasm/ltg/wasm.xml
+	$(check_ltg_codegen)
+	$(MAKE) -C ./autogen/wasm/ltg ACOV
 
 %.odbg:%.cpp
 	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
@@ -170,6 +201,8 @@ $(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
 exe: CODE_GEN $(TARGET)
+exe-dbg: CODE_GEN_DBG $(TARGET)-dbg
+exe-cov: CODE_GEN_COV $(TARGET)-cov
 
 $(TARGET): $(TARGET).o $(FT_WASM_A) $(LTG_WASM_A) ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -o $@
@@ -178,10 +211,10 @@ $(TARGET): $(TARGET).o $(FT_WASM_A) $(LTG_WASM_A) ../m0/mutator_aux.o ../tinyxml
 $(TARGET)-static: $(FT_WASM_A) $(LTG_WASM_A) $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -static -o $@
 
-$(TARGET)-dbg: $(TARGET).odbg ../m0/mutator_aux.odbg ../tinyxml2/tinyxml2.odbg linenoise.odbg CompletionHints.odbg mutagen.o ORCmutation.o bruiserffi.odbg asmrewriter.odbg bruisercapstone.odbg ramdump.odbg ffs.odbg $(LIB_LUA) $(TBG_OBJLIST_DBG_INC)
+$(TARGET)-dbg: $(TARGET).odbg $(FT_WASM_A_DBG) $(LTG_WASM_A_DBG) ../m0/mutator_aux.odbg ../tinyxml2/tinyxml2.odbg linenoise.odbg CompletionHints.odbg mutagen.o ORCmutation.o bruiserffi.odbg asmrewriter.odbg bruisercapstone.odbg ramdump.odbg ffs.odbg $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) -g -o $@
 
-$(TARGET)-cov: $(TARGET).ocov ../m0/mutator_aux.ocov ../tinyxml2/tinyxml2.ocov linenoise.ocov CompletionHints.ocov mutagen.o ORCmutation.o bruiserffi.ocov asmrewriter.ocov bruisercapstone.ocov ramdump.ocov ffs.ocov $(LIB_LUA) $(TBG_OBJLIST_COV_INC)
+$(TARGET)-cov: $(TARGET).ocov $(FT_WASM_A_COV) $(LTG_WASM_A_COV) ../m0/mutator_aux.ocov ../tinyxml2/tinyxml2.ocov linenoise.ocov CompletionHints.ocov mutagen.o ORCmutation.o bruiserffi.ocov asmrewriter.ocov bruisercapstone.ocov ramdump.ocov ffs.ocov $(LIB_LUA)
 	$(CXX) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov:
@@ -209,9 +242,11 @@ tags:$(SRCS)
 %.dis: %.o
 	objdump -r -d -M intel -S $< > $@
 
+#FIXME
 $(TARGET).so: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
 	$(CXX) $^ $(LD_FLAGS) -shared -o $@
 
+#FIXME
 $(TARGET).a: $(TARGET).o ../m0/mutator_aux.o ../tinyxml2/tinyxml2.o linenoise.o CompletionHints.o mutagen.o ORCmutation.o bruiserffi.o asmrewriter.o bruisercapstone.o ramdump.o ffs.o $(LIB_LUA) $(TBG_OBJLIST_INC)
 	ar rcs $(TARGET).a $(TARGET).o
 
@@ -220,6 +255,9 @@ runcov: $(TARGET)-cov
 
 valgrind: $(TARGET)
 	- valgrind --leak-check=yes $(TARGET) --lua ./lua-scripts/regtest.lua
+
+debug: $(TARGET)-dbg
+	gdb --args --lua ./lua-scripts/wasmtest.lua $(TARGET)-dbg
 
 clean:
 	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov

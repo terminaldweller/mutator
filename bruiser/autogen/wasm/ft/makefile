@@ -101,6 +101,8 @@ ASM:$(ASM_LIST)
 SO:$(TARGET).so
 
 A:$(TARGET).a
+ADBG:$(TARGET).adbg
+ACOV:$(TARGET).acov
 
 TAGS:tags
 
@@ -118,6 +120,12 @@ $(TARGET).so: $(TARGET).o read.o aggregate.o structs.o
 $(TARGET).a: $(TARGET).o read.o aggregate.o structs.o
 	ar rcs $(TARGET).a $(TARGET).o read.o aggregate.o structs.o
 
+$(TARGET).adbg: $(TARGET).odbg read.odbg aggregate.odbg structs.odbg
+	ar rcs $(TARGET).adbg $(TARGET).odbg read.odbg aggregate.odbg structs.odbg
+
+$(TARGET).acov: $(TARGET).ocov read.ocov aggregate.ocov structs.ocov
+	ar rcs $(TARGET).acov $(TARGET).ocov read.ocov aggregate.ocov structs.ocov
+
 valgrind: $(TARGET)
 	valgrind --leak-check=yes $(TARGET)
 
@@ -125,7 +133,7 @@ test: $(TARGET)
 	$(TARGET)
 
 clean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov $(TARGET).adbg $(TARGET).acov
 
 deepclean:
 	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so tags $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
