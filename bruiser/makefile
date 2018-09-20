@@ -159,7 +159,7 @@ define check_ft_codegen
 	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
 endef
 define check_ltg_codegen
-	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 3 ]];then ./autogen/wasm/ltg.sh;else :;fi)
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 4 ]];then ./autogen/wasm/ltg.sh;else :;fi)
 endef
 
 $(FT_WASM_SO): ./autogen/wasm/ft/wasm.xml
