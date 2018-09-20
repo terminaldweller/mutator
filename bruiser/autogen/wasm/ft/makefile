@@ -53,7 +53,7 @@ LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 .PHONY:all clean help ASM SO TAGS
 
-all:$(TARGET) $(TARGET)-dbg
+all:A ADBG
 
 everything:$(TARGET) A ASM SO $(TARGET)-static $(TARGET)-dbg TAGS $(TARGET)-cov
 
