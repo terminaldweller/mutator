@@ -1683,14 +1683,15 @@ class LuaWrapper
       std::string obj_path = lua_tostring(__ls, 1);
       int wasm_file = open(obj_path.c_str(), O_RDONLY);
       if (wasm_file < 0) {PRINT_WITH_COLOR_LB(RED, "bad file.");return 0;}
-      else {PRINT_WITH_COLOR_LB(GREEN, "good file");}
+      else {
+        if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "good file");
+      }
       wasm_lib_ret_t* lib_ret = read_aggr_wasm(wasm_file);
-      std::cout << RED << std::hex << lib_ret->obj->magic_number_container->magic_number << "\n";
-      std::cout << lib_ret->obj->version_container->version << NORMAL << "\n";
-      std::cout << "die die die\n";
+      //std::cout << RED << std::hex << lib_ret->obj->magic_number_container->magic_number << "\n";
+      //std::cout << lib_ret->obj->version_container->version << NORMAL << "\n";
+      //std::cout << "die die die\n";
       close(wasm_file);
 
-      //if (Verbose) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wall"
 #pragma clang diagnostic ignored "-Wextra"
@@ -1821,80 +1822,111 @@ class LuaWrapper
 #pragma clang diagnostic pop
 
       lua_newtable(__ls);
-      lua_pushstring(__ls, "magic");
-      magic_number_push_args(__ls, lib_ret->obj->magic_number_container);
-      new_magic_number(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->magic_number_container != NULL) {
+        lua_pushstring(__ls, "magic");
+        magic_number_push_args(__ls, lib_ret->obj->magic_number_container);
+        new_magic_number(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "magic");
 
-      lua_pushstring(__ls, "version");
-      version_push_args(__ls, lib_ret->obj->version_container);
-      new_version(__ls);
-      lua_settable(__ls, -3);
+      if (lib_ret->obj->version_container != NULL) {
+        lua_pushstring(__ls, "version");
+        version_push_args(__ls, lib_ret->obj->version_container);
+        new_version(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "version");
 
-      lua_pushstring(__ls, "type_section");
-      std::cout << "1\n";
-      W_Type_Section_push_args(__ls, lib_ret->obj->W_Type_Section_container);
-      std::cout << "2\n";
-      new_W_Type_Section(__ls);
-      std::cout << "3\n";
-      lua_settable(__ls, -3);
+      if (lib_ret->obj->W_Type_Section_container != NULL) {
+        lua_pushstring(__ls, "type_section");
+        W_Type_Section_push_args(__ls, lib_ret->obj->W_Type_Section_container);
+        new_W_Type_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "type section");
-      return 1;
-#if 0
-      lua_pushstring(__ls, "import_section");
-      W_Import_Section_push_args(__ls, lib_ret->obj->W_Import_Section_container);
-      new_W_Import_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Import_Section_container != NULL) {
+        lua_pushstring(__ls, "import_section");
+        W_Import_Section_push_args(__ls, lib_ret->obj->W_Import_Section_container);
+        new_W_Import_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "import section");
-      lua_pushstring(__ls, "function_section");
-      W_Function_Section_push_args(__ls, lib_ret->obj->W_Function_Section_container);
-      new_W_Function_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Function_Section_container != NULL) {
+        lua_pushstring(__ls, "function_section");
+        W_Function_Section_push_args(__ls, lib_ret->obj->W_Function_Section_container);
+        new_W_Function_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "function section");
-      lua_pushstring(__ls, "table_section");
-      W_Table_Section_push_args(__ls, lib_ret->obj->W_Table_Section_container);
-      new_W_Table_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Table_Section_container != NULL) {
+        lua_pushstring(__ls, "table_section");
+        W_Table_Section_push_args(__ls, lib_ret->obj->W_Table_Section_container);
+        new_W_Table_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "table section");
-      lua_pushstring(__ls, "memory_section");
-      W_Memory_Section_push_args(__ls, lib_ret->obj->W_Memory_Section_container);
-      new_W_Memory_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Memory_Section_container != NULL) {
+        lua_pushstring(__ls, "memory_section");
+        W_Memory_Section_push_args(__ls, lib_ret->obj->W_Memory_Section_container);
+        new_W_Memory_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "memory section");
-      lua_pushstring(__ls, "global_section");
-      W_Global_Section_push_args(__ls, lib_ret->obj->W_Global_Section_container);
-      new_W_Global_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Global_Section_container != NULL) {
+        lua_pushstring(__ls, "global_section");
+        W_Global_Section_push_args(__ls, lib_ret->obj->W_Global_Section_container);
+        new_W_Global_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "global section");
-      lua_pushstring(__ls, "export_section");
-      W_Export_Section_push_args(__ls, lib_ret->obj->W_Export_Section_container);
-      new_W_Export_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Export_Section_container != NULL) {
+        lua_pushstring(__ls, "export_section");
+        W_Export_Section_push_args(__ls, lib_ret->obj->W_Export_Section_container);
+        new_W_Export_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "export section");
-      lua_pushstring(__ls, "start_section");
-      W_Start_Section_push_args(__ls, lib_ret->obj->W_Start_Section_container);
-      new_W_Start_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Start_Section_container != NULL) {
+        lua_pushstring(__ls, "start_section");
+        W_Start_Section_push_args(__ls, lib_ret->obj->W_Start_Section_container);
+        new_W_Start_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "start section");
-      lua_pushstring(__ls, "element_section");
-      W_Element_Section_push_args(__ls, lib_ret->obj->W_Element_Section_container);
-      new_W_Element_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Element_Section_container != NULL) {
+        lua_pushstring(__ls, "element_section");
+        W_Element_Section_push_args(__ls, lib_ret->obj->W_Element_Section_container);
+        new_W_Element_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "element section");
-      lua_pushstring(__ls, "code_section");
-      W_Code_Section_push_args(__ls, lib_ret->obj->W_Code_Section_container);
-      new_W_Code_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Code_Section_container != NULL) {
+        lua_pushstring(__ls, "code_section");
+        W_Code_Section_push_args(__ls, lib_ret->obj->W_Code_Section_container);
+        new_W_Code_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "code section");
-      lua_pushstring(__ls, "data_section");
-      W_Data_Section_push_args(__ls, lib_ret->obj->W_Data_Section_container);
-      new_W_Data_Section(__ls);
-      lua_settable(__ls, -3);
+
+      if (lib_ret->obj->W_Data_Section_container != NULL) {
+        lua_pushstring(__ls, "data_section");
+        W_Data_Section_push_args(__ls, lib_ret->obj->W_Data_Section_container);
+        new_W_Data_Section(__ls);
+        lua_settable(__ls, -3);
+      }
       PRINT_WITH_COLOR_LB(BLUE, "data section");
       return 1;
-#endif
     }
 
     int BruiserLuaXObjAllocGlobal(lua_State* __ls) {
