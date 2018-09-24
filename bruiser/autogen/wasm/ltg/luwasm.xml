@@ -99,76 +99,76 @@
     </Custom_Section>
   </Read>
   <Definition>
-    <Init_Expr name="init_expr_t" isaggregate="true" luatype="table">
+    <Init_Expr name="init_expr_t" isaggregate="true" luatype="lightuserdata">
       <Code name="code" type="string" count="1" size="-1" delimiter="11" luatype="integer"></Code>
     </Init_Expr>
-    <Resizable_Limit name="resizable_limit_t" isaggregate="true" luatype="table">
+    <Resizable_Limit name="resizable_limit_t" isaggregate="true" luatype="lightuserdata">
       <Flags name="flags" encoding="leb128u" type="uint8" count="1" luatype="integer"></Flags>
       <Initial name="initial" encoding="leb128u" type="uint32" count="1" luatype="integer"></Initial>
       <Maximum name="maximum" encoding="leb128u" type="uint32" count="1" luatype="integer"></Maximum>
     </Resizable_Limit>
-    <Global_Type name="global_type_t" isaggregate="true" luatype="table">
+    <Global_Type name="global_type_t" isaggregate="true" luatype="lightuserdata">
       <Value_Type name="value_type" type="uint32" count="1" luatype="integer"></Value_Type>
       <Mutability name="mutability" encoding="leb128u" type="uint8" count="1" luatype="integer"></Mutability>
     </Global_Type>
-    <Table_Type name="table_type_t" isaggregate="true" luatype="table">
+    <Table_Type name="table_type_t" isaggregate="true" luatype="lightuserdata">
       <Element_Type name="element_type" encoding="leb128u" type="uint8" count="1" luatype="integer"></Element_Type>
-      <Resizable_Limit name="resizable_limit" count="1" type="self::Resizable_Limit" luatype="table"></Resizable_Limit>
+      <Resizable_Limit name="resizable_limit" count="1" type="self::Resizable_Limit" luatype="lightuserdata"></Resizable_Limit>
     </Table_Type>
-    <Memory_Type name="memory_type_t" isaggregate="true" luatype="table">
-      <Resizable_Limit count="1" type="self::Resizable_Limit" name="resizable_limit" luatype="table"></Resizable_Limit>
+    <Memory_Type name="memory_type_t" isaggregate="true" luatype="lightuserdata">
+      <Resizable_Limit count="1" type="self::Resizable_Limit" name="resizable_limit" luatype="lightuserdata"></Resizable_Limit>
     </Memory_Type>
-    <Type_Section_Entry name="W_Type_Section_Entry" isaggregate="true" luatype="table">
+    <Type_Section_Entry name="W_Type_Section_Entry" isaggregate="true" luatype="lightuserdata">
       <Form name="form" encoding="leb128u" type="uint8" count="1" luatype="integer"/>
       <Param_Count name="param_count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Param_Types name="param_types" encoding="leb128u" type="uint8" count="self::Param_Count" luatype="integer"/>
       <Return_Count name="return_count" encoding="leb128u" type="uint8" luatype="integer"/>
       <Return_Types name="return_types" encoding="leb128u" type="uint8" count="self::Return_Count" luatype="integer"/>
     </Type_Section_Entry>
-    <Import_Section_Entry name="W_Import_Section_Entry" isaggregate="true" luatype="table">
+    <Import_Section_Entry name="W_Import_Section_Entry" isaggregate="true" luatype="lightuserdata">
       <Module_Length name="module_length" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Module_Str name="module_str" type="string" count="1" size="self::Module_Length" luatype="string"/>
       <Field_Len name="field_len" encoding="leb128u" type="uint32" couny="1" luatype="integer"/>
       <Field_Str name="field_str" type="string" count="1" size="self::Field_Len" luatype="string"/>
       <Kind name="kind" encoding="leb128u" type="uint8" count="1" luatype="integer"/>
       <Type name="type" conditional="true" condition="self::Kind" type="FT::conditional" luatype="conditional">
-        <condition0 name="type" encoding="leb128u" type="uint32" luatype="integer">0</condition0>
-        <condition1 name="type" type="self::Table_Type" luatype="table">1</condition1>
-        <condition2 name="type" type="self::Memory_Type" luatype="table">2</condition2>
-        <condition3 name="type" type="self::Global_Type" luatype="table">3</condition3>
+        <condition0 name="type" encoding="leb128u" type="uint32" luatype="lightuserdata">0</condition0>
+        <condition1 name="type" type="self::Table_Type" luatype="lightuserdata">1</condition1>
+        <condition2 name="type" type="self::Memory_Type" luatype="lightuserdata">2</condition2>
+        <condition3 name="type" type="self::Global_Type" luatype="lightuserdata">3</condition3>
       </Type>
     </Import_Section_Entry>
-    <Global_Entry name="W_Global_Entry" isaggregate="true" luatype="table">
-      <Global_Type name="type" type="self::Global_Type" count="1" luatype="table"/>
-      <Init name="init" type="self::Init_Expr" count="1" luatype="table"/>
+    <Global_Entry name="W_Global_Entry" isaggregate="true" luatype="lightuserdata">
+      <Global_Type name="type" type="self::Global_Type" count="1" luatype="lightuserdata"/>
+      <Init name="init" type="self::Init_Expr" count="1" luatype="lightuserdata"/>
     </Global_Entry>
-    <Export_Entry name="W_Export_Entry" isaggregate="true" luatype="table">
+    <Export_Entry name="W_Export_Entry" isaggregate="true" luatype="lightuserdata">
       <Field_Len name="field_len" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Field_Str name="field_str" type="string" count="1" size="self::Field_Len" luatype="string"/>
       <Kind name="kind" encoding="leb128u" type="uint8" count="1" luatype="integer"/>
       <Index name="index" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
     </Export_Entry>
-    <Element_Segment name="W_Element_Segment" isaggregate="true" luatype="table">
+    <Element_Segment name="W_Element_Segment" isaggregate="true" luatype="lightuserdata">
       <Index name="index" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Init name="init" type="self::Init_Expr" count="1" luatype="table"/>
+      <Init name="init" type="self::Init_Expr" count="1" luatype="lightuserdata"/>
       <Num_Length name="num_length" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Elems name="elems" encoding="leb128u" type="uint32" count="self::Num_Length" luatype="integer"/>
     </Element_Segment>
-    <Local_Entry name="W_Local_Entry" isaggregate="true" luatype="table">
+    <Local_Entry name="W_Local_Entry" isaggregate="true" luatype="lightuserdata">
       <Count name="count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Type name="type" encoding="leb128u" type="uint16" count="self::Count" luatype="integer"/>
     </Local_Entry>
-    <Function_Body name="W_Function_Body" isaggregate="true" luatype="table">
+    <Function_Body name="W_Function_Body" isaggregate="true" luatype="lightuserdata">
       <Body_size name="body_size" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Local_Count name="local_count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Local_Entries name="locals" type="self::Local_Entry" count="self::Local_Count" luatype="table"/>
+      <Local_Entries name="locals" type="self::Local_Entry" count="self::Local_Count" luatype="lightuserdata"/>
       <Code name="code" type="uint8" count="self::Body_size" luatype="integer"/>
     </Function_Body>
-    <Data_Segment name="W_Data_Segment" isaggregate="true" luatype="table">
+    <Data_Segment name="W_Data_Segment" isaggregate="true" luatype="lightuserdata">
       <Index name="index" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Offset name="offset" type="self::Init_Expr" count="1" luatype="table"/>
+      <Offset name="offset" type="self::Init_Expr" count="1" luatype="lightuserdata"/>
       <Size name="size" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Data name="data" type="uint8" count="self::Size" luatype="table"/>
+      <Data name="data" type="uint8" count="self::Size" luatype="lightuserdata"/>
     </Data_Segment>
   </Definition>
 </FT>
