@@ -1829,7 +1829,7 @@ class LuaWrapper
         new_magic_number(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "magic");
+      //PRINT_WITH_COLOR_LB(BLUE, "magic");
 
       if (lib_ret->obj->version_container != NULL) {
         lua_pushstring(__ls, "version");
@@ -1837,7 +1837,7 @@ class LuaWrapper
         new_version(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "version");
+      //PRINT_WITH_COLOR_LB(BLUE, "version");
 
       if (lib_ret->obj->W_Type_Section_container != NULL) {
         lua_pushstring(__ls, "type_section");
@@ -1845,7 +1845,7 @@ class LuaWrapper
         new_W_Type_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "type section");
+      //PRINT_WITH_COLOR_LB(BLUE, "type section");
 
       if (lib_ret->obj->W_Import_Section_container != NULL) {
         lua_pushstring(__ls, "import_section");
@@ -1853,7 +1853,7 @@ class LuaWrapper
         new_W_Import_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "import section");
+      //PRINT_WITH_COLOR_LB(BLUE, "import section");
 
       if (lib_ret->obj->W_Function_Section_container != NULL) {
         lua_pushstring(__ls, "function_section");
@@ -1861,7 +1861,7 @@ class LuaWrapper
         new_W_Function_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "function section");
+      //PRINT_WITH_COLOR_LB(BLUE, "function section");
 
       if (lib_ret->obj->W_Table_Section_container != NULL) {
         lua_pushstring(__ls, "table_section");
@@ -1869,7 +1869,7 @@ class LuaWrapper
         new_W_Table_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "table section");
+      //PRINT_WITH_COLOR_LB(BLUE, "table section");
 
       if (lib_ret->obj->W_Memory_Section_container != NULL) {
         lua_pushstring(__ls, "memory_section");
@@ -1877,7 +1877,7 @@ class LuaWrapper
         new_W_Memory_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "memory section");
+      //PRINT_WITH_COLOR_LB(BLUE, "memory section");
 
       if (lib_ret->obj->W_Global_Section_container != NULL) {
         lua_pushstring(__ls, "global_section");
@@ -1885,7 +1885,7 @@ class LuaWrapper
         new_W_Global_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "global section");
+      //PRINT_WITH_COLOR_LB(BLUE, "global section");
 
       if (lib_ret->obj->W_Export_Section_container != NULL) {
         lua_pushstring(__ls, "export_section");
@@ -1893,7 +1893,7 @@ class LuaWrapper
         new_W_Export_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "export section");
+      //PRINT_WITH_COLOR_LB(BLUE, "export section");
 
       if (lib_ret->obj->W_Start_Section_container != NULL) {
         lua_pushstring(__ls, "start_section");
@@ -1901,7 +1901,7 @@ class LuaWrapper
         new_W_Start_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "start section");
+      //PRINT_WITH_COLOR_LB(BLUE, "start section");
 
       if (lib_ret->obj->W_Element_Section_container != NULL) {
         lua_pushstring(__ls, "element_section");
@@ -1909,7 +1909,7 @@ class LuaWrapper
         new_W_Element_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "element section");
+      //PRINT_WITH_COLOR_LB(BLUE, "element section");
 
       if (lib_ret->obj->W_Code_Section_container != NULL) {
         lua_pushstring(__ls, "code_section");
@@ -1917,7 +1917,7 @@ class LuaWrapper
         new_W_Code_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "code section");
+      //PRINT_WITH_COLOR_LB(BLUE, "code section");
 
       if (lib_ret->obj->W_Data_Section_container != NULL) {
         lua_pushstring(__ls, "data_section");
@@ -1925,7 +1925,7 @@ class LuaWrapper
         new_W_Data_Section(__ls);
         lua_settable(__ls, -3);
       }
-      PRINT_WITH_COLOR_LB(BLUE, "data section");
+      //PRINT_WITH_COLOR_LB(BLUE, "data section");
       return 1;
     }
 

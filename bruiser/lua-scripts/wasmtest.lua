@@ -69,6 +69,13 @@ function demo4()
     io.write("name:"..tostring(a["table_section"]:name()).."\n")
     io.write("count:"..tostring(a["table_section"]:count()).."\n")
     io.write("entries:"..tostring(a["table_section"]:entries()).."\n")
+    for k, v in pairs(a["table_section"]:entries()) do
+      io.write(v:element_type().."\t")
+      io.write(tostring(v:resizable_limit()).."\t")
+      io.write(v:resizable_limit():flags().."\t")
+      io.write(v:resizable_limit():initial().."\t")
+      io.write(v:resizable_limit():maximum().."\n")
+    end
   else
     print(colors("%{red}".."section doesnt exist."))
   end
@@ -79,8 +86,12 @@ function demo4()
     io.write("payloadlength:"..tostring(a["memory_section"]:payloadlength()).."\n")
     io.write("namelength:"..tostring(a["memory_section"]:namelength()).."\n")
     io.write("name:"..tostring(a["memory_section"]:name()).."\n")
+    --for wasm v.1.0. memory section count is 1
     --io.write("count:"..tostring(a["memory_section"]:count()).."\n")
     io.write("entries:"..tostring(a["memory_section"]:entries()).."\n")
+    io.write(a["memory_section"]:entries():resizable_limit():flags().."\t")
+    io.write(a["memory_section"]:entries():resizable_limit():initial().."\t")
+    io.write(a["memory_section"]:entries():resizable_limit():maximum().."\n")
   else
     print(colors("%{red}".."section doesnt exist."))
   end
@@ -93,6 +104,11 @@ function demo4()
     io.write("name:"..tostring(a["global_section"]:name()).."\n")
     io.write("count:"..tostring(a["global_section"]:count()).."\n")
     io.write("globals:"..tostring(a["global_section"]:globals()).."\n")
+    for k, v in pairs(a["global_section"]:globals()) do
+      io.write(v:global_type().."\t")
+      io.write(v:init().."\n")
+      io.write(v:init():code().."\n")
+    end
   else
     print(colors("%{red}".."section doesnt exist."))
   end
@@ -105,6 +121,12 @@ function demo4()
     io.write("name:"..tostring(a["export_section"]:name()).."\n")
     io.write("count:"..tostring(a["export_section"]:count()).."\n")
     io.write("entries:"..tostring(a["export_section"]:entries()).."\n")
+    for k, v in pairs(a["export_section"]:entries()) do
+      io.write(v:field_len().."\t")
+      io.write(v:field_str().."\t")
+      io.write(v:kind().."\t")
+      io.write(v:index().."\n")
+    end
   else
     print(colors("%{red}".."section doesnt exist."))
   end
@@ -128,6 +150,14 @@ function demo4()
     io.write("name:"..tostring(a["element_section"]:name()).."\n")
     io.write("count:"..tostring(a["element_section"]:count()).."\n")
     io.write("entries:"..tostring(a["element_section"]:entries()).."\n")
+    for k, v in pairs(a["element_section"]:entries()) do
+      io.write(v:index().."\t")
+      io.write(tostring(v:init()).."\t")
+      io.write(v:init():code().."\t")
+      io.write(v:num_length().."\t")
+      -- FIXME
+      io.write(v:elems().."\n")
+    end
   else
     print(colors("%{red}".."section doesnt exist."))
   end
@@ -141,9 +171,15 @@ function demo4()
     io.write("count:"..tostring(a["code_section"]:count()).."\n")
     io.write("bodies:"..tostring(a["code_section"]:bodies()).."\n")
     for k,v in pairs(a["code_section"]:bodies()) do
-      io.write(v:body_size())
-      io.write(v:local_count())
-      --io.write(v:locals())
+      io.write(v:body_size().."\t")
+      io.write(v:local_count().."\t")
+      io.write(tostring(v:locals()).."\t")
+      print("number of locals:"..#v:locals())
+      for i, j in pairs(v:locals()) do
+        io.write("locals count:"..j:count().."\t")
+        io.write("locals type:"..j:type().."\t")
+      end
+      io.write(v:code().."\n")
     end
   else
     print(colors("%{red}".."section doesnt exist."))
