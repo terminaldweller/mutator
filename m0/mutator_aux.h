@@ -58,6 +58,8 @@ bool IsTheMatchInMainFile(bool MainFileFlag, const SourceManager &SM, SourceLoca
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile, SourceLocation SL);
 bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile);
 /*********************************************************************************************************************/
+std::vector<std::string> action_file_parser (int argc, const char** argv, std::string file_path);
+/*********************************************************************************************************************/
 /*end of namespace Devi*/
 }
 #endif

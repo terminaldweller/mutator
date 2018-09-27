@@ -20,10 +20,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 /*********************************************************************************************************************/
 /*inclusion directives*/
 #include "mutator_aux.h"
+#include <algorithm>
 #include <string>
 #include <cassert>
 #include <iostream>
 #include <fstream>
+#include <iterator>
 #include "clang/AST/AST.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
@@ -142,6 +144,41 @@ bool IsTheMatchInMainFile(bool MainFileFlag, bool MainFile) {
   } else {
     return false;
   }
+}
+/*********************************************************************************************************************/
+std::vector<std::string> action_file_parser (int argc, const char** argv, std::string file_path) {
+  int i = 1;
+  std::vector<std::string> vs;
+  std::ifstream action_file(file_path);
+  for (std::string line; getline(action_file, line);) {
+    size_t pos = line.find(":");
+    if (line[0] == '#') {
+      i++;
+      continue;
+    }
+    if (pos == std::string::npos) {
+      if (line[0] != '#') {
+        if (strcmp(line.c_str(), "") != 0)std::cout << "m0 action file parser:error:malformed line at " << i << ".\n";//FIXME-RED
+        //return 1;
+      } else {
+        i++;
+        continue;
+      }
+    }
+    std::string content = line.substr(pos + 1, std::string::npos);
+    std::string option = line.substr(0, pos);
+    if (option == "action_name") {}
+    else if (option == "exec_opts") {vs.push_back(content);}
+    else if (option == "in_files") {vs.push_back(content);}
+    else if (option == "libtooling_options") {vs.push_back(content);}
+    else if (option == "out_files") {vs.push_back(content);}
+    else if (option == "log_files") {}
+    else if (option == "print_pretty") {}
+    else if (option == "end_action") {}
+    else {/*std::cout << "m0 action file parser:error:bad option at line "<< i <<"\n"*/;}//FIXME-RED
+    i++;
+  }
+  return vs;
 }
 /*********************************************************************************************************************/
 /*End of namespace Devi*/

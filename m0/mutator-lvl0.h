@@ -521,13 +521,13 @@ class MutagenExtraction
       }
     }
 
-    void XMLReportAncestry(void)
+    void XMLReportAncestry(std::string savepath)
     {
       mutagenAncestryReport MAR(MutantStrainsAncestry, WeakPoints);
       MAR.CreateReport();
       MAR.AddNode();
       MAR.AddNodeWeakPoint();
-      MAR.SaveReport("m0.xml");
+      MAR.SaveReport(savepath.c_str());
     }
 
   private:

@@ -198,6 +198,7 @@ function demo4()
         io.write(v:index().."\t")
         io.write(tostring(v:offset()).."\t")
         io.write(v:size().."\n")
+        --FIXME
         --io.write(v:data().."\n")
       end
     end

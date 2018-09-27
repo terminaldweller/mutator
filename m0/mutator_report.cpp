@@ -69,8 +69,7 @@ namespace Devi {
 /************************************************end of XMLReportBase*************************************************/
 /*********************************************************************************************************************/
 /******************************************************XMLReport******************************************************/
-XMLReport::XMLReport()
-{
+  XMLReport::XMLReport() {
   RootPointer = XMLReportDoc.NewElement("mutator:Report");
   RootPointer->SetAttribute("xmlns:mutator", "http://www.w3.org/2001/XMLSchema");
 }
@@ -176,7 +175,7 @@ bool XMLReport::isReportEmpty(void)
   return false;
 }
 
-void XMLReport::SaveReport(void)
+void XMLReport::SaveReport(std::string savepath)
 {
   if(this->isReportEmpty())
   {
@@ -185,7 +184,7 @@ void XMLReport::SaveReport(void)
 
   XMLReportDoc.InsertEndChild(RootPointer);
 
-  XMLError XMLErrorResult = XMLReportDoc.SaveFile("./misrareport.xml");
+  XMLError XMLErrorResult = XMLReportDoc.SaveFile(savepath.c_str());
 
   if (XMLErrorResult != XML_SUCCESS)
   {
@@ -197,9 +196,9 @@ void XMLReport::SaveReport(void)
 /*****************************************************JSONReport******************************************************/
 JSONReport::JSONReport() {}
 
-void JSONReport::JSONCreateReport(void)
+void JSONReport::JSONCreateReport(std::string outpath)
 {
-  JSONRepFile.open("./test/misrareport.json", std::ios::out);
+  JSONRepFile.open(outpath, std::ios::out);
 }
 
 void JSONReport::JSONAddElement(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description)

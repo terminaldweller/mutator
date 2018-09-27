@@ -80,7 +80,7 @@ namespace Devi {
 
     bool isReportEmpty(void);
 
-    void SaveReport(void);
+    void SaveReport(std::string savepath);
 
   private:
     XMLDocument XMLReportDoc;
@@ -92,7 +92,7 @@ namespace Devi {
   public:
     JSONReport();
 
-    void JSONCreateReport(void);
+    void JSONCreateReport(std::string outpath);
     void JSONAddElement(ASTContext* ASTC, SourceLocation SL, std::string MisraRule, std::string Description);
     /*overload for checks that announce the result in onendoftranslation unit.*/
     void JSONAddElement(FullSourceLoc FSL, SourceLocation SL, std::string MisraRule, std::string Description);

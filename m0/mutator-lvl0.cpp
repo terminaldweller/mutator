@@ -26,14 +26,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "mutator_aux.h"
 #include "mutator_report.h"
 /*standard headers*/
+#include <algorithm>
 #include <cassert>
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <regex>
 #include <string>
 #include <vector>
+#include <string.h>
 /*Clang headers*/
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
@@ -218,6 +221,10 @@ cl::opt<bool> MCEA("MCEA", cl::desc("MisraC switch to enable all rule checks"), 
 cl::opt<bool> MCDA("MCDA", cl::desc("MisraC switches to disable all rule checks"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> SFRCPP("SFRCPP", cl::desc("Enables SaferCPlusPlus rule checks"), cl::init(true), cl::cat(MutatorLVL0Cat), cl::Optional);
 cl::opt<bool> mutagen("mutagen", cl::desc("runs mutagen after running the static tests"), cl::init(false), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> ACTIONFILE("file", cl::desc("path to action file"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> JSONOUT("jsonout", cl::desc("path to json output report"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> XMLOUT("xmlout", cl::desc("path to xml output report"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
+cl::opt<std::string> MUTAGENOUT("mutagenout", cl::desc("path to mutagen output report"), cl::init(""), cl::cat(MutatorLVL0Cat), cl::Optional);
 /**********************************************************************************************************************/
 class StringOptionsParser {
 friend class MutatorLVL0Tests;
@@ -6818,122 +6825,78 @@ public:
     bool HaveWeSeenAComment = false;
     bool WhiteSpacePostSemi = false;
 
-    for (auto &iter : NullStmtProto)
-    {
-#if 0
-      std::cout << iter.Line << ":" << iter.Column << ":" << iter.FileName << "\n";
-#endif
-
+    for (auto &iter : NullStmtProto) {
       ShouldBeTagged = false;
       HaveWeMatchedASemi = false;
       HaveWeSeenAComment = false;
       WhiteSpacePostSemi = false;
-
       std::ifstream InputFile(iter.FileName);
-
       unsigned counter = 0U;
 
-      for (std::string line; getline(InputFile, line);)
-      {
+      for (std::string line; getline(InputFile, line);) {
         counter++;
-        if (counter == iter.Line)
-        {
-          for (auto &iterchar : line)
-          {
-            if (iterchar == ';')
-            {
-              if (HaveWeMatchedASemi)
-              {
+        if (counter == iter.Line) {
+          for (auto &iterchar : line) {
+            if (iterchar == ';') {
+              if (HaveWeMatchedASemi) {
                 ShouldBeTagged = true;
                 break;
               }
-
               HaveWeMatchedASemi = true;
               continue;
             }
-
-            if (iterchar == ' ')
-            {
-              if (HaveWeMatchedASemi)
-              {
+            if (iterchar == ' ') {
+              if (HaveWeMatchedASemi) {
                 WhiteSpacePostSemi = true;
                 continue;
               }
-
-              if (WhiteSpacePostSemi)
-              {
+              if (WhiteSpacePostSemi) {
                 ShouldBeTagged = true;
                 break;
               }
-
               continue;
             }
-
-            if (iterchar == '\t')
-            {
-
-              if (HaveWeMatchedASemi)
-              {
+            if (iterchar == '\t') {
+              if (HaveWeMatchedASemi) {
                 ShouldBeTagged = true;
                 break;
-              }
-              else
-              {
+              } else {
                 continue;
               }
             }
-
-            if (iterchar == '/')
-            {
+            if (iterchar == '/') {
               HaveWeSeenAComment = true;
-
-              if (HaveWeMatchedASemi)
-              {
-                if (WhiteSpacePostSemi)
-                {
+              if (HaveWeMatchedASemi) {
+                if (WhiteSpacePostSemi) {
                   break;
-                }
-                else
-                {
+                } else {
                   ShouldBeTagged = true;
                   break;
                 }
-              }
-              else
-              {
+              } else {
                 ShouldBeTagged = true;
                 break;
               }
-
               break;
             }
-
             ShouldBeTagged = true;
             break;
           }
         }
 
-        if (ShouldBeTagged)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader))
-          {
+        if (ShouldBeTagged) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.IsInSysHeader)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.IsInMainFile)) {
               std::cout << "14.3" << ":" << "Illegal NullStmt form:" << iter.FileName << ":" << iter.Line << ":" << iter.Column << ":" << "\n";
-
               XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "14.3", "Illegal NullStmt form:");
               JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "14.3", "Illegal NullStmt form:");
             }
           }
-
           break;
         }
       }
-
       InputFile.close();
     }
   }
@@ -7046,7 +7009,6 @@ public: onEndOfAllTUs() {}
           /*tag 5.7*/
           std::cout << "5.7:" << "Identifier re-used:";
           std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
           XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier re-used:");
           JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier re-used:");
 
@@ -7055,7 +7017,6 @@ public: onEndOfAllTUs() {}
             /*tag 5.3*/
             std::cout << "5.3:" << "Typedef identifier is not unique:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
             XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.3", "Typedef identifier is not unique:");
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.3", "Typedef identifier is not unique:");
           }
@@ -7065,7 +7026,6 @@ public: onEndOfAllTUs() {}
             /*tag 5.4*/
             std::cout << "5.4:" << "Tag identifier is not unique:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
             XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.4", "Tag identifier is not unique:");
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.4", "Tag identifier is not unique:");
           }
@@ -7075,7 +7035,6 @@ public: onEndOfAllTUs() {}
             /*tag 5.6*/
             std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
             XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
           }
@@ -7085,7 +7044,6 @@ public: onEndOfAllTUs() {}
             /*tag 5.6*/
             std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
             XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
           }
@@ -7096,7 +7054,6 @@ public: onEndOfAllTUs() {}
             /*tag 5.6*/
             std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
             XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
           }
@@ -7106,7 +7063,6 @@ public: onEndOfAllTUs() {}
             /*tag 5.2*/
             std::cout << "5.2:" << "This identifier is being hidden by an identifier of the same name in file scope:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
             XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.2", "This identifier is being hidden by an identifier of the same name in file scope:");
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.2", "This identifier is being hidden by an identifier of the same name in file scope:");
           }
@@ -7116,7 +7072,6 @@ public: onEndOfAllTUs() {}
             /*tag 5.5*/
             std::cout << "5.5:" << "Identifier with static storage duration is re-used:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
-
             XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.5", "Identifier with static storage duration is re-used:");
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.5", "Identifier with static storage duration is re-used:");
           }
@@ -7130,7 +7085,6 @@ private:
 };
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
-
 public:
   MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
@@ -7152,254 +7106,203 @@ public:
 #if defined(_MUT0_EN_MATCHERS)
 
     Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
-
     Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mcwhile"), &HandlerWhileCmpless);
-
     Matcher.addMatcher(ifStmt(allOf(hasElse(unless(ifStmt())), hasElse(unless(compoundStmt())))).bind("mcelse"), &HandlerElseCmpless);
-
     Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mcif"), &HandlerIfCmpless);
-
     Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mcifelse"), &HandlerForIfElse);
-
     Matcher.addMatcher(switchStmt(hasDescendant(compoundStmt(hasDescendant(switchCase(unless(hasDescendant(breakStmt()))))))).bind("mcswitchbrk"), &HandlerForSwitchBrkLess);
-
     Matcher.addMatcher(switchStmt(unless(hasDescendant(defaultStmt()))).bind("mcswitchdft"), &HandlerForSwitchDftLEss);
 
-    if (umRuleList.at("15.1"))
-    {
+    if (umRuleList.at("15.1")) {
       Matcher.addMatcher(switchStmt(forEachDescendant(caseStmt(hasAncestor(compoundStmt().bind("mccmp151"))).bind("mccase151"))), &HandlerForMCSwitch151);
     }
 
-    if (umRuleList.at("15.5"))
-    {
+    if (umRuleList.at("15.5")) {
       Matcher.addMatcher(switchStmt(unless(hasDescendant(caseStmt()))).bind("mcswitch155"), &HandlerForMCSwitch155);
     }
 
-    if (umRuleList.at("16.1"))
-    {
+    if (umRuleList.at("16.1")) {
       Matcher.addMatcher(functionDecl().bind("mcfunction161"), &HandlerForMCFunction161);
     }
 
-    if (umRuleList.at("16.2"))
-    {
+    if (umRuleList.at("16.2")) {
       Matcher.addMatcher(functionDecl(forEachDescendant(callExpr().bind("mc162callexpr"))).bind("mc162funcdec"), &HandlerForFunction162);
     }
 
-    if (umRuleList.at("16.4"))
-    {
+    if (umRuleList.at("16.4")) {
       Matcher.addMatcher(functionDecl().bind("mcfunc164"), &HandlerForFunction164);
     }
 
-    if (umRuleList.at("16.6"))
-    {
+    if (umRuleList.at("16.6")) {
       Matcher.addMatcher(callExpr().bind("mcfunc166"), &HandlerForFunction166);
     }
 
-    if (umRuleList.at("16.8"))
-    {
+    if (umRuleList.at("16.8")) {
       Matcher.addMatcher(functionDecl(forEachDescendant(returnStmt().bind("mcfunc168"))), &HandlerForFunction168);
     }
 
-    if (umRuleList.at("16.9"))
-    {
+    if (umRuleList.at("16.9")) {
       Matcher.addMatcher(implicitCastExpr(unless(hasAncestor(callExpr()))).bind("mcfunc169"), &HandlerForFunction169);
     }
 
-    if (umRuleList.at("17.1"))
-    {
+    if (umRuleList.at("17.1")) {
       Matcher.addMatcher(varDecl().bind("mcpa171"), &HandlerForPA171);
     }
 
-    if (umRuleList.at("18.4"))
-    {
+    if (umRuleList.at("18.4")) {
       Matcher.addMatcher(recordDecl(isUnion()).bind("mcsu184"), &HandlerForSU184);
     }
 
-    if (umRuleList.at("6.4") || umRuleList.at("6.5"))
-    {
+    if (umRuleList.at("6.4") || umRuleList.at("6.5")) {
       Matcher.addMatcher(fieldDecl(isBitField()).bind("mctype6465"), &HandlerForType6465);
     }
 
-    if (umRuleList.at("8.1"))
-    {
+    if (umRuleList.at("8.1")) {
       Matcher.addMatcher(functionDecl().bind("mcdcdf81"), &HandlerForDCDF81);
     }
 
-    if (umRuleList.at("8.2"))
-    {
+    if (umRuleList.at("8.2")) {
       Matcher.addMatcher(varDecl().bind("mcdcdf82"), &HandlerForDCDF82);
     }
 
-    if (umRuleList.at("9.1"))
-    {
+    if (umRuleList.at("9.1")) {
       Matcher.addMatcher(varDecl().bind("mcinit91"), &HandlerForInit91);
     }
 
-    if (umRuleList.at("9.2"))
-    {
+    if (umRuleList.at("9.2")) {
       Matcher.addMatcher(initListExpr(hasAncestor(varDecl().bind("mcinit92daddy"))).bind("mcinit92"), &HandlerForInit92);
     }
 
-    if (umRuleList.at("9.3"))
-    {
+    if (umRuleList.at("9.3")) {
       Matcher.addMatcher(enumConstantDecl(anyOf(allOf(hasDescendant(integerLiteral().bind("mcinit93kiddy")), \
                                           hasAncestor(enumDecl().bind("mcinit93daddy"))), hasAncestor(enumDecl().bind("mcinit93daddy")))).bind("mcinit93"), &HandlerForInit93);
     }
 
-    if (umRuleList.at("12.3"))
-    {
+    if (umRuleList.at("12.3")) {
       Matcher.addMatcher(unaryExprOrTypeTraitExpr(hasDescendant(expr().bind("mcexpr123kiddy"))).bind("mcexpr123"), &HandlerForExpr123);
     }
 
-    if (umRuleList.at("12.4"))
-    {
+    if (umRuleList.at("12.4")) {
       Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("||"), hasOperatorName("&&")), hasRHS(expr().bind("mcexpr124")))), &HandlerForExpr124);
     }
 
-    if (umRuleList.at("12.5"))
-    {
+    if (umRuleList.at("12.5")) {
       Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("||"), hasOperatorName("&&")), \
                                               eachOf(hasRHS(allOf(expr().bind("lrhs"), unless(anyOf(implicitCastExpr() , declRefExpr(), callExpr(), floatLiteral(), integerLiteral(), stringLiteral()))))\
                                                   , hasLHS(allOf(expr().bind("lrhs"), unless(anyOf(implicitCastExpr(), declRefExpr(), callExpr(), floatLiteral(), integerLiteral(), stringLiteral())))))))\
                          , &HandlerForExpr125);
     }
 
-    if (umRuleList.at("12.6"))
-    {
+    if (umRuleList.at("12.6")) {
       Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("||"), hasOperatorName("&&")), \
                                               eachOf(hasLHS(expr().bind("mcexpr126rl")), hasRHS(expr().bind("mcexpr126rl"))))), &HandlerForExpr126);
     }
 
-    if (umRuleList.at("12.7"))
-    {
+    if (umRuleList.at("12.7")) {
       Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName("<<"), hasOperatorName(">>"), hasOperatorName("~"), hasOperatorName("<<="), \
                                               hasOperatorName(">>="), hasOperatorName("&"), hasOperatorName("&="), hasOperatorName("^"), hasOperatorName("^=")\
                                               , hasOperatorName("|"), hasOperatorName("|=")), eachOf(hasLHS(expr().bind("mcexpr127rl")), hasRHS(expr().bind("mcexpr127rl"))))), &HandlerForExpr127);
     }
 
-    if (umRuleList.at("12.8"))
-    {
+    if (umRuleList.at("12.8")) {
       Matcher.addMatcher(binaryOperator(allOf(eachOf(hasOperatorName(">>"), hasOperatorName(">>="), hasOperatorName("<<="), hasOperatorName("<<")), \
                                               hasLHS(expr().bind("mcexpr128lhs")) , hasRHS(expr().bind("mcexpr128rhs")))), &HandlerForExpr128);
     }
 
-    if (umRuleList.at("12.9"))
-    {
+    if (umRuleList.at("12.9")) {
       Matcher.addMatcher(unaryOperator(allOf(hasOperatorName("-"), hasUnaryOperand(expr().bind("mcexpr129")))), &HandlerForExpr129);
     }
 
-    if (umRuleList.at("12.10"))
-    {
+    if (umRuleList.at("12.10")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName(","), hasLHS(expr().bind("mcexpr1210")))), &HandlerForExpr1210);
     }
 
-    if (umRuleList.at("12.13"))
-    {
+    if (umRuleList.at("12.13")) {
       Matcher.addMatcher(unaryOperator(allOf(eachOf(hasOperatorName("++"), hasOperatorName("--"))\
               , anyOf(hasAncestor(binaryOperator()), hasDescendant(binaryOperator())))).bind("mcexpr1213"), &HandlerForExpr1213);
     }
 
-    if (umRuleList.at("13.1"))
-    {
+    if (umRuleList.at("13.1")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("="), eachOf(hasLHS(expr().bind("cse131rlhs")), hasRHS(expr().bind("cse131rlhs"))))), &HandlerForCSE131);
     }
 
-    if (umRuleList.at("13.2"))
-    {
+    if (umRuleList.at("13.2")) {
       Matcher.addMatcher(ifStmt(hasCondition(expr(unless(hasDescendant(binaryOperator(anyOf(hasOperatorName("<")\
                                              , hasOperatorName(">"), hasOperatorName("=="), hasOperatorName("<="), hasOperatorName(">=")))))).bind("mccse132"))), &HandlerForCSE132);
     }
 
-    if (umRuleList.at("13.3"))
-    {
+    if (umRuleList.at("13.3")) {
       Matcher.addMatcher(binaryOperator(allOf(anyOf(hasOperatorName("<"), hasOperatorName(">"), hasOperatorName("<="), hasOperatorName(">="), hasOperatorName("==")), \
                                               eachOf(hasLHS(expr().bind("mccse1332rl")), hasRHS(expr().bind("mccse1332rl"))))).bind("mccse1332daddy"), &HandlerForCSE1332);
     }
 
-    if (umRuleList.at("13.4"))
-    {
+    if (umRuleList.at("13.4")) {
       Matcher.addMatcher(forStmt().bind("mccse134"), &HandlerForCSE134);
     }
 
-    if (umRuleList.at("13.6"))
-    {
+    if (umRuleList.at("13.6")) {
       Matcher.addMatcher(forStmt(forEachDescendant(stmt(eachOf(unaryOperator(allOf(anyOf(hasOperatorName("++"), hasOperatorName("--")), hasUnaryOperand(declRefExpr().bind("mccse136kiddo")))), \
                                  binaryOperator(allOf(hasOperatorName("="), hasLHS(declRefExpr().bind("mccse136kiddo")))))))).bind("mccse136daddy"), &HandlerForCSE136);
     }
 
-    if (umRuleList.at("14.4"))
-    {
+    if (umRuleList.at("14.4")) {
       Matcher.addMatcher(gotoStmt().bind("mccf144"), &HandlerForCF144);
     }
 
-    if (umRuleList.at("14.5"))
-    {
+    if (umRuleList.at("14.5")) {
       Matcher.addMatcher(continueStmt().bind("mccf145"), &HandlerForCF145);
     }
 
-    if (umRuleList.at("14.6"))
-    {
+    if (umRuleList.at("14.6")) {
       Matcher.addMatcher(breakStmt(hasAncestor(stmt(anyOf(forStmt().bind("mccffofo"), doStmt().bind("mccfdodo"), whileStmt().bind("mccfwuwu"))))), &HandlerForCF146);
     }
 
-    if (umRuleList.at("14.7"))
-    {
+    if (umRuleList.at("14.7")) {
       Matcher.addMatcher(returnStmt(hasAncestor(functionDecl().bind("mccf147"))), &HandlerForCF147);
     }
 
-    if (umRuleList.at("14.8"))
-    {
+    if (umRuleList.at("14.8")) {
       Matcher.addMatcher(forStmt(unless(has(compoundStmt()))).bind("mccf148for"), &HandlerForCF148);
     }
 
-    if (umRuleList.at("14.8"))
-    {
+    if (umRuleList.at("14.8")) {
       Matcher.addMatcher(whileStmt(unless(has(compoundStmt()))).bind("mccf148while"), &HandlerForCF148);
     }
 
-    if (umRuleList.at("14.8"))
-    {
+    if (umRuleList.at("14.8")) {
       Matcher.addMatcher(doStmt(unless(has(compoundStmt()))).bind("mccf148do"), &HandlerForCF148);
     }
 
-    if (umRuleList.at("14.8"))
-    {
+    if (umRuleList.at("14.8")) {
       Matcher.addMatcher(switchStmt(unless(has(compoundStmt()))).bind("mccf148switch"), &HandlerForCF148);
     }
 
-    if (umRuleList.at("15.4"))
-    {
+    if (umRuleList.at("15.4")) {
       Matcher.addMatcher(switchStmt(hasCondition(expr().bind("mcswitch154"))).bind("mcswitch154daddy"), &HandlerForSwitch154);
     }
 
-    if (umRuleList.at("11.1"))
-    {
+    if (umRuleList.at("11.1")) {
       Matcher.addMatcher(implicitCastExpr().bind("mcptc111"), &HandlerForPTC111);
     }
 
-    if (umRuleList.at("13.7"))
-    {
+    if (umRuleList.at("13.7")) {
       Matcher.addMatcher(expr().bind("mccse137"), &HandlerForCSE137);
     }
 
-    if (umRuleList.at("8.10"))
-    {
+    if (umRuleList.at("8.10")) {
       Matcher.addMatcher(callExpr(hasAncestor(functionDecl().bind("mcdcdf810daddy"))).bind("mcdcdf810"), &HandlerForDCDF810);
     }
 
-    if (umRuleList.at("16.5"))
-    {
+    if (umRuleList.at("16.5")) {
       Matcher.addMatcher(functionDecl(allOf(returns(anything()), unless(returns(asString("void"))), hasBody(compoundStmt()) \
                                             , unless(hasDescendant(returnStmt())))).bind("mcfunction165"), &HandlerForFunction165);
     }
 
-    if (umRuleList.at("16.5"))
-    {
+    if (umRuleList.at("16.5")) {
       Matcher.addMatcher(functionDecl(allOf(parameterCountIs(0), hasBody(compoundStmt()))).bind("mcfunction1652"), &HandlerForFunction1652);
     }
 
-    if (umRuleList.at("17.1"))
-    {
+    if (umRuleList.at("17.1")) {
       Matcher.addMatcher(declRefExpr(allOf(to(varDecl().bind("loco")), unless(hasParent(castExpr(hasCastKind(clang::CK_ArrayToPointerDecay)))), \
                                            hasAncestor(stmt(eachOf(binaryOperator(hasOperatorName("+")).bind("bino"), \
                                            binaryOperator(hasOperatorName("-")).bind("bino"), unaryOperator(hasOperatorName("++")).bind("uno"), \
@@ -7410,48 +7313,42 @@ public:
     }
 
     /*start of 17.3 matchers*/
-    if (umRuleList.at("17.2") || umRuleList.at("17.3"))
-    {
+    if (umRuleList.at("17.2") || umRuleList.at("17.3")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("<="), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
                                               has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
                                               hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
                                                   has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
     }
 
-    if (umRuleList.at("17.2") || umRuleList.at("17.3"))
-    {
+    if (umRuleList.at("17.2") || umRuleList.at("17.3")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("<"), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
                                               has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
                                               hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
                                                   has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
     }
 
-    if (umRuleList.at("17.2") || umRuleList.at("17.3"))
-    {
+    if (umRuleList.at("17.2") || umRuleList.at("17.3")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName(">="), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
                                               has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
                                               hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
                                                   has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
     }
 
-    if (umRuleList.at("17.2") || umRuleList.at("17.3"))
-    {
+    if (umRuleList.at("17.2") || umRuleList.at("17.3")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName(">"), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
                                               has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
                                               hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
                                                   has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
     }
 
-    if (umRuleList.at("17.2") || umRuleList.at("17.3"))
-    {
+    if (umRuleList.at("17.2") || umRuleList.at("17.3")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("-"), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
                                               has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
                                               hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
                                                   has(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs"))))))).bind("mcpointer1723daddy"), &HandlerForPointer1723);
     }
 
-    if (umRuleList.at("17.2") || umRuleList.at("17.3"))
-    {
+    if (umRuleList.at("17.2") || umRuleList.at("17.3")) {
       Matcher.addMatcher(binaryOperator(allOf(hasOperatorName("-="), hasRHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs")), \
                                               has(declRefExpr(hasType(pointerType())).bind("mcpointer1723rhs"))))), \
                                               hasLHS(expr(anyOf(hasDescendant(declRefExpr(hasType(pointerType())).bind("mcpointer1723lhs")), \
@@ -7460,13 +7357,11 @@ public:
     /*end of 17.3 matchers*/
 
     /*start of 17.4 matchers*/
-    if (umRuleList.at("17.4"))
-    {
+    if (umRuleList.at("17.4")) {
       Matcher.addMatcher(castExpr(allOf(hasCastKind(CK_ArrayToPointerDecay), unless(hasParent(arraySubscriptExpr())))).bind("mcpointer174"), &HandlerForPointer174);
     }
 
-    if (umRuleList.at("17.4"))
-    {
+    if (umRuleList.at("17.4")) {
       Matcher.addMatcher(declRefExpr(allOf(hasAncestor(expr(anyOf(binaryOperator(hasOperatorName("-=")), \
                                            unaryOperator(hasOperatorName("++")), unaryOperator(hasOperatorName("--")), \
                                            binaryOperator(hasOperatorName("+")), binaryOperator(hasOperatorName("+=")), \
@@ -7474,196 +7369,144 @@ public:
     }
     /*end of 17.4 matchers*/
 
-    if (umRuleList.at("17.5"))
-    {
+    if (umRuleList.at("17.5")) {
       Matcher.addMatcher(varDecl(hasType(pointerType())).bind("mcpointer175"), &HandlerForPointer175);
     }
 
-    if (umRuleList.at("17.5"))
-    {
+    if (umRuleList.at("17.5")) {
       Matcher.addMatcher(fieldDecl().bind("mcpointer175field"), &HandlerForPointer175);
     }
 
-    if (umRuleList.at("6.1"))
-    {
+    if (umRuleList.at("6.1")) {
       Matcher.addMatcher(declRefExpr(allOf(to(varDecl().bind("mctypes6origin")), \
                                            hasAncestor(binaryOperator(allOf(hasRHS(expr().bind("mctypes6rhs")), \
                                                hasOperatorName("="))).bind("mctypes6dous")), hasType(isAnyCharacter()))), &HandlerForTypes61);
     }
 
-    if (umRuleList.at("18.1"))
-    {
+    if (umRuleList.at("18.1")) {
       Matcher.addMatcher(varDecl(hasType(incompleteArrayType())).bind("mcsu181arr"), &HandlerForSU181);
     }
 
-    if (umRuleList.at("18.1"))
-    {
+    if (umRuleList.at("18.1")) {
       Matcher.addMatcher(recordDecl(isStruct()).bind("mcsu181struct"), &HandlerForSU184);
     }
 
     Matcher.addMatcher(cStyleCastExpr().bind("mcptc11cstyle"), &HandlerForMCPTCCSTYLE);
 
-    if (umRuleList.at("10.1"))
-    {
+    if (umRuleList.at("10.1")) {
       Matcher.addMatcher(implicitCastExpr(has(expr(anyOf(binaryOperator().bind("atcdous"), unaryOperator().bind("atcuno"), \
                                               parenExpr().bind("atcparens"), implicitCastExpr().bind("atckidice"), \
                                               cStyleCastExpr().bind("atccstyle"))))).bind("atcdaddy"), &HandlerForATC101);
     }
 
-    if (umRuleList.at("5.1"))
-    {
+    if (umRuleList.at("5.1")) {
       Matcher.addMatcher(namedDecl().bind("ident5nameddecl"), &HandlerForIdent51);
     }
 
-    if (umRuleList.at("8.7"))
-    {
+    if (umRuleList.at("8.7")) {
       Matcher.addMatcher(declRefExpr(allOf(hasAncestor(functionDecl().bind("mcdcdf87daddy")), \
                                            to(varDecl(unless(hasAncestor(functionDecl()))).bind("mcdcdf87origin")))).bind("mcdcdfobj"), &HandlerForDCDF87);
     }
 
 /*@DEVI-these two matcheres are breaking our 3.9 backwards compatibility.*/
-#if 1
-    if (umRuleList.at("8.8"))
-    {
+    if (umRuleList.at("8.8")) {
       Matcher.addMatcher(functionDecl(hasExternalFormalLinkage()).bind("mcdcdf88function"), &HandlerForDCDF88);
     }
 
-    if (umRuleList.at("8.8"))
-    {
+    if (umRuleList.at("8.8")) {
       Matcher.addMatcher(varDecl(hasExternalFormalLinkage()).bind("mcdcdf88var"), &HandlerForDCDF88);
     }
-#endif
 
-    if (umRuleList.at("2.3"))
-    {
+    if (umRuleList.at("2.3")) {
       Matcher.addMatcher(expr().bind("mclangx23"), &HandlerForLangX23);
     }
 
-    if (umRuleList.at("16.7"))
-    {
+    if (umRuleList.at("16.7")) {
       Matcher.addMatcher(parmVarDecl(unless(allOf(hasAncestor(functionDecl(hasDescendant(binaryOperator(allOf(hasOperatorName("="), \
                                             hasLHS(hasDescendant(declRefExpr(allOf(hasAncestor(unaryOperator(hasOperatorName("*"))), \
                                                 to(parmVarDecl(hasType(pointerType())).bind("zulu"))))))))))), equalsBoundNode("zulu")))).bind("mcfunction167"), &HandlerForFunction167);
     }
 
-    if (umRuleList.at("14.3"))
-    {
+    if (umRuleList.at("14.3")) {
       Matcher.addMatcher(nullStmt().bind("mccf143nullstmt"), &HandlerForCF143);
     }
 
-    if (umRuleList.at("12.12"))
-    {
+    if (umRuleList.at("12.12")) {
       Matcher.addMatcher(recordDecl(allOf(has(fieldDecl(hasType(realFloatingPointType()))), isUnion())).bind("mcexpr1212"), &HandlerForExpr1212);
     }
 
-    if (umRuleList.at("12.11"))
-    {
+    if (umRuleList.at("12.11")) {
       Matcher.addMatcher(expr(hasDescendant(expr(anyOf(unaryOperator(hasOperatorName("--"), hasOperatorName("++")).bind("mcexpr1211uno"), \
                                             binaryOperator(anyOf(hasOperatorName("*"), hasOperatorName("/"), \
                                                 hasOperatorName("-"), hasOperatorName("+"))).bind("mcexpr1211dous"))))).bind("mcexpr1211"), &HandlerForExpr1211);
     }
 
-    if (umRuleList.at("10.5"))
-    {
+    if (umRuleList.at("10.5")) {
       Matcher.addMatcher(binaryOperator(allOf(hasLHS(expr(hasType(isInteger())).bind("mcatc105lhs")), hasOperatorName("<<"))).bind("mcatc105"), &HandlerForAtc105);
     }
 
-    if (umRuleList.at("10.5"))
-    {
+    if (umRuleList.at("10.5")) {
       Matcher.addMatcher(unaryOperator(allOf(hasOperatorName("~") , hasUnaryOperand(expr(hasType(isInteger())).bind("mcatc105lhs")))).bind("mcatc105uno"), &HandlerForAtc105);
     }
 
-    if (umRuleList.at("13.5"))
-    {
+    if (umRuleList.at("13.5")) {
       Matcher.addMatcher(forStmt().bind("mccse135"), &HandlerForCSE135);
     }
 
-    if (umRuleList.at("6.1") || umRuleList.at("6.2"))
-    {
+    if (umRuleList.at("6.1") || umRuleList.at("6.2")) {
       Matcher.addMatcher(binaryOperator(allOf(hasRHS(expr(has(expr(anyOf(integerLiteral().bind("mc612intlit"), \
                                               characterLiteral().bind("mc612charlit")))))), hasLHS(expr(hasType(isAnyCharacter())).bind("mc612exp")), \
                                               hasOperatorName("="))), &HandlerForTypes612);
     }
 
     /*@DEVI-start of 7.1 matchers.*/
-    if (umRuleList.at("7.1"))
-    {
+    if (umRuleList.at("7.1")) {
       Matcher.addMatcher(stringLiteral().bind("mcconst71string"), &HandlerForConst71);
     }
 
-    if (umRuleList.at("7.1"))
-    {
+    if (umRuleList.at("7.1")) {
       Matcher.addMatcher(characterLiteral().bind("mcconst71char"), &HandlerForConst71);
     }
 
-    if (umRuleList.at("7.1"))
-    {
+    if (umRuleList.at("7.1")) {
       Matcher.addMatcher(integerLiteral().bind("mcconst71int"), &HandlerForConst71);
     }
     /*end of 7.1*/
 
     /*@DEVI-matchers for 5.x*/
     /*@DEVI-typedefs always have file scope.*/
-    if (umRuleList.at("5.1") || umRuleList.at("5.2"), umRuleList.at("5.3") || umRuleList.at("5.4") || umRuleList.at("5.5") || umRuleList.at("5.6") || umRuleList.at("5.7"))
-    {
+    if (umRuleList.at("5.1") || umRuleList.at("5.2"), umRuleList.at("5.3") || umRuleList.at("5.4") || umRuleList.at("5.5") || umRuleList.at("5.6") || umRuleList.at("5.7")) {
       Matcher.addMatcher(typedefDecl().bind("ident5typedef"), &HandlerForIdent5X);
     }
 
-#if 0
-    Matcher.addMatcher(typedefDecl(unless(hasAncestor(functionDecl()))).bind("ident5typedef"), &HandlerForIdent5X);
-
-    Matcher.addMatcher(typedefDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5typedef"), &HandlerForIdent5X);
-#endif
-
-
-    if (umRuleList.at("5.1") || umRuleList.at("5.2"), umRuleList.at("5.3") || umRuleList.at("5.4") || umRuleList.at("5.5") || umRuleList.at("5.6") || umRuleList.at("5.7"))
-    {
+    if (umRuleList.at("5.1") || umRuleList.at("5.2"), umRuleList.at("5.3") || umRuleList.at("5.4") || umRuleList.at("5.5") || umRuleList.at("5.6") || umRuleList.at("5.7")) {
       Matcher.addMatcher(recordDecl(unless(hasAncestor(functionDecl()))).bind("ident5record"), &HandlerForIdent5X);
-
       Matcher.addMatcher(recordDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5record"), &HandlerForIdent5X);
-
       Matcher.addMatcher(fieldDecl(unless(hasAncestor(functionDecl()))).bind("ident5field"), &HandlerForIdent5X);
-
       Matcher.addMatcher(fieldDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5field"), &HandlerForIdent5X);
-
       Matcher.addMatcher(parmVarDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5parmvar"), &HandlerForIdent5X);
-
       Matcher.addMatcher(functionDecl().bind("ident5func"), &HandlerForIdent5X);
-
       Matcher.addMatcher(varDecl(unless(hasAncestor(functionDecl()))).bind("ident5var"), &HandlerForIdent5X);
-
       Matcher.addMatcher(varDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5var"), &HandlerForIdent5X);
-
       Matcher.addMatcher(enumDecl(unless(hasAncestor(functionDecl()))).bind("ident5enum") , &HandlerForIdent5X);
-
       Matcher.addMatcher(enumDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5enum"), &HandlerForIdent5X);
-
       /*@DEVI-labels always have function scope.*/
       Matcher.addMatcher(labelDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5label"), &HandlerForIdent5X);
-
       Matcher.addMatcher(enumConstantDecl(unless(hasAncestor(functionDecl()))).bind("ident5enumconst"), &HandlerForIdent5X);
-
       Matcher.addMatcher(enumConstantDecl(hasAncestor(functionDecl().bind("id5funcscope"))).bind("ident5enumconst"), &HandlerForIdent5X);
     }
     /*end of matchers for 5.x*/
 
     /*start of SaferCPP matchers*/
     Matcher.addMatcher(varDecl(hasType(arrayType())).bind("sfcpparrdecl"), &HandlerForSFCPPARR01);
-
     Matcher.addMatcher(fieldDecl(hasType(arrayType())).bind("sfcpparrfield"), &HandlerForSFCPPARR01);
-
     Matcher.addMatcher(implicitCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
-
     Matcher.addMatcher(cStyleCastExpr(hasCastKind(CK_ArrayToPointerDecay)).bind("sfcpparrcastexpr"), &HandlerForSFCPPARR01);
-
     Matcher.addMatcher(declRefExpr(hasAncestor(binaryOperator(allOf(hasLHS(declRefExpr().bind("sfcpparrdeep")), hasRHS(hasDescendant(implicitCastExpr(hasCastKind(CK_ArrayToPointerDecay))))\
                 , hasOperatorName("="))))), &HandlerForSFCPPARR02);
-
     Matcher.addMatcher(varDecl(hasType(pointerType())).bind("sfcpppntr01"), &HandlerForSFCPPPNTR01);
-
     Matcher.addMatcher(declRefExpr(hasType(pointerType())).bind("sfcpppntr02"), &HandlerForSFCPPPNTR02);
     /*end of SaferCPP matchers*/
-
 #endif
   }
 
@@ -7748,132 +7591,85 @@ private:
   MatchFinder Matcher;
 };
 /**********************************************************************************************************************/
-class Mutator0DiagnosticConsumer : public clang::DiagnosticConsumer
-{
+class Mutator0DiagnosticConsumer : public clang::DiagnosticConsumer {
 public:
-
   virtual void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel, const Diagnostic &Info) override
   {
     DiagnosticConsumer::HandleDiagnostic(DiagLevel, Info);
-
     SourceLocation SL = Info.getLocation();
     CheckSLValidity(SL);
-
     SourceManager &SM = Info.getSourceManager();
 
-    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-    {
-      return void();
-    }
-
-    if (!Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-    {
-      return void();
-    }
+    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) return void();
+    if (!Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) return void();
 
     SL = SM.getSpellingLoc(SL);
 
     unsigned SpellingLine = SM.getSpellingLineNumber(SL);
     unsigned SpellingColumn = SM.getSpellingColumnNumber(SL);
     std::string FileName = SM.getFilename(SL).str();
-
     SmallString<100> DiagBuffer;
-
     Info.FormatDiagnostic(DiagBuffer);
-
-#if 0
-    std::cout << "ClangDiag:" << DiagBuffer.str().str() << ":" << SL.printToString(SM) << ":" << Info.getID() << ":" << "\n";
-#endif
 
     XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());
     JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "ClangDiag", DiagBuffer.str().str());
 
-    if (Info.getID() == 872U)
-    {
+    if (Info.getID() == 872U) {
       std::cout << "2.2:" << "Illegal comment format(/*...*/) used:" << SL.printToString(SM) << ":" << "\n";
-
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "2.2", "Illegal comment format(/*...*/) used:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "2.2", "Illegal comment format(/*...*/) used:");
     }
 
-    if (Info.getID() == 974U)
-    {
+    if (Info.getID() == 974U) {
       std::cout << "2.3:" << "Use of the character sequence /* inside a comment is illegal:" << SL.printToString(SM) << ":" << "\n";
-
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "2.3", "Use of the character sequence /* inside a comment is illegal:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "2.3", "Use of the character sequence /* inside a comment is illegal:");
     }
 
-    if (Info.getID() == 938U)
-    {
+    if (Info.getID() == 938U) {
       std::cout << "4.2:" << "Use of trigraphs is illegal:" << SL.printToString(SM) << ":" << "\n";
-
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "4.2", "Use of trigraphs is illegal:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "4.2", "Use of trigraphs is illegal:");
     }
 
-    if (Info.getID() == 4578U)
-    {
+    if (Info.getID() == 4578U) {
       std::cout << "9.2:" << "Brace initialization has either not been correctly used or not used at all:" << SL.printToString(SM) << ":" << "\n";
-
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "9.2", "Brace initialization has either not been correctly used or not used at all:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "9.2", "Brace initialization has either not been correctly used or not used at all:");
     }
 
-    if (Info.getID() == 4872U)
-    {
+    if (Info.getID() == 4872U) {
       std::cout << "14.2:" << "Expression result is unused:" << SL.printToString(SM) << ":" << "\n";
-
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "14.2", "Expression result is unused:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "14.2", "Expression result is unused:");
     }
 
-    if (Info.getID() == 966U)
-    {
+    if (Info.getID() == 966U) {
       std::cout << "19.14:" << "\"defined\" has undefined behaviour:" << SL.printToString(SM) << ":" << "\n";
-
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "19.14", "\"defined\" has undefined behaviour:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "19.14", "\"defined\" has undefined behaviour:");
     }
 
-    if (Info.getID() == 895U)
-    {
+    if (Info.getID() == 895U) {
       std::cout << "20.1:" << "Redefining built-in macro:" << SL.printToString(SM) << ":" << "\n";
-
       XMLDocOut.XMLAddNode(SpellingLine, SpellingColumn, FileName, "20.1", "Redefining built-in macro:");
       JSONDocOUT.JSONAddElement(SpellingLine, SpellingColumn, FileName, "20.1", "Redefining built-in macro:");
     }
-
   }
 
 private:
-
 };
 /**********************************************************************************************************************/
-class MyFrontendAction : public ASTFrontendAction
-{
+class MyFrontendAction : public ASTFrontendAction {
 public:
   MyFrontendAction() {}
+  void EndSourceFileAction() override {}
 
-  void EndSourceFileAction() override
-  {
-
-  }
-
-  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override
-  {
-#if 1
+  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
-#endif
-
     DiagnosticsEngine &DiagEngine = CI.getPreprocessor().getDiagnostics();
-
-#if 1
     Mutator0DiagnosticConsumer* M0DiagConsumer = new Mutator0DiagnosticConsumer;
-
     DiagEngine.setClient(M0DiagConsumer, true);
-#endif
-
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
   }
@@ -7883,8 +7679,24 @@ private:
 };
 /**********************************************************************************************************************/
 /*Main*/
-int main(int argc, const char **argv)
+int main(int argc, const char** argv)
 {
+#if 0
+  std::string action_file_path;
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp(argv[i], "--file") == 0) {
+      if (i < argc - 2) {
+        action_file_path = argv[i];
+      } else {
+        std::cout << "error:bad argument for option --file\n";
+      }
+    }
+  }
+  std::vector<const char*> vc;
+  std::vector<std::string> vs = Devi::action_file_parser(argc, argv, action_file_path);
+  std::transform(vs.begin(), vs.end(), std::back_inserter(vc), [](const std::string &s){return s.c_str();});
+#endif
+  //CommonOptionsParser op(argc, &vc[0], MutatorLVL0Cat);
   CommonOptionsParser op(argc, argv, MutatorLVL0Cat);
 
   CompilationDatabase &CDB [[maybe_unused]] = op.getCompilations();
@@ -7892,28 +7704,21 @@ int main(int argc, const char **argv)
   std::vector<std::vector<std::string>> ExecCL;
 
 #if defined(_MUT0_TEST)
-  for (auto &iter : ComCom)
-  {
+  for (auto &iter : ComCom) {
     ExecCL.push_back(iter.CommandLine);
   }
 
-  for (auto &iter : ExecCL)
-  {
-    for (auto &yaiter : iter)
-    {
+  for (auto &iter : ExecCL) {
+    for (auto &yaiter : iter) {
       std::cout << "comcom: " << yaiter << "\n";
     }
-
     std::cout << "\n";
   }
 #endif
 
   const std::vector<std::string> &SourcePathList = op.getSourcePathList();
-
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
-
   StringOptionsParser SOPProto;
-
   SOPProto.MC2Parser();
 
 #if defined(_MUT0_TEST)
@@ -7921,18 +7726,16 @@ int main(int argc, const char **argv)
 #endif
 
 #if defined(_MUT0_TEST)
-  if (SOPProto.MC2Parser())
-  {
+  if (SOPProto.MC2Parser()) {
     typedef std::multimap<std::string, std::string>::iterator Iter;
-    for (Iter iter = MC1EquivalencyMap.begin(), iterE = MC1EquivalencyMap.end(); iter != iterE; ++iter)
-    {
+    for (Iter iter = MC1EquivalencyMap.begin(), iterE = MC1EquivalencyMap.end(); iter != iterE; ++iter) {
       std::cout << "Key: " << iter->first << "  " << "Value: " << iter->second << "\n";
     }
   }
 #endif
 
   XMLDocOut.XMLCreateReport();
-  JSONDocOUT.JSONCreateReport();
+  JSONDocOUT.JSONCreateReport(JSONOUT);
   IsThereJunkPreInclusion ITJPIInstance;
   ITJPIInstance.Check(SourcePathList);
   int RunResult = 0;
@@ -7950,10 +7753,10 @@ int main(int argc, const char **argv)
   CheckForNullStatements CheckForNull;
   CheckForNull.Check();
   onEndOfAllTUs::run();
-  XMLDocOut.SaveReport();
+  XMLDocOut.SaveReport(XMLOUT);
   JSONDocOUT.CloseReport();
   ME.DumpAll();
-  ME.XMLReportAncestry();
+  ME.XMLReportAncestry(MUTAGENOUT);
 
   return RunResult;
 } //end of main
