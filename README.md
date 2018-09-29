@@ -171,11 +171,12 @@ Currently there is only the master branch which is the dev branch. All the as-of
 ### Building
 
 #### Requirements
-* `LLVM/Clang` 5.0 or 6.0.<br/>
+* `LLVM/Clang` 5.0, 6.0 or 8.0(we will skip 7.0). For 8.0, the latest tested trunk version is 340121.<br/>
 * `libffi`<br/>
 * `libcapstone`<br/>
 * `libkeystone`<br/>
 * `libpython` 3.5 or higher<br/>
+If capstone and keystone are not included inside your distro's reposotory and you're lazy like me, take a look under `extra-tools`. There are two scripts(one for each) to get those for the Travis image. You can use those.<br/>
 The other requirements are either directly included or have to be included through `git submodule update`.<br/>
 
 #### Linux and Mac
@@ -189,8 +190,6 @@ git submodule init
 git submodule update
 
 ```
-
-To build the project, you need to have the LLVM libraries 5.0 or higher. mutator can not be built with LLVM 4.0 or lower. The latest tested is LLVM trunk:323883.<br/>
 Here Are the build options:<br/>
 
 * Running `make` will build the default target which is `all`. This will build all the executables, without support for coverage instrumentation.<br/>

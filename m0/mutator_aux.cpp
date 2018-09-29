@@ -43,11 +43,23 @@ SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocat
   /*does the sourcelocation include a macro expansion?*/
   if ( SL.isMacroID()) {
     /*get the expansion range which is startloc and endloc*/
+#if __clang_major__ <= 6
     std::pair <SourceLocation, SourceLocation> expansionRange = Rewrite.getSourceMgr().getImmediateExpansionRange(SL);
+#elif __clang_major__ == 8
+    CharSourceRange expansionRange = Rewrite.getSourceMgr().getImmediateExpansionRange(SL);
+#endif
     if (Kind == "start") {
-      return (expansionRange.first);
+#if __clang_major__ <= 6
+      return expansionRange.first;
+#elif __clang_major__ >= 8
+      return expansionRange.getBegin();
+#endif
     } else if (Kind == "end") {
-      return (expansionRange.second);
+#if __clang_major__ <= 6
+      return expansionRange.second;
+#elif __clang_major__ >= 8
+      return expansionRange.getEnd();
+#endif
     } else {
       std::cout << "the third argument of Devi::SourceLocationHasMacro is invalid." << std::endl;
     }

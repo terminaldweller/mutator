@@ -661,10 +661,10 @@ public:
     if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mainwrapper") != nullptr) {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mainwrapper");
 
-      SourceLocation SL = FD->getLocStart();
+      SourceLocation SL = FD->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite);
-      SourceLocation SLE = FD->getLocEnd();
+      SourceLocation SLE = FD->DEVI_GETLOCEND();
       CheckSLValidity(SLE);
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite);
 
@@ -695,7 +695,7 @@ class LiveListFuncs : public MatchFinder::MatchCallback {
       if (MR.Nodes.getNodeAs<clang::FunctionDecl>("livelistfuncs") != nullptr) {
         const clang::FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("livelistfuncs");
 
-        SourceLocation SL = FD->getLocStart();
+        SourceLocation SL = FD->DEVI_GETLOCSTART();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, R);
 
@@ -705,13 +705,13 @@ class LiveListFuncs : public MatchFinder::MatchCallback {
 
         if (FD->hasBody()) {
           Stmt* Body = FD->getBody();
-          SourceLocation SLBody = Body->getLocStart();
-          SourceLocation SLShebang = FD->getLocStart();
+          SourceLocation SLBody = Body->DEVI_GETLOCSTART();
+          SourceLocation SLShebang = FD->DEVI_GETLOCSTART();
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))).c_str());
           PushToLua.push_back(R.getRewrittenText(clang::SourceRange(SLShebang, SLBody.getLocWithOffset(-1))));
         } else {
-          SourceLocation SL = FD->getLocStart();
-          SourceLocation SLE = FD->getLocEnd();
+          SourceLocation SL = FD->DEVI_GETLOCSTART();
+          SourceLocation SLE = FD->DEVI_GETLOCEND();
           PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(clang::SourceRange(SL, SLE)).c_str());
           PushToLua.push_back(R.getRewrittenText(clang::SourceRange(SL, SLE)));
         }
@@ -730,7 +730,7 @@ class LiveListVars : public MatchFinder::MatchCallback {
       if (MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars") != nullptr) {
         const clang::VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("livelistvars");
 
-        SourceLocation SL = VD->getLocStart();
+        SourceLocation SL = VD->DEVI_GETLOCSTART();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, R);
 
@@ -738,8 +738,8 @@ class LiveListVars : public MatchFinder::MatchCallback {
           return void();
         }
 
-        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())).c_str());
-        PushToLua.push_back(R.getRewrittenText(SourceRange(VD->getLocStart(), VD->getLocEnd())));
+        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(VD->DEVI_GETLOCSTART(), VD->DEVI_GETLOCEND())).c_str());
+        PushToLua.push_back(R.getRewrittenText(SourceRange(VD->DEVI_GETLOCSTART(), VD->DEVI_GETLOCEND())));
       }
     }
 
@@ -755,8 +755,8 @@ class LiveListRecords : public MatchFinder::MatchCallback {
       if (MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars") != nullptr) {
         const clang::RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("livelistvars");
 
-        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())).c_str());
-        PushToLua.push_back(R.getRewrittenText(SourceRange(RD->getLocStart(), RD->getLocEnd())));
+        PRINT_WITH_COLOR_LB(CYAN, R.getRewrittenText(SourceRange(RD->DEVI_GETLOCSTART(), RD->DEVI_GETLOCEND())).c_str());
+        PushToLua.push_back(R.getRewrittenText(SourceRange(RD->DEVI_GETLOCSTART(), RD->DEVI_GETLOCEND())));
       }
     }
 

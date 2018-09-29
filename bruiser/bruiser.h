@@ -47,6 +47,14 @@ namespace bruiser
 /**********************************************************************************************************************/
   const char* M0REP = "../test/misrareport.xml";
 /**********************************************************************************************************************/
+#if __clang_major__ <= 6
+#define DEVI_GETLOCSTART getLocStart
+#define DEVI_GETLOCEND getLocEnd
+#elif __clang_major__ >= 8
+#define DEVI_GETLOCSTART getBeginLoc
+#define DEVI_GETLOCEND getEndLoc
+#endif
+
 #define JOIN2(x1, x2) x1##x2
 #define JOIN3(x1, x2, x3) x1##x2##x3
 

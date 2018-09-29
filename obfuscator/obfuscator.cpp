@@ -72,6 +72,14 @@ cl::opt<uint32_t> SHAKE_LEN("shake_len", cl::desc("length of the shake hash, the
 #else
 #define TEMP_FILE "/tmp/obfuscator-tee"
 #endif
+
+#if __clang_major__ <= 6
+#define DEVI_GETLOCSTART getLocStart
+#define DEVI_GETLOCEND getLocEnd
+#elif __clang_major__ >= 8
+#define DEVI_GETLOCSTART getBeginLoc
+#define DEVI_GETLOCEND getEndLoc
+#endif
 /**********************************************************************************************************************/
 std::string hashWrapper(std::string name) {
   if (!SHAKE) {
@@ -249,12 +257,12 @@ class CalledFunc : public MatchFinder::MatchCallback {
 #ifdef DBG
         std::cout << "CallExpr name: "  << name << " Hash: " << hash << " New ID: " << newname << "\n";
 #endif
-        auto dummy = Rewrite.getRewrittenText(SourceRange(CE->getLocStart(), CE->getRParenLoc()));
+        auto dummy = Rewrite.getRewrittenText(SourceRange(CE->DEVI_GETLOCSTART(), CE->getRParenLoc()));
         auto LParenOffset = dummy.find("(");
-        SourceLocation SL = Devi::getSLSpellingLoc(CE->getLocStart(), Rewrite);
-        SourceLocation SLE = Devi::getSLSpellingLoc(CE->getLocStart(), Rewrite).getLocWithOffset(LParenOffset - 0U);
+        SourceLocation SL = Devi::getSLSpellingLoc(CE->DEVI_GETLOCSTART(), Rewrite);
+        SourceLocation SLE = Devi::getSLSpellingLoc(CE->DEVI_GETLOCSTART(), Rewrite).getLocWithOffset(LParenOffset - 0U);
         dummy = Rewrite.getRewrittenText(SourceRange(SL, SLE));
-        Rewrite.ReplaceText(SourceRange(CE->getLocStart(), CE->getLocStart().getLocWithOffset(LParenOffset - 1U)), StringRef(newname));
+        Rewrite.ReplaceText(SourceRange(CE->DEVI_GETLOCSTART(), CE->DEVI_GETLOCSTART().getLocWithOffset(LParenOffset - 1U)), StringRef(newname));
       }
     }
 
@@ -344,7 +352,7 @@ public:
         EXP = MR.Nodes.getNodeAs<clang::Expr>("expr");
         SLE = Devi::getSLSpellingLoc(EXP->getExprLoc(), Rewrite);
       } else {
-        SLE = Devi::getSLSpellingLoc(VD->getLocEnd(), Rewrite);
+        SLE = Devi::getSLSpellingLoc(VD->DEVI_GETLOCEND(), Rewrite);
       }
 
       //@devi-FIXME-cluncky
@@ -377,7 +385,7 @@ class ClassDecl : public MatchFinder::MatchCallback {
 #endif
 
         SourceLocation SL = Devi::getSLSpellingLoc(RD->getLocation(), Rewrite);
-        SourceLocation SLE = Devi::getSLSpellingLoc(RD->getLocEnd(), Rewrite);
+        SourceLocation SLE = Devi::getSLSpellingLoc(RD->DEVI_GETLOCEND(), Rewrite);
 
         std::string dummy = Rewrite.getRewrittenText(SourceRange(SL, SLE));
         Rewrite.ReplaceText(SourceRange(SL, SLE), StringRef(newname));
@@ -425,9 +433,16 @@ public:
     Rewrite.ReplaceText(SourceRange(SL, SL.getLocWithOffset(MacroNameTok.getLength() - 1)), newname);
   }
 
+#if __clang_major__ <= 6
   virtual void  InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, 
       StringRef FileName, bool IsAngled, CharSourceRange FilenameRange, const FileEntry *File, 
       StringRef SearchPath, StringRef RelativePath, const clang::Module *Imported) {
+#elif __clang_major__ >= 8
+  virtual void  InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, 
+      StringRef FileName, bool IsAngled, CharSourceRange FilenameRange, const FileEntry *File, 
+      StringRef SearchPath, StringRef RelativePath, const clang::Module *Imported, 
+      SrcMgr::CharacteristicKind FileType) {
+#endif
     std::cout << "Include filename: " << FileName.str() << "\n";
     // name, extension, path
     auto header_ = getNameFromPath(FileName.str());
