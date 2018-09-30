@@ -100,7 +100,7 @@
   </Read>
   <Definition>
     <Init_Expr name="init_expr_t" isaggregate="true" luatype="lightuserdata">
-      <Code name="code" type="string" count="1" size="-1" delimiter="11" luatype="integer"></Code>
+      <Code name="code" type="string" count="1" size="-1" delimiter="11" luatype="string"></Code>
     </Init_Expr>
     <Resizable_Limit name="resizable_limit_t" isaggregate="true" luatype="lightuserdata">
       <Flags name="flags" encoding="leb128u" type="uint8" count="1" luatype="integer"></Flags>

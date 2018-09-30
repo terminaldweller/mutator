@@ -30,123 +30,197 @@ int main(int argc, char **argv) {
   wasm_lib_ret_t *lib_ret = read_aggr_wasm(wasm);
   printf("finished reading\n");
 
-#if 0
-  printf("magic_number:%x\n", lib_ret->obj->magic_number_container->magic_number);
+#if 1
+  printf("magic_number:%x\n",
+         lib_ret->obj->magic_number_container->magic_number);
   printf("version:%x\n", lib_ret->obj->version_container->version);
 
   printf("type section id:%d\n", lib_ret->obj->W_Type_Section_container->id);
-  printf("type section payloadlength:%d\n", lib_ret->obj->W_Type_Section_container->payloadlength);
-  printf("type_section entry count:%d\n", lib_ret->obj->W_Type_Section_container->count);
-  for (int i=0; i < lib_ret->obj->W_Type_Section_container->count; ++i) {
-    printf("param_count:%d\n",lib_ret->obj->W_Type_Section_container->entries[i]->param_count);
-    for (int j = 0; j < lib_ret->obj->W_Type_Section_container->entries[i]->param_count; ++j)
-      printf("param_types:%d\n",lib_ret->obj->W_Type_Section_container->entries[i]->param_types[j]);
-    printf("return_count:%d\n", lib_ret->obj->W_Type_Section_container->entries[i]->return_count);
-    for (int j = 0; j < lib_ret->obj->W_Type_Section_container->entries[i]->return_count; ++j)
-      printf("param_types:%d\n",lib_ret->obj->W_Type_Section_container->entries[i]->return_types[j]);
+  printf("type section payloadlength:%d\n",
+         lib_ret->obj->W_Type_Section_container->payloadlength);
+  printf("type_section entry count:%d\n",
+         lib_ret->obj->W_Type_Section_container->count);
+  for (int i = 0; i < lib_ret->obj->W_Type_Section_container->count; ++i) {
+    printf("param_count:%d\n",
+           lib_ret->obj->W_Type_Section_container->entries[i]->param_count);
+    for (int j = 0;
+         j < lib_ret->obj->W_Type_Section_container->entries[i]->param_count;
+         ++j)
+      printf(
+          "param_types:%d\n",
+          lib_ret->obj->W_Type_Section_container->entries[i]->param_types[j]);
+    printf("return_count:%d\n",
+           lib_ret->obj->W_Type_Section_container->entries[i]->return_count);
+    for (int j = 0;
+         j < lib_ret->obj->W_Type_Section_container->entries[i]->return_count;
+         ++j)
+      printf(
+          "param_types:%d\n",
+          lib_ret->obj->W_Type_Section_container->entries[i]->return_types[j]);
   }
-  printf("import_section_id:%d\n", lib_ret->obj->W_Import_Section_container->id);
-  printf("import_section_payloadlength:%d\n", lib_ret->obj->W_Import_Section_container->payloadlength);
-  printf("import_section_count:%d\n", lib_ret->obj->W_Import_Section_container->count);
-  for(int i = 0; i < lib_ret->obj->W_Import_Section_container->count; ++i) {
-    printf("module_length:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->module_length);
-    printf("module_str:%s\n", lib_ret->obj->W_Import_Section_container->entries[i]->module_str);
-    printf("field_length:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->field_len);
-    printf("field_str:%s\n", lib_ret->obj->W_Import_Section_container->entries[i]->field_str);
-    printf("kind:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->kind);
+  printf("import_section_id:%d\n",
+         lib_ret->obj->W_Import_Section_container->id);
+  printf("import_section_payloadlength:%d\n",
+         lib_ret->obj->W_Import_Section_container->payloadlength);
+  printf("import_section_count:%d\n",
+         lib_ret->obj->W_Import_Section_container->count);
+  for (int i = 0; i < lib_ret->obj->W_Import_Section_container->count; ++i) {
+    printf("module_length:%d\n",
+           lib_ret->obj->W_Import_Section_container->entries[i]->module_length);
+    printf("module_str:%s\n",
+           lib_ret->obj->W_Import_Section_container->entries[i]->module_str);
+    printf("field_length:%d\n",
+           lib_ret->obj->W_Import_Section_container->entries[i]->field_len);
+    printf("field_str:%s\n",
+           lib_ret->obj->W_Import_Section_container->entries[i]->field_str);
+    printf("kind:%d\n",
+           lib_ret->obj->W_Import_Section_container->entries[i]->kind);
     if (lib_ret->obj->W_Import_Section_container->entries[i]->kind == 0)
-      printf("type:%d\n", lib_ret->obj->W_Import_Section_container->entries[i]->kind);
+      printf("type:%d\n",
+             lib_ret->obj->W_Import_Section_container->entries[i]->kind);
     printf("\n");
   }
-  printf("function_section_id:%d\n", lib_ret->obj->W_Function_Section_container->id);
-  printf("function_section_payloadlength:%d\n", lib_ret->obj->W_Function_Section_container->payloadlength);
-  printf("function_section_count:%d\n", lib_ret->obj->W_Function_Section_container->count);
+  printf("function_section_id:%d\n",
+         lib_ret->obj->W_Function_Section_container->id);
+  printf("function_section_payloadlength:%d\n",
+         lib_ret->obj->W_Function_Section_container->payloadlength);
+  printf("function_section_count:%d\n",
+         lib_ret->obj->W_Function_Section_container->count);
   for (int i = 0; i < lib_ret->obj->W_Function_Section_container->count; ++i)
     printf("type:%d\n", lib_ret->obj->W_Function_Section_container->types[i]);
 
   printf("table_section_id:%d\n", lib_ret->obj->W_Table_Section_container->id);
-  printf("table_section_payloadlength:%d\n", lib_ret->obj->W_Table_Section_container->payloadlength);
-  printf("table_section_count:%d\n", lib_ret->obj->W_Table_Section_container->count);
+  printf("table_section_payloadlength:%d\n",
+         lib_ret->obj->W_Table_Section_container->payloadlength);
+  printf("table_section_count:%d\n",
+         lib_ret->obj->W_Table_Section_container->count);
   for (int i = 0; i < lib_ret->obj->W_Table_Section_container->count; ++i) {
-    printf("element_type:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->element_type);
-    printf("rl_flags:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->resizable_limit->flags);
-    printf("rl_initial:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->resizable_limit->initial);
-    printf("rl_maximum:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]->resizable_limit->maximum);
+    printf("element_type:%d\n",
+           lib_ret->obj->W_Table_Section_container->entries[i]->element_type);
+    printf("rl_flags:%d\n", lib_ret->obj->W_Table_Section_container->entries[i]
+                                ->resizable_limit->flags);
+    printf("rl_initial:%d\n",
+           lib_ret->obj->W_Table_Section_container->entries[i]
+               ->resizable_limit->initial);
+    printf("rl_maximum:%d\n",
+           lib_ret->obj->W_Table_Section_container->entries[i]
+               ->resizable_limit->maximum);
   }
 
-  printf("memory_section_id:%d\n", lib_ret->obj->W_Memory_Section_container->id);
-  printf("memory_section_payload_length:%d\n", lib_ret->obj->W_Memory_Section_container->payloadlength);
-  printf("rl_flags:%d\n", lib_ret->obj->W_Memory_Section_container->entries->resizable_limit->flags);
-  printf("rl_initial:%d\n", lib_ret->obj->W_Memory_Section_container->entries->resizable_limit->initial);
-  printf("rl_maximum:%d\n", lib_ret->obj->W_Memory_Section_container->entries->resizable_limit->maximum);
+  printf("memory_section_id:%d\n",
+         lib_ret->obj->W_Memory_Section_container->id);
+  printf("memory_section_payload_length:%d\n",
+         lib_ret->obj->W_Memory_Section_container->payloadlength);
+  printf("rl_flags:%d\n", lib_ret->obj->W_Memory_Section_container->entries
+                              ->resizable_limit->flags);
+  printf("rl_initial:%d\n", lib_ret->obj->W_Memory_Section_container->entries
+                                ->resizable_limit->initial);
+  printf("rl_maximum:%d\n", lib_ret->obj->W_Memory_Section_container->entries
+                                ->resizable_limit->maximum);
 
-  if (lib_ret->obj->W_Global_Section_container == NULL) printf("global section doesnt exist.\n");
+  if (lib_ret->obj->W_Global_Section_container == NULL)
+    printf("global section doesnt exist.\n");
 
-  printf("export_section_id:%d\n", lib_ret->obj->W_Export_Section_container->id);
-  printf("export_section_payloadlength:%d\n", lib_ret->obj->W_Export_Section_container->payloadlength);
+  printf("export_section_id:%d\n",
+         lib_ret->obj->W_Export_Section_container->id);
+  printf("export_section_payloadlength:%d\n",
+         lib_ret->obj->W_Export_Section_container->payloadlength);
   printf("entry count:%d\n", lib_ret->obj->W_Export_Section_container->count);
 
   for (int i = 0; i < lib_ret->obj->W_Export_Section_container->count; ++i) {
-    printf("field_len:%d\n", lib_ret->obj->W_Export_Section_container->entries[i]->field_len);
-    printf("field_str:%s\n", lib_ret->obj->W_Export_Section_container->entries[i]->field_str);
-    printf("kind:%d\n", lib_ret->obj->W_Export_Section_container->entries[i]->kind);
-    printf("index:%d\n", lib_ret->obj->W_Export_Section_container->entries[i]->index);
+    printf("field_len:%d\n",
+           lib_ret->obj->W_Export_Section_container->entries[i]->field_len);
+    printf("field_str:%s\n",
+           lib_ret->obj->W_Export_Section_container->entries[i]->field_str);
+    printf("kind:%d\n",
+           lib_ret->obj->W_Export_Section_container->entries[i]->kind);
+    printf("index:%d\n",
+           lib_ret->obj->W_Export_Section_container->entries[i]->index);
   }
 
-  if (lib_ret->obj->W_Start_Section_container == NULL) printf("start section doesnt exist.\n");
+  if (lib_ret->obj->W_Start_Section_container == NULL)
+    printf("start section doesnt exist.\n");
 
-  printf("element_seciton_id:%d\n", lib_ret->obj->W_Element_Section_container->id);
-  printf("element_section_payloadlength:%d\n", lib_ret->obj->W_Element_Section_container->payloadlength);
+  printf("element_seciton_id:%d\n",
+         lib_ret->obj->W_Element_Section_container->id);
+  printf("element_section_payloadlength:%d\n",
+         lib_ret->obj->W_Element_Section_container->payloadlength);
   printf("entry count:%d\n", lib_ret->obj->W_Element_Section_container->count);
 
   for (int i = 0; i < lib_ret->obj->W_Element_Section_container->count; ++i) {
-    printf("index:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->index);
+    printf("index:%d\n",
+           lib_ret->obj->W_Element_Section_container->entries[i]->index);
     for (int j = 0; j < 3; ++j) {
-      printf("code:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->init->code[j]);
+      printf(
+          "code:%d\n",
+          lib_ret->obj->W_Element_Section_container->entries[i]->init->code[j]);
     }
-    printf("num_length:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->num_length);
-    for (int j = 0; j < lib_ret->obj->W_Element_Section_container->entries[i]->num_length; ++j) {
-      printf("elems:%d\n", lib_ret->obj->W_Element_Section_container->entries[i]->elems[j]);
+    printf("num_length:%d\n",
+           lib_ret->obj->W_Element_Section_container->entries[i]->num_length);
+    for (int j = 0;
+         j < lib_ret->obj->W_Element_Section_container->entries[i]->num_length;
+         ++j) {
+      printf("elems:%d\n",
+             lib_ret->obj->W_Element_Section_container->entries[i]->elems[j]);
     }
   }
 
   printf("code_section_id:%d\n", lib_ret->obj->W_Code_Section_container->id);
-  printf("code_section_payloadlength:%d\n", lib_ret->obj->W_Code_Section_container->payloadlength);
+  printf("code_section_payloadlength:%d\n",
+         lib_ret->obj->W_Code_Section_container->payloadlength);
   printf("count:%d\n", lib_ret->obj->W_Code_Section_container->count);
 
   for (int i = 0; i < lib_ret->obj->W_Code_Section_container->count; ++i) {
-    printf("body_size:%d\n", lib_ret->obj->W_Code_Section_container->bodies[i]->body_size);
-    printf("local_count:%d\n", lib_ret->obj->W_Code_Section_container->bodies[i]->local_count);
+    printf("body_size:%d\n",
+           lib_ret->obj->W_Code_Section_container->bodies[i]->body_size);
+    printf("local_count:%d\n",
+           lib_ret->obj->W_Code_Section_container->bodies[i]->local_count);
     if (lib_ret->obj->W_Code_Section_container->bodies[i]->local_count > 0) {
-      for (int j =0; j < lib_ret->obj->W_Code_Section_container->bodies[i]->local_count; ++j) {
-        for (int k = 0; k < lib_ret->obj->W_Code_Section_container->bodies[i]->locals[j]->count; ++k) {
+      for (int j = 0;
+           j < lib_ret->obj->W_Code_Section_container->bodies[i]->local_count;
+           ++j) {
+        for (int k = 0; k < lib_ret->obj->W_Code_Section_container->bodies[i]
+                                ->locals[j]
+                                ->count;
+             ++k) {
         }
       }
     }
     printf("code:\n");
-    for (int j = 0; j < lib_ret->obj->W_Code_Section_container->bodies[i]->body_size; ++j) {
-      printf("%02x ", lib_ret->obj->W_Code_Section_container->bodies[i]->code[j]);
+    for (int j = 0;
+         j < lib_ret->obj->W_Code_Section_container->bodies[i]->body_size;
+         ++j) {
+      printf("%02x ",
+             lib_ret->obj->W_Code_Section_container->bodies[i]->code[j]);
     }
     printf("\n");
   }
 
   printf("data_section_id:%d\n", lib_ret->obj->W_Data_Section_container->id);
-  printf("data_section_payloadlength:%d\n", lib_ret->obj->W_Data_Section_container->payloadlength);
+  printf("data_section_payloadlength:%d\n",
+         lib_ret->obj->W_Data_Section_container->payloadlength);
   printf("data seg count:%d\n", lib_ret->obj->W_Data_Section_container->count);
 
   for (int i = 0; i < lib_ret->obj->W_Data_Section_container->count; ++i) {
-    printf("index:%d\n", lib_ret->obj->W_Data_Section_container->entries[i]->index);
-    printf("size:%d\n", lib_ret->obj->W_Data_Section_container->entries[i]->size);
+    printf("index:%d\n",
+           lib_ret->obj->W_Data_Section_container->entries[i]->index);
+    printf("size:%d\n",
+           lib_ret->obj->W_Data_Section_container->entries[i]->size);
     printf("code:\n");
-    for (int j = 0; j < lib_ret->obj->W_Data_Section_container->entries[i]->size; ++j) {
-      printf("%c ", lib_ret->obj->W_Data_Section_container->entries[i]->data[j]);
+    for (int j = 0;
+         j < lib_ret->obj->W_Data_Section_container->entries[i]->size; ++j) {
+      printf("%c ",
+             lib_ret->obj->W_Data_Section_container->entries[i]->data[j]);
     }
     printf("\n");
     int j = 0;
     printf("offset:\n");
-    while(1) {
-      printf("%02x ", lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j]);
-      if (lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j] == 11) {
+    while (1) {
+      printf(
+          "%02x ",
+          lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j]);
+      if (lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j] ==
+          11) {
         break;
       }
       j++;

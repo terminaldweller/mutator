@@ -1546,8 +1546,8 @@ class LuaWrapper {
           int j = 0;
           printf("offset:\n");
           while(1) {
-            printf("%02x ", lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j]);
-            if (lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j] == 11) {
+            printf("%02x ", (unsigned char)lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j]);
+            if (lib_ret->obj->W_Data_Section_container->entries[i]->offset->code[j] == 11U) {
               break;
             }
             j++;
@@ -2209,6 +2209,7 @@ class RunLoop {
 
       /*cli execution loop*/
       while((command = linenoise(">>>")) != NULL) {
+        //FIXME-if the current command is the same as last command skip adding to history
         linenoiseHistoryAdd(command);
         linenoiseHistorySave(SHELL_HISTORY_FILE.c_str());
         le.RunChunk(command);

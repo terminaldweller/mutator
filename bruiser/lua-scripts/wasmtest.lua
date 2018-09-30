@@ -197,9 +197,18 @@ function demo4()
       for k,v in pairs(a["data_section"]:entries()) do
         io.write(v:index().."\t")
         io.write(tostring(v:offset()).."\t")
-        io.write(v:size().."\n")
-        --FIXME
-        --io.write(v:data().."\n")
+        print(colors("%{red}"..tostring(#v:offset():code())))
+        for i = 1, #v:offset():code() do
+          local c = v:offset():code():sub(i,i)
+          print(colors("%{red}"..string.byte(c)))
+        end
+        --io.write(colors("%{yellow}"..v:offset():code()))
+        io.write("size:"..v:size().."\n")
+        io.write(tostring(v:data()).."\n")
+        for i, j in pairs(v:data()) do
+          io.write(colors("%{blue}"..string.char(j)))
+        end
+        io.write("\n")
       end
     end
   else
