@@ -7,6 +7,7 @@ function reg_test()
   local jmp_table = require("demo2")
   local asm_rewriter = require("asmtest")
   local wasm_import = require("demo3")
+  local libwasm = require("wasmtest")
 
   local argparse = require("argparse")
 
@@ -15,6 +16,7 @@ function reg_test()
   parser:flag("-j --jmpt")
   parser:flag("-a --asm")
   parser:flag("-w --wasm")
+  --libwasm.demo("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 
 end
 

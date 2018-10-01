@@ -152,7 +152,7 @@
       <Index name="index" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Init name="init" type="self::Init_Expr" count="1" luatype="lightuserdata"/>
       <Num_Length name="num_length" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Elems name="elems" encoding="leb128u" type="uint32" count="self::Num_Length" luatype="integer"/>
+      <Elems name="elems" encoding="leb128u" type="uint32" count="self::Num_Length" luatype="lightuserdata"/>
     </Element_Segment>
     <Local_Entry name="W_Local_Entry" isaggregate="true" luatype="lightuserdata">
       <Count name="count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
@@ -162,7 +162,7 @@
       <Body_size name="body_size" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Local_Count name="local_count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
       <Local_Entries name="locals" type="self::Local_Entry" count="self::Local_Count" luatype="lightuserdata"/>
-      <Code name="code" type="uint8" count="self::Body_size" luatype="integer"/>
+      <Code name="code" type="uint8" count="self::Body_size" luatype="lightuserdata"/>
     </Function_Body>
     <Data_Segment name="W_Data_Segment" isaggregate="true" luatype="lightuserdata">
       <Index name="index" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
