@@ -3,26 +3,6 @@ colors = require("ansicolors")
 
 local libwasm = {}
 
-function libwasm.demo(wasm_path)
-  local a = getwasmobj(wasm_path)
-  print(a)
-  print(type(a))
-  for k, v in pairs(a) do
-    print(k, v, type(k), type(v))
-  end
-  libwasm.dump_import_section(a)
-  libwasm.dump_type_section(a)
-  libwasm.dump_function_section(a)
-  libwasm.dump_table_section(a)
-  libwasm.dump_memory_section(a)
-  libwasm.dump_global_section(a)
-  libwasm.dump_export_section(a)
-  libwasm.dump_start_section(a)
-  libwasm.dump_element_section(a)
-  libwasm.dump_code_section(a)
-  libwasm.dump_data_section(a)
-end
-
 function libwasm.dump_type_section(a)
   print(colors("%{green}".."\ntype section:"))
   if a["type_section"] ~= nil then
@@ -282,7 +262,633 @@ function libwasm.dev(wasm_path)
   libwasm.dump_import_section(a)
 end
 
+function libwasm.demo_getters(wasm_path)
+  local a = getwasmobj(wasm_path)
+  print(a)
+  print(type(a))
+  for k, v in pairs(a) do
+    print(k, v, type(k), type(v))
+  end
+  libwasm.dump_import_section(a)
+  libwasm.dump_type_section(a)
+  libwasm.dump_function_section(a)
+  libwasm.dump_table_section(a)
+  libwasm.dump_memory_section(a)
+  libwasm.dump_global_section(a)
+  libwasm.dump_export_section(a)
+  libwasm.dump_start_section(a)
+  libwasm.dump_element_section(a)
+  libwasm.dump_code_section(a)
+  libwasm.dump_data_section(a)
+end
+
+function libwasm.demo_setters(wasm_path)
+  local a = getwasmobj(wasm_path)
+
+  --type section setters
+  do
+    print("type section setters:")
+
+    if a["type_section"] ~= nil then
+      local pre = a["type_section"]:id()
+      a["type_section"]:set_id(10)
+      local post = a["type_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."type_section:id:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."type_section:id:pass\n"))
+      end
+
+      pre = a["type_section"]:payloadlength()
+      a["type_section"]:set_payloadlength(10)
+      post = a["type_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."type_section:payloadlength:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."type_section:payloadlength:pass\n"))
+      end
+
+      pre = a["type_section"]:namelength()
+      a["type_section"]:set_namelength(10)
+      post = a["type_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."type_section:namelength:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."type_section:namelength:pass\n"))
+      end
+
+      pre = a["type_section"]:name()
+      a["type_section"]:set_name("type_section")
+      post = a["type_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."type_section:name:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."type_section:name:pass\n"))
+      end
+
+      pre = a["type_section"]:count()
+      a["type_section"]:set_count(13)
+      post = a["type_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."type_section:count:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."type_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --import section setters
+  do
+    print("import section setters:")
+
+    if a["import_section"] ~= nil then
+      local pre = a["import_section"]:id()
+      a["import_section"]:set_id(10)
+      local post = a["import_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."import_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."import_section:id:pass\n"))
+      end
+
+      pre = a["import_section"]:payloadlength()
+      a["import_section"]:set_payloadlength(222)
+      post = a["import_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."import_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."import_section:payloadlength:pass\n"))
+      end
+
+      pre = a["import_section"]:namelength()
+      a["import_section"]:set_namelength(17)
+      post = a["import_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."import_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."import_section:namelength:pass\n"))
+      end
+
+      pre = a["import_section"]:name()
+      a["import_section"]:set_name("import_section")
+      post = a["import_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."import_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."import_section:name:pass\n"))
+      end
+
+      pre = a["import_section"]:count()
+      a["import_section"]:set_count(13)
+      post = a["import_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."import_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."import_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --function section setters
+  do
+    print("function section setters:")
+
+    if a["function_section"] ~= nil then
+      local pre = a["function_section"]:id()
+      a["function_section"]:set_id(10)
+      local post = a["function_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."function_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."function_section:id:pass\n"))
+      end
+
+      pre = a["function_section"]:payloadlength()
+      a["function_section"]:set_payloadlength(222)
+      post = a["function_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."function_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."function_section:payloadlength:pass\n"))
+      end
+
+      pre = a["function_section"]:namelength()
+      a["function_section"]:set_namelength(17)
+      post = a["function_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."function_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."function_section:namelength:pass\n"))
+      end
+
+      pre = a["function_section"]:name()
+      a["function_section"]:set_name("function_section")
+      post = a["function_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."function_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."function_section:name:pass\n"))
+      end
+
+      pre = a["function_section"]:count()
+      a["function_section"]:set_count(13)
+      post = a["function_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."function_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."function_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --table section setters
+  do
+    print("table section setters:")
+
+    if a["table_section"] ~= nil then
+      local pre = a["table_section"]:id()
+      a["table_section"]:set_id(10)
+      local post = a["table_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."table_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."table_section:id:pass\n"))
+      end
+
+      pre = a["table_section"]:payloadlength()
+      a["table_section"]:set_payloadlength(222)
+      post = a["table_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."table_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."table_section:payloadlength:pass\n"))
+      end
+
+      pre = a["table_section"]:namelength()
+      a["table_section"]:set_namelength(17)
+      post = a["table_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."table_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."table_section:namelength:pass\n"))
+      end
+
+      pre = a["table_section"]:name()
+      a["table_section"]:set_name("table_section")
+      post = a["table_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."table_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."table_section:name:pass\n"))
+      end
+
+      pre = a["table_section"]:count()
+      a["table_section"]:set_count(13)
+      post = a["table_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."table_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."table_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --memory section setters
+  do
+    print("memory section setters:")
+
+    if a["memory_section"] ~= nil then
+      local pre = a["memory_section"]:id()
+      a["memory_section"]:set_id(10)
+      local post = a["memory_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."memory_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."memory_section:id:pass\n"))
+      end
+
+      pre = a["memory_section"]:payloadlength()
+      a["memory_section"]:set_payloadlength(222)
+      post = a["memory_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."memory_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."memory_section:payloadlength:pass\n"))
+      end
+
+      pre = a["memory_section"]:namelength()
+      a["memory_section"]:set_namelength(17)
+      post = a["memory_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."memory_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."memory_section:namelength:pass\n"))
+      end
+
+      pre = a["memory_section"]:name()
+      a["memory_section"]:set_name("memory_section")
+      post = a["memory_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."memory_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."memory_section:name:pass\n"))
+      end
+
+      --[[
+      pre = a["memory_section"]:count()
+      a["memory_section"]:set_count(13)
+      post = a["memory_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."memory_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."memory_section:count:pass\n"))
+      end
+      --]]
+
+      --FIXME-entries
+    end
+  end
+
+  --global section setters
+  do
+    print("global section setters:")
+
+    if a["global_section"] ~= nil then
+      local pre = a["global_section"]:id()
+      a["global_section"]:set_id(10)
+      local post = a["global_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."global_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."global_section:id:pass\n"))
+      end
+
+      pre = a["global_section"]:payloadlength()
+      a["global_section"]:set_payloadlength(222)
+      post = a["global_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."global_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."global_section:payloadlength:pass\n"))
+      end
+
+      pre = a["global_section"]:namelength()
+      a["global_section"]:set_namelength(17)
+      post = a["global_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."global_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."global_section:namelength:pass\n"))
+      end
+
+      pre = a["global_section"]:name()
+      a["global_section"]:set_name("global_section")
+      post = a["global_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."global_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."global_section:name:pass\n"))
+      end
+
+      pre = a["global_section"]:count()
+      a["global_section"]:set_count(13)
+      post = a["global_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."global_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."global_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --export section setters
+  do
+    print("export section setters:")
+
+    if a["export_section"] ~= nil then
+      local pre = a["export_section"]:id()
+      a["export_section"]:set_id(10)
+      local post = a["export_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."export_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."export_section:id:pass\n"))
+      end
+
+      pre = a["export_section"]:payloadlength()
+      a["export_section"]:set_payloadlength(222)
+      post = a["export_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."export_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."export_section:payloadlength:pass\n"))
+      end
+
+      pre = a["export_section"]:namelength()
+      a["export_section"]:set_namelength(17)
+      post = a["export_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."export_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."export_section:namelength:pass\n"))
+      end
+
+      pre = a["export_section"]:name()
+      a["export_section"]:set_name("export_section")
+      post = a["export_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."export_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."export_section:name:pass\n"))
+      end
+
+      pre = a["export_section"]:count()
+      a["export_section"]:set_count(13)
+      post = a["export_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."export_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."export_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --start section setters
+  do
+    print("start section setters:")
+
+    if a["start_section"] ~= nil then
+      local pre = a["start_section"]:id()
+      a["start_section"]:set_id(10)
+      local post = a["start_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."start_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."start_section:id:pass\n"))
+      end
+
+      pre = a["start_section"]:payloadlength()
+      a["start_section"]:set_payloadlength(222)
+      post = a["start_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."start_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."start_section:payloadlength:pass\n"))
+      end
+
+      pre = a["start_section"]:namelength()
+      a["start_section"]:set_namelength(17)
+      post = a["start_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."start_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."start_section:namelength:pass\n"))
+      end
+
+      pre = a["start_section"]:name()
+      a["start_section"]:set_name("start_section")
+      post = a["start_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."start_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."start_section:name:pass\n"))
+      end
+
+      pre = a["start_section"]:index()
+      a["start_section"]:set_index(13)
+      post = a["start_section"]:index()
+      if pre == post then
+        io.write(colors("%{red}".."start_section:index:failure\n"))
+      else
+        io.write(colors("%{green}".."start_section:index:pass\n"))
+      end
+    end
+  end
+
+  --element section setters
+  do
+    print("element section setters:")
+
+    if a["element_section"] ~= nil then
+      local pre = a["element_section"]:id()
+      a["element_section"]:set_id(10)
+      local post = a["element_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."element_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."element_section:id:pass\n"))
+      end
+
+      pre = a["element_section"]:payloadlength()
+      a["element_section"]:set_payloadlength(222)
+      post = a["element_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."element_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."element_section:payloadlength:pass\n"))
+      end
+
+      pre = a["element_section"]:namelength()
+      a["element_section"]:set_namelength(17)
+      post = a["element_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."element_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."element_section:namelength:pass\n"))
+      end
+
+      pre = a["element_section"]:name()
+      a["element_section"]:set_name("element_section")
+      post = a["element_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."element_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."element_section:name:pass\n"))
+      end
+
+      pre = a["element_section"]:count()
+      a["element_section"]:set_count(13)
+      post = a["element_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."element_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."element_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --code section setters
+  do
+    print("code section setters:")
+
+    if a["code_section"] ~= nil then
+      local pre = a["code_section"]:id()
+      a["code_section"]:set_id(100)
+      local post = a["code_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."code_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."code_section:id:pass\n"))
+      end
+
+      pre = a["code_section"]:payloadlength()
+      a["code_section"]:set_payloadlength(222)
+      post = a["code_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."code_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."code_section:payloadlength:pass\n"))
+      end
+
+      pre = a["code_section"]:namelength()
+      a["code_section"]:set_namelength(17)
+      post = a["code_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."code_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."code_section:namelength:pass\n"))
+      end
+
+      pre = a["code_section"]:name()
+      a["code_section"]:set_name("code_section")
+      post = a["code_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."code_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."code_section:name:pass\n"))
+      end
+
+      pre = a["code_section"]:count()
+      a["code_section"]:set_count(13)
+      post = a["code_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."code_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."code_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+  --data section setters
+  do
+    print("data section setters:")
+
+    if a["data_section"] ~= nil then
+      local pre = a["data_section"]:id()
+      a["data_section"]:set_id(100)
+      local post = a["data_section"]:id()
+      if pre == post then
+        io.write(colors("%{red}".."data_section:id:failure\n"))
+      else
+        io.write(colors("%{green}".."data_section:id:pass\n"))
+      end
+
+      pre = a["data_section"]:payloadlength()
+      a["data_section"]:set_payloadlength(222)
+      post = a["data_section"]:payloadlength()
+      if pre == post then
+        io.write(colors("%{red}".."data_section:payloadlength:failure\n"))
+      else
+        io.write(colors("%{green}".."data_section:payloadlength:pass\n"))
+      end
+
+      pre = a["data_section"]:namelength()
+      a["data_section"]:set_namelength(17)
+      post = a["data_section"]:namelength()
+      if pre == post then
+        io.write(colors("%{red}".."data_section:namelength:failure\n"))
+      else
+        io.write(colors("%{green}".."data_section:namelength:pass\n"))
+      end
+
+      pre = a["data_section"]:name()
+      a["data_section"]:set_name("data_section")
+      post = a["data_section"]:name()
+      if pre == post then
+        io.write(colors("%{red}".."data_section:name:failure\n"))
+      else
+        io.write(colors("%{green}".."data_section:name:pass\n"))
+      end
+
+      pre = a["data_section"]:count()
+      a["data_section"]:set_count(13)
+      post = a["data_section"]:count()
+      if pre == post then
+        io.write(colors("%{red}".."data_section:count:failure\n"))
+      else
+        io.write(colors("%{green}".."data_section:count:pass\n"))
+      end
+
+      --FIXME-entries
+    end
+  end
+
+end
+
 --libwasm.dev("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
-libwasm.demo("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+--libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+
 return libwasm

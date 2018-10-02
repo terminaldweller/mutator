@@ -135,12 +135,12 @@ linenoise.odbg: ./linenoise/linenoise.c
 linenoise.ocov: ./linenoise/linenoise.c
 	$(CC) $(CC_FLAGS) $(COV_CXX) linenoise/linenoise.c -c -o linenoise.ocov
 
-./autogen/wasm/ft/wasm.xml:
-	if [[ ls -l ./autogen/wasm/ft/ | wc -l  == 2 ]];then ./autogen/wasm/ft.sh;else :;fi
+#./autogen/wasm/ft/wasm.xml:
+	#if [[ ls -l ./autogen/wasm/ft/ | wc -l == 3 ]];then ./autogen/wasm/ft.sh;else :;fi
 	#./autogen/wasm/ft.sh
 
-./autogen/wasm/ltg/wasm.xml:
-	if [[ ls -l ./autogen/wasm/ltg/ | wc -l  == 2 ]];then ./autogen/wasm/ltg.sh;else :;fi
+#./autogen/wasm/ltg/wasm.xml:
+	#if [[ ls -l ./autogen/wasm/ltg/ | wc -l == 2 ]];then ./autogen/wasm/ltg.sh;else :;fi
 	#./autogen/wasm/ltg.sh
 
 ./luatablegen/%.o:./luatablegen/%.c
@@ -156,41 +156,41 @@ CODE_GEN_DBG: $(FT_WASM_A_DBG) $(LTG_WASM_A_DBG)
 CODE_GEN_COV: $(FT_WASM_A_COV) $(LTG_WASM_A_COV)
 
 define check_ft_codegen
-	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l)  == 4 ]];then ./autogen/wasm/ft.sh;else :;fi)
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ft/ | wc -l) == 3 ]];then ./autogen/wasm/ft.sh;else :;fi)
 endef
 define check_ltg_codegen
-	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l)  == 4 ]];then ./autogen/wasm/ltg.sh;else :;fi)
+	- $(shell if [[ $$(ls -l ./autogen/wasm/ltg/ | wc -l) == 2 ]];then ./autogen/wasm/ltg.sh;else :;fi)
 endef
 
-$(FT_WASM_SO): ./autogen/wasm/ft/wasm.xml
+$(FT_WASM_SO): ./autogen/wasm/wasm.xml
 	$(check_ft_codegen)
 	$(MAKE) -C ./autogen/wasm/ft SO
 
-$(FT_WASM_A): ./autogen/wasm/ft/wasm.xml
+$(FT_WASM_A): ./autogen/wasm/wasm.xml
 	$(check_ft_codegen)
 	$(MAKE) -C ./autogen/wasm/ft A
 
-$(FT_WASM_A_DBG): ./autogen/wasm/ft/wasm.xml
+$(FT_WASM_A_DBG): ./autogen/wasm/wasm.xml
 	$(check_ft_codegen)
 	$(MAKE) -C ./autogen/wasm/ft ADBG
 
-$(FT_WASM_A_COV): ./autogen/wasm/ft/wasm.xml
+$(FT_WASM_A_COV): ./autogen/wasm/wasm.xml
 	$(check_ft_codegen)
 	$(MAKE) -C ./autogen/wasm/ft ACOV
 
-$(LTG_WASM_SO): ./autogen/wasm/ltg/wasm.xml
+$(LTG_WASM_SO): ./autogen/wasm/wasm.xml
 	$(check_ltg_codegen)
 	$(MAKE) -C ./autogen/wasm/ltg SO
 
-$(LTG_WASM_A): ./autogen/wasm/ltg/wasm.xml
+$(LTG_WASM_A): ./autogen/wasm/wasm.xml
 	$(check_ltg_codegen)
 	$(MAKE) -C ./autogen/wasm/ltg A
 
-$(LTG_WASM_A_DBG): ./autogen/wasm/ltg/wasm.xml
+$(LTG_WASM_A_DBG): ./autogen/wasm/wasm.xml
 	$(check_ltg_codegen)
 	$(MAKE) -C ./autogen/wasm/ltg ADBG
 
-$(LTG_WASM_A_COV): ./autogen/wasm/ltg/wasm.xml
+$(LTG_WASM_A_COV): ./autogen/wasm/wasm.xml
 	$(check_ltg_codegen)
 	$(MAKE) -C ./autogen/wasm/ltg ACOV
 
