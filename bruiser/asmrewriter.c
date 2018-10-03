@@ -302,6 +302,7 @@ int jmpt_register(lua_State* __ls) {
   lua_newtable(__ls);
   luaL_setfuncs(__ls, jmpt_methods, 0);
   luaL_newmetatable(__ls, "jmp_s_t");
+  luaL_setfuncs(__ls, jmpt_methods, 0);
   luaL_setfuncs(__ls, jmpt_meta, 0);
   lua_pushliteral(__ls, "__index");
   lua_pushvalue(__ls, -3);

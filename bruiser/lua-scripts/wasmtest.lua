@@ -284,6 +284,7 @@ end
 
 function libwasm.demo_setters(wasm_path)
   local a = getwasmobj(wasm_path)
+  wasmextra = require("wasmextra")
 
   --type section setters
   do
@@ -333,6 +334,9 @@ function libwasm.demo_setters(wasm_path)
       pre = a["type_section"]:count()
       a["type_section"]:set_count(13)
       post = a["type_section"]:count()
+      -- not necessary anymore since the library code checks for null before dereferencing
+      -- though that only works if we used calloc instead of malloc
+      a["type_section"]:set_count(pre)
       if pre == post then
         io.write(colors("%{red}".."type_section:count:failure\n"))
         success = false
@@ -341,6 +345,36 @@ function libwasm.demo_setters(wasm_path)
       end
 
       --FIXME-entries
+      --for k,v in pairs(W_Type_Section_Entry) do
+        --print(k, v)
+      --end
+      print(#a["type_section"]:entries())
+      local entry1 = W_Type_Section_Entry(1,2,3,4,5)
+      local entry2 = W_Type_Section_Entry(1,2,3,4,5)
+      local entry3 = W_Type_Section_Entry(1,2,3,4,5)
+      local new_entries = {}
+      new_entries[1] = entry1
+      new_entries[2] = entry2
+      new_entries[3] = entry2
+      pre = a["type_section"]:entries()
+      a["type_section"]:set_entries(new_entries)
+      a["type_section"]:set_count(3)
+      print(#a["type_section"]:entries())
+      post = a["type_section"]:entries()
+      if pre == post then
+        io.write(colors("%{red}".."type_section:entries:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."type_section:entries:pass\n"))
+      end
+      for k,v in pairs(a["type_section"]:entries()) do
+        print("fuckkkkk")
+        print("form:"..v:form())
+        print("param_count:"..v:param_count())
+        print("param_types:"..v:param_types())
+        print("return_count:"..v:return_count())
+        print("return_types:"..v:return_types())
+      end
     end
   end
 
