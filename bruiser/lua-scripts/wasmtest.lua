@@ -40,7 +40,7 @@ function libwasm.dump_import_section(a)
       io.write("field len:"..v:field_len().."\t")
       io.write("field str:"..v:field_str().."\t")
       io.write("kind:"..v:kind().."\t")
-      io.write("type:"..v:type().."\n")
+      io.write("kind:"..type(v:type()).."\t")
     end
   else
     print(colors("%{red}".."section doesnt exist."))
@@ -198,10 +198,10 @@ function libwasm.dump_code_section(a)
       io.write(colors("\n%{cyan}".."entry:\n"))
       io.write("body_size:"..v:body_size().."\t")
       io.write("local_count:"..v:local_count().."\t")
-      io.write(tostring(v:locals()).."\t")
+      io.write(tostring(v:locals()).."\n")
       for i, j in pairs(v:locals()) do
         io.write("locals count:"..j:count().."\t")
-        io.write("locals type:"..j:type().."\t")
+        io.write("locals type:"..j:type().."\n")
       end
       io.write("function body:\n")
       for i,j in pairs(v:code()) do
@@ -247,8 +247,8 @@ end
 
 function libwasm.dump_all(wasm_path)
   local a = getwasmobj(wasm_path)
-  libwasm.dump_import_section(a)
   libwasm.dump_type_section(a)
+  libwasm.dump_import_section(a)
   libwasm.dump_function_section(a)
   libwasm.dump_table_section(a)
   libwasm.dump_memory_section(a)
@@ -272,8 +272,8 @@ function libwasm.demo_getters(wasm_path)
   for k, v in pairs(a) do
     print(k, v, type(k), type(v))
   end
-  libwasm.dump_import_section(a)
   libwasm.dump_type_section(a)
+  libwasm.dump_import_section(a)
   libwasm.dump_function_section(a)
   libwasm.dump_table_section(a)
   libwasm.dump_memory_section(a)
@@ -1010,7 +1010,7 @@ function libwasm.demo_setters(wasm_path)
       body1:set_code({12,13,11})
       body2:set_code({12,13,11})
       body3:set_code({12,13,11})
-      --body1:set_locals(l_entry1)
+      body1:set_locals(l_entry1)
       --body2:set_locals(l_entry2)
       --body3:set_locals(l_entry3)
       local new_bodies = {}
@@ -1018,7 +1018,7 @@ function libwasm.demo_setters(wasm_path)
       new_bodies[2] = body2
       new_bodies[3] = body3
 
-      a["code_section"]:set_count(pre)
+      a["code_section"]:set_count(5)
       pre = a["code_section"]:bodies()
       a["code_section"]:set_count(3)
       a["code_section"]:set_bodies(new_bodies)
@@ -1132,7 +1132,8 @@ end
 
 --libwasm.dev("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
-libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/aggregate.wasm")
+--libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 
 return libwasm

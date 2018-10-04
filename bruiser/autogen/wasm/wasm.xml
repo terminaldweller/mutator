@@ -105,10 +105,10 @@
     <Resizable_Limit name="resizable_limit_t" isaggregate="true" luatype="lightuserdata">
       <Flags name="flags" encoding="leb128u" type="uint8" count="1" luatype="integer"></Flags>
       <Initial name="initial" encoding="leb128u" type="uint32" count="1" luatype="integer"></Initial>
-      <Maximum name="maximum" encoding="leb128u" type="uint32" count="1" luatype="integer"></Maximum>
+      <Maximum name="maximum" encoding="leb128u" type="uint32" count="self::Flags" luatype="integer"></Maximum>
     </Resizable_Limit>
     <Global_Type name="global_type_t" isaggregate="true" luatype="lightuserdata">
-      <Value_Type name="value_type" type="uint32" count="1" luatype="integer"></Value_Type>
+      <Value_Type name="value_type" type="uint8" count="1" luatype="integer"></Value_Type>
       <Mutability name="mutability" encoding="leb128u" type="uint8" count="1" luatype="integer"></Mutability>
     </Global_Type>
     <Table_Type name="table_type_t" isaggregate="true" luatype="lightuserdata">
@@ -156,7 +156,7 @@
     </Element_Segment>
     <Local_Entry name="W_Local_Entry" isaggregate="true" luatype="lightuserdata">
       <Count name="count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Type name="type" encoding="leb128u" type="uint16" count="self::Count" luatype="lightuserdata"/>
+      <Type name="type" encoding="leb128u" type="uint16" count="1" luatype="integer"/>
     </Local_Entry>
     <Function_Body name="W_Function_Body" isaggregate="true" luatype="lightuserdata">
       <Body_size name="body_size" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
