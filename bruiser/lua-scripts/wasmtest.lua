@@ -56,6 +56,9 @@ function libwasm.dump_function_section(a)
     io.write("name:"..tostring(a["function_section"]:name()).."\n")
     io.write("count:"..tostring(a["function_section"]:count()).."\n")
     io.write("types:"..tostring(a["function_section"]:types()).."\n")
+    for k,v in pairs(a["function_section"]:types()) do
+      print(v)
+    end
   else
     print(colors("%{red}".."section doesnt exist."))
   end
@@ -344,7 +347,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."type_section:count:pass\n"))
       end
 
-      --FIXME-entries
       --for k,v in pairs(W_Type_Section_Entry) do
         --print(k, v)
       --end
@@ -368,7 +370,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."type_section:entries:pass\n"))
       end
       for k,v in pairs(a["type_section"]:entries()) do
-        print("fuckkkkk")
         print("form:"..v:form())
         print("param_count:"..v:param_count())
         print("param_types:"..v:param_types())
@@ -482,7 +483,20 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."function_section:count:pass\n"))
       end
 
-      --FIXME-entries
+      local new_types = {1,2,3,4,5}
+      pre = a["function_section"]:types()
+      a["function_section"]:set_count(5)
+      a["function_section"]:set_types(new_types)
+      post = a["function_section"]:types()
+      if pre == post then
+        io.write(colors("%{red}".."function_section:types:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."function_section:types:pass\n"))
+      end
+      for k,v in pairs(a["function_section"]:types()) do
+        print(v)
+      end
     end
   end
 
@@ -536,7 +550,35 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."table_section:count:pass\n"))
       end
 
-      --FIXME-entries
+      local new_rsz1 = resizable_limit_t(10,20,30)
+      local new_rsz2 = resizable_limit_t(10,20,30)
+      local new_rsz3 = resizable_limit_t(10,20,30)
+      local new_entry1 = table_type_t(1, new_rsz1)
+      local new_entry2 = table_type_t(2, new_rsz2)
+      local new_entry3 = table_type_t(3, new_rsz3)
+      local new_entries = {}
+      new_entries[1] = new_entry1
+      new_entries[2] = new_entry2
+      new_entries[3] = new_entry3
+      a["table_section"]:set_count(1)
+      pre = a["table_section"]:entries()
+      a["table_section"]:set_count(3)
+      a["table_section"]:set_entries(new_entries)
+      post = a["table_section"]:entries()
+      if pre == post then
+        io.write(colors("%{red}".."table_section:entries:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."table_section:entries:pass\n"))
+      end
+      print(#a["table_section"]:entries())
+      for k,v in pairs(a["table_section"]:entries()) do
+        io.write(v:element_type().."\t")
+        io.write(tostring(v:resizable_limit()).."\t")
+        io.write(v:resizable_limit():flags().."\t")
+        io.write(v:resizable_limit():initial().."\t")
+        io.write(v:resizable_limit():maximum().."\n")
+      end
     end
   end
 
@@ -581,6 +623,7 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."memory_section:name:pass\n"))
       end
 
+      --for wasm v1.0. memory section count is 1 so this part doesnt make any sense
       --[[
       pre = a["memory_section"]:count()
       a["memory_section"]:set_count(13)
@@ -592,7 +635,20 @@ function libwasm.demo_setters(wasm_path)
       end
       --]]
 
-      --FIXME-entries
+      local new_rsz1 = resizable_limit_t(10,20,30)
+      local new_memt = memory_type_t(new_rsz1)
+      pre = a["memory_section"]:entries()
+      a["memory_section"]:set_entries(new_memt)
+      post = a["memory_section"]:entries()
+      if pre == post then
+        io.write(colors("%{red}".."memory_section:entries:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."memory_section:entries:pass\n"))
+      end
+      print(a["memory_section"]:entries():resizable_limit():flags())
+      print(a["memory_section"]:entries():resizable_limit():initial())
+      print(a["memory_section"]:entries():resizable_limit():maximum())
     end
   end
 
@@ -646,7 +702,22 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."global_section:count:pass\n"))
       end
 
-      --FIXME-entries
+      --untested
+      local new_init_exp1 = init_expr_t()
+      local new_g_type = global_type_t()
+      local new_entry = W_Global_Entry(new_g_type, new_init_exp1)
+      a["global_section"]:set_count(1)
+      pre = a["global_section"]:entries()
+      a["global_setion"]:set_entries()
+      post = a["global_section"]:entries()
+      if pre == post then
+        io.write(colors("%{red}".."global_section:entries:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."global_section:entries:pass\n"))
+      end
+      for k,v in pairs(a["global_section"]:entries()) do
+      end
     end
   end
 
@@ -700,7 +771,30 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."export_section:count:pass\n"))
       end
 
-      --FIXME-entries
+      local new_entry1 = W_Export_Entry(3, "abc", 10, 20)
+      local new_entry2 = W_Export_Entry(3, "def", 10, 20)
+      local new_entry3 = W_Export_Entry(4, "xzxy", 1, 2)
+      local new_entries = {}
+      new_entries[1] = new_entry1
+      new_entries[2] = new_entry2
+      new_entries[3] = new_entry3
+      a["export_section"]:set_count(5)
+      pre = a["export_section"]:entries()
+      a["export_section"]:set_count(3)
+      a["export_section"]:set_entries(new_entries)
+      post = a["export_section"]:entries()
+      if pre == post then
+        io.write(colors("%{red}".."export_section:entries:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."export_section:entries:pass\n"))
+      end
+      for k,v in pairs(a["export_section"]:entries()) do
+        print(v:field_len())
+        print(v:field_str())
+        print(v:kind())
+        print(v:index())
+      end
     end
   end
 
@@ -806,7 +900,53 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."element_section:count:pass\n"))
       end
 
-      --FIXME-entries
+      local new_init1 = init_expr_t(string.char(65)..string.char(11))
+      local new_init2 = init_expr_t(string.char(65)..string.char(33)..string.char(11))
+      local new_init3 = init_expr_t(string.char(65)..string.char(11))
+      local new_entry1 = W_Element_Segment(1, new_init1, 4, nil)
+      --FIXME--setting elems through the lua-implementation of the constructor will segfault
+      --on access. doing the same constructor in c should fix this.
+      new_entry1:set_elems({10,20,30,40})
+      print(new_entry1:index())
+      print(new_entry1:num_length())
+      for i = 1, #new_entry1:init():code() do
+        local c = new_entry1:init():code():sub(i,i)
+        print(colors("%{red}"..string.byte(c)))
+      end
+      for i, j in pairs(new_entry1:elems()) do
+        io.write(colors("%{red}"..j.." "))
+      end
+      local new_entry2 = W_Element_Segment(2, new_init2, 3, nil)
+      new_entry2:set_elems({50,60,70})
+      local new_entry3 = W_Element_Segment(3, new_init3, 2, nil)
+      new_entry3:set_elems({80,90})
+      local new_entries = {}
+      new_entries[1] = new_entry1
+      new_entries[2] = new_entry2
+      new_entries[3] = new_entry3
+
+      a["element_section"]:set_count(1)
+      pre = a["element_section"]:entries()
+      a["element_section"]:set_count(3)
+      a["element_section"]:set_entries(new_entries)
+      post = a["element_section"]:entries()
+      if pre == post then
+        io.write(colors("%{red}".."element_section:entries:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."element_section:entries:pass\n"))
+      end
+      for k,v in pairs(a["element_section"]:entries()) do
+        print(v:index())
+        print(v:num_length())
+        for i = 1, #new_init1:code() do
+          local c = new_init1:code():sub(i,i)
+          print(string.byte(c))
+        end
+        for i,j in pairs(v:elems()) do
+          print(j)
+        end
+      end
     end
   end
 
@@ -861,6 +1001,41 @@ function libwasm.demo_setters(wasm_path)
       end
 
       --FIXME-entries
+      local l_entry1 = W_Local_Entry(1 ,1)
+      local l_entry2 = W_Local_Entry(1 ,1)
+      local l_entry3 = W_Local_Entry(1 ,1)
+      local body1 = W_Function_Body(3, 1, nil, nil)
+      local body2 = W_Function_Body(3, 1, nil, nil)
+      local body3 = W_Function_Body(3, 1, nil, nil)
+      body1:set_code({12,13,11})
+      body2:set_code({12,13,11})
+      body3:set_code({12,13,11})
+      --body1:set_locals(l_entry1)
+      --body2:set_locals(l_entry2)
+      --body3:set_locals(l_entry3)
+      local new_bodies = {}
+      new_bodies[1] = body1
+      new_bodies[2] = body2
+      new_bodies[3] = body3
+
+      a["code_section"]:set_count(pre)
+      pre = a["code_section"]:bodies()
+      a["code_section"]:set_count(3)
+      a["code_section"]:set_bodies(new_bodies)
+      post = a["code_section"]:bodies()
+      if pre == post then
+        io.write(colors("%{red}".."code_section:bodies:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."code_section:bodies:pass\n"))
+      end
+      for k,v in pairs(a["code_section"]:bodies()) do
+        print(v:body_size())
+        print(v:local_count())
+        --print(v:locals())
+        --print(v:locals():count())
+        --print(v:locals():type())
+      end
     end
   end
 
@@ -914,7 +1089,42 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."data_section:count:pass\n"))
       end
 
-      --FIXME-entries
+      local new_init1 = init_expr_t(string.char(65)..string.char(11))
+      local new_init2 = init_expr_t(string.char(65)..string.char(33)..string.char(11))
+      local new_init3 = init_expr_t(string.char(65)..string.char(11))
+      local data_segment1 = W_Data_Segment(0, new_init1, 5, nil)
+      local data_segment2 = W_Data_Segment(0, new_init2, 5, nil)
+      local data_segment3 = W_Data_Segment(0, new_init3, 5, nil)
+      data_segment1:set_data({11, 22, 33 ,44 ,55})
+      data_segment2:set_data({11, 22, 33 ,44 ,55})
+      data_segment3:set_data({11, 22, 33 ,44 ,55})
+      local entries = {}
+      entries[1] = data_segment1
+      entries[2] = data_segment2
+      entries[3] = data_segment3
+
+      a["data_section"]:set_count(17)
+      pre = a["data_section"]:entries()
+      a["data_section"]:set_count(3)
+      a["data_section"]:set_entries(entries)
+      post = a["data_section"]:entries()
+      if pre == post then
+        io.write(colors("%{red}".."data_section:entries:failure\n"))
+        success = false
+      else
+        io.write(colors("%{green}".."data_section:entries:pass\n"))
+      end
+      for k,v in pairs(a["data_section"]:entries()) do
+        print(v:index())
+        print(v:size())
+        for i, j in pairs(v:data()) do
+          print(j)
+        end
+        for i = 1, #v:offset():code() do
+          local c = v:offset():code():sub(i,i)
+          print(colors("%{yellow}"..string.byte(c)))
+        end
+      end
     end
   end
 

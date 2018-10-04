@@ -25,7 +25,7 @@
       <NameLength name="namelength" type="uint32" encoding="leb128u" luatype="integer"/>
       <Name name="name" type="string" size="self::NameLength" luatype="string"/>
       <Count name="count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Types name="types" encoding="leb128u" type="uint32" count="self::Count" luatype="integer"/>
+      <Types name="types" encoding="leb128u" type="uint32" count="self::Count" luatype="lightuserdata"/>
     </Function_Section>
     <Table_Section name="W_Table_Section" count="1" type="" isaggregate="true" unordered="true" luatype="lightuserdata">
       <ID name="id" type="uint8" encoding="leb128u" issign="true" luatype="integer">4</ID>
@@ -156,7 +156,7 @@
     </Element_Segment>
     <Local_Entry name="W_Local_Entry" isaggregate="true" luatype="lightuserdata">
       <Count name="count" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
-      <Type name="type" encoding="leb128u" type="uint16" count="self::Count" luatype="integer"/>
+      <Type name="type" encoding="leb128u" type="uint16" count="self::Count" luatype="lightuserdata"/>
     </Local_Entry>
     <Function_Body name="W_Function_Body" isaggregate="true" luatype="lightuserdata">
       <Body_size name="body_size" encoding="leb128u" type="uint32" count="1" luatype="integer"/>
