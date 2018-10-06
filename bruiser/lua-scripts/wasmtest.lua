@@ -8,8 +8,6 @@ function libwasm.dump_type_section(a)
   if a["type_section"] ~= nil then
     io.write(tostring("id:"..a["type_section"]:id()).."\n")
     io.write(tostring("payloadlength:"..a["type_section"]:payloadlength()).."\n")
-    io.write(tostring("namelength:"..a["type_section"]:namelength()).."\n")
-    io.write(tostring("name:"..a["type_section"]:name()).."\n")
     io.write(tostring("count:"..a["type_section"]:count()).."\n")
     io.write("entries"..tostring(a["type_section"]:entries()).."\n")
     for k, v in pairs(a["type_section"]:entries()) do
@@ -29,8 +27,6 @@ function libwasm.dump_import_section(a)
   if a["import_section"] ~= nil then
     io.write("id:"..tostring(a["import_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["import_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["import_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["import_section"]:name()).."\n")
     io.write("count:"..tostring(a["import_section"]:count()).."\n")
     io.write("entries"..tostring(a["import_section"]:entries()).."\n")
     for k, v in pairs(a["import_section"]:entries()) do
@@ -52,8 +48,6 @@ function libwasm.dump_function_section(a)
   if a["function_section"] ~= nil then
     io.write("id:"..tostring(a["function_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["function_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["function_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["function_section"]:name()).."\n")
     io.write("count:"..tostring(a["function_section"]:count()).."\n")
     io.write("types:"..tostring(a["function_section"]:types()).."\n")
     for k,v in pairs(a["function_section"]:types()) do
@@ -69,8 +63,6 @@ function libwasm.dump_table_section(a)
   if a["table_section"] ~= nil then
     io.write("id:"..tostring(a["table_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["table_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["table_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["table_section"]:name()).."\n")
     io.write("count:"..tostring(a["table_section"]:count()).."\n")
     io.write("entries:"..tostring(a["table_section"]:entries()).."\n")
     for k, v in pairs(a["table_section"]:entries()) do
@@ -91,8 +83,6 @@ function libwasm.dump_memory_section(a)
   if a["memory_section"] ~= nil then
     io.write("id:"..tostring(a["memory_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["memory_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["memory_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["memory_section"]:name()).."\n")
     --for wasm v.1.0. memory section count is 1
     --io.write("count:"..tostring(a["memory_section"]:count()).."\n")
     io.write("entries:"..tostring(a["memory_section"]:entries()).."\n")
@@ -109,8 +99,6 @@ function libwasm.dump_global_section(a)
   if (a["global_section"] ~= nil) then
     io.write("id:"..tostring(a["global_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["global_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["global_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["global_section"]:name()).."\n")
     io.write("count:"..tostring(a["global_section"]:count()).."\n")
     io.write("globals:"..tostring(a["global_section"]:globals()).."\n")
     for k, v in pairs(a["global_section"]:globals()) do
@@ -128,8 +116,6 @@ function libwasm.dump_export_section(a)
   if (a["export_section"] ~= nil) then
     io.write("id:"..tostring(a["export_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["export_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["export_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["export_section"]:name()).."\n")
     io.write("count:"..tostring(a["export_section"]:count()).."\n")
     io.write("entries:"..tostring(a["export_section"]:entries()).."\n")
     for k, v in pairs(a["export_section"]:entries()) do
@@ -148,8 +134,6 @@ function libwasm.dump_start_section(a)
   if (a["start_section"] ~= nil) then
     io.write("id:"..tostring(a["start_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["start_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["start_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["start_section"]:name()).."\n")
     io.write("index:"..tostring(a["start_section"]:index()).."\n")
   else
     print(colors("%{red}".."section doesnt exist."))
@@ -161,8 +145,6 @@ function libwasm.dump_element_section(a)
   if (a["element_section"] ~= nil) then
     io.write("id:"..tostring(a["element_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["element_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["element_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["element_section"]:name()).."\n")
     io.write("count:"..tostring(a["element_section"]:count()).."\n")
     io.write(colors("%{cyan}".."entries:"..tostring(a["element_section"]:entries()).."\n"))
     for k, v in pairs(a["element_section"]:entries()) do
@@ -190,8 +172,6 @@ function libwasm.dump_code_section(a)
   if (a["code_section"] ~= nil) then
     io.write("id:"..tostring(a["code_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["code_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["code_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["code_section"]:name()).."\n")
     io.write("count:"..tostring(a["code_section"]:count()).."\n")
     io.write("bodies:"..tostring(a["code_section"]:bodies()).."\n")
     for k,v in pairs(a["code_section"]:bodies()) do
@@ -219,8 +199,6 @@ function libwasm.dump_data_section(a)
   if (a["data_section"] ~= nil) then
     io.write("id:"..tostring(a["data_section"]:id()).."\n")
     io.write("payloadlength:"..tostring(a["data_section"]:payloadlength()).."\n")
-    io.write("namelength:"..tostring(a["data_section"]:namelength()).."\n")
-    io.write("name:"..tostring(a["data_section"]:name()).."\n")
     io.write("count:"..tostring(a["data_section"]:count()).."\n")
     io.write("entries:"..tostring(a["data_section"]:entries()).."\n")
     if type(a["data_section"]:entries()) == "table" then
@@ -314,26 +292,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."type_section:payloadlength:pass\n"))
       end
 
-      pre = a["type_section"]:namelength()
-      a["type_section"]:set_namelength(10)
-      post = a["type_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."type_section:namelength:failure\n"))
-        success = false
-      else
-        io.write(colors("%{green}".."type_section:namelength:pass\n"))
-      end
-
-      pre = a["type_section"]:name()
-      a["type_section"]:set_name("type_section")
-      post = a["type_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."type_section:name:failure\n"))
-        success = false
-      else
-        io.write(colors("%{green}".."type_section:name:pass\n"))
-      end
-
       pre = a["type_section"]:count()
       a["type_section"]:set_count(13)
       post = a["type_section"]:count()
@@ -402,24 +360,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."import_section:payloadlength:pass\n"))
       end
 
-      pre = a["import_section"]:namelength()
-      a["import_section"]:set_namelength(17)
-      post = a["import_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."import_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."import_section:namelength:pass\n"))
-      end
-
-      pre = a["import_section"]:name()
-      a["import_section"]:set_name("import_section")
-      post = a["import_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."import_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."import_section:name:pass\n"))
-      end
-
       pre = a["import_section"]:count()
       a["import_section"]:set_count(13)
       post = a["import_section"]:count()
@@ -454,24 +394,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{red}".."function_section:payloadlength:failure\n"))
       else
         io.write(colors("%{green}".."function_section:payloadlength:pass\n"))
-      end
-
-      pre = a["function_section"]:namelength()
-      a["function_section"]:set_namelength(17)
-      post = a["function_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."function_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."function_section:namelength:pass\n"))
-      end
-
-      pre = a["function_section"]:name()
-      a["function_section"]:set_name("function_section")
-      post = a["function_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."function_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."function_section:name:pass\n"))
       end
 
       pre = a["function_section"]:count()
@@ -521,24 +443,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{red}".."table_section:payloadlength:failure\n"))
       else
         io.write(colors("%{green}".."table_section:payloadlength:pass\n"))
-      end
-
-      pre = a["table_section"]:namelength()
-      a["table_section"]:set_namelength(17)
-      post = a["table_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."table_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."table_section:namelength:pass\n"))
-      end
-
-      pre = a["table_section"]:name()
-      a["table_section"]:set_name("table_section")
-      post = a["table_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."table_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."table_section:name:pass\n"))
       end
 
       pre = a["table_section"]:count()
@@ -605,24 +509,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."memory_section:payloadlength:pass\n"))
       end
 
-      pre = a["memory_section"]:namelength()
-      a["memory_section"]:set_namelength(17)
-      post = a["memory_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."memory_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."memory_section:namelength:pass\n"))
-      end
-
-      pre = a["memory_section"]:name()
-      a["memory_section"]:set_name("memory_section")
-      post = a["memory_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."memory_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."memory_section:name:pass\n"))
-      end
-
       --for wasm v1.0. memory section count is 1 so this part doesnt make any sense
       --[[
       pre = a["memory_section"]:count()
@@ -675,24 +561,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."global_section:payloadlength:pass\n"))
       end
 
-      pre = a["global_section"]:namelength()
-      a["global_section"]:set_namelength(17)
-      post = a["global_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."global_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."global_section:namelength:pass\n"))
-      end
-
-      pre = a["global_section"]:name()
-      a["global_section"]:set_name("global_section")
-      post = a["global_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."global_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."global_section:name:pass\n"))
-      end
-
       pre = a["global_section"]:count()
       a["global_section"]:set_count(13)
       post = a["global_section"]:count()
@@ -742,24 +610,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{red}".."export_section:payloadlength:failure\n"))
       else
         io.write(colors("%{green}".."export_section:payloadlength:pass\n"))
-      end
-
-      pre = a["export_section"]:namelength()
-      a["export_section"]:set_namelength(17)
-      post = a["export_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."export_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."export_section:namelength:pass\n"))
-      end
-
-      pre = a["export_section"]:name()
-      a["export_section"]:set_name("export_section")
-      post = a["export_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."export_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."export_section:name:pass\n"))
       end
 
       pre = a["export_section"]:count()
@@ -821,24 +671,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."start_section:payloadlength:pass\n"))
       end
 
-      pre = a["start_section"]:namelength()
-      a["start_section"]:set_namelength(17)
-      post = a["start_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."start_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."start_section:namelength:pass\n"))
-      end
-
-      pre = a["start_section"]:name()
-      a["start_section"]:set_name("start_section")
-      post = a["start_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."start_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."start_section:name:pass\n"))
-      end
-
       pre = a["start_section"]:index()
       a["start_section"]:set_index(13)
       post = a["start_section"]:index()
@@ -871,24 +703,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{red}".."element_section:payloadlength:failure\n"))
       else
         io.write(colors("%{green}".."element_section:payloadlength:pass\n"))
-      end
-
-      pre = a["element_section"]:namelength()
-      a["element_section"]:set_namelength(17)
-      post = a["element_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."element_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."element_section:namelength:pass\n"))
-      end
-
-      pre = a["element_section"]:name()
-      a["element_section"]:set_name("element_section")
-      post = a["element_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."element_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."element_section:name:pass\n"))
       end
 
       pre = a["element_section"]:count()
@@ -973,24 +787,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."code_section:payloadlength:pass\n"))
       end
 
-      pre = a["code_section"]:namelength()
-      a["code_section"]:set_namelength(17)
-      post = a["code_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."code_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."code_section:namelength:pass\n"))
-      end
-
-      pre = a["code_section"]:name()
-      a["code_section"]:set_name("code_section")
-      post = a["code_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."code_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."code_section:name:pass\n"))
-      end
-
       pre = a["code_section"]:count()
       a["code_section"]:set_count(13)
       post = a["code_section"]:count()
@@ -1062,24 +858,6 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."data_section:payloadlength:pass\n"))
       end
 
-      pre = a["data_section"]:namelength()
-      a["data_section"]:set_namelength(17)
-      post = a["data_section"]:namelength()
-      if pre == post then
-        io.write(colors("%{red}".."data_section:namelength:failure\n"))
-      else
-        io.write(colors("%{green}".."data_section:namelength:pass\n"))
-      end
-
-      pre = a["data_section"]:name()
-      a["data_section"]:set_name("data_section")
-      post = a["data_section"]:name()
-      if pre == post then
-        io.write(colors("%{red}".."data_section:name:failure\n"))
-      else
-        io.write(colors("%{green}".."data_section:name:pass\n"))
-      end
-
       pre = a["data_section"]:count()
       a["data_section"]:set_count(13)
       post = a["data_section"]:count()
@@ -1131,8 +909,8 @@ function libwasm.demo_setters(wasm_path)
 end
 
 --libwasm.dev("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
---libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
-libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/aggregate.wasm")
+--libwasm.demo_getters("/home/bloodstalker/extra/faultreiber/test/read.wasm")
+libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
 --libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 

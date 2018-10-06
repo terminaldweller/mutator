@@ -1422,10 +1422,9 @@ class LuaWrapper {
       else {
         if (Verbose) PRINT_WITH_COLOR_LB(GREEN, "good file");
       }
+      PRINT_WITH_COLOR_LB(RED, "before");
       wasm_lib_ret_t* lib_ret = read_aggr_wasm(wasm_file);
-      //std::cout << RED << std::hex << lib_ret->obj->magic_number_container->magic_number << "\n";
-      //std::cout << lib_ret->obj->version_container->version << NORMAL << "\n";
-      //std::cout << "die die die\n";
+      PRINT_WITH_COLOR_LB(RED, "after");
       close(wasm_file);
 
 #pragma clang diagnostic push
@@ -1433,7 +1432,7 @@ class LuaWrapper {
 #pragma clang diagnostic ignored "-Wextra"
       if (Verbose) {
         printf("magic_number:%x\n", lib_ret->obj->magic_number_container->magic_number);
-        printf("version:%x\n", lib_ret->obj->version_container->version);
+        printf("version:%x\n", lib_ret->obj->w32_version_container->w32_version);
 
         printf("type section id:%d\n", lib_ret->obj->W_Type_Section_container->id);
         printf("type section payloadlength:%d\n", lib_ret->obj->W_Type_Section_container->payloadlength);
@@ -1567,10 +1566,10 @@ class LuaWrapper {
       }
       //PRINT_WITH_COLOR_LB(BLUE, "magic");
 
-      if (lib_ret->obj->version_container != NULL) {
+      if (lib_ret->obj->w32_version_container != NULL) {
         lua_pushstring(__ls, "version");
-        version_push_args(__ls, lib_ret->obj->version_container);
-        new_version(__ls);
+        w32_version_push_args(__ls, lib_ret->obj->w32_version_container);
+        new_w32_version(__ls);
         lua_settable(__ls, -3);
       }
       //PRINT_WITH_COLOR_LB(BLUE, "version");
@@ -1662,6 +1661,8 @@ class LuaWrapper {
         lua_settable(__ls, -3);
       }
       //PRINT_WITH_COLOR_LB(BLUE, "data section");
+      if (lib_ret->obj->W_Custom_Section_container != NULL) {
+      }
       return 1;
     }
 
