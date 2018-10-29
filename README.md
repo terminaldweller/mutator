@@ -155,6 +155,7 @@ Currently there is only the master branch which is the dev branch. All the as-of
 
 ## Announcements
 
+* I will be taking a one month break from mutator to learn/work on some other things.<br/>
 * Project mutator will be re-licensed to GPL-3.0.<br/>
 * bruiser has a working poc demo for asmrewriter.<br/>
 * bruiser has a working poc demo for Xobjs. For more info checkout bruiser's `README.md`.<br/>
