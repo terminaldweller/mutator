@@ -1,0 +1,33 @@
+path_classifiers:
+  test:
+    - "*/*/test_*.cpp"
+  docs:
+    - README.md
+    - LICENSE.txt
+queries:
+  - exclude: cpp/use-of-goto
+extraction:
+  cpp:
+    prepare:    # Customizable step used by all languages.
+      packages:
+        - g++-8
+        - libcapstone-dev
+        - libllvm6.0
+    after_prepare:    # Customizable step used by all languages.
+      - mkdir -p $LGTM_WORKSPACE/latest-gcc-symlinks
+      - ln -s /usr/bin/g++-6 $LGTM_WORKSPACE/latest-gcc-symlinks/g++
+      - ln -s /usr/bin/gcc-6 $LGTM_WORKSPACE/latest-gcc-symlinks/gcc
+      - export PATH=$LGTM_WORKSPACE/latest-gcc-symlinks:$PATH
+      - export GNU_MAKE=make
+      - export GIT=true
+    configure:    # Customizable step used only by C/C++ extraction.
+      command:
+        - ./extra-tools/keystoneubuntu.sh
+    before_index:    # Customizable step used by all languages.
+      - export BOOST_DIR=$LGTM_SRC/boost
+      - export GTEST_DIR=$LGTM_SRC/googletest
+      - export HUNSPELL_DIR=$LGTM_SRC/hunspell
+      - export CRYPTOPP_DIR=$LGTM_SRC/cryptopp
+    index:    # Customizable step used by all languages.
+      build_command:
+        - $GNU_MAKE -j2
