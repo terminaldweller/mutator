@@ -6836,6 +6836,7 @@ class MyPPCallbacks : public PPCallbacks
 public:
 	MyPPCallbacks(Rewriter& Rewriter_ref, CompilerInstance &CI_ref) : m_Rewriter_ref(Rewriter_ref), CI(CI_ref) {}
 
+#if __clang_major__ <= 6
 	void InclusionDirective(
     SourceLocation hash_loc,
     const Token &include_token,
@@ -6846,6 +6847,19 @@ public:
     StringRef search_path,
     StringRef relative_path,
     const clang::Module *imported) override {
+#elif __clang_major__ >= 8
+  virtual void  InclusionDirective (
+      SourceLocation hash_loc,
+      const Token &include_token,
+      StringRef file_name,
+      bool is_angled,
+      CharSourceRange filename_range,
+      const FileEntry *file,
+      StringRef search_path,
+      StringRef relative_path,
+      const clang::Module *imported,
+      SrcMgr::CharacteristicKind file_type) override {
+#endif
 
   	if (current_fii_shptr()) {
   		if (!(current_fii_shptr()->m_first_include_directive_loc_is_valid)) {

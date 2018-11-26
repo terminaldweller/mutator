@@ -10,3 +10,6 @@
 [submodule "bruiser/tablegen"]
 	path = bruiser/tablegen
 	url = https://github.com/bloodstalker/luatablegen
+[submodule "cgrep"]
+	path = cgrep
+	url = https://github.com/bloodstalker/cgrep

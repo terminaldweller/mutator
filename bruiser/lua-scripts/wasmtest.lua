@@ -720,6 +720,7 @@ function libwasm.demo_setters(wasm_path)
       local new_entry1 = W_Element_Segment(1, new_init1, 4, nil)
       --FIXME--setting elems through the lua-implementation of the constructor will segfault
       --on access. doing the same constructor in c should fix this.
+      --TODO maybe passing a single elem as a lua table fixes this?
       new_entry1:set_elems({10,20,30,40})
       print(new_entry1:index())
       print(new_entry1:num_length())
@@ -796,7 +797,7 @@ function libwasm.demo_setters(wasm_path)
         io.write(colors("%{green}".."code_section:count:pass\n"))
       end
 
-      --FIXME-entries
+      a["code_section"]:set_count(3)
       local l_entry1 = W_Local_Entry(1 ,1)
       local l_entry2 = W_Local_Entry(1 ,1)
       local l_entry3 = W_Local_Entry(1 ,1)
@@ -806,9 +807,11 @@ function libwasm.demo_setters(wasm_path)
       body1:set_code({12,13,11})
       body2:set_code({12,13,11})
       body3:set_code({12,13,11})
-      body1:set_locals(l_entry1)
-      --body2:set_locals(l_entry2)
-      --body3:set_locals(l_entry3)
+      --FIXME-library requires you to pass a table for locals even if
+      --the count is one
+      body1:set_locals({l_entry1})
+      body2:set_locals({l_entry2})
+      body3:set_locals({l_entry3})
       local new_bodies = {}
       new_bodies[1] = body1
       new_bodies[2] = body2
@@ -910,8 +913,8 @@ end
 
 --libwasm.dev("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.demo_getters("/home/bloodstalker/extra/faultreiber/test/read.wasm")
-libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
---libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+--libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
+libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 
 return libwasm

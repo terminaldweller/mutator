@@ -5436,41 +5436,19 @@ class SFCPPARR02SUB : public MatchFinder::MatchCallback
       if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpp02sub") != nullptr)
       {
         const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpp02sub");
-
         SourceManager *const SM = MR.SourceManager;
-
         SourceLocation SL = DRE->DEVI_GETLOCSTART();
         CheckSLValidity(SL);
-        //SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
         SL = SM->getSpellingLoc(SL);
-
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
-          return void();
-        }
-
-        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
-          return void();
-        }
-
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {return void();}
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {return void();}
         const NamedDecl* ND = DRE->getFoundDecl();
-
         SourceLocation OriginSL = ND->DEVI_GETLOCSTART();
         CheckSLValidity(OriginSL);
-        //OriginSL = Devi::SourceLocationHasMacro(OriginSL, Rewrite, "start");
         OriginSL = SM->getSpellingLoc(OriginSL);
-
         StringRef OriginFileName [[maybe_unused]] = SM->getFilename(OriginSL);
 
-#if 0
-        std::cout << "GarbageOut" << ":" << "Origin:" << DRE->getFoundDecl()->getName().str() << "\n";
-        std::cout << "GarbageOut" << ":" << "Origin:" << ExtOriginFileName.str() << ":" << "Proto:" << OriginFileName.str() << "\n";
-        std::cout << "GarbageOut" << ":" << "Origin:" << ExtOriginSL.printToString(*SM) << ":" << "Proto:" << OriginSL.printToString(*SM) << "\n";
-#endif
-
-        if (OriginSL == ExtOriginSL && OriginFileName == ExtOriginFileName)
-        {
+        if (OriginSL == ExtOriginSL && OriginFileName == ExtOriginFileName) {
           std::cout << "SaferCPP01" << ":" << "Native Array used - pointer points to an array:" << SL.printToString(*MR.SourceManager) << ":" << DRE->getFoundDecl()->getName().str() << "\n";
         }
 
@@ -5508,29 +5486,17 @@ class SFCPPARR02 : public MatchFinder::MatchCallback
       if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpparrdeep") != nullptr)
       {
         const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpparrdeep");
-
         ASTContext *const ASTC = MR.Context;
-
         SourceManager *const SM = MR.SourceManager;
-
         SourceLocation SL = DRE->DEVI_GETLOCSTART();
         CheckSLValidity(SL);
         SL = SM->getSpellingLoc(SL);
-
         const NamedDecl* ND = DRE->getFoundDecl();
-
         StringRef NDName = ND->getName();
-
         SubHandler.setOriginSourceLocation(SM->getSpellingLoc(ND->DEVI_GETLOCSTART()));
         SubHandler.setOriginFileName(SM->getFilename(SM->getSpellingLoc(ND->DEVI_GETLOCSTART())));
-
         Matcher.addMatcher(declRefExpr(to(varDecl(hasName(NDName.str())))).bind("sfcpp02sub"), &SubHandler);
-
         Matcher.matchAST(*ASTC);
-
-#if 0
-        std::cout << "GarbageOutOrigin" << ":" << "GarbageOutOrigin:" << SL.printToString(*MR.SourceManager) << ":" << NDName.str() << "\n";
-#endif
       }
     }
 

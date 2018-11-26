@@ -12,6 +12,7 @@
 
 - [Overview](#overview)
   - [bruiser](#bruiser)
+  - [cgrep](#cgrep)
   - [delf](#delf)
   - [dwasm](#dwasm)
   - [luatablegen](#luatablegen)
@@ -59,6 +60,13 @@ Essentially bruiser is a Lua REPL plus:
 * Through the ASMRewriter functionality you can manipulate the machine code and push it back in the object. For more detail you can look at the wiki or check out bruiser's README.md.<br/>
 * Luarocks: You can use your Luarocks modules/libraries in bruiser too. Just make sure `luarocks` is in your path and bruiser will take care of the rest.<br/>
 
+### cgrep
+cgrep is grep for c/c++ source files. simple as that.<br/>
+cgrep is added here as a submodule for more exposure. You can find the main repo [here](https://github.com/bloodstalker/cgrep).<br/>
+
+### obfuscator
+obfuscator is a C/C++ source code obfuscator.<br/>
+
 ### delf
 `delf` is a custom ELF dump script developed for bruiser. bruiser uses it to interact with ELF files.<br/>
 You can also use the script as a standalone to dump info on the ELF file to stdout.<br/>
@@ -72,9 +80,6 @@ dwasm is also hosted on a mirror repo [here](https://github.com/bloodstalker/dwa
 ### luatablegen
 `luatablegen` is a python script that takes a json file including the details of a C structure, and generates C source and header files, a lua file including some convinience fields for the lua table and a markdown file including a summary of the table fields and their expected arg types and return types.<br/>
 luatablegen is also hosted on a mirror repo [here](https://github.com/bloodstalker/luatablegen).<br/>
-
-### obfuscator
-Is a C/C++ source code obfuscator.<br/>
 
 ### m0
 Run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
@@ -102,11 +107,11 @@ Excluding SaferCpp and other 3rd party code/libraries, everything else under pro
 ## How to get project mutator
 
 Before you run make, make sure you have all the dependencies:<br/>
-* You need LLVM 4.0<(5 or 6 to be on the safe side).<br/>
+* You need LLVM 5, 6 or 8.<br/>
 * For `safercpp` you will need to have LLVM RTTI also.<br/>
-* For `bruiser` you will need the python 3.5< dev package(source code and libpython), libcapstone, libkeystone and libffi.<br/>
+* For `bruiser` you will need the python 3.5 or higher's dev package(source code and libpython), libcapstone, libkeystone and libffi.<br/>
 * The other libraries used are either submodules or copied inside.<br/>
-* `load.py` needs capstone. You can get it through pip.<br/>
+* `load.py` needs capstone. You can get it through pip(`pip install capstone`).<br/>
 For More details you can look at the `Building` section.<br/>
 
 Assuming you already have the dependencies:<br/>
@@ -117,12 +122,10 @@ git clone https://github.com/bloodstalker/mutator
 git submodule init
 git submodule update
 make
-make install
 
 ```
-NOTE: `make install` currently wont copy binaries to /usr/local/bin or similar directories since mutator is in its early stages and I don't want to pollute your directories.<br/>
 
-mutator is also being hosted using [IPFS](https://github.com/ipfs/ipfs). To get it from IPFS just run:<br/>
+mutator is also being hosted using [IPFS](https://github.com/ipfs/ipfs) but it's never up-to-date. To get it from IPFS just run:<br/>
 ```bash
 
 git clone https://ipfs.io/ipfs/QmdBBG76K5rNSWB4iK4ZhTtiZAkSsyDpiWzcPsPfnHY2ZA/mutator
@@ -141,7 +144,6 @@ Currently there is only the master branch which is the dev branch. All the as-of
 
 ### Dev Plans
 * Bruiser: have bruiser support nested function calls and calls to external SOs.<br/>
-* Obfuscator: suppor for SHAKE128 and SHAKE256.<br/>
 
 ### Test Plans
 
@@ -155,6 +157,7 @@ Currently there is only the master branch which is the dev branch. All the as-of
 
 ## Announcements
 
+* Introducing cgrep, grep for c/c++ source files.<br/>
 * I will be taking a one month break from mutator to learn/work on some other things.<br/>
 * Project mutator will be re-licensed to GPL-3.0.<br/>
 * bruiser has a working poc demo for asmrewriter.<br/>
@@ -180,7 +183,7 @@ Currently there is only the master branch which is the dev branch. All the as-of
 If capstone and keystone are not included inside your distro's reposotory and you're lazy like me, take a look under `extra-tools`. There are two scripts(one for each) to get those for the Travis image. You can use those.<br/>
 The other requirements are either directly included or have to be included through `git submodule update`.<br/>
 
-#### Linux and Mac
+#### Linux
 
 First clone the repo and then initialize and update the submodule in it:<br/>
 

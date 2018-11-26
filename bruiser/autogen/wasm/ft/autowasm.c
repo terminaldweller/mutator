@@ -229,12 +229,12 @@ int main(int argc, char **argv) {
   }
 #endif
 
-  //printf("sizeof magic:%d\n", sizeof(magic_number));
-  //printf("sizeof version:%d\n", sizeof(version));
-  //printf("current void count:%d\n", lib_ret->current_void_count);
-  //printf("void_train first:0x%x\n", lib_ret->void_train[0]);
-  //printf("void_train first:0x%x\n", lib_ret->void_train[1]);
-  //printf("void_train self address:0x%x\n", lib_ret->void_train);
+  // printf("sizeof magic:%d\n", sizeof(magic_number));
+  // printf("sizeof version:%d\n", sizeof(version));
+  // printf("current void count:%d\n", lib_ret->current_void_count);
+  // printf("void_train first:0x%x\n", lib_ret->void_train[0]);
+  // printf("void_train first:0x%x\n", lib_ret->void_train[1]);
+  // printf("void_train self address:0x%x\n", lib_ret->void_train);
   // free(lib_ret->void_train[0]);
   // release_all(lib_ret->void_train, lib_ret->current_void_count);
   // free(lib_ret->void_train[2]);

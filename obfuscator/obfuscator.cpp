@@ -399,8 +399,7 @@ class ClassDecl : public MatchFinder::MatchCallback {
 /**
  * @brief PPCallbacks for replacing Macro identifiers with their hash digest Along with changing the Header filenames.
  */
-class PPInclusion : public PPCallbacks
-{
+class PPInclusion : public PPCallbacks {
 public:
   explicit PPInclusion (SourceManager *SM, Rewriter *Rewrite) : SM(*SM), Rewrite(*Rewrite) {}
 

@@ -10,12 +10,13 @@ TARGETS=mutatorserver
 SFCPP01=safercpp-arr
 BRUISER=bruiser
 OBSC=obfuscator
+CGREP=cgrep
 
 .DEFAULT: all
 
-.PHONY:all clean install help $(BRUISER) $(OBSC) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01)
+.PHONY:all clean install help $(BRUISER) $(OBSC) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(CGREP)
 
-all: $(TARGET0) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC)
+all: $(TARGET0) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC) $(CGREP)
 
 $(TARGET1):
 	$(CXX) $^ $(LD_FLAGS) -o $@
@@ -35,6 +36,9 @@ $(BRUISER):
 $(OBSC):
 	$(MAKE) -C obfuscator CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
 
+$(CGREP):
+	$(MAKE) -C cgrep CXX=$(CXX) LLVM_CONF=$(LLVM_CONF) BUILD_MODE=$(BUILD_MODE)
+
 $(TARGETC):
 	$(MAKE) -C daemon mutatorclient
 
@@ -52,11 +56,13 @@ clean:
 	$(MAKE) -C bruiser clean
 	$(MAKE) -C obfuscator clean
 	$(MAKE) -C m0 clean
+	$(MAKE) -C cgrep clean
 
 deepclean: clean
 	$(MAKE) -C bruiser deepclean
 	$(MAKE) -C m0 deepclean
 	$(MAKE) -C obfuscator deepclean
+	$(MAKE) -C cgrep deepclean
 
 install:
 	chmod +x ./mutator.sh

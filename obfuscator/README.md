@@ -1,6 +1,7 @@
 # obfuscator
 
 obfuscator is a C/C++ source-code obfuscation tool.<br/>
+obfuscator can use SHAKE128 and SHAKE256 to generate hash digests.<br/>
 
 ## Status
 You can find a list of the implemented features and the ones that will be implemented below.<br/>

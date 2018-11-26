@@ -1,24 +1,55 @@
 ## bruiser
 
 ### What is it?
-Bruiser is implemented as an interactive commandline interface. It features an embedded Lua 5.3.4 interpreter plus the history and auto-completion and suggestion features we have all come to expect from shell-like tools.<br/>
+bruiser is a object-file manipulation tool implemented in C/C++ which provides its functionality through Lua.<br/>
 Regarding the actual functionality:<br/>
-Xobj: pull in funtions from ELF objects, call them and get the result back.<br/>
-ASMrewriter: Allows manipulation of machine code.<br/>
-It will feature non-blind selective mutations. You can ask it to list information regrading the source codes it is run on. The eventuality of this idea is to help with maintaining code or in giving the viewer an overview of the code. The final feature is the name-sake. It looks at the code and decides how to break it. For more explanation please read on.<br/>
+Object file libraries: Object file manipulation libraries are implemented in C and wrapped for use in Lua.<br/>
+Xobj: Pull in funtions from ELF objects, call them and get the result back(basically ffi).<br/>
+ASMrewriter: Currently returns a table containing all the jumps in the x86-64 machine code.<br/>
+Ramdump: Get the memory of a running process.<br/>
 
 For working demos you can skip to the end of the README.<br/>
 
 ### Building
-Running `make` from bruiser's make or `make bruiser` from the main makefile in the root directory of mutator will take care of that given that you already have all the requirements taken care of.<br/>
-It is generally a good idea to run `make deepclean` on bruiser's makefile on every pull since I occasionally have to make changes to Lua's sources or makefile.<br/>
+
+## Requirements
+* libffi<br/>
+* libcapstone<br/>
+* libkeystone<br/>
+* python 3.5(or higher) development packages<br/>
+* LLVM/Clang(5.0,6.0 or 8.0. 7.0 not supported)<br/>
+Other dependencies(lua, [faultreiber](https://github.com/bloodstalker/faultreiber), [luatablegen](https://github.com/bloodstalker/luatablegen), [linenoise](https://github.com/antirez/linenoise)) are self-contained.<br/>
+
+## Make
+Running `make` from bruiser's make or `make bruiser` from the main makefile in the root directory of mutator will take care of building bruiser given that you already taken care of all the requirements.<br/>
+It is generally a good idea to run `make deepclean` on bruiser's makefile on every pull since I occasionally have to make changes to Lua's sources, makefile or we need to re-generate the code-gen files.<br/>
+
+### User Engagement
+bruiser provides base-line functionality and libraries. The eventual goal is for users to use the baseline and provide more useful and abstracted functionalities in the form of lua libraries built on top of the bruiser environment and python plugins.<br/>
+So without user engagement bruiser is meaningless. Feel free to make suggestions on how I can make it more friendly for other people to get involved.<br/>
+
+### supported object file formats
+bruiser currently supports the following object formats:<br/>
+* WASM
+buirser will eventually support the following formats:<br/>
+* ELF
+* PE
+* Macho
+
+### Python pipe
+bruiser has a built-in python pipe. There are two reasons for it being there:<br/>
+* one, this way i can test some ideas in python instead of a hard c/c++ implementation which is faster.<br/>
+* two, eventually the python pipe is intended to act the same way as in gdb.<br/>
 
 ### How does it work?
-To put it simply, bruiser is an interactive lua interpreter that uses linenoise for shell-like features(history, tab-completion, auto-suggestion). You get the full power of lua plus the bruiser functions whcih are implemented as lua scripts that call back to the cpp code to get things done.<br/>
-To put this into perspective, think you run `list vars` in bruiser. It gets you the list of vars but that's it. You can't save them to a file or do anything else with them. With the old way of doing things I had to add a command that did that and then you could do it but what if you wanted to do something else? What then? Well you get the idea. That would also mean that bruiser's language would be made up gradually which would result in something ugly and warrant a lot of rewrites.<br/>
-With the new way of doing things, the user is only limited by their imagination and lua, not me, and there is no learning curve for learning a garbage language that I would have to come up with.<br/>
-Also, there is no reason to implement any extra features to be able to automate your use of bruiser. Just run a lua script and tell bruiser to run that.<br/>
-bruiser has a built-in pipe to Python so adding plugin python scripts are simple.(currently the pipe works only one-way)<br/>
+bruiser's main code is implemented in C++. The lower-level-interfacing parts are usually implemented in C. The object-file manipulation libraries are generated through two code-generators which make the code base more maintable.<br/>
+Currently bruiser used two code-generators, [faultreiber](https://github.com/bloodstalker/faultreiber) and [luatablegen](https://github.com/bloodstalker/luatablegen). faultreiber generates a binary file-format parser library for a given format. luatablegen wraps all the structures related to that file format for Lua. Both code generators can use the same XML file which provides them with the definition of the file format. As a disclaimer, I implemented both faultriber and luatablegen for bruiser but they are general-purpose and can work without the use of each other.<br/>
+bruiser also features a built-in Python3 pipe which currently allows you to call your python functions from bruiser(i.e. Lua). Eventually the python pipe will turn into a plugin-enabler for bruiser.<br/>
+
+#### Lua Defaults
+You can think of this as the bruiser dot file.<br/>
+Upon start-up, bruiser will look to find a file called `defaults.lua` in the same directory as the bruiser executable to run before running any user provided lua code, both in interactive and non-interactive modes. The path to the lua default file can be changed from the default value by the `LuaDefault` option passed to bruiser on startup.<br/>
+The current lua default script provided will run `luarocks path --bin` and add `paht` and `cpath` so that you can use your Lua modules from bruiser.<br/>
 
 ### Lua vs Luajit
 For the first incarnation, bruiser will only support lua and not luajit. luajit is way faster than lua which will play an important role in bruiser's overall performance but luajit is generally less stable than lua and usually behind in terms of what new features of lua the language it supports.<br/>
@@ -27,10 +58,14 @@ The plan is to add both and for the user to be able to pick which one to use whe
 ### Warning
 The current implementation loads all lua libraries which also includes it's `os` library. To give you an idea, `os.execute()` is very similar to `system()` in C. This decision has been made to speed up testing and the dev process.<br/>
 Also like `mutatord` and `mutatorclient`, bruiser does not need any sudo access.<br/>
+briuser's executable expects to stay where it is originally built in, don't move it. use symlinks, aliases, ... whatever to suit your needs.<br/>
 
 ### Useful Lua Scripts
 The dir named `lua-scripts` houses demos, examples and useful lua scripts for bruiser.<br/>
 If you happen to write a Lua script for bruiser that you think other people will find useful, then please add it to `lua-scripts` on your fork and make a PR.<br/>
+
+### Run All Demos
+Run `run.sh` inside bruiser's directory. This will run all the demos buirser currently has, which at the time of writng include the xobj demo, the jump table demo, the disassembly demo and the wasm object demo.<br/>
 
 ### Examples
 First you should clone the mutator repo and run `git submodule init` and `git submodule update` to get the third-party repos that enable mutator to run.<br/>
@@ -86,7 +121,3 @@ The ASMRewriter functionality allows you to look through the machine code and ma
 For working examples which demonstrate how much the implementation has improved you can run `lua-scripts/demo2.lua` and `lua-scripts/df-demo.lua`. `demo2.lua` requires `ansicolor`. `df-demo.lua` uses the dwarf fortress executable as an example so you will have to first get that and then change the path in the lua file.<br/>
 
 For more detailed information on the modules and the methods they provide, you can look at the wiki.<br/>
-
-#### Lua Defaults
-Upon start-up, bruiser will look to find a file called `defaults.lua` in the same directory as the bruiser executable to run before running any user provided lua code, both in interactive and non-interactive modes. The path to the lua default file could be changed from the default value by the `LuaDefault` option passed to bruiser on startup.<br/>
-The default script provided will run `luarocks path --bin` and add `paht` and `cpath` so that you can use your Lua modules from bruiser.<br/>
