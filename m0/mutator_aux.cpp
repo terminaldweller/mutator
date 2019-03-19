@@ -45,7 +45,7 @@ SourceLocation SourceLocationHasMacro [[deprecated("doesnt work")]] (SourceLocat
     /*get the expansion range which is startloc and endloc*/
 #if __clang_major__ <= 6
     std::pair <SourceLocation, SourceLocation> expansionRange = Rewrite.getSourceMgr().getImmediateExpansionRange(SL);
-#elif __clang_major__ == 8
+#elif __clang_major__ >= 8
     CharSourceRange expansionRange = Rewrite.getSourceMgr().getImmediateExpansionRange(SL);
 #endif
     if (Kind == "start") {

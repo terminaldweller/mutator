@@ -1,13 +1,14 @@
+TARGET=autowasm
 SHELL=bash
 SHELL?=bash
-TARGET=autowasm
 CC=clang
 CC?=clang
-CC_FLAGS=-fpic
+CC_FLAGS= -fPIC
 CC_EXTRA?=
 CTAGS_I_PATH?=./
 LD_FLAGS=
-EXTRA_LD_FLAGS?=
+LIB_LUA=../../../lua-5.3.4/src/liblua.a
+EXTRA_LD_FLAGS?=-lm -ldl
 ADD_SANITIZERS_CC= -g -fsanitize=address -fno-omit-frame-pointer
 ADD_SANITIZERS_LD= -g -fsanitize=address
 MEM_SANITIZERS_CC= -g -fsanitize=memory -fno-omit-frame-pointer
@@ -62,8 +63,8 @@ depend:.depend
 .depend:$(SRCS)
 	rm -rf .depend
 	$(CC) -MM $(CC_FLAGS) $^ > ./.depend
-	echo $(patsubst %.o:, %.odbg:, $(shell $(CC) -MM $(CC_FLAGS) $^)) | sed -r 's/[a-z0-9\-\_]+\.odbg/\n&/g' >> ./.depend
-	echo $(patsubst %.o:, %.ocov:, $(shell $(CC) -MM $(CC_FLAGS) $^)) | sed -r 's/[a-z0-9\-\_]+\.ocov/\n&/g' >> ./.depend
+	echo $(patsubst %.o:, %.odbg:, $(shell $(CC) -MM $(CC_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\-\_]+\.odbg/\n&/g' >> ./.depend
+	echo $(patsubst %.o:, %.ocov:, $(shell $(CC) -MM $(CC_FLAGS) $^)) | sed -r 's/[A-Za-z0-9\-\_]+\.ocov/\n&/g' >> ./.depend
 
 -include ./.depend
 
@@ -76,16 +77,19 @@ depend:.depend
 %.ocov:%.c
 	$(CC) $(CC_FLAGS) $(COV_CC) -c $< -o $@
 
-$(TARGET): $(TARGET).o read.o aggregate.o structs.o
-	$(CC) $^ $(LD_FLAGS) -o $@
+$(LIB_LUA):
+	$(MAKE) -C ../../../lua-5.3.4/src linux
 
-$(TARGET)-static: $(TARGET).o read.o aggregate.o structs.o
+$(TARGET): $(TARGET).o $(LIB_LUA) read.o aggregate.o structs.o
+	$(CC) $(LD_FLAGS) $^ -o $@
+
+$(TARGET)-static: $(TARGET).o $(LIB_LUA) read.o aggregate.o structs.o
 	$(CC) $^ $(LD_FLAGS) -static -o $@
 
-$(TARGET)-dbg: $(TARGET).odbg read.odbg aggregate.odbg structs.odbg
+$(TARGET)-dbg: $(TARGET).odbg $(LIB_LUA) read.odbg aggregate.odbg structs.odbg
 	$(CC) $^ $(LD_FLAGS) -g -o $@
 
-$(TARGET)-cov: $(TARGET).ocov read.ocov aggregate.ocov structs.ocov
+$(TARGET)-cov: $(TARGET).ocov $(LIB_LUA) read.ocov aggregate.ocov structs.ocov
 	$(CC) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov:
@@ -117,13 +121,13 @@ tags:$(SRCS)
 $(TARGET).so: $(TARGET).o read.o aggregate.o structs.o
 	$(CC) $^ $(LD_FLAGS) -shared -o $@
 
-$(TARGET).a: $(TARGET).o read.o aggregate.o structs.o
-	ar rcs $(TARGET).a $(TARGET).o read.o aggregate.o structs.o
+$(TARGET).a: $(LIB_LUA) read.o aggregate.o structs.o
+	ar rcs $(TARGET).a read.o aggregate.o structs.o
 
-$(TARGET).adbg: $(TARGET).odbg read.odbg aggregate.odbg structs.odbg
-	ar rcs $(TARGET).adbg $(TARGET).odbg read.odbg aggregate.odbg structs.odbg
+$(TARGET).adbg: $(LIB_LUA) read.odbg aggregate.odbg structs.odbg
+	ar rcs $(TARGET).adbg read.odbg aggregate.odbg structs.odbg
 
-$(TARGET).acov: $(TARGET).ocov read.ocov aggregate.ocov structs.ocov
+$(TARGET).acov: $(LIB_LUA) read.ocov aggregate.ocov structs.ocov
 	ar rcs $(TARGET).acov $(TARGET).ocov read.ocov aggregate.ocov structs.ocov
 
 valgrind: $(TARGET)

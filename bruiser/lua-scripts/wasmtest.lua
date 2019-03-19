@@ -30,7 +30,6 @@ function libwasm.dump_import_section(a)
     io.write("count:"..tostring(a["import_section"]:count()).."\n")
     io.write("entries"..tostring(a["import_section"]:entries()).."\n")
     for k, v in pairs(a["import_section"]:entries()) do
-      --print(k, v, type(v))
       io.write("module length:"..v:module_length().."\t")
       io.write("module str:"..v:module_str().."\t")
       io.write("field len:"..v:field_len().."\t")
@@ -370,6 +369,98 @@ function libwasm.demo_setters(wasm_path)
       end
 
       --FIXME-entries
+      local entry1 = W_Import_Section_Entry()
+      local entry2 = W_Import_Section_Entry()
+      local entry3 = W_Import_Section_Entry()
+      local entry4 = W_Import_Section_Entry()
+      local kind0 = 12345
+      local rsz = resizable_limit_t(111,222,333)
+      local rsz1 = resizable_limit_t(11,22,33)
+      local kind1 = table_type_t(10, rsz)
+      kind1:set_resizable_limit(rsz)
+      local kind2 = memory_type_t(rsz1)
+      kind2:set_resizable_limit(rsz1)
+      local kind3 = global_type_t(13,13)
+
+      entry1:set_module_length(3)
+      entry1:set_module_str("env")
+      entry1:set_field_len(2)
+      entry1:set_field_str("ab")
+      entry1:set_kind(0)
+      entry1:set_type(kind0)
+
+      entry2:set_module_length(3)
+      entry2:set_module_str("env")
+      entry2:set_field_len(3)
+      entry2:set_field_str("abc")
+      entry2:set_kind(1)
+      entry2:set_type(kind1)
+
+      entry3:set_module_length(3)
+      entry3:set_module_str("env")
+      entry3:set_field_len(4)
+      entry3:set_field_str("abcd")
+      entry3:set_kind(2)
+      entry3:set_type(kind2)
+
+      entry4:set_module_length(3)
+      entry4:set_module_str("env")
+      entry4:set_field_len(5)
+      entry4:set_field_str("abcde")
+      entry4:set_kind(3)
+      entry4:set_type(kind3)
+
+      local entries = {}
+      entries[1] = entry1
+      entries[2] = entry2
+      entries[3] = entry3
+      entries[4] = entry4
+
+      a["import_section"]:set_count(4)
+      pre = a["import_section"]:entries()
+      a["import_section"]:set_entries(entries)
+      post = a["import_section"]:entries()
+
+      print(colors("%{red}".."start of import seciton entry contests for settter."))
+      for k,v in pairs(a["import_section"]:entries()) do
+        print(k, v)
+        print("module_length: "..v:module_length())
+        print("module_str: "..v:module_str())
+        print("field_len: "..v:field_len())
+        print("field_str: "..v:field_str())
+        print("kind: "..v:kind())
+        --print(v:type())
+        --print(colors("%{green}"..type(v:type()).."\n"))
+        --[[
+        if v:kind() == 0 then
+          v:set_type(54321)
+          print(v:type())
+        end
+        ]]--
+        if v:kind() == 1 then
+          --io.write(colors("%{blue}"..v:type():element_type().."\n"))
+          io.write(colors("%{blue}"..v:type():resizable_limit():flags().."\n"))
+          io.write(colors("%{blue}"..v:type():resizable_limit():initial().."\n"))
+          io.write(colors("%{blue}"..v:type():resizable_limit():maximum().."\n"))
+        end
+        if v:kind() == 2 then
+          io.write(colors("%{blue}"..v:type():resizable_limit():initial().."\n"))
+          io.write(colors("%{blue}"..v:type():resizable_limit():maximum().."\n"))
+          io.write(colors("%{blue}"..v:type():resizable_limit():flags().."\n"))
+        end
+        if v:kind() == 3 then
+          io.write(colors("%{blue}"..v:type():value_type().."\n"))
+          io.write(colors("%{blue}"..v:type():mutability().."\n"))
+        end
+      end
+
+      if pre == post then
+        io.write(colors("%{red}".."import_section:entries:failure\n"))
+      else
+        io.write(colors("%{green}".."import_section:entries:pass\n"))
+      end
+
+      print(colors("%{red}".."end of import seciton entry contests for settter."))
     end
   end
 
@@ -911,10 +1002,53 @@ function libwasm.demo_setters(wasm_path)
 
 end
 
+--FIXME-fixed?
+function libwasm.demo_setter_aux()
+  require("wasmextra")
+  local rsz = resizable_limit_t(111,222,333)
+  local zz = resizable_limit_t(11,22,33)
+  local kind1 = table_type_t(10, rsz)
+  local kind2 = memory_type_t(rsz)
+  local kind3 = global_type_t(1,1)
+  print(rsz:flags())
+  print(rsz:initial())
+  print(rsz:maximum())
+  rsz:set_flags(100)
+  rsz:set_initial(200)
+  rsz:set_maximum(300)
+  print(rsz:flags())
+  print(rsz:initial())
+  print(rsz:maximum())
+
+  print(kind1:element_type())
+  print(kind1:resizable_limit())
+  kind1:set_element_type(17)
+  kind1:set_resizable_limit(zz)
+  print(kind1:element_type())
+  print(kind1:resizable_limit())
+  io.write(colors("%{blue}"..kind1:resizable_limit():initial().."\n"))
+  io.write(colors("%{blue}"..kind1:resizable_limit():maximum().."\n"))
+  io.write(colors("%{blue}"..kind1:resizable_limit():flags().."\n"))
+
+  print(kind2:resizable_limit())
+  kind2:set_resizable_limit(zz)
+  print(kind2:resizable_limit())
+  print("max after set:"..kind2:resizable_limit():maximum())
+
+  print(kind3:value_type())
+  print(kind3:mutability())
+  kind3:set_value_type(0)
+  kind3:set_mutability(0)
+  print(kind3:value_type())
+  print(kind3:mutability())
+end
+
+--libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
 --libwasm.dev("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
---libwasm.demo_getters("/home/bloodstalker/extra/faultreiber/test/read.wasm")
---libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
-libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
+--libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+--libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
+--libwasm.demo_setter_aux()
 
 return libwasm

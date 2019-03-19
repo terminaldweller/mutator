@@ -175,7 +175,7 @@ Currently there is only the master branch which is the dev branch. All the as-of
 ### Building
 
 #### Requirements
-* `LLVM/Clang` 5.0, 6.0 or 8.0(we will skip 7.0). For 8.0, the latest tested trunk version is 340121.<br/>
+* `LLVM/Clang` 5.0, 6.0 or 8.0(we will skip 7.0). For 8.0, the latest tested trunk version is 355787.<br/>
 * `libffi`<br/>
 * `libcapstone`<br/>
 * `libkeystone`<br/>

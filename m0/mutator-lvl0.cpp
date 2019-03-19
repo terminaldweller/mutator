@@ -324,6 +324,7 @@ private:
 };
 /**********************************************************************************************************************/
 /**************************************************ASTMatcher Callbacks************************************************/
+#if 0
 class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCForCmpless : public MatchFinder::MatchCallback {
 public:
   MCForCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
@@ -342,7 +343,9 @@ public:
 private:
   Rewriter &Rewrite;
 };
+#endif
 /**********************************************************************************************************************/
+#if 0
 class [[deprecated("replaced by a more efficient class"), maybe_unused]] MCWhileCmpless : public MatchFinder::MatchCallback {
 public:
   MCWhileCmpless (Rewriter &Rewrite) : Rewrite (Rewrite) {}
@@ -361,6 +364,7 @@ public:
 private:
   Rewriter &Rewrite;
 };
+#endif
 /**********************************************************************************************************************/
 class MCElseCmpless : public MatchFinder::MatchCallback {
 public:
@@ -4483,40 +4487,31 @@ public:
       }
 #endif
 
-      if (TypeIsUSignedInt)
-      {
+      if (TypeIsUSignedInt) {
         int64_t UnoFinal = 0;
         int64_t DousFinal = 0;
         bool MatchedUno = false;
         bool MatchedDous = false;
 
         /*@DEVI-compilers that actually treat post and pre inc or dec need more. this doesnt support that.*/
-        if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1211uno") != nullptr)
-        {
+        if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1211uno") != nullptr) {
           MatchedUno = true;
-
           const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1211uno");
-
           clang::UnaryOperator::Opcode UnoOpKind = UO->getOpcode();
-
           const Expr* UnoSubEXP = UO->getSubExpr();
-
+#if __clang_major__ >= 9
+          clang::Expr::EvalResult UnoResult;
+#elif __clang_major__ < 9
           llvm::APSInt UnoResult;
-
           UnoFinal = UnoResult.getExtValue();
+#endif
 
-          if (UnoSubEXP->EvaluateAsInt(UnoResult, *ASTC))
-          {
-            if (UnoOpKind == UO_PostInc || UnoOpKind == UO_PreInc)
-            {
+          if (UnoSubEXP->EvaluateAsInt(UnoResult, *ASTC)) {
+            if (UnoOpKind == UO_PostInc || UnoOpKind == UO_PreInc) {
               UnoFinal++;
-            }
-            else if (UnoOpKind == UO_PostDec || UnoOpKind == UO_PreDec)
-            {
+            } else if (UnoOpKind == UO_PostDec || UnoOpKind == UO_PreDec) {
               UnoFinal--;
-            }
-            else
-            {
+            } else {
               /*intentionally left blank. we cant get anything else. were only matching for these two unaryoperators.*/
             }
           }
@@ -4533,16 +4528,25 @@ public:
           const Expr* DousLHS = BO->getLHS();
           const Expr* DousRHS = BO->getRHS();
 
+#if __clang_major__ >= 9
+          clang::Expr::EvalResult DousLHSAPS;
+          clang::Expr::EvalResult DousRHSAPS;
+#elif __clang_major__ < 9
           llvm::APSInt DousLHSAPS;
           llvm::APSInt DousRHSAPS;
+#endif
 
           if (DousLHS->EvaluateAsInt(DousLHSAPS, *ASTC) && DousRHS->EvaluateAsInt(DousRHSAPS, *ASTC))
           {
+#if __clang_major__ >= 9
+            int64_t DousLHSInt64 = DousLHSAPS.Val.getInt().getExtValue();
+            int64_t DousRHSInt64 = DousRHSAPS.Val.getInt().getExtValue();
+#elif __clang_major__ < 9
             int64_t DousLHSInt64 = DousLHSAPS.getExtValue();
             int64_t DousRHSInt64 = DousRHSAPS.getExtValue();
+#endif
 
-            switch (DousOpKind)
-            {
+            switch (DousOpKind) {
             case BO_Add:
               DousFinal = DousRHSInt64 + DousLHSInt64;
               break;
@@ -4562,16 +4566,18 @@ public:
           }
         }
 
-        llvm::APSInt OverflowCondidate;
-
+#if __clang_major__ >= 9
+        clang::Expr::EvalResult OverflowCondidate;
         EXP->EvaluateAsInt(OverflowCondidate, *ASTC);
-
+        int64_t IntExprValue = OverflowCondidate.Val.getInt().getExtValue();
+#elif __clang_major__ < 9
+        llvm::APSInt OverflowCondidate;
+        EXP->EvaluateAsInt(OverflowCondidate, *ASTC);
         int64_t IntExprValue = OverflowCondidate.getExtValue();
+#endif
 
-        if ((MatchedDous && (DousFinal != IntExprValue)) || (MatchedUno && (UnoFinal != IntExprValue)))
-        {
+        if ((MatchedDous && (DousFinal != IntExprValue)) || (MatchedUno && (UnoFinal != IntExprValue))) {
           std::cout << "12.11" << ":" << "Constant Unsinged Expr evaluation resuslts in an overflow:" << SL.printToString(*MR.SourceManager) << ":" << IntExprValue << " " << DousFinal << " " << ":" << targetExpr << "\n";
-
           XMLDocOut.XMLAddNode(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
         }
@@ -7052,7 +7058,7 @@ private:
 /**********************************************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 public:
-  MyASTConsumer(Rewriter &R) : HandlerForCmpless(R), HandlerWhileCmpless(R), HandlerElseCmpless(R), HandlerIfCmpless(R), \
+  MyASTConsumer(Rewriter &R) : HandlerElseCmpless(R), HandlerIfCmpless(R), \
     HandlerForIfElse(R), HandlerForSwitchBrkLess(R), HandlerForSwitchDftLEss(R), HandlerForMCSwitch151(R), HandlerForMCSwitch155(R), \
     HandlerForMCFunction161(R), HandlerForFunction162(R), HandlerForFunction164(R), HandlerForFunction166(R), HandlerForFunction168(R), \
     HandlerForFunction169(R), HandlerForPA171(R), HandlerForSU184(R), HandlerForType6465(R), HandlerForDCDF81(R), HandlerForDCDF82(R), \
@@ -7071,8 +7077,8 @@ public:
 /*@DEVI-disables all matchers*/
 #if defined(_MUT0_EN_MATCHERS)
 
-    Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
-    Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mcwhile"), &HandlerWhileCmpless);
+    //Matcher.addMatcher(forStmt(unless(hasDescendant(compoundStmt()))).bind("mcfor"), &HandlerForCmpless);
+    //Matcher.addMatcher(whileStmt(unless(hasDescendant(compoundStmt()))).bind("mcwhile"), &HandlerWhileCmpless);
     Matcher.addMatcher(ifStmt(allOf(hasElse(unless(ifStmt())), hasElse(unless(compoundStmt())))).bind("mcelse"), &HandlerElseCmpless);
     Matcher.addMatcher(ifStmt(unless(hasDescendant(compoundStmt()))).bind("mcif"), &HandlerIfCmpless);
     Matcher.addMatcher(ifStmt(allOf(hasElse(ifStmt()), unless(hasAncestor(ifStmt())), unless(hasDescendant(ifStmt(hasElse(unless(ifStmt()))))))).bind("mcifelse"), &HandlerForIfElse);
@@ -7481,8 +7487,8 @@ public:
   }
 
 private:
-  MCForCmpless HandlerForCmpless;
-  MCWhileCmpless HandlerWhileCmpless;
+  //MCForCmpless HandlerForCmpless;
+  //MCWhileCmpless HandlerWhileCmpless;
   MCElseCmpless HandlerElseCmpless;
   MCIfCmpless HandlerIfCmpless;
   IfElseMissingFixer HandlerForIfElse;

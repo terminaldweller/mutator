@@ -9,12 +9,14 @@
 #include "./aggregate.h"
 #include "./read.h"
 #include "./structs.h"
+#include "../../../lua-5.3.4/src/lua.h"
 
 #pragma weak main
 int main(int argc, char **argv) {
   const rlim_t kStackSize = 160 * 1024 * 1024; // min stack size = 16 MB
   struct rlimit rl;
   int result;
+  lua_State* LS = luaL_newstate();
 
   result = getrlimit(RLIMIT_STACK, &rl);
   if (result == 0) {
@@ -27,10 +29,10 @@ int main(int argc, char **argv) {
     }
   }
   int wasm = open("./test.wasm", O_RDONLY);
-  wasm_lib_ret_t *lib_ret = read_aggr_wasm(wasm);
+#if 0
+  wasm_lib_ret_t *lib_ret = read_aggr_wasm(wasm, LS);
   printf("finished reading\n");
 
-#if 0
   printf("magic_number:%x\n",
          lib_ret->obj->magic_number_container->magic_number);
   printf("version:%x\n", lib_ret->obj->version_container->version);
@@ -240,6 +242,7 @@ int main(int argc, char **argv) {
   // free(lib_ret->void_train[2]);
   // free(lib_ret->void_train[1]);
   // free(lib_ret->void_train[0]);
+#if 0
   for (int i = lib_ret->current_void_count - 1; i >= 0; --i) {
     printf("%d:0x%x ", i, lib_ret->void_train[i]);
     // if (i == 1) continue;
@@ -248,5 +251,6 @@ int main(int argc, char **argv) {
   free(lib_ret->void_train);
   free(lib_ret->obj);
   free(lib_ret);
+#endif
   return 0;
 }

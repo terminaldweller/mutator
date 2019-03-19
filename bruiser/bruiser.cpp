@@ -1424,6 +1424,7 @@ class LuaWrapper {
       }
       PRINT_WITH_COLOR_LB(RED, "before");
       wasm_lib_ret_t* lib_ret = read_aggr_wasm(wasm_file);
+      //wasm_lib_ret_t* lib_ret = read_aggr_wasm(wasm_file, __ls);
       PRINT_WITH_COLOR_LB(RED, "after");
       close(wasm_file);
 
@@ -1535,6 +1536,7 @@ class LuaWrapper {
         printf("data seg count:%d\n", lib_ret->obj->W_Data_Section_container->count);
 
         for (int i = 0; i < lib_ret->obj->W_Data_Section_container->count; ++i) {
+          printf("number:%d\n", i+1);
           printf("index:%d\n", lib_ret->obj->W_Data_Section_container->entries[i]->index);
           printf("size:%d\n", lib_ret->obj->W_Data_Section_container->entries[i]->size);
           printf("code:\n");
@@ -1564,7 +1566,7 @@ class LuaWrapper {
         new_magic_number(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "magic");
+      PRINT_WITH_COLOR_LB(BLUE, "magic");
 
       if (lib_ret->obj->w32_version_container != NULL) {
         lua_pushstring(__ls, "version");
@@ -1572,7 +1574,7 @@ class LuaWrapper {
         new_w32_version(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "version");
+      PRINT_WITH_COLOR_LB(BLUE, "version");
 
       if (lib_ret->obj->W_Type_Section_container != NULL) {
         lua_pushstring(__ls, "type_section");
@@ -1580,7 +1582,7 @@ class LuaWrapper {
         new_W_Type_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "type section");
+      PRINT_WITH_COLOR_LB(BLUE, "type section");
 
       if (lib_ret->obj->W_Import_Section_container != NULL) {
         lua_pushstring(__ls, "import_section");
@@ -1588,7 +1590,7 @@ class LuaWrapper {
         new_W_Import_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "import section");
+      PRINT_WITH_COLOR_LB(BLUE, "import section");
 
       if (lib_ret->obj->W_Function_Section_container != NULL) {
         lua_pushstring(__ls, "function_section");
@@ -1596,7 +1598,7 @@ class LuaWrapper {
         new_W_Function_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "function section");
+      PRINT_WITH_COLOR_LB(BLUE, "function section");
 
       if (lib_ret->obj->W_Table_Section_container != NULL) {
         lua_pushstring(__ls, "table_section");
@@ -1604,7 +1606,7 @@ class LuaWrapper {
         new_W_Table_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "table section");
+      PRINT_WITH_COLOR_LB(BLUE, "table section");
 
       if (lib_ret->obj->W_Memory_Section_container != NULL) {
         lua_pushstring(__ls, "memory_section");
@@ -1612,7 +1614,7 @@ class LuaWrapper {
         new_W_Memory_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "memory section");
+      PRINT_WITH_COLOR_LB(BLUE, "memory section");
 
       if (lib_ret->obj->W_Global_Section_container != NULL) {
         lua_pushstring(__ls, "global_section");
@@ -1620,7 +1622,7 @@ class LuaWrapper {
         new_W_Global_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "global section");
+      PRINT_WITH_COLOR_LB(BLUE, "global section");
 
       if (lib_ret->obj->W_Export_Section_container != NULL) {
         lua_pushstring(__ls, "export_section");
@@ -1628,7 +1630,7 @@ class LuaWrapper {
         new_W_Export_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "export section");
+      PRINT_WITH_COLOR_LB(BLUE, "export section");
 
       if (lib_ret->obj->W_Start_Section_container != NULL) {
         lua_pushstring(__ls, "start_section");
@@ -1636,7 +1638,7 @@ class LuaWrapper {
         new_W_Start_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "start section");
+      PRINT_WITH_COLOR_LB(BLUE, "start section");
 
       if (lib_ret->obj->W_Element_Section_container != NULL) {
         lua_pushstring(__ls, "element_section");
@@ -1644,15 +1646,38 @@ class LuaWrapper {
         new_W_Element_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "element section");
+      PRINT_WITH_COLOR_LB(BLUE, "element section");
 
       if (lib_ret->obj->W_Code_Section_container != NULL) {
         lua_pushstring(__ls, "code_section");
         W_Code_Section_push_args(__ls, lib_ret->obj->W_Code_Section_container);
         new_W_Code_Section(__ls);
+        lua_pushlightuserdata(__ls, lib_ret->obj->W_Code_Section_container);
+        lua_pushvalue(__ls, -2);
+        lua_settable(__ls, LUA_REGISTRYINDEX);
+#if 1
+        for (int ii = 0; ii < lib_ret->obj->W_Code_Section_container->count; ++ii) {
+          W_Function_Body_push_args(__ls, lib_ret->obj->W_Code_Section_container->bodies[ii]);
+          new_W_Function_Body(__ls);
+          lua_pushlightuserdata(__ls, lib_ret->obj->W_Code_Section_container->bodies[ii]);
+          lua_pushvalue(__ls, -2);
+          lua_settable(__ls, LUA_REGISTRYINDEX);
+          lua_pop(__ls, 1);
+        }
+#endif
         lua_settable(__ls, -3);
+#if 0
+        for (int i = 0; i < lib_ret->obj->W_Code_Section_container->count; ++i) {
+          W_Function_Body_push_args(__ls, lib_ret->obj->W_Code_Section_container->bodies[i]);
+          new_W_Function_Body(__ls);
+          for (int j = 0; j < lib_ret->obj->W_Code_Section_container->bodies[i]->local_count; ++j) {
+            W_Local_Entry_push_args(__ls, lib_ret->obj->W_Code_Section_container->bodies[i]->locals[j]);
+            new_W_Local_Entry(__ls);
+          }
+        }
+#endif
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "code section");
+      PRINT_WITH_COLOR_LB(BLUE, "code section");
 
       if (lib_ret->obj->W_Data_Section_container != NULL) {
         lua_pushstring(__ls, "data_section");
@@ -1660,7 +1685,7 @@ class LuaWrapper {
         new_W_Data_Section(__ls);
         lua_settable(__ls, -3);
       }
-      //PRINT_WITH_COLOR_LB(BLUE, "data section");
+      PRINT_WITH_COLOR_LB(BLUE, "data section");
       if (lib_ret->obj->W_Custom_Section_container != NULL) {
       }
       return 1;
