@@ -49,12 +49,11 @@
 
 ## Overview
 
-mutator is a suite of tools aimed at analysis and automation of C,C++ and machine code.<br/>
+mutator is a suite of tools for C,C++ and machine code.<br/>
 Here's a detailed list of what's currently available:<br/>
 
 ### bruiser
-Essentially bruiser is a Lua REPL plus:
-* You get tab-completion, suggestions and history(like a shell).<br>
+At its core, bruiser is a Lua REPL:
 * bruiser comes with its own extensions and libraries implemented in C and Cpp.<br/>
 * Through bruiser's Xobj feature, you can pull in functions from object code, run them and get the result back.<br/>
 * Through the ASMRewriter functionality you can manipulate the machine code and push it back in the object. For more detail you can look at the wiki or check out bruiser's README.md.<br/>
