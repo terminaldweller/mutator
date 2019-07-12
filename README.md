@@ -1,6 +1,7 @@
 # mutator
 
 [![Build Status](https://travis-ci.org/bloodstalker/mutator.svg?branch=master)](https://travis-ci.org/bloodstalker/mutator)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fmutator.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fmutator?ref=badge_shield)
 <a href="https://scan.coverity.com/projects/bloodstalker-mutator">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
@@ -103,6 +104,9 @@ You can follow Project `mutator` on twitter, @xashmith.<br/>
 SaferCpp is currently licensed under GPL-2.0.<br/>
 All 3rd party libraries/code have their own respective license.<br/>
 Excluding SaferCpp and other 3rd party code/libraries, everything else under project mutator is provided under GPL-3.0.<br/>
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fmutator.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fmutator?ref=badge_large)
 
 ## How to get project mutator
 
