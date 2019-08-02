@@ -1,7 +1,6 @@
 # mutator
 
 [![Build Status](https://travis-ci.org/bloodstalker/mutator.svg?branch=master)](https://travis-ci.org/bloodstalker/mutator)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fmutator.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fmutator?ref=badge_shield)
 <a href="https://scan.coverity.com/projects/bloodstalker-mutator">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
@@ -81,6 +80,7 @@ dwasm is also hosted on a mirror repo [here](https://github.com/bloodstalker/dwa
 `luatablegen` is a python script that takes a json file including the details of a C structure, and generates C source and header files, a lua file including some convinience fields for the lua table and a markdown file including a summary of the table fields and their expected arg types and return types.<br/>
 luatablegen is also hosted on a mirror repo [here](https://github.com/bloodstalker/luatablegen).<br/>
 
+### m0
 ### m0
 Run static checks on the source code, which at the time of writing, includes SaferCpp, Misra-c:2004 and most of MSC2012 and MSC98 rules.<br/>
 m0's reports are generated in XML,JSON and simple text(AWK-friendly:`RS="\n";FS=":"`. Look at `ReportPrintPretty.sh` under `extra-tools`.).<br/>
@@ -178,7 +178,7 @@ Currently there is only the master branch which is the dev branch. All the as-of
 ### Building
 
 #### Requirements
-* `LLVM/Clang` 5.0, 6.0 or 8.0(we skip 7.0). For 9.0, the latest tested trunk version is 355787.<br/>
+* `LLVM/Clang` 5.0, 6.0, 8.0 and 9.0(we skip 7.0). For 10.0, the latest tested trunk version is 367652.<br/>
 * `libffi`<br/>
 * `libcapstone`<br/>
 * `libkeystone`<br/>
@@ -410,10 +410,6 @@ All mutator source code is provided under GPL-3.0.<br/>
 All libraries have their respective licences. For more info you can just visit their respective links.<br/>
 
 ### Feedback
-If you run into an issue please make a new issue.<br/>
-
-### Suggestions and Feature Requests
-You can make a new issue for requests and suggestion. Label them with "Feauture Request".<br/>
 Besides that, If you have any suggestions or have any feature requests for project mutator, you can send them to `thabogre@gmail.com`. I'll try to keep an open mind, so even if you feel like it might not be right up mutator's alley, do send them. Worst case, I'll just say no.<br/>
 
 ### TODO List
