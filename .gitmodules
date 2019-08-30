@@ -1,6 +1,3 @@
-[submodule "bruiser/linenoise"]
-	path = bruiser/linenoise
-	url = https://github.com/antirez/linenoise
 [submodule "bruiser/LuaJIT"]
 	path = bruiser/LuaJIT
 	url = https://github.com/LuaJIT/LuaJIT
