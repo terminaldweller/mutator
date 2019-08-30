@@ -1589,6 +1589,64 @@ class LuaWrapper {
         W_Import_Section_push_args(__ls, lib_ret->obj->W_Import_Section_container);
         new_W_Import_Section(__ls);
         lua_settable(__ls, -3);
+        for (uint32_t ii = 0; ii < lib_ret->obj->W_Import_Section_container->count; ++ii) {
+          W_Import_Section_Entry_push_args(__ls, lib_ret->obj->W_Import_Section_container->entries[ii]);
+          new_W_Import_Section_Entry(__ls);
+          lua_pushlightuserdata(__ls, lib_ret->obj->W_Import_Section_container->entries[ii]);
+          lua_pushvalue(__ls, -2);
+          lua_settable(__ls, LUA_REGISTRYINDEX);
+          lua_pop(__ls, 1);
+          if (lib_ret->obj->W_Import_Section_container->entries[ii]->kind == 1) {
+            table_type_t_push_args(__ls, (table_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type));
+            new_table_type_t(__ls);
+            lua_pushlightuserdata(__ls, lib_ret->obj->W_Import_Section_container->entries[ii]->type);
+            lua_pushvalue(__ls, -2);
+            lua_settable(__ls, LUA_REGISTRYINDEX);
+            lua_pop(__ls, 1);
+            resizable_limit_t_push_args(__ls, ((table_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->resizable_limit);
+            new_resizable_limit_t(__ls);
+            std::cout << "YYYYYY" << ((void*)(((table_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->resizable_limit)) << "YYYYYY" << "\n";
+            std::cout << "YYYYYY:element_type:" << (((table_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->element_type) << "YYYYYY" << "\n";
+            lua_pushlightuserdata(__ls, ((void*)(((table_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->resizable_limit)));
+            lua_pushvalue(__ls, -2);
+            lua_settable(__ls, LUA_REGISTRYINDEX);
+            lua_pop(__ls, 1);
+          }
+          else if (lib_ret->obj->W_Import_Section_container->entries[ii]->kind == 2) {
+            memory_type_t_push_args(__ls, ((memory_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type)));
+            new_memory_type_t(__ls);
+            std::cout << "ZZZZZZmemory_type:" << lib_ret->obj->W_Import_Section_container->entries[ii]->type << "ZZZZZZ\n";
+            lua_pushlightuserdata(__ls, lib_ret->obj->W_Import_Section_container->entries[ii]->type);
+            lua_pushvalue(__ls, -2);
+            lua_settable(__ls, LUA_REGISTRYINDEX);
+            lua_pop(__ls, 1);
+            resizable_limit_t_push_args(__ls, ((memory_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->resizable_limit);
+            new_resizable_limit_t(__ls);
+            std::cout << "YYYYYYmemory_type rsz:" << ((void*)(((memory_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->resizable_limit)) << "YYYYYY" << "\n";
+            lua_pushlightuserdata(__ls, ((void*)(((memory_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->resizable_limit)));
+            lua_pushvalue(__ls, -2);
+            lua_settable(__ls, LUA_REGISTRYINDEX);
+            lua_pop(__ls, 1);
+          }
+          else if (lib_ret->obj->W_Import_Section_container->entries[ii]->kind == 3) {
+            global_type_t_push_args(__ls, (global_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type));
+            std::cout << "set value: " << (uint32_t)((global_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->value_type << "\n";
+            std::cout << "set mutability: " << (uint32_t)((global_type_t*)(lib_ret->obj->W_Import_Section_container->entries[ii]->type))->mutability << "\n";
+            std::cout << "set type: " << lib_ret->obj->W_Import_Section_container->entries[ii]->type << "\n";
+            new_global_type_t(__ls);
+            lua_pushlightuserdata(__ls, lib_ret->obj->W_Import_Section_container->entries[ii]->type);
+            lua_pushvalue(__ls, -2);
+            lua_settable(__ls, LUA_REGISTRYINDEX);
+            lua_pop(__ls, 1);
+            lua_pushlightuserdata(__ls, lib_ret->obj->W_Import_Section_container->entries[ii]->type);
+            lua_gettable(__ls, LUA_REGISTRYINDEX);
+            global_type_t* fuck = (global_type_t*)lua_touserdata(__ls, -1);
+            std::cout << "get after set type: " << fuck << "\n";
+            std::cout << "get after set value: " << (uint32_t)(fuck->value_type) << "\n";
+            std::cout << "get after set mutability: " << (uint32_t)(fuck->mutability) << "\n";
+            lua_pop(__ls, 1);
+          }
+        }
       }
       PRINT_WITH_COLOR_LB(BLUE, "import section");
 
@@ -1656,7 +1714,7 @@ class LuaWrapper {
         lua_pushvalue(__ls, -2);
         lua_settable(__ls, LUA_REGISTRYINDEX);
 #if 1
-        for (int ii = 0; ii < lib_ret->obj->W_Code_Section_container->count; ++ii) {
+        for (uint32_t ii = 0; ii < lib_ret->obj->W_Code_Section_container->count; ++ii) {
           W_Function_Body_push_args(__ls, lib_ret->obj->W_Code_Section_container->bodies[ii]);
           new_W_Function_Body(__ls);
           lua_pushlightuserdata(__ls, lib_ret->obj->W_Code_Section_container->bodies[ii]);
@@ -2312,8 +2370,8 @@ int main(int argc, const char** argv) {
   //bruiser::BruiserReport BruiserLog;
 
   /*linenoise init*/
-  linenoiseSetCompletionCallback(bruiser::ShellCompletion);
-  linenoiseSetHintsCallback(bruiser::ShellHints);
+  linenoiseSetCompletionCallback(shell_completion);
+  linenoiseSetHintsCallback(shell_hint);
   /*setting up the initial history size to SHELL_HISTORY_SIZE*/
   linenoiseHistorySetMaxLen(SHELL_HISTORY_SIZE);
   linenoiseHistoryLoad(SHELL_HISTORY_FILE.c_str());

@@ -110,7 +110,7 @@ Excluding SaferCpp and other 3rd party code/libraries, everything else under pro
 ## How to get project mutator
 
 Before you run make, make sure you have all the dependencies:<br/>
-* You need LLVM 5, 6 or 8.<br/>
+* You need LLVM/Clang(for supported versions see the section under building).<br/>
 * For `safercpp` you will need to have LLVM RTTI also.<br/>
 * For `bruiser` you will need the python 3.5 or higher's dev package(source code and libpython), libcapstone, libkeystone and libffi.<br/>
 * The other libraries used are either submodules or copied inside.<br/>
@@ -417,6 +417,7 @@ For a list of things that need to be done, take a look at the list of issues.<br
 
 ### Contributions
 For a full description please read `Contributions.md` in the repo root.<br/>
+You can also choose to contact me directly if you want to.<br/>
 
 ### Support
 Well, I don't have the Misra-C:2012 Document. If you or your organization/company are willing to donate a copy to mutator, hit me up.<br/>

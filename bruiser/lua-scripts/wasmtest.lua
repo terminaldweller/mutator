@@ -35,7 +35,26 @@ function libwasm.dump_import_section(a)
       io.write("field len:"..v:field_len().."\t")
       io.write("field str:"..v:field_str().."\t")
       io.write("kind:"..v:kind().."\t")
-      io.write("kind:"..type(v:type()).."\t")
+      io.write("kind:"..tostring(v:type()).."\t")
+      if v:kind() == 0 then
+        print()
+        io.write("kind:"..tostring(v:type()).."\n")
+      elseif v:kind() == 1 then
+        io.write("element_type:"..v:type():element_type().."\n")
+        --io.write("rsz:"..v:type():resizable_limit().."\t")
+        --io.write("flags:"..v:type():resizable_limit():flags().."\t")
+        --io.write("init:"..v:type():resizable_limit():init().."\t")
+        --io.write("max:"..v:type():resizable_limit():maximum().."\n")
+      elseif v:kind() == 2 then
+        --io.write("rsz:"..v:type():resizable_limit().."\t")
+        --io.write("flags:"..v:type():resizable_limit():flags().."\t")
+        --io.write("init:"..v:type():resizable_limit():init().."\t")
+        --io.write("max:"..v:type():resizable_limit():maximum().."\n")
+        print()
+      elseif v:kind() == 3 then
+        io.write("value_type:"..v:type():value_type().."\t")
+        io.write("mutability:"..v:type():mutability().."\n")
+      end
     end
   else
     print(colors("%{red}".."section doesnt exist."))
@@ -1045,10 +1064,11 @@ end
 
 --libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
 --libwasm.dev("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
-libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
---libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
+libwasm.demo_getters("/home/bloodstalker/extra/faultreiber/test//read.wasm")
+--libwasm.demo_getters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
+libwasm.demo_setters("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/ft/test.wasm")
 --libwasm.dump_all("/home/bloodstalker/devi/hell2/bruiser/autogen/wasm/test/read.wasm")
---libwasm.demo_setter_aux()
+libwasm.demo_setter_aux()
 
 return libwasm
