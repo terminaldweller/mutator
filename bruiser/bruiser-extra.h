@@ -33,64 +33,6 @@ struct SigNames
   int Signal;
   char *SigName;
 };
-
-#if 0
-std::vector<SigNames> SignalNames = 
-{
-  {SIGHUP, (char*)"SIGHUP"},
-  {SIGINT, (char*)"SIGINT"},
-  {SIGQUIT, (char*)"SIGQUIT"},
-  {SIGILL, (char*)"SIGILL"},
-  {SIGTRAP, (char*)"SIGTRAP"},
-  {SIGABRT, (char*)"SIGABRT"},
-  {SIGIOT, (char*)"SIGIOT"},
-  {SIGBUS, (char*)"SIGBUS"},
-  {SIGFPE, (char*)"SIGFPE"},
-  {SIGKILL, (char*)"SIGKILL"},
-  {SIGUSR1, (char*)"SIGUSR1"},
-  {SIGSEGV, (char*)"SIGSEGV"},
-  {SIGUSR2, (char*)"SIGUSR2"},
-  {SIGPIPE, (char*)"SIGPIPE"},
-  {SIGALRM, (char*)"SIGALRM"},
-  {SIGTERM, (char*)"SIGTERM"},
-  {SIGSTKFLT, (char*)"SIGSTKFLT"},
-  {SIGCHLD, (char*)"SIGCHLD"},
-  {SIGCONT, (char*)"SIGCONT"},
-  {SIGSTOP, (char*)"SIGSTOP"},
-  {SIGTSTP, (char*)"SIGTSTP"},
-  {SIGTTIN, (char*)"SIGTTIN"},
-  {SIGTTOU, (char*)"SIGTTOU"},
-  {SIGURG, (char*)"SIGURG"},
-  {SIGXCPU, (char*)"SIGXCPU"},
-  {SIGXFSZ, (char*)"SIGXFSZ"},
-  {SIGVTALRM, (char*)"SIGVTALRM"},
-  {SIGPROF, (char*)"SIGPROF"},
-  {SIGWINCH, (char*)"SIGWINCH"},
-  {SIGIO, (char*)"SIGIO"}
-};
-#endif
-
-std::vector<std::string> BRUISR_COMMANDS = 
-{
-  "help",
-  "quit",
-  "exit",
-  "list",
-  "list vars",
-  "list funcs",
-  "list structs",
-  "list classes",
-  "list unions",
-  "list records",
-  "history",
-  "shell",
-  "version",
-  "clear",
-  "hijack",
-  "hijack main",
-  "m0"
-};
-
 /**********************************************************************************************************************/
 #endif
 /*last line intentionally left balnk*/

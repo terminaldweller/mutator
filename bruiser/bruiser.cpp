@@ -220,8 +220,7 @@ std::vector<T> getLuaTableNumber(lua_State* __ls, int numargs, int argnum) {
   return ret;
 }
 /**********************************************************************************************************************/
-class LuaEngine
-{
+class LuaEngine {
   public:
     LuaEngine() {
       LS = luaL_newstate();

@@ -14,13 +14,13 @@ SHELL=bash
 SHELL?=bash
 CC=clang
 CC?=clang
-CC_FLAGS=-fpic -std=c11 $(shell $(PY_CONF) --includes)
+CC_FLAGS=-fpic $(shell $(PY_CONF) --includes)
 CXX=clang++
 CXX?=clang++
 CXX_FLAGS=-fpic -I/usr/include $(shell $(PY_CONF) --includes)
 CXX_EXTRA?=
 CTAGS_I_PATH?=./
-LD_FLAGS=
+LD_FLAGS=-v
 EXTRA_LD_FLAGS?=
 ADD_SANITIZERS_CC= -g -fsanitize=address -fno-omit-frame-pointer
 ADD_SANITIZERS_LD= -g -fsanitize=address

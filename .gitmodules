@@ -10,3 +10,6 @@
 [submodule "cgrep"]
 	path = cgrep
 	url = https://github.com/bloodstalker/cgrep
+[submodule "bruiser/linenoise"]
+	path = bruiser/linenoise
+	url = https://github.com/bloodstalker/linenoise
