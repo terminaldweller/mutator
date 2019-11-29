@@ -5,6 +5,7 @@
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
 </a>
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e082e812fe6142a483da9724f180bb60)](https://www.codacy.com/manual/bloodstalker/mutator?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bloodstalker/mutator&amp;utm_campaign=Badge_Grade)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/553/badge)](https://bestpractices.coreinfrastructure.org/projects/553)
 [![Coverage Status](https://coveralls.io/repos/github/bloodstalker/mutator/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/mutator?branch=master)
 [![Gitter](https://badges.gitter.im/mutatortools/community.svg)](https://gitter.im/mutatortools/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
