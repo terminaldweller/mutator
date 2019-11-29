@@ -7,6 +7,7 @@ Object file libraries: Object file manipulation libraries are implemented in C a
 Xobj: Pull in funtions from ELF objects, call them and get the result back(basically ffi).<br/>
 ASMrewriter: Currently returns a table containing all the jumps in the x86-64 machine code.<br/>
 Ramdump: Get the memory of a running process.<br/>
+LibWASM: Get a wasm object(32) in lua.<br/>
 
 For working demos you can skip to the end of the README.<br/>
 
@@ -17,7 +18,7 @@ For working demos you can skip to the end of the README.<br/>
 * libcapstone<br/>
 * libkeystone<br/>
 * python 3.5(or higher) development packages<br/>
-* LLVM/Clang(5.0,6.0 or 8.0. 7.0 not supported)<br/>
+* LLVM/Clang(5.0,6.0 or 8.0,9.0 and 10.0. 7.0 not supported)<br/>
 Other dependencies(lua, [faultreiber](https://github.com/bloodstalker/faultreiber), [luatablegen](https://github.com/bloodstalker/luatablegen), [linenoise](https://github.com/antirez/linenoise)) are self-contained.<br/>
 
 ## Make
@@ -68,6 +69,14 @@ If you happen to write a Lua script for bruiser that you think other people will
 Run `run.sh` inside bruiser's directory. This will run all the demos buirser currently has, which at the time of writng include the xobj demo, the jump table demo, the disassembly demo and the wasm object demo.<br/>
 
 ### Examples
+
+You can run the below piece of code to get a quick dump of a wasm object:<br/>
+```lua
+libwasm=require(libwasm32)
+libwasm.dump_all(my_wasm_obj.wasm)
+```
+
+for a quick dump of a wasm object.<br/>
 First you should clone the mutator repo and run `git submodule init` and `git submodule update` to get the third-party repos that enable mutator to run.<br/>
 To build bruiser you can either run the makefile in bruiser's directory, then run `make` or just run the makefile at mutator's root directory and run `make bruiser`.<br/>
 After building bruiser, you can run it like any other mutator tool. So for example if you want to run bruiser on its test file run:<br/>
@@ -78,7 +87,7 @@ After building bruiser, you can run it like any other mutator tool. So for examp
 
 ```
 
-or if you're lazy like me just run the shellscript `run.sh` in bruiser's directory.<br/>
+or if you're short on time just run the shellscript `run.sh` in bruiser's directory.<br/>
 
 After that you can just run your commands.<br/>
 To run you commands from a lua file, you can just use `dofile()` to call your script. Bruiser has an embedded lua interpreter with the bruiser functions registered in it, so you do have full access to all lua libraries and functionalities plus the added bruiser functionality.<br/>
@@ -98,7 +107,7 @@ You can also run bruiser in non-cli mode:<br/>
 ```
 The demo scripts, `demo1.lua` and `demo2.lua` require the file `bfd/test/test` and `bfd/test/test.so` to be built. Run make in `bfd/test/` to get `test` and `test.so`.<br/>
 
-Bruiser requires a compilation database to run. If you don't have a compilation database, take a look at [Bear](https://github.com/rizsotto/Bear). If you're using `cmake`, just tell it to generate a compilation database.<br/>
+Bruiser requires a compilation database to run. If you don't have a compilation database, take a look at [Bear](https://github.com/rizsotto/Bear) or [scan-build](https://github.com/rizsotto/scan-build). If you're using `cmake`, just tell it to generate a compilation database.<br/>
 
 TLDR; now let's look at some useful example.<br/>
 
@@ -121,3 +130,4 @@ The ASMRewriter functionality allows you to look through the machine code and ma
 For working examples which demonstrate how much the implementation has improved you can run `lua-scripts/demo2.lua` and `lua-scripts/df-demo.lua`. `demo2.lua` requires `ansicolor`. `df-demo.lua` uses the dwarf fortress executable as an example so you will have to first get that and then change the path in the lua file.<br/>
 
 For more detailed information on the modules and the methods they provide, you can look at the wiki.<br/>
+

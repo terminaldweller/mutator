@@ -7638,12 +7638,20 @@ public:
   void EndSourceFileAction() override {}
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
+#if __clang_major__ <= 9
     CI.getPreprocessor().addPPCallbacks(llvm::make_unique<PPInclusion>(&CI.getSourceManager()));
+#elif __clang_major__ >= 10
+    CI.getPreprocessor().addPPCallbacks(std::make_unique<PPInclusion>(&CI.getSourceManager()));
+#endif
     DiagnosticsEngine &DiagEngine = CI.getPreprocessor().getDiagnostics();
     Mutator0DiagnosticConsumer* M0DiagConsumer = new Mutator0DiagnosticConsumer;
     DiagEngine.setClient(M0DiagConsumer, true);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+    return std::make_unique<MyASTConsumer>(TheRewriter);
+#endif
   }
 
 private:

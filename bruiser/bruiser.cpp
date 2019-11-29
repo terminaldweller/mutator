@@ -897,7 +897,11 @@ public:
     DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
     DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
     return llvm::make_unique<BruiserASTConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+    return std::make_unique<BruiserASTConsumer>(TheRewriter);
+#endif
   }
 
 private:
@@ -919,7 +923,11 @@ class LiveActionListVars : public ASTFrontendAction {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
       DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
       return llvm::make_unique<LiveListVarsConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+      return std::make_unique<LiveListVarsConsumer>(TheRewriter);
+#endif
     }
 
   private:
@@ -940,7 +948,11 @@ class LiveActionListFuncs : public ASTFrontendAction {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
       DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
       return llvm::make_unique<LiveListFuncsConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+      return std::make_unique<LiveListFuncsConsumer>(TheRewriter);
+#endif
     }
 
   private:
@@ -961,7 +973,11 @@ class LiveActionListStructs : public ASTFrontendAction {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
       DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
       return llvm::make_unique<LiveListStructConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+      return std::make_unique<LiveListStructConsumer>(TheRewriter);
+#endif
     }
 
   private:
@@ -982,7 +998,11 @@ class LiveActionListClasses : public ASTFrontendAction {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
       DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
       return llvm::make_unique<LiveListClassConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+      return std::make_unique<LiveListClassConsumer>(TheRewriter);
+#endif
     }
 
   private:
@@ -1003,7 +1023,11 @@ class LiveActionListUnions : public ASTFrontendAction {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
       DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
       return llvm::make_unique<LiveListUnionConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+      return std::make_unique<LiveListUnionConsumer>(TheRewriter);
+#endif
     }
 
   private:
@@ -1024,7 +1048,11 @@ class LiveActionListArrays : public ASTFrontendAction {
       DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
       DE.setClient(BDCProto, false);
       TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
       return llvm::make_unique<LiveListArrayConsumer>(TheRewriter);
+#elif __clang_major__ >= 10
+      return std::make_unique<LiveListArrayConsumer>(TheRewriter);
+#endif
     }
 
   private:
@@ -2290,6 +2318,7 @@ class RunLoop {
         }
       }
 
+      char* prv_command;
       /*cli execution loop*/
       while((command = linenoise(">>>")) != NULL) {
         //FIXME-if the current command is the same as last command skip adding to history
@@ -2297,6 +2326,7 @@ class RunLoop {
         linenoiseHistorySave(SHELL_HISTORY_FILE.c_str());
         le.RunChunk(command);
         linenoiseFree(command);
+        //prv_commnad = command;
       }
       return 0;
     }
