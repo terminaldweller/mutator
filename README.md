@@ -1,6 +1,7 @@
 # mutator
 
 [![Build Status](https://travis-ci.org/bloodstalker/mutator.svg?branch=master)](https://travis-ci.org/bloodstalker/mutator)
+[![Build status](https://ci.appveyor.com/api/projects/status/qhxem5etkhjl40j1?svg=true)](https://ci.appveyor.com/project/bloodstalker/mutator)
 <a href="https://scan.coverity.com/projects/bloodstalker-mutator">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/11154/badge.svg"/>
