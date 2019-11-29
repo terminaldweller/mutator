@@ -1,0 +1,18 @@
+
+environment:
+  global:
+    CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin
+    CYG_ROOT: C:\cygwin64
+    CYG_SETUP: setup-x86_64.exe
+    CYG_CACHE: '%CYG_ROOT%\var\cache\setup'
+    CYG_BASH: '%CYG_ROOT%\bin\bash'
+
+install:
+  - '%CYG_ROOT%\%CYG_SETUP% -qI -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -P make,libclang-devel,libllvm-devel,clang,libiconv-devel'
+  - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
+  - 'cd %APPVEYOR_BUILD_FOLDER%'
+  - 'git submodule init'
+  - 'git submodule update'
+
+build_script:
+  - '%CYG_ROOT%\bin\bash -lc "make -C $APPVEYOR_BUILD_FOLDER obfuscator"'
