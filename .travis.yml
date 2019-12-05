@@ -28,7 +28,6 @@ before_script:
   - sudo add-apt-repository ppa:fkrull/deadsnakes -y
   - sudo apt-get update -y
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-    #- wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
   - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
@@ -43,9 +42,6 @@ before_script:
   - sudo apt-get install libboost-dev
   - git submodule init
   - git submodule update
-    #- sudo apt-get install python3-all-dev -y
-    #- sudo apt-get install libpython3-all-dev -y
-    #- sudo apt-get source python -y
   - sudo apt-get install python3.5-dev -y --allow-unauthenticated
   - python3-config --includes
   - python3-config --ldflags
@@ -53,9 +49,6 @@ before_script:
 
 script: 
   - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG CC=clang-5.0 -j2
-
-after_failure:
-  - find . -maxdepth 1 -name "core*"
 
 after_success:
   - cd ./extra-tools && ./precommitTests.sh
@@ -65,24 +58,7 @@ after_success:
   - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -I/usr/include/linux -Wall > /dev/null
   - make clean
   - make mutator-lvl0 CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_GNU -j2
-    #- echo "deb http://old-releases.ubuntu.com/ubuntu/ hardy universe" | sudo tee -a /etc/apt/sources.list
-    #- sudo apt-get update -y
-  #- sudo apt-get install gcc-4.2 g++-4.2
-  #- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.2 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.2
   - make install
   - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -I/usr/include/linux -Wall > /dev/null
   - gcov -v
   - gcc -v
-    #- coveralls --exclude ./json --exclude ./tinyxml2 --exclude-pattern 'clang' --exclude-pattern 'llvm'
-    #- gcc -E - <<< '#include<stddef.h>'
-    #- gcc -E - <<< '#include<assert.h>'
-  - ls
-  - ulimit -a
-  - find . -maxdepth 1 -name "core*"
-  - ls -s
-    cd test
-    gcc testFuncs3.c -c
-    cd /usr/lib/syslinux
-    ls
-    cd /usr/include/linux
-    ls

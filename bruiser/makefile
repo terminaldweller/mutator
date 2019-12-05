@@ -14,10 +14,18 @@ SHELL=bash
 SHELL?=bash
 CC=clang
 CC?=clang
+ifdef OS
+CC_FLAGS= $(shell $(PY_CONF) --includes)
+else
 CC_FLAGS=-fpic $(shell $(PY_CONF) --includes)
+endif
 CXX=clang++
 CXX?=clang++
+ifdef OS
+CXX_FLAGS= -I/usr/include $(shell $(PY_CONF) --includes)
+else
 CXX_FLAGS=-fpic -I/usr/include $(shell $(PY_CONF) --includes)
+endif
 CXX_EXTRA?=
 CTAGS_I_PATH?=./
 LD_FLAGS=-v

@@ -4155,7 +4155,11 @@ public:
 
       RawCommentList RCL = ASTC->Comments;
 
-      ArrayRef<RawComment*> RawCommentArrRef = RCL.getComments();
+#if __clang_major__ >= 10
+      auto RawComments = RCL.getCommentsInFile(SM.getMainFileID());
+#elif __clang_major__ < 10
+      ArrayRef<RawComment*> RawComments = RCL.getComments();
+#endif
 
       std::string RawText;
 
@@ -4165,11 +4169,23 @@ public:
 
       unsigned MatchCounter = 0U;
 
-      for (auto &iter : RawCommentArrRef)
+#if __clang_major__ >= 10
+      for (auto &iter : *RawComments)
+#elif __clang_major__ < 10
+      for (auto &iter : RawComments)
+#endif
       {
+#if __clang_major__ >= 10
+        RawText = iter.second->getRawText(SM);
+#elif __clang_major__ < 10
         RawText = iter->getRawText(SM);
+#endif
 
+#if __clang_major__ >= 10
+        SourceLocation RCSL = iter.second->DEVI_GETLOCSTART();
+#elif __clang_major__ < 10
         SourceLocation RCSL = iter->DEVI_GETLOCSTART();
+#endif
         CheckSLValidity(RCSL);
         RCSL = Devi::SourceLocationHasMacro(RCSL, Rewrite, "start");
 
@@ -4499,9 +4515,9 @@ public:
           const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcexpr1211uno");
           clang::UnaryOperator::Opcode UnoOpKind = UO->getOpcode();
           const Expr* UnoSubEXP = UO->getSubExpr();
-#if __clang_major__ >= 9
+#if __clang_major__ >= 8
           clang::Expr::EvalResult UnoResult;
-#elif __clang_major__ < 9
+#elif __clang_major__ < 8
           llvm::APSInt UnoResult;
           UnoFinal = UnoResult.getExtValue();
 #endif
@@ -4528,20 +4544,20 @@ public:
           const Expr* DousLHS = BO->getLHS();
           const Expr* DousRHS = BO->getRHS();
 
-#if __clang_major__ >= 9
+#if __clang_major__ >= 8
           clang::Expr::EvalResult DousLHSAPS;
           clang::Expr::EvalResult DousRHSAPS;
-#elif __clang_major__ < 9
+#elif __clang_major__ < 8
           llvm::APSInt DousLHSAPS;
           llvm::APSInt DousRHSAPS;
 #endif
 
           if (DousLHS->EvaluateAsInt(DousLHSAPS, *ASTC) && DousRHS->EvaluateAsInt(DousRHSAPS, *ASTC))
           {
-#if __clang_major__ >= 9
+#if __clang_major__ >= 8
             int64_t DousLHSInt64 = DousLHSAPS.Val.getInt().getExtValue();
             int64_t DousRHSInt64 = DousRHSAPS.Val.getInt().getExtValue();
-#elif __clang_major__ < 9
+#elif __clang_major__ < 8
             int64_t DousLHSInt64 = DousLHSAPS.getExtValue();
             int64_t DousRHSInt64 = DousRHSAPS.getExtValue();
 #endif
@@ -4566,11 +4582,11 @@ public:
           }
         }
 
-#if __clang_major__ >= 9
+#if __clang_major__ >= 8
         clang::Expr::EvalResult OverflowCondidate;
         EXP->EvaluateAsInt(OverflowCondidate, *ASTC);
         int64_t IntExprValue = OverflowCondidate.Val.getInt().getExtValue();
-#elif __clang_major__ < 9
+#elif __clang_major__ < 8
         llvm::APSInt OverflowCondidate;
         EXP->EvaluateAsInt(OverflowCondidate, *ASTC);
         int64_t IntExprValue = OverflowCondidate.getExtValue();
@@ -5617,7 +5633,7 @@ public:
     throw MutExHeaderNotFound(FileName.str());
   }
 
-#if __clang_major__ <= 6
+#if __clang_major__ <= 7
   virtual void InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, StringRef FileName, \
       bool IsAngled, CharSourceRange FileNameRange, const FileEntry* File, \
       StringRef SearchPath, StringRef RelativePath, const clang::Module* Imported) {

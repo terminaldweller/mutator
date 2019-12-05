@@ -15,4 +15,4 @@ install:
   - 'git submodule update'
 
 build_script:
-  - '%CYG_ROOT%\bin\bash -lc "make -C $APPVEYOR_BUILD_FOLDER obfuscator"'
+  - '%CYG_ROOT%\bin\bash -lc "make -C $APPVEYOR_BUILD_FOLDER obfuscator mutator-lvl0"'

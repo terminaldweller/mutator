@@ -16,7 +16,7 @@ CGREP=cgrep
 
 .PHONY:all clean install help $(BRUISER) $(OBSC) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(CGREP)
 
-all: $(TARGET0) $(TARGETC) $(TARGETD) $(TARGETS) $(SFCPP01) $(BRUISER) $(OBSC) $(CGREP)
+all: $(TARGET0) $(TARGETC) $(TARGETD) $(TARGETS) $(BRUISER) $(OBSC) $(CGREP)
 
 $(TARGET1):
 	$(CXX) $^ $(LD_FLAGS) -o $@

@@ -3,7 +3,11 @@ SHELL=bash
 SHELL?=bash
 CC=clang
 CC?=clang
+ifdef OS
+CC_FLAGS=
+else
 CC_FLAGS= -fPIC
+endif
 CC_EXTRA?=
 CTAGS_I_PATH?=./
 LD_FLAGS=

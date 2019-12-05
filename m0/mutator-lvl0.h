@@ -38,7 +38,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.*
 #include "clang/AST/ASTTypeTraits.h"
 /**********************************************************************************************************************/
 /*macros*/
-#if __clang_major__ <= 6
+#if __clang_major__ <= 7
 #define DEVI_GETLOCSTART getLocStart
 #define DEVI_GETLOCEND getLocEnd
 #elif __clang_major__ >= 8
