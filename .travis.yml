@@ -26,6 +26,8 @@ matrix:
       - git submodule init
       - git submodule update
       - ls /usr/include/python*
+      - whereis python3-config
+      - which python3-config
       script: 
       - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 obfuscator mutator-lvl0 bruiser
     - dist: trusty
