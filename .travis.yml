@@ -67,7 +67,7 @@ matrix:
       - ./extra-tools/keystoneubuntu.sh
       - sudo apt-get update 
       - sudo apt-get install clang-7 llvm-7-dev libclang-common-7-dev libclang-7-dev -y
-      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - sudo apt-get install python3.6-dev -y --allow-unauthenticated
       - git submodule init
       - git submodule update
       script: 
@@ -90,7 +90,7 @@ matrix:
       - luarocks install ansicolors --local
       - ./extra-tools/capstoneubuntu14.sh
       - ./extra-tools/keystoneubuntu.sh
-      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - sudo apt-get install python3.6-dev -y --allow-unauthenticated
       - git submodule init
       - git submodule update
       script: 
@@ -113,7 +113,7 @@ matrix:
       - luarocks install ansicolors --local
       - ./extra-tools/capstoneubuntu14.sh
       - ./extra-tools/keystoneubuntu.sh
-      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - sudo apt-get install python3.6-dev -y --allow-unauthenticated
       - git submodule init
       - git submodule update
       script: 
@@ -136,7 +136,7 @@ matrix:
       - luarocks install ansicolors --local
       - ./extra-tools/capstoneubuntu14.sh
       - ./extra-tools/keystoneubuntu.sh
-      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - sudo apt-get install python3.6-dev -y --allow-unauthenticated
       - git submodule init
       - git submodule update
       script: 
