@@ -73,7 +73,7 @@ cl::opt<uint32_t> SHAKE_LEN("shake_len", cl::desc("length of the shake hash, the
 #define TEMP_FILE "/tmp/obfuscator-tee"
 #endif
 
-#if __clang_major__ <= 6
+#if __clang_major__ <= 7
 #define DEVI_GETLOCSTART getLocStart
 #define DEVI_GETLOCEND getLocEnd
 #elif __clang_major__ >= 8
@@ -432,7 +432,7 @@ public:
     Rewrite.ReplaceText(SourceRange(SL, SL.getLocWithOffset(MacroNameTok.getLength() - 1)), newname);
   }
 
-#if __clang_major__ <= 6
+#if __clang_major__ <= 7
   virtual void  InclusionDirective (SourceLocation HashLoc, const Token &IncludeTok, 
       StringRef FileName, bool IsAngled, CharSourceRange FilenameRange, const FileEntry *File, 
       StringRef SearchPath, StringRef RelativePath, const clang::Module *Imported) {
