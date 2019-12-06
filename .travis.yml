@@ -1,10 +1,10 @@
-dist: trusty
 sudo: required
 language: cpp
 env:
   global:
    - secure: "VAdPa4SeDaJWWzQwz6m1/8xbr4bDcfd+1qlvOi6+dVhSeilWAyoEBaEaQ4pdp6oD+RvPyuNj6I+9h02WnM5Yuo/rlhgav0FgnoJus14dYNZijyM9T2yjQiVKFm6x1VMJv6woDtl3BdKOjCFVLUhucAt2ifxS4so3HkbXpX5QPFT8OtPv4W9nvv5cyCIHQyOfEn3oH/JM/o0NeVybPeHksm97nXTenL8EL5N8UaX9sxqzouOnRLXQhrU9p34/AMYbBBbXY5yfc2BNTJIL+Ek/A7g14RZJkmytC3ac123gPDWTC3qXdsyUtBudCigDdDCioDb2BtJdTnvBqLURowM2G/oceMchlSp8sK+qQGZJX6P8DbvfBnkUCBMqAGVu0RqeMuG2pVYVE4dLreAMDxUAHZ1ZO8xEisCWUVEEfK6mJoiNQmrPbiaM5oQKhn5+JOQt5/nGDXEATxuLjy8FKmDdJ+Dgk/dqs4thp7NmMKBFUWOmE+hHHtzCxXdPawXqhd9Gm4QttXoRpsIeadgX2u43iSvlJgwHbUfeQCPitPNwoe4IidbrXtXdTK16G3YxXSivcNJKR3NSp2C0jjsalbIyDmf+iJA3zZ+87+ypIC+/gJLSjR5XASH3conr+C4jl9aPmQIvck7I/6ul+fQXBwfUktc0G3+2+L3fDYPrUKDyns4="
 matrix:
+  fast_finish: true
   include:
     os: linux
     compiler: clang
@@ -17,48 +17,145 @@ matrix:
         build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-5.0"
         build_command:   "make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG"
         branch_pattern: master
+    - dist: trusty
+      name: llvm5
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo add-apt-repository ppa:fkrull/deadsnakes -y
+      - sudo apt-get update -y
+      - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
+      - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
+      - sudo apt-get update -qq
+      - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime -y
+      - sudo apt-get install libffi-dev -y
+      - sudo apt-get install bear -y
+      - sudo apt-get install luarocks -y
+      - luarocks install ansicolors --local
+      - ./extra-tools/capstoneubuntu14.sh
+      - ./extra-tools/keystoneubuntu.sh
+      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - git submodule init
+      - git submodule update
+      script: 
+      - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 obfuscator mutator-lvl0 bruiser
+    - dist: trusty
+      name: llvm6
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
+      - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main" | sudo tee -a /etc/apt/sources.list
+      - sudo apt-get install libffi-dev -y
+      - sudo apt-get install bear -y
+      - sudo apt-get install luarocks -y
+      - luarocks install ansicolors --local
+      - ./extra-tools/capstoneubuntu14.sh
+      - ./extra-tools/keystoneubuntu.sh
+      - sudo apt-get update -qq
+      - travis_retry sudo apt-get install clang-6.0 libclang-6.0-dev libclang-common-6.0-dev libllvm6.0 llvm-6.0-dev llvm-6.0 llvm-6.0-runtime -y
+      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - git submodule init
+      - git submodule update
+      script: 
+      - make CXX=clang-6.0 LLVM_CONF=llvm-config-6.0 obfuscator mutator-lvl0 bruiser
+    - dist: bionic
+      name: llvm7
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - sudo apt-get install libstdc++-7-dev -y
+      - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-7  main"
+      - sudo apt-get install libffi-dev -y
+      - sudo apt-get install bear -y
+      - sudo apt-get install luarocks -y
+      - luarocks install ansicolors --local
+      - ./extra-tools/capstoneubuntu14.sh
+      - ./extra-tools/keystoneubuntu.sh
+      - sudo apt-get update 
+      - sudo apt-get install clang-7 llvm-7-dev libclang-common-7-dev libclang-7-dev -y
+      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - git submodule init
+      - git submodule update
+      script: 
+        - make CXX=clang-7 LLVM_CONF=llvm-config-7 obfuscator mutator-lvl0 bruiser
+    - dist: bionic
+      name: llvm8
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - sudo apt-get install libstdc++-7-dev -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 8
+      - sudo apt-get install llvm-8-dev libclang-common-8-dev libclang-8-dev -y
+      - sudo apt-get install libffi-dev -y
+      - sudo apt-get install bear -y
+      - sudo apt-get install luarocks -y
+      - luarocks install ansicolors --local
+      - ./extra-tools/capstoneubuntu14.sh
+      - ./extra-tools/keystoneubuntu.sh
+      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - git submodule init
+      - git submodule update
+      script: 
+        - make CXX=clang-8 LLVM_CONF=llvm-config-8 obfuscator mutator-lvl0 bruiser
+    - dist: bionic
+      name: llvm9
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - sudo apt-get install libstdc++-7-dev -y
+      - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-9  main"
+      - sudo apt-get update 
+      - sudo apt-get install clang-9 llvm-9-dev libclang-common-9-dev libclang-9-dev -y
+      - sudo apt-get install libffi-dev -y
+      - sudo apt-get install bear -y
+      - sudo apt-get install luarocks -y
+      - luarocks install ansicolors --local
+      - ./extra-tools/capstoneubuntu14.sh
+      - ./extra-tools/keystoneubuntu.sh
+      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - git submodule init
+      - git submodule update
+      script: 
+        - make CXX=clang-9 LLVM_CONF=llvm-config-9 obfuscator mutator-lvl0 bruiser
+    - dist: bionic
+      name: llvm10
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - sudo apt-get install libstdc++-7-dev -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 10
+      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev -y
+      - sudo apt-get install libffi-dev -y
+      - sudo apt-get install bear -y
+      - sudo apt-get install luarocks -y
+      - luarocks install ansicolors --local
+      - ./extra-tools/capstoneubuntu14.sh
+      - ./extra-tools/keystoneubuntu.sh
+      - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - git submodule init
+      - git submodule update
+      script: 
+        - make CXX=clang-10 LLVM_CONF=llvm-config-10 obfuscator mutator-lvl0 bruiser
 
 before_install:
       - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
       - pip install --user cpp-coveralls
 
-before_script: 
-  - ulimit -c unlimited -s
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo add-apt-repository ppa:fkrull/deadsnakes -y
-  - sudo apt-get update -y
-  - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-  - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update -qq
-  - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
-  - sudo apt-get install gcc-4.9 g++-4.9
-  - sudo apt-get install libffi-dev -y
-  - sudo apt-get install bear -y
-  - sudo apt-get install luarocks -y
-  - luarocks install ansicolors --local
-  - ./extra-tools/capstoneubuntu14.sh
-  - ./extra-tools/keystoneubuntu.sh
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-  - sudo apt-get install libboost-dev
-  - git submodule init
-  - git submodule update
-  - sudo apt-get install python3.5-dev -y --allow-unauthenticated
-  - python3-config --includes
-  - python3-config --ldflags
-  - llvm-config-5.0 --has-rtti
-
-script: 
-  - make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG CC=clang-5.0 -j2
-
-after_success:
-  - cd ./extra-tools && ./precommitTests.sh
-  - llvm-config-4.0 --has-rtti
-  - llvm-config-5.0 --has-rtti
-  - gcc -v
-  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -I/usr/include/linux -Wall > /dev/null
-  - make clean
-  - make mutator-lvl0 CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_GNU -j2
-  - make install
-  - ./mutator-lvl0 -SysHeader=false -MainOnly=true ./test/testFuncs1.c ./test/testFuncs2.c ./test/testFuncs3.c -- -std=c90 -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/include -I/usr/include/linux -Wall > /dev/null
-  - gcov -v
-  - gcc -v
