@@ -10,18 +10,16 @@ matrix:
       language: cpp
       before_script: 
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-      - sudo add-apt-repository ppa:fkrull/deadsnakes -y
       - sudo apt-get update -y
       - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
       - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
-      - sudo apt-get update -qq
-      - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime -y
       - sudo apt-get install libffi-dev -y
       - sudo apt-get install bear -y
       - sudo apt-get install luarocks -y
       - luarocks install ansicolors --local
       - ./extra-tools/capstoneubuntu14.sh
       - ./extra-tools/keystoneubuntu.sh
+      - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime -y
       - sudo apt-get install python3.5-dev -y --allow-unauthenticated
       - git submodule init
       - git submodule update
@@ -42,7 +40,6 @@ matrix:
       - luarocks install ansicolors --local
       - ./extra-tools/capstoneubuntu14.sh
       - ./extra-tools/keystoneubuntu.sh
-      - sudo apt-get update -qq
       - travis_retry sudo apt-get install clang-6.0 libclang-6.0-dev libclang-common-6.0-dev libllvm6.0 llvm-6.0-dev llvm-6.0 llvm-6.0-runtime -y
       - sudo apt-get install python3.5-dev -y --allow-unauthenticated
       - git submodule init
