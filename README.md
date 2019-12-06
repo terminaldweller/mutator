@@ -236,8 +236,9 @@ make install
 
 #### Windows
 
-There is no official windows support and there are no plans to do so. Right now I don't have the resources to do so.<br/>
-Let me know if you decide to try this and/or have any problems with it.<br/>
+Currently only cygwin builds are supported.<br/>
+To build on cygwin just get the dependencies and run `make`. There are no extra steps required.<br/>
+If you have trouble building, you can take a look at `appveyor.yml` in the root directory.<br/>
 
 ### Running
 
