@@ -31,7 +31,7 @@ matrix:
       - whereis gcc
       - which gcc
       script: 
-      - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 PY_CONF=pyton3.5-config obfuscator mutator-lvl0 bruiser
+      - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 PY_CONF=python3.5-config obfuscator mutator-lvl0 bruiser
     - dist: trusty
       name: llvm6
       sudo: required
