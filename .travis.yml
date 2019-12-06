@@ -25,6 +25,7 @@ matrix:
       - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - git submodule init
       - git submodule update
+      - ls /usr/include/python*
       script: 
       - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 obfuscator mutator-lvl0 bruiser
     - dist: trusty
@@ -46,6 +47,7 @@ matrix:
       - sudo apt-get install python3.5-dev -y --allow-unauthenticated
       - git submodule init
       - git submodule update
+      - ls /usr/include/python*
       script: 
       - make CXX=clang-6.0 LLVM_CONF=llvm-config-6.0 obfuscator mutator-lvl0 bruiser
     - dist: bionic
