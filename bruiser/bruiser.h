@@ -47,7 +47,7 @@ namespace bruiser
 /**********************************************************************************************************************/
   const char* M0REP = "../test/misrareport.xml";
 /**********************************************************************************************************************/
-#if __clang_major__ <= 6
+#if __clang_major__ <= 7
 #define DEVI_GETLOCSTART getLocStart
 #define DEVI_GETLOCEND getLocEnd
 #elif __clang_major__ >= 8
