@@ -1,22 +1,9 @@
-sudo: required
-language: cpp
 env:
   global:
    - secure: "VAdPa4SeDaJWWzQwz6m1/8xbr4bDcfd+1qlvOi6+dVhSeilWAyoEBaEaQ4pdp6oD+RvPyuNj6I+9h02WnM5Yuo/rlhgav0FgnoJus14dYNZijyM9T2yjQiVKFm6x1VMJv6woDtl3BdKOjCFVLUhucAt2ifxS4so3HkbXpX5QPFT8OtPv4W9nvv5cyCIHQyOfEn3oH/JM/o0NeVybPeHksm97nXTenL8EL5N8UaX9sxqzouOnRLXQhrU9p34/AMYbBBbXY5yfc2BNTJIL+Ek/A7g14RZJkmytC3ac123gPDWTC3qXdsyUtBudCigDdDCioDb2BtJdTnvBqLURowM2G/oceMchlSp8sK+qQGZJX6P8DbvfBnkUCBMqAGVu0RqeMuG2pVYVE4dLreAMDxUAHZ1ZO8xEisCWUVEEfK6mJoiNQmrPbiaM5oQKhn5+JOQt5/nGDXEATxuLjy8FKmDdJ+Dgk/dqs4thp7NmMKBFUWOmE+hHHtzCxXdPawXqhd9Gm4QttXoRpsIeadgX2u43iSvlJgwHbUfeQCPitPNwoe4IidbrXtXdTK16G3YxXSivcNJKR3NSp2C0jjsalbIyDmf+iJA3zZ+87+ypIC+/gJLSjR5XASH3conr+C4jl9aPmQIvck7I/6ul+fQXBwfUktc0G3+2+L3fDYPrUKDyns4="
 matrix:
   fast_finish: true
   include:
-    os: linux
-    compiler: clang
-    addons:
-      coverity_scan:
-        project:
-          name: "bloodstalker/mutator"
-          description: "Build submitted via Travis CI"
-        notification_email: thabogre@gmail.com
-        build_command_prepend: "cov-configure --comptype clangcxx --compiler clang-5.0"
-        build_command:   "make PY_CONF=python3.5-config CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 BUILD_MODE=COV_NO_CLANG"
-        branch_pattern: master
     - dist: trusty
       name: llvm5
       sudo: required
@@ -155,7 +142,7 @@ matrix:
       script: 
         - make CXX=clang-10 LLVM_CONF=llvm-config-10 obfuscator mutator-lvl0 bruiser
 
-before_install:
-      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-      - pip install --user cpp-coveralls
+          #before_install:
+          #- echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+          #- pip install --user cpp-coveralls
 
