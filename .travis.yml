@@ -21,6 +21,8 @@ matrix:
       - ./extra-tools/keystoneubuntu.sh
       - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime -y
       - sudo apt-get install python3.5-dev -y --allow-unauthenticated
+      - sudo apt-get install gcc-4.9 g++-4.9
+      - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - git submodule init
       - git submodule update
       script: 
