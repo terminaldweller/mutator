@@ -10,9 +10,9 @@ matrix:
       language: cpp
       before_script: 
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-      - sudo apt-get update -y
       - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
       - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
+      - sudo apt-get update -y
       - sudo apt-get install libffi-dev -y
       - sudo apt-get install bear -y
       - sudo apt-get install luarocks -y
@@ -31,9 +31,9 @@ matrix:
       language: cpp
       before_script: 
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-      - sudo apt-get update -y
       - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
       - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main" | sudo tee -a /etc/apt/sources.list
+      - sudo apt-get update -y
       - sudo apt-get install libffi-dev -y
       - sudo apt-get install bear -y
       - sudo apt-get install luarocks -y
