@@ -61,13 +61,16 @@ At its core, bruiser is a Lua REPL:
 * Through bruiser's Xobj feature, you can pull in functions from object code, run them and get the result back.<br/>
 * Through the ASMRewriter functionality you can manipulate the machine code and push it back in the object. For more detail you can look at the wiki or check out bruiser's README.md.<br/>
 * Luarocks: You can use your Luarocks modules/libraries in bruiser too. Just make sure `luarocks` is in your path and bruiser will take care of the rest.<br/>
+You can read more about buiser [here](./bruiser/README.md)
 
 ### cgrep
 cgrep is grep for c/c++ source files. simple as that.<br/>
 cgrep is added here as a submodule for more exposure. You can find the main repo [here](https://github.com/bloodstalker/cgrep).<br/>
+You can read more about cgrep [here](./cgrep/README.md)
 
 ### obfuscator
 obfuscator is a C/C++ source code obfuscator.<br/>
+You can read more about obfuscator [here](./obfuscator/README.md)
 
 ### delf
 `delf` is a custom ELF dump script developed for bruiser. bruiser uses it to interact with ELF files.<br/>

@@ -1829,7 +1829,8 @@ public:
   MCExpr128 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs") != nullptr && MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs") != nullptr) {
+    if ((nullptr != MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs")) 
+        && (nullptr != MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs"))) {
       const Expr* RHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128rhs");
       const Expr* LHS = MR.Nodes.getNodeAs<clang::Expr>("mcexpr128lhs");
 
@@ -1853,6 +1854,7 @@ public:
       uint64_t LHSSize = ASTC->getTypeSize(CanonType);
 
       llvm::APSInt Result;
+      SourceLocation *Loc;
 
       if (RHS->isIntegerConstantExpr(Result, *ASTC, nullptr, true)) {
         if ((Result >= (LHSSize - 1U)) || (Result <= 0)) {
@@ -4140,15 +4142,12 @@ private:
 };
 /**********************************************************************************************************************/
 /*@DEVI-ASTContext doesn not have all the comments in a source file. i dunno why.*/
-class MCLangX23 : public MatchFinder::MatchCallback
-{
+class MCLangX23 : public MatchFinder::MatchCallback {
 public:
   MCLangX23 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mclangx23") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mclangx23") != nullptr) {
       ASTContext *const ASTC = MR.Context;
 
       const SourceManager &SM = ASTC->getSourceManager();
@@ -4156,7 +4155,8 @@ public:
       RawCommentList RCL = ASTC->Comments;
 
 #if __clang_major__ >= 10
-      auto RawComments = RCL.getCommentsInFile(SM.getMainFileID());
+      //auto RawComments = RCL.getCommentsInFile(SM.getMainFileID());
+      const std::map<unsigned, RawComment*> *RawComments= RCL.getCommentsInFile(SM.getMainFileID());
 #elif __clang_major__ < 10
       ArrayRef<RawComment*> RawComments = RCL.getComments();
 #endif
@@ -4169,67 +4169,60 @@ public:
 
       unsigned MatchCounter = 0U;
 
+      if (nullptr != RawComments) {
 #if __clang_major__ >= 10
-      for (auto &iter : *RawComments)
+      for (auto iter : *RawComments)
 #elif __clang_major__ < 10
       for (auto &iter : RawComments)
 #endif
-      {
+        {
 #if __clang_major__ >= 10
-        RawText = iter.second->getRawText(SM);
+          RawText = iter.second->getRawText(SM);
 #elif __clang_major__ < 10
-        RawText = iter->getRawText(SM);
+          RawText = iter->getRawText(SM);
 #endif
 
 #if __clang_major__ >= 10
-        SourceLocation RCSL = iter.second->DEVI_GETLOCSTART();
+          SourceLocation RCSL = iter.second->DEVI_GETLOCSTART();
 #elif __clang_major__ < 10
-        SourceLocation RCSL = iter->DEVI_GETLOCSTART();
+          SourceLocation RCSL = iter->DEVI_GETLOCSTART();
 #endif
-        CheckSLValidity(RCSL);
-        RCSL = Devi::SourceLocationHasMacro(RCSL, Rewrite, "start");
+          CheckSLValidity(RCSL);
+          RCSL = Devi::SourceLocationHasMacro(RCSL, Rewrite, "start");
 
-        while (true)
-        {
-          matchLoc = RawText.find("/*", currentLoc);
+          while (true) {
+            matchLoc = RawText.find("/*", currentLoc);
 
-          if (matchLoc != std::string::npos)
-          {
-            currentLoc = matchLoc + 1U;
+            if (matchLoc != std::string::npos) {
+              currentLoc = matchLoc + 1U;
 
-            MatchCounter++;
-          }
-          else
-          {
-            break;
-          }
-        }
-
-        currentLoc = 1U;
-
-        if (!once)
-        {
-          if (MatchCounter >= 1U)
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, RCSL))
-            {
-              /*intentionally left blank*/
+              MatchCounter++;
+            } else {
+              break;
             }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, RCSL))
-              {
-                std::cout << "2.3:" << "character sequence \"/*\" used inside the comment:";
-                std::cout << RCSL.printToString(*MR.SourceManager) << ":" << "\n";
+          }
 
-                XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
-                JSONDocOUT.JSONAddElement(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+          currentLoc = 1U;
+
+          if (!once) {
+            if (MatchCounter >= 1U) {
+              if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, RCSL))
+              {
+                /*intentionally left blank*/
+              } else {
+                if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, RCSL)) {
+                  std::cout << "2.3:" << "character sequence \"/*\" used inside the comment:";
+                  std::cout << RCSL.printToString(*MR.SourceManager) << ":" << "\n";
+
+                  XMLDocOut.XMLAddNode(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+                  JSONDocOUT.JSONAddElement(MR.Context, RCSL, "2.3", "character sequence \"/*\" used inside the comment : ");
+                }
               }
             }
           }
-        }
 
-        MatchCounter = 0U;
+          MatchCounter = 0U;
+        }
       }
 
       once = true;
@@ -4244,23 +4237,20 @@ private:
 /**********************************************************************************************************************/
 /*@DEVI-changes done to the pointee through unaryOperators ++ and -- will not be tagged by this class.
 see implementation notes for the explanation.*/
-class MCFunction167 : public MatchFinder::MatchCallback
-{
+class MCFunction167 : public MatchFinder::MatchCallback {
 public:
   MCFunction167 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR)
   {
-    if (MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167") != nullptr) {
       const ParmVarDecl* PVD = MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167");
 
       SourceLocation SL = PVD->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
@@ -4268,18 +4258,12 @@ public:
 
       ASTContext *const ASTC [[maybe_unused]] = MR.Context;
 
-      if (!QT.isConstQualified())
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (!QT.isConstQualified()) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "16.7:" << "pointerType ParmVarDecl is not used to change the contents of the object it points to but is not declared as const:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -4516,25 +4500,24 @@ public:
           clang::UnaryOperator::Opcode UnoOpKind = UO->getOpcode();
           const Expr* UnoSubEXP = UO->getSubExpr();
 #if __clang_major__ >= 8
-          clang::Expr::EvalResult UnoResult;
+          clang::Expr::EvalResult *UnoResult;
 #elif __clang_major__ < 8
-          llvm::APSInt UnoResult;
+          llvm::APSInt *UnoResult;
           UnoFinal = UnoResult.getExtValue();
 #endif
 
-          if (UnoSubEXP->EvaluateAsInt(UnoResult, *ASTC)) {
+          if (UnoSubEXP->EvaluateAsInt(*UnoResult, *ASTC)) {
             if (UnoOpKind == UO_PostInc || UnoOpKind == UO_PreInc) {
-              UnoFinal++;
+              (UnoFinal)++;
             } else if (UnoOpKind == UO_PostDec || UnoOpKind == UO_PreDec) {
-              UnoFinal--;
+              (UnoFinal)--;
             } else {
               /*intentionally left blank. we cant get anything else. were only matching for these two unaryoperators.*/
             }
           }
         }
 
-        if (MR.Nodes.getNodeAs<clang::BinaryOperator>("mcexpr1211dous") != nullptr)
-        {
+        if (MR.Nodes.getNodeAs<clang::BinaryOperator>("mcexpr1211dous") != nullptr) {
           MatchedDous = true;
 
           const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcexpr1211dous");
@@ -4552,8 +4535,8 @@ public:
           llvm::APSInt DousRHSAPS;
 #endif
 
-          if (DousLHS->EvaluateAsInt(DousLHSAPS, *ASTC) && DousRHS->EvaluateAsInt(DousRHSAPS, *ASTC))
-          {
+          if ((DousLHS->EvaluateAsInt(DousLHSAPS, *ASTC)) 
+              && (DousRHS->EvaluateAsInt(DousRHSAPS, *ASTC))) {
 #if __clang_major__ >= 8
             int64_t DousLHSInt64 = DousLHSAPS.Val.getInt().getExtValue();
             int64_t DousRHSInt64 = DousRHSAPS.Val.getInt().getExtValue();
@@ -4582,20 +4565,28 @@ public:
           }
         }
 
+        bool EvaledAsInt = false;
+        int64_t IntExprValue;
 #if __clang_major__ >= 8
-        clang::Expr::EvalResult OverflowCondidate;
-        EXP->EvaluateAsInt(OverflowCondidate, *ASTC);
-        int64_t IntExprValue = OverflowCondidate.Val.getInt().getExtValue();
+        clang::Expr::EvalResult OverflowCandidate;
+        if (true == EXP->EvaluateAsInt(OverflowCandidate, *ASTC)) {
+          IntExprValue = OverflowCandidate.Val.getInt().getExtValue();
+          EvaledAsInt = true;
+        }
 #elif __clang_major__ < 8
-        llvm::APSInt OverflowCondidate;
-        EXP->EvaluateAsInt(OverflowCondidate, *ASTC);
-        int64_t IntExprValue = OverflowCondidate.getExtValue();
+        llvm::APSInt OverflowCandidate;
+        if (EXP->EvaluateAsInt(OverflowCandidate, *ASTC)) {
+          IntExprValue = OverflowCandidate.getExtValue();
+          EvaledAsInt = true;
+        }
 #endif
 
-        if ((MatchedDous && (DousFinal != IntExprValue)) || (MatchedUno && (UnoFinal != IntExprValue))) {
-          std::cout << "12.11" << ":" << "Constant Unsinged Expr evaluation resuslts in an overflow:" << SL.printToString(*MR.SourceManager) << ":" << IntExprValue << " " << DousFinal << " " << ":" << targetExpr << "\n";
-          XMLDocOut.XMLAddNode(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
-          JSONDocOUT.JSONAddElement(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
+        if (true == EvaledAsInt) {
+          if ((MatchedDous && (DousFinal != IntExprValue)) || (MatchedUno && (UnoFinal != IntExprValue))) {
+            std::cout << "12.11" << ":" << "Constant Unsinged Expr evaluation resuslts in an overflow:" << SL.printToString(*MR.SourceManager) << ":" << IntExprValue << " " << DousFinal << " " << ":" << targetExpr << "\n";
+            XMLDocOut.XMLAddNode(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
+            JSONDocOUT.JSONAddElement(MR.Context, SL, "12.11", "Constant Unsinged Expr evaluation resuslts in an overflow:");
+          }
         }
       }
     }

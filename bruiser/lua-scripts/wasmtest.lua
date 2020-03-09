@@ -39,6 +39,7 @@ function libwasm.dump_import_section(a)
       if v:kind() == 0 then
         print()
         io.write("kind:"..tostring(v:type()).."\n")
+      --FIXME
       elseif v:kind() == 1 then
         io.write("element_type:"..v:type():element_type().."\n")
         --io.write("rsz:"..v:type():resizable_limit().."\t")
