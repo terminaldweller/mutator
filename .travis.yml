@@ -134,7 +134,7 @@ matrix:
       - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-10  main"
       - sudo apt-get update 
-      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev -y
+      - sudo apt-get install clang-10 llvm-10-dev libclang-common-10-dev libclang-10-dev -y
       - sudo apt-get install libffi-dev -y
       - sudo apt-get install bear -y
       - sudo apt-get install luarocks -y

@@ -4505,7 +4505,7 @@ public:
           clang::Expr::EvalResult *UnoResult;
 #elif __clang_major__ < 8
           llvm::APSInt *UnoResult;
-          UnoFinal = UnoResult.getExtValue();
+          UnoFinal = UnoResult->getExtValue();
 #endif
 
           if (UnoSubEXP->EvaluateAsInt(*UnoResult, *ASTC)) {
