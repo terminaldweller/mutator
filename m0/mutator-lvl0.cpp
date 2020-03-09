@@ -4169,8 +4169,8 @@ public:
 
       unsigned MatchCounter = 0U;
 
-      if (nullptr != RawComments) {
 #if __clang_major__ >= 10
+      if (nullptr != RawComments) {
       for (auto iter : *RawComments)
 #elif __clang_major__ < 10
       for (auto &iter : RawComments)
@@ -4223,7 +4223,9 @@ public:
 
           MatchCounter = 0U;
         }
+#if __clang_major__ >= 10
       }
+#endif
 
       once = true;
 
