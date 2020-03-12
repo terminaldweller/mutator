@@ -2300,15 +2300,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCF146 : public MatchFinder::MatchCallback
-{
+class MCCF146 : public MatchFinder::MatchCallback {
 public:
   MCCF146 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccffofo") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccffofo") != nullptr) {
       const ForStmt* FS =  MR.Nodes.getNodeAs<clang::ForStmt>("mccffofo");
 
       SL = FS->DEVI_GETLOCSTART();
@@ -2316,8 +2313,7 @@ public:
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
 
-    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccfwuwu") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccfwuwu") != nullptr) {
       const WhileStmt* WS =  MR.Nodes.getNodeAs<clang::WhileStmt>("mccfwuwu");
 
       SL = WS->DEVI_GETLOCSTART();
@@ -2325,8 +2321,7 @@ public:
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
     }
 
-    if (MR.Nodes.getNodeAs<clang::DoStmt>("mccfdodo") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::DoStmt>("mccfdodo") != nullptr) {
       const DoStmt* DS =  MR.Nodes.getNodeAs<clang::DoStmt>("mccfdodo");
 
       SL = DS->DEVI_GETLOCSTART();
@@ -2336,27 +2331,20 @@ public:
 
     NewSL = SL;
 
-    if (OldSL != NewSL)
-    {
+    if (OldSL != NewSL) {
       AlreadyTagged = false;
       BreakCounter = 1U;
     }
 
-    if (OldSL == NewSL)
-    {
+    if (OldSL == NewSL) {
       BreakCounter++;
     }
 
-    if (BreakCounter >= 2U && !AlreadyTagged)
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+    if (BreakCounter >= 2U && !AlreadyTagged) {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "14.6:" << "More than one BreakStmt used in the loop counter:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
           AlreadyTagged = true;
@@ -2380,15 +2368,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCF147 : public MatchFinder::MatchCallback
-{
+class MCCF147 : public MatchFinder::MatchCallback {
 public:
   MCCF147 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mccf147") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mccf147") != nullptr) {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mccf147");
 
       SourceLocation SL = FD->DEVI_GETLOCSTART();
@@ -2397,27 +2382,20 @@ public:
 
       NewSL = SL;
 
-      if (OldSL != NewSL)
-      {
+      if (OldSL != NewSL) {
         AlreadyTagged = false;
         ReturnCounter = 1U;
       }
 
-      if (OldSL == NewSL)
-      {
+      if (OldSL == NewSL) {
         ReturnCounter++;
       }
 
-      if (ReturnCounter >= 2U && !AlreadyTagged)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (ReturnCounter >= 2U && !AlreadyTagged) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "14.7:" << "More than one ReturnStmt used in the body of FunctionDecl:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
             AlreadyTagged = true;
@@ -2441,30 +2419,22 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCF148 : public MatchFinder::MatchCallback
-{
+class MCCF148 : public MatchFinder::MatchCallback {
 public:
   MCCF148 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-
-    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccf148for") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccf148for") != nullptr) {
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccf148for");
 
       SL = FS->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "14.8:" << "ForStmt does not have a child CompoundStmt:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -2474,22 +2444,17 @@ public:
       }
     }
 
-    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while") != nullptr) {
       const WhileStmt* WS = MR.Nodes.getNodeAs<clang::WhileStmt>("mccf148while");
 
       SL = WS->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "14.8:" << "WhileStmt does not have a child CompoundStmt:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -2499,22 +2464,17 @@ public:
       }
     }
 
-    if (MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do") != nullptr) {
       const DoStmt* DS = MR.Nodes.getNodeAs<clang::DoStmt>("mccf148do");
 
       SL = DS->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "14.8:" << "DoStmt does not have a child CompoundStmt:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -2524,22 +2484,17 @@ public:
       }
     }
 
-    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch") != nullptr) {
       const SwitchStmt* SS = MR.Nodes.getNodeAs<clang::SwitchStmt>("mccf148switch");
 
       SL = SS->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "14.8:" << "SwitchStmt does not have a child CompoundStmt:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -2556,39 +2511,33 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCSwitch154 : public MatchFinder::MatchCallback\
-{
+class MCSwitch154 : public MatchFinder::MatchCallback {
 public:
   MCSwitch154 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcswitch154");
 
     SourceLocation SL = EXP->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
     SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-    {
+    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
       return void();
     }
 
-    if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-    {
+    if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
       return void();
     }
 
-    if (EXP->isKnownToHaveBooleanValue())
-    {
+    if (EXP->isKnownToHaveBooleanValue()) {
       std::cout << "15.4:" << "Switch expression is effectively boolean:";
       std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "15.4", "Switch expression is effectively boolean: ");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "15.4", "Switch expression is effectively boolean: ");
 
-      if (mutagen)
-      {
+      if (mutagen) {
         ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
       }
     }
@@ -2599,15 +2548,12 @@ private:
 };
 /**********************************************************************************************************************/
 /*@DEVI-the current implementation of 11.3 is very strict.*/
-class MCPTC111 : public MatchFinder::MatchCallback
-{
+class MCPTC111 : public MatchFinder::MatchCallback {
 public:
   MCPTC111 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcptc111") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcptc111") != nullptr) {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("mcptc111");
 
       SourceLocation SL = ICE->DEVI_GETLOCSTART();
@@ -2637,38 +2583,29 @@ public:
 
       bool ShouldBeTagged111 = false;
 
-      if (TP->isFunctionPointerType())
-      {
+      if (TP->isFunctionPointerType()) {
         if (((CK != CK_IntegralToPointer) && (CK != CK_PointerToIntegral) && \
              (CK != CK_LValueToRValue) && (CK != CK_FunctionToPointerDecay) && \
-             (CK != CK_ArrayToPointerDecay)))
-        {
+             (CK != CK_ArrayToPointerDecay))) {
           ShouldBeTagged111 = true;
         }
 
-        if (CK == CK_BitCast)
-        {
+        if (CK == CK_BitCast) {
           ShouldBeTagged111 = true;
         }
 
-        if (ShouldBeTagged111)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+        if (ShouldBeTagged111) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "11.1:" << "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "ImplicitCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
 
-              if (mutagen)
-              {
+              if (mutagen) {
                 ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
               }
             }
@@ -2676,72 +2613,54 @@ public:
         }
       }
 
-      if (CK == CK_IntegralToFloating || CK == CK_FloatingToIntegral)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (CK == CK_IntegralToFloating || CK == CK_FloatingToIntegral) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "10.1/2:" << "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "10.1/2", "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "10.1/2", "ImplicitCastExpr - Conversion of FloatingType to or from IntegralType is recommended against: ");
 
-            if (mutagen)
-            {
+            if (mutagen) {
               ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
             }
           }
         }
       }
 
-      if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral)) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "11.3:" << "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "ImplicitCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
 
-            if (mutagen)
-            {
+            if (mutagen) {
               ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
             }
           }
         }
       }
 
-      if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "11.x:" << "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "ImplicitCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
 
-            if (mutagen)
-            {
+            if (mutagen) {
               ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*ICE), *MR.Context);
             }
           }
@@ -2754,15 +2673,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCSE137 : public MatchFinder::MatchCallback
-{
+class MCCSE137 : public MatchFinder::MatchCallback {
 public:
   MCCSE137 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mccse137") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mccse137") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mccse137");
 
       SourceLocation SL = EXP->DEVI_GETLOCSTART();
@@ -2771,26 +2687,19 @@ public:
 
       ASTContext *const ASTC = MR.Context;
 
-      if (EXP->isKnownToHaveBooleanValue())
-      {
-        if (EXP->isEvaluatable(*ASTC, Expr::SE_NoSideEffects))
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+      if (EXP->isKnownToHaveBooleanValue()) {
+        if (EXP->isEvaluatable(*ASTC, Expr::SE_NoSideEffects)) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "13.7:" << "EffectivelyBooleanExpr's result is known at compile-time:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "13.7", "EffectivelyBooleanExpr's result is known at compile-time: ");
 
-              if (mutagen)
-              {
+              if (mutagen) {
                 ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*EXP), *MR.Context);
               }
             }
@@ -2801,8 +2710,7 @@ public:
       QualType QT = EXP->getType();
       const clang::Type* TP = QT.getTypePtr();
 
-      if (TP->isIntegerType())
-      {
+      if (TP->isIntegerType()) {
         ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*EXP);
         ast_type_traits::DynTypedNode ParentNode;
         /*assumptions:nothing has more than one parent in C.*/
@@ -2813,8 +2721,7 @@ public:
 
         std::string StringKind = ParentNodeKind.asStringRef().str();
 
-        if (StringKind == "ImplicitCastExpr")
-        {
+        if (StringKind == "ImplicitCastExpr") {
 
         }
       }
@@ -2828,21 +2735,17 @@ private:
 /*if the call is coming from another file, getdirectcalle returns the definition,
 but if its coming from the same file, it returns the declaration that is not a definition.*/
 /*if youve already matched the definition, getdefinition returns null.*/
-class MCDCDF810 : public MatchFinder::MatchCallback
-{
+class MCDCDF810 : public MatchFinder::MatchCallback {
 public:
-  MCDCDF810 (Rewriter &Rewrite) : Rewrite(Rewrite)
-  {
+  MCDCDF810 (Rewriter &Rewrite) : Rewrite(Rewrite) {
     /*@DEVI-the pushback here generates garbage entries.*/
     FuncScopeProto.push_back(FuncScope());
 
     VecC = 0U;
   }
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::CallExpr>("mcdcdf810") != nullptr && MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf810daddy") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::CallExpr>("mcdcdf810") != nullptr && MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf810daddy") != nullptr) {
       AlreadyTagged = false;
 
       const CallExpr* CE = MR.Nodes.getNodeAs<clang::CallExpr>("mcdcdf810");
@@ -2850,8 +2753,7 @@ public:
       const FunctionDecl* FD = CE->getDirectCallee();
       const FunctionDecl* FDDef = FD->getDefinition();;
 
-      if (FDDef == nullptr)
-      {
+      if (FDDef == nullptr) {
         FDDef = CE->getDirectCallee();
       }
 
@@ -2876,34 +2778,27 @@ public:
       std::string MatchedName = DNI.getAsString();
 
       /*going through the already matched functions,making sure we are not adding duplicates.*/
-      for (unsigned x = 0; x < VecC; ++x)
-      {
-        if (FuncScopeProto[x].FuncNameString == MatchedName && FuncScopeProto[x].DefinitionSL == FDSL.printToString(*MR.SourceManager))
-        {
+      for (unsigned x = 0; x < VecC; ++x) {
+        if (FuncScopeProto[x].FuncNameString == MatchedName && FuncScopeProto[x].DefinitionSL == FDSL.printToString(*MR.SourceManager)) {
           AlreadyTagged = true;
 
-          if (FDDef->isExternC())
-          {
-            if (FDDadFullSL.getFileID() != FDFullSL.getFileID())
-            {
+          if (FDDef->isExternC()) {
+            if (FDDadFullSL.getFileID() != FDFullSL.getFileID()) {
               FuncScopeProto[x].hasExternalCall = true;
             }
           }
         }
       }
 
-      if (AlreadyTagged == false && FDDef->isExternC())
-      {
+      if (AlreadyTagged == false && FDDef->isExternC()) {
         FuncScopeProto.push_back(FuncScope());
         FuncScopeProto[VecC].FuncNameString = MatchedName;
         FuncScopeProto[VecC].DefinitionSL = FDSL.printToString(*MR.SourceManager);
         FuncScopeProto[VecC].FuncScopeSL = FDSL;
         FuncScopeProto[VecC].FuncScopeFSL = MR.Context->getFullLoc(FDSL);
 
-        if (FDDef->isExternC())
-        {
-          if (FDDadFullSL.getFileID() != FDFullSL.getFileID())
-          {
+        if (FDDef->isExternC()) {
+          if (FDDadFullSL.getFileID() != FDFullSL.getFileID()) {
             FuncScopeProto[VecC].hasExternalCall = true;
           }
         }
@@ -2913,20 +2808,13 @@ public:
     }
   }
 
-  virtual void onEndOfTranslationUnit()
-  {
-    for (unsigned x = 0; x < VecC; ++x)
-    {
-      if (FuncScopeProto[x].hasExternalCall == false)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, FuncScopeProto[x].FuncScopeFSL.isInSystemHeader(), FuncScopeProto[x].FuncScopeSL))
-        {
+  virtual void onEndOfTranslationUnit() {
+    for (unsigned x = 0; x < VecC; ++x) {
+      if (FuncScopeProto[x].hasExternalCall == false) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, FuncScopeProto[x].FuncScopeFSL.isInSystemHeader(), FuncScopeProto[x].FuncScopeSL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, FuncScopeProto[x].FuncScopeFSL.getManager().isInMainFile(FuncScopeProto[x].FuncScopeSL), FuncScopeProto[x].FuncScopeSL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, FuncScopeProto[x].FuncScopeFSL.getManager().isInMainFile(FuncScopeProto[x].FuncScopeSL), FuncScopeProto[x].FuncScopeSL)) {
             std::cout << "8.11:" << "Function does not have any external calls but is not declared as static:";
             std::cout << FuncScopeProto[x].DefinitionSL << ":" << "\n";
 
@@ -2957,28 +2845,23 @@ private:
 };
 /**********************************************************************************************************************/
 /*@DEVI-also flags the main.*/
-class MCFunction165 : public MatchFinder::MatchCallback
-{
+class MCFunction165 : public MatchFinder::MatchCallback {
 public:
   MCFunction165 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction165") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction165") != nullptr) {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction165");
 
       SourceLocation SL = FD->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -2994,15 +2877,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCFunction1652 : public MatchFinder::MatchCallback
-{
+class MCFunction1652 : public MatchFinder::MatchCallback {
 public:
   MCFunction1652 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction1652") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction1652") != nullptr) {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcfunction1652");
 
       SourceLocation SL = FD->DEVI_GETLOCSTART();
@@ -3012,13 +2892,11 @@ public:
       CheckSLValidity(SLE);
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "end");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -3036,8 +2914,7 @@ public:
       unsigned lengthofstring = NameAsString.length();
       size_t voidposition2 = FunctionSigAsString.find("void", voidposition + lengthofstring - 1U);
 
-      if (voidposition2 == std::string::npos)
-      {
+      if (voidposition2 == std::string::npos) {
         std::cout << "16.5:" << "Function does not take any parameters but is not using the void keyword:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3052,28 +2929,23 @@ private:
 };
 /**********************************************************************************************************************/
 /*@DEVI-has false-positives*/
-class MCPointer171 : public MatchFinder::MatchCallback
-{
+class MCPointer171 : public MatchFinder::MatchCallback {
 public:
   MCPointer171 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer171") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer171") != nullptr) {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer171") ;
 
       SourceLocation SL = DRE->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -3081,16 +2953,14 @@ public:
 
       const clang::Type* TP = QT.getTypePtr();
 
-      if (TP->isAnyPointerType())
-      {
+      if (TP->isAnyPointerType()) {
         std::cout << "17.1:" << "Pointer arithmatic for non-array pointers:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "17.1", "Pointer arithmatic for non-array pointers : ");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.1", "Pointer arithmatic for non-array pointers : ");
 
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*DRE), *MR.Context);
         }
       }
@@ -3102,15 +2972,12 @@ private:
 };
 /**********************************************************************************************************************/
 /*@DEVI-has a lot of false positives. now works based on array types not the array itself.*/
-class MCPointer1723 : public MatchFinder::MatchCallback
-{
+class MCPointer1723 : public MatchFinder::MatchCallback {
 public:
   MCPointer1723 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723rhs") != nullptr && MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723lhs"))
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723rhs") != nullptr && MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723lhs")) {
       const DeclRefExpr* DRER = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723rhs");
       const DeclRefExpr* DREL = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1723lhs");
       const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcpointer1723daddy");
@@ -3119,13 +2986,11 @@ public:
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -3135,8 +3000,7 @@ public:
       const clang::Type* TPR = QTR.getTypePtr();
       const clang::Type* TPL = QTL.getTypePtr();
 
-      if (TPR->getPointeeType() != TPL->getPointeeType())
-      {
+      if (TPR->getPointeeType() != TPL->getPointeeType()) {
         std::cout << "17.2 | 17.3:" << "Pointer-type operands to BinaryOperator dont point to the same array:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3144,8 +3008,7 @@ public:
         JSONDocOUT.JSONAddElement(MR.Context, SL, "17.2 | 17.3", "Pointer-type operands to BinaryOperator dont point to the same array : ");
 
         /*@DEVI-FIXME-cant extract mutagen correctly*/
-        if (mutagen)
-        {
+        if (mutagen) {
           ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*BO), *MR.Context);
         }
       }
@@ -3156,67 +3019,53 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCPointer174 : public MatchFinder::MatchCallback
-{
+class MCPointer174 : public MatchFinder::MatchCallback {
 public:
   MCPointer174 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::CastExpr>("mcpointer174") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::CastExpr>("mcpointer174") != nullptr) {
       const CastExpr* CE = MR.Nodes.getNodeAs<clang::CastExpr>("mcpointer174");
 
       SourceLocation SL = CE->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "17.4:" << "The only allowed form of pointer arithmetic is array indexing:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
 
-          if (mutagen)
-          {
+          if (mutagen) {
             ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CE), *MR.Context);
           }
         }
       }
     }
 
-    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742") != nullptr) {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcpointer1742");
 
       SourceLocation SL = DRE->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           std::cout << "17.4:" << "The only allowed form of pointer arithmetic is array indexing:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "17.4", "The only allowed form of pointer arithmetic is array indexing : ");
 
-          if (mutagen)
-          {
+          if (mutagen) {
             ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*DRE), *MR.Context);
           }
         }
@@ -3230,20 +3079,17 @@ private:
 /**********************************************************************************************************************/
 /*@DEVI-in case of function pointers, where an argument has more than two levels of indirection,
 the argument and the function pointer both get tagged. technically, it is a defendable interpretation of the rule.*/
-class MCPointer175 : public MatchFinder::MatchCallback
-{
+class MCPointer175 : public MatchFinder::MatchCallback {
 public:
   MCPointer175 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     const VarDecl* VD;
     const FieldDecl* FD;
     SourceLocation SL;
     QualType QT;
 
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcpointer175") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcpointer175") != nullptr) {
       VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcpointer175");
 
       SL = VD->DEVI_GETLOCSTART();
@@ -3253,8 +3099,7 @@ public:
       QT = VD->getType();
     }
 
-    if (MR.Nodes.getNodeAs<clang::FieldDecl>("mcpointer175field") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::FieldDecl>("mcpointer175field") != nullptr) {
       FD = MR.Nodes.getNodeAs<clang::FieldDecl>("mcpointer175field");
 
       SL = FD->getSourceRange().getBegin();
@@ -3264,11 +3109,8 @@ public:
       QT = FD->getType();
     }
 
-
     QualType CQT = QT.getCanonicalType();
-
     std::string CQTAsString = CQT.getAsString();
-
     const clang::Type* TP [[maybe_unused]] = CQT.getTypePtr();
 
     unsigned starCounter = 0U;
@@ -3279,46 +3121,34 @@ public:
     size_t NextCommaPos = 0U;
     bool FoundAMatch [[maybe_unused]] = false;
 
-    while (StarPos != std::string::npos)
-    {
+    while (StarPos != std::string::npos) {
       StarPos = CQTAsString.find("*", StarPos + 1);
       OpenParens = CQTAsString.find("(", NextOpenParens + 1);
       CommaPos = CQTAsString.find(",", NextCommaPos + 1);
 
-      if (OpenParens != std::string::npos)
-      {
-        if (StarPos > OpenParens)
-        {
+      if (OpenParens != std::string::npos) {
+        if (StarPos > OpenParens) {
           starCounter = 0U;
           NextOpenParens = OpenParens;
         }
-
       }
 
-      if (CommaPos != std::string::npos)
-      {
-        if (StarPos > CommaPos)
-        {
+      if (CommaPos != std::string::npos) {
+        if (StarPos > CommaPos) {
           starCounter = 0U;
           NextCommaPos = CommaPos;
         }
       }
 
-      if (StarPos != std::string::npos)
-      {
+      if (StarPos != std::string::npos) {
         starCounter++;
       }
 
-      if (starCounter >= 3U)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (starCounter >= 3U) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "17.5:" << "Pointer has more than 2 levels of indirection:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3347,17 +3177,14 @@ simple char type is assigned a numeric values cast explicitly cast to simple cha
 break rule 6.1(see https://www.misra.org.uk/forum/viewtopic.php?t=1020 for reference). the bottom line is,
 there is a way to implement this but the implementation will be janky and its too much trouble for a janky
 implementation that later on will not be modifiable much.*/
-class MCTypes61 : public MatchFinder::MatchCallback
-{
+class MCTypes61 : public MatchFinder::MatchCallback {
 public:
   MCTypes61 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     if ((MR.Nodes.getNodeAs<clang::Expr>("mctypes6rhs") != nullptr) \
         && (MR.Nodes.getNodeAs<clang::VarDecl>("mctypes6origin") != nullptr) \
-        && (MR.Nodes.getNodeAs<clang::BinaryOperator>("mctypes6dous") != nullptr))
-    {
+        && (MR.Nodes.getNodeAs<clang::BinaryOperator>("mctypes6dous") != nullptr)) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mctypes6rhs");
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mctypes6origin");
 
@@ -3391,20 +3218,12 @@ public:
       /*@DEVI-the logic here is that we know we have matched a chartype. if its not either a singedinteger or
       unsingedinteger, then it is a simple char. otherwise it is signed or unsigned char.*/
 #if 1
-      if (TP->isSignedIntegerType() || TP->isUnsignedIntegerType())
-      {
-        //std::cout << RHSString << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << SL.printToString(*MR.SourceManager) << "\n";
-
-        if (!TPEXP->isSignedIntegerType() && !TPEXP->isUnsignedIntegerType())
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+      if (TP->isSignedIntegerType() || TP->isUnsignedIntegerType()) {
+        if (!TPEXP->isSignedIntegerType() && !TPEXP->isUnsignedIntegerType()) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "6.2:" << "Sgined or unsigned char type holds characterLiterals:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3413,26 +3232,16 @@ public:
             }
           }
         }
-      }
-      else
-      {
-
+      } else {
+        //FIXME
       }
 
-      if (!TP->isSignedIntegerType() && !TP->isUnsignedIntegerType())
-      {
-        //std::cout << RHSString << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << SL.printToString(*MR.SourceManager) << "\n";
-
-        if (TPEXP->isSignedIntegerType() || TPEXP->isUnsignedIntegerType())
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+      if (!TP->isSignedIntegerType() && !TP->isUnsignedIntegerType()) {
+        if (TPEXP->isSignedIntegerType() || TPEXP->isUnsignedIntegerType()) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "6.1:" << "Simple char type holds numeric values:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3450,28 +3259,23 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCSU181 : public MatchFinder::MatchCallback
-{
+class MCSU181 : public MatchFinder::MatchCallback {
 public:
   MCSU181 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcsu181arr") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcsu181arr") != nullptr) {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcsu181arr");
 
       SourceLocation SL = VD->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -3487,15 +3291,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCPTC11CSTYLE : public MatchFinder::MatchCallback
-{
+class MCPTC11CSTYLE : public MatchFinder::MatchCallback {
 public:
   MCPTC11CSTYLE (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcptc11cstyle") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcptc11cstyle") != nullptr) {
       const CStyleCastExpr* CSCE = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("mcptc11cstyle");
 
       SourceLocation SL = CSCE->DEVI_GETLOCSTART();
@@ -3523,38 +3324,29 @@ public:
 
       bool ShouldBeTagged11 = false;
 
-      if (TP->isFunctionPointerType())
-      {
+      if (TP->isFunctionPointerType()) {
         if (((CK != CK_IntegralToPointer) && (CK != CK_PointerToIntegral) && \
              (CK != CK_LValueToRValue) && (CK != CK_FunctionToPointerDecay) && \
-             (CK != CK_ArrayToPointerDecay)))
-        {
+             (CK != CK_ArrayToPointerDecay))) {
           ShouldBeTagged11 = true;
         }
 
-        if (CK == CK_BitCast)
-        {
+        if (CK == CK_BitCast) {
           ShouldBeTagged11 = true;
         }
 
-        if (ShouldBeTagged11)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+        if (ShouldBeTagged11) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "11.1:" << "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
               XMLDocOut.XMLAddNode(MR.Context, SL, "11.1", "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
               JSONDocOUT.JSONAddElement(MR.Context, SL, "11.1", "CStyleCastExpr - FunctionPointerType converted to or from a type other than IntegralType: ");
 
-              if (mutagen)
-              {
+              if (mutagen) {
                 ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CSCE), *MR.Context);
               }
             }
@@ -3562,48 +3354,36 @@ public:
         }
       }
 
-      if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if ((CK == CK_IntegralToPointer) || (CK == CK_PointerToIntegral)) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "11.3:" << "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.3", "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.3", "CStyleCastExpr - Conversion of PointerType to or from IntegralType is recommended against: ");
 
-            if (mutagen)
-            {
+            if (mutagen) {
               ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CSCE), *MR.Context);
             }
           }
         }
       }
 
-      if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+      if (CK == CK_BitCast || CK == CK_PointerToBoolean || CK == CK_AnyPointerToBlockPointerCast) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
             std::cout << "11.x:" << "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type:";
             std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "11.x", "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
             JSONDocOUT.JSONAddElement(MR.Context, SL, "11.x", "CStyleCastExpr - PointerType has implicit BitCast. This could be caused by a cast removing const or volatile qualifier from the type addressed by a pointer or by a cast to a different function or object type: ");
 
-            if (mutagen)
-            {
+            if (mutagen) {
               ME.ExtractAncestry(ast_type_traits::DynTypedNode::create(*CSCE), *MR.Context);
             }
           }
@@ -3616,20 +3396,16 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCATC101 : public MatchFinder::MatchCallback
-{
+class MCATC101 : public MatchFinder::MatchCallback {
 public:
   MCATC101 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy") != nullptr) {
       const ImplicitCastExpr* ICE = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atcdaddy");
 
       if ((ICE->getCastKind() == CK_IntegralCast) || (ICE->getCastKind() == CK_FloatingCast) || \
-          (ICE->getCastKind() == CK_FloatingComplexCast) || (ICE->getCastKind() == CK_IntegralComplexCast))
-      {
+          (ICE->getCastKind() == CK_FloatingComplexCast) || (ICE->getCastKind() == CK_IntegralComplexCast)) {
         SourceLocation SL = ICE->DEVI_GETLOCSTART();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -3639,32 +3415,27 @@ public:
         QualType QTDaddy = ICE->getType();
         QualType QTKiddy;
 
-        if (MR.Nodes.getNodeAs<clang::BinaryOperator>("atcdous") != nullptr)
-        {
+        if (MR.Nodes.getNodeAs<clang::BinaryOperator>("atcdous") != nullptr) {
           const BinaryOperator* ChildNode = MR.Nodes.getNodeAs<clang::BinaryOperator>("atcdous");
           QTKiddy = ChildNode->getType();
         }
 
-        if (MR.Nodes.getNodeAs<clang::UnaryOperator>("atcuno") != nullptr)
-        {
+        if (MR.Nodes.getNodeAs<clang::UnaryOperator>("atcuno") != nullptr) {
           const UnaryOperator* ChildNode = MR.Nodes.getNodeAs<clang::UnaryOperator>("atcuno");
           QTKiddy = ChildNode->getType();
         }
 
-        if (MR.Nodes.getNodeAs<clang::ParenExpr>("atcparens") != nullptr)
-        {
+        if (MR.Nodes.getNodeAs<clang::ParenExpr>("atcparens") != nullptr) {
           const ParenExpr* ChildNode = MR.Nodes.getNodeAs<clang::ParenExpr>("atcparens");
           QTKiddy = ChildNode->getType();
         }
 
-        if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atckidice") != nullptr)
-        {
+        if (MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atckidice") != nullptr) {
           const ImplicitCastExpr* ChildNode = MR.Nodes.getNodeAs<clang::ImplicitCastExpr>("atckidice");
           QTKiddy = ChildNode->getType();
         }
 
-        if (MR.Nodes.getNodeAs<clang::CStyleCastExpr>("atccstyle") != nullptr)
-        {
+        if (MR.Nodes.getNodeAs<clang::CStyleCastExpr>("atccstyle") != nullptr) {
           const CStyleCastExpr* ChildNode = MR.Nodes.getNodeAs<clang::CStyleCastExpr>("atccstyle");
           QTKiddy = ChildNode->getType();
         }
@@ -3715,18 +3486,12 @@ public:
         bool ICETypeIsInteger = ICETypeIsSignedInt || ICETypeIsUSignedInt;
         bool ChildTypeIsInteger = ChildTypeIsSignedInt || ChildTypeIsUSignedInt;
 
-        if (ICETypeIsInteger && ChildTypeIsInteger)
-        {
-          if ((ICETypeIsSignedInt && ChildTypeIsUSignedInt) || (ICETypeIsUSignedInt && ChildTypeIsSignedInt))
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+        if (ICETypeIsInteger && ChildTypeIsInteger) {
+          if ((ICETypeIsSignedInt && ChildTypeIsUSignedInt) || (ICETypeIsUSignedInt && ChildTypeIsSignedInt)) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 std::cout << "10.1/2:" << "ImplicitCastExpr changes the signedness of the type:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3737,16 +3502,11 @@ public:
           }
         }
 
-        if (ICETypeSize < ChildTypeSize && !(CanonTypeChild->isComplexIntegerType() || CanonTypeChild->isComplexType()))
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-          {
+        if (ICETypeSize < ChildTypeSize && !(CanonTypeChild->isComplexIntegerType() || CanonTypeChild->isComplexType())) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
               std::cout << "10.1/2:" << "ImplicitCastExpr is narrowing:";
               std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3756,18 +3516,12 @@ public:
           }
         }
 
-        if (CanonTypeChild->isComplexIntegerType())
-        {
-          if (ICETypeSize > ChildTypeSize)
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+        if (CanonTypeChild->isComplexIntegerType()) {
+          if (ICETypeSize > ChildTypeSize) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 std::cout << "10.3:" << "ImplicitCastExpr is widening for complex integer type:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3785,13 +3539,6 @@ public:
 
           const clang::Type* DaddyCPXElementType = DaddyCPXQT.getTypePtr();
           const clang::Type * ChildCPXElementType = ChildCPXQT.getTypePtr();
-
-          /*
-          bool IsSignedCPXDaddy = DaddyCPXElementType->getAsPlaceholderType()->isSignedInteger();
-          bool IsSignedCPXChild = ChildCPXElementType->getAsPlaceholderType()->isSignedInteger();
-          bool IsUnsignedCPXDaddy = DaddyCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
-          bool IsUnsignedCPXChild = ChildCPXElementType->getAsPlaceholderType()->isUnsignedInteger();
-          */
 
           bool IsSignedCPXDaddy = false;
           bool IsUnsignedCPXDaddy = false;
@@ -3813,16 +3560,11 @@ public:
             }
           }
 
-          if ((IsSignedCPXDaddy && IsUnsignedCPXChild) || (IsUnsignedCPXDaddy && IsSignedCPXChild))
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+          if ((IsSignedCPXDaddy && IsUnsignedCPXChild) || (IsUnsignedCPXDaddy && IsSignedCPXChild)) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 std::cout << "10.3:" << "ImplicitCastExpr changes the signedness of the complex integer type:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3834,18 +3576,12 @@ public:
         }
 
         /*clang::Type::iSComplexIntegerType will not return true for the gnu extension of complex integers.*/
-        if (!CanonTypeChild->isComplexIntegerType() && CanonTypeChild->isComplexType())
-        {
-          if (ICETypeSize > ChildTypeSize)
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-            {
+        if (!CanonTypeChild->isComplexIntegerType() && CanonTypeChild->isComplexType()) {
+          if (ICETypeSize > ChildTypeSize) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                 std::cout << "10.4:" << "ImplicitCastExpr is widening for complex float type:";
                 std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3863,15 +3599,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCIdent51 : public MatchFinder::MatchCallback
-{
+class MCIdent51 : public MatchFinder::MatchCallback {
 public:
   MCIdent51 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::NamedDecl>("ident5nameddecl") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::NamedDecl>("ident5nameddecl") != nullptr) {
       const NamedDecl* ND = MR.Nodes.getNodeAs<clang::NamedDecl>("ident5nameddecl");
 
       const IdentifierInfo *II = ND->getIdentifier();
@@ -3884,25 +3617,17 @@ public:
 
       const IdentifierTable &IT = ASTC->Idents;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         StringRef IdentStringRef = II->getName();
 
-        for (auto &iter : IT)
-        {
+        for (auto &iter : IT) {
           /*@DEVI-only works for UTF-8. for larger sizes we need a multiple of 32. for UTF-16 we need to check against 64 and so on.*/
-          if (IdentStringRef.str().size() >= 32U)
-          {
-            if ((iter.getValue()->getName().str().substr(0U, 32U) == IdentStringRef.str().substr(0U, 32U)) && (iter.getValue()->getName().str() != IdentStringRef.str()))
-            {
-              if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-              {
+          if (IdentStringRef.str().size() >= 32U) {
+            if ((iter.getValue()->getName().str().substr(0U, 32U) == IdentStringRef.str().substr(0U, 32U)) && (iter.getValue()->getName().str() != IdentStringRef.str())) {
+              if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
                 /*intentionally left blank*/
-              }
-              else
-              {
-                if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-                {
+              } else {
+                if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
                   std::cout << "5.1:" << "Identifier relies on the signifacance of more than 31 charcaters:";
                   std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -3921,20 +3646,16 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCDCDF87 : public MatchFinder::MatchCallback
-{
+class MCDCDF87 : public MatchFinder::MatchCallback {
 public:
-  MCDCDF87 (Rewriter &Rewrite) : Rewrite(Rewrite)
-  {
+  MCDCDF87 (Rewriter &Rewrite) : Rewrite(Rewrite) {
     IsNewEntry = true;
   }
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     if ((MR.Nodes.getNodeAs<clang::DeclRefExpr>("mcdcdfobj") != nullptr) \
         && (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf87daddy") != nullptr) && \
-        (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf87origin") != nullptr))
-    {
+        (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf87origin") != nullptr)) {
       IsNewEntry = true;
 
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf87daddy");
@@ -3948,41 +3669,30 @@ public:
 
       ASTContext* const ASTC = MR.Context;
 
-      for (auto &iter : MaybeLocalObjInfoProto)
-      {
-        if (iter.ObjNameStr == VDName && iter.ObjSL == SL)
-        {
+      for (auto &iter : MaybeLocalObjInfoProto) {
+        if (iter.ObjNameStr == VDName && iter.ObjSL == SL) {
           IsNewEntry = false;
 
-          if ((iter.FirstDaddyName != FD->getNameInfo().getAsString()))
-          {
+          if ((iter.FirstDaddyName != FD->getNameInfo().getAsString())) {
             iter.HasMoreThanOneDaddy = true;
           }
         }
       }
 
-      if (IsNewEntry)
-      {
+      if (IsNewEntry) {
         MaybeLocalObjInfo Temp = {SL, ASTC->getFullLoc(SL), SL.printToString(*MR.SourceManager), VDName, FD->getNameInfo().getAsString(), false};
         MaybeLocalObjInfoProto.push_back(Temp);
       }
     }
   }
 
-  virtual void onEndOfTranslationUnit()
-  {
-    for (auto &iter : MaybeLocalObjInfoProto)
-    {
-      if (!iter.HasMoreThanOneDaddy)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.ObjFSL.isInSystemHeader(), iter.ObjSL))
-        {
+  virtual void onEndOfTranslationUnit() {
+    for (auto &iter : MaybeLocalObjInfoProto) {
+      if (!iter.HasMoreThanOneDaddy) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, iter.ObjFSL.isInSystemHeader(), iter.ObjSL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.ObjFSL.getManager().isInMainFile(iter.ObjSL), iter.ObjSL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, iter.ObjFSL.getManager().isInMainFile(iter.ObjSL), iter.ObjSL)) {
             std::cout << "8.7:" << "Object (" + iter.ObjNameStr + ") is only being used in one block (" + iter.FirstDaddyName + ") but is not defined inside that block:";
             std::cout << iter.ObjSLStr << ":" << "\n";
 
@@ -3998,11 +3708,9 @@ public:
 
 
 private:
-  struct MaybeLocalObjInfo
-  {
+  struct MaybeLocalObjInfo {
     MaybeLocalObjInfo(SourceLocation iObjSL, FullSourceLoc iObjFSL, std::string iObjSLStr, \
-                      std::string iObjNameStr, std::string iFirstDaddyName, bool iHasMoreThanOneDaddy = false)
-    {
+                      std::string iObjNameStr, std::string iFirstDaddyName, bool iHasMoreThanOneDaddy = false) {
       ObjSL = iObjSL;
       ObjFSL = iObjFSL;
       ObjSLStr = iObjSLStr;
@@ -4027,17 +3735,14 @@ private:
 };
 /**********************************************************************************************************************/
 /*@DEVI-has false positives will tag incomplete types if they are later declared as complete types.*/
-class [[maybe_unused]] MCDCDF88 : public MatchFinder::MatchCallback
-{
+class [[maybe_unused]] MCDCDF88 : public MatchFinder::MatchCallback {
 public:
   MCDCDF88 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     bool IsNewEntry = true;
 
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf88var") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf88var") != nullptr) {
       const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("mcdcdf88var");
 
       SourceLocation SL = VD->DEVI_GETLOCSTART();
@@ -4050,25 +3755,20 @@ public:
 
       const SourceManager &SM = FSL.getManager();
 
-      if (!SM.isInMainFile(SL))
-      {
+      if (!SM.isInMainFile(SL)) {
         return void();
       }
 
       std::string NDNameString = VD->getNameAsString();
 
-      for (auto &iter : ExternObjInfoProto)
-      {
-        if (iter.XObjNameStr == NDNameString)
-        {
+      for (auto &iter : ExternObjInfoProto) {
+        if (iter.XObjNameStr == NDNameString) {
           IsNewEntry = false;
-
           iter.HasMoreThanOneDefinition = true;
         }
       }
 
-      if (IsNewEntry)
-      {
+      if (IsNewEntry) {
         const SourceManager &SM = FSL.getManager();
 
         ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
@@ -4079,8 +3779,7 @@ public:
       }
     }
 
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf88function") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf88function") != nullptr) {
       const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("mcdcdf88function");
 
       SourceLocation SL = FD->DEVI_GETLOCSTART();
@@ -4095,37 +3794,29 @@ public:
 
       const SourceManager &SM = FSL.getManager();
 
-      if (!SM.isInMainFile(SL))
-      {
+      if (!SM.isInMainFile(SL)) {
         return void();
       }
 
-      for (auto &iter : ExternObjInfoProto)
-      {
+      for (auto &iter : ExternObjInfoProto) {
         if (iter.XObjNameStr == NDNameString)
         {
           IsNewEntry = false;
 
 
-          if ((iter.IsDefinition == true && FD->isThisDeclarationADefinition()) || (iter.IsDeclaration == true && !FD->isThisDeclarationADefinition()))
-          {
+          if ((iter.IsDefinition == true && FD->isThisDeclarationADefinition()) || (iter.IsDeclaration == true && !FD->isThisDeclarationADefinition())) {
             iter.HasMoreThanOneDefinition = true;
 
-            if (FD->isThisDeclarationADefinition())
-            {
+            if (FD->isThisDeclarationADefinition()) {
               iter.IsDefinition = true;
-            }
-            else
-            {
+            } else {
               iter.IsDeclaration = true;
             }
           }
-
         }
       }
 
-      if (IsNewEntry)
-      {
+      if (IsNewEntry) {
         ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
                               SM.getFilename(SL), SL.printToString(*MR.SourceManager), NDNameString, \
                               FSL.getFileID(), false, FD->isThisDeclarationADefinition(), !FD->isThisDeclarationADefinition()
@@ -4243,8 +3934,7 @@ class MCFunction167 : public MatchFinder::MatchCallback {
 public:
   MCFunction167 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     if (MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167") != nullptr) {
       const ParmVarDecl* PVD = MR.Nodes.getNodeAs<clang::ParmVarDecl>("mcfunction167");
 
@@ -4284,27 +3974,22 @@ private:
 /**********************************************************************************************************************/
 /*@DEVI-the match is quite simplistic. we could match for chartypes appearing as the LHS and then check the type of
 the RHS expr but that leaves pointers changing the value.*/
-class MCTypes612 : public MatchFinder::MatchCallback
-{
+class MCTypes612 : public MatchFinder::MatchCallback {
 public:
   MCTypes612 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mc612exp") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mc612exp") != nullptr) {
       bool RHSIsCharLit = false;
       bool RHSIsIntLit = false;
 
       const Expr* LHS = MR.Nodes.getNodeAs<clang::Expr>("mc612exp");
 
-      if (MR.Nodes.getNodeAs<clang::CharacterLiteral>("mc612charlit") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::CharacterLiteral>("mc612charlit") != nullptr) {
         RHSIsCharLit = true;
       }
 
-      if (MR.Nodes.getNodeAs<clang::IntegerLiteral>("mc612intlit") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::IntegerLiteral>("mc612intlit") != nullptr) {
         RHSIsIntLit = true;
       }
 
@@ -4312,13 +3997,11 @@ public:
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -4330,10 +4013,8 @@ public:
       const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
 
       /*checking whether the unqualified type is simple char*/
-      if (CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_S))
-      {
-        if (RHSIsIntLit)
-        {
+      if (CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_U) || CanonTP->isSpecificBuiltinType(BuiltinType::Kind::Char_S)) {
+        if (RHSIsIntLit) {
           std::cout << "6.1:" << "Simple char type should only hold character values:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -4342,10 +4023,8 @@ public:
         }
       }
 
-      if (CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UChar) || CanonTP->isSpecificBuiltinType(BuiltinType::Kind::SChar))
-      {
-        if (RHSIsCharLit)
-        {
+      if (CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UChar) || CanonTP->isSpecificBuiltinType(BuiltinType::Kind::SChar)) {
+        if (RHSIsCharLit) {
           std::cout << "6.2:" << "Signed or unsigned char type should only hold numeric values:";
           std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -4360,15 +4039,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCF143 : public MatchFinder::MatchCallback
-{
+class MCCF143 : public MatchFinder::MatchCallback {
 public:
   MCCF143 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::NullStmt>("mccf143nullstmt") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::NullStmt>("mccf143nullstmt") != nullptr) {
       const NullStmt* NS = MR.Nodes.getNodeAs<clang::NullStmt>("mccf143nullstmt");
 
       SourceLocation SL = NS->getSemiLoc();
@@ -4393,28 +4069,23 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr1212 : public MatchFinder::MatchCallback
-{
+class MCExpr1212 : public MatchFinder::MatchCallback {
 public:
   MCExpr1212 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcexpr1212") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("mcexpr1212") != nullptr) {
       const RecordDecl* RD = MR.Nodes.getNodeAs<clang::RecordDecl>("mcexpr1212");
 
       SourceLocation SL = RD->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         std::cout << "12.12:" << "Possible violation of 12.12-access to the underlying bit representation of a floating type:";
         std::cout << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
@@ -4428,15 +4099,12 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCExpr1211 : public MatchFinder::MatchCallback
-{
+class MCExpr1211 : public MatchFinder::MatchCallback {
 public:
   MCExpr1211 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr1211") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcexpr1211") != nullptr) {
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcexpr1211");
 
       SourceLocation SL = EXP->DEVI_GETLOCSTART();
@@ -4446,13 +4114,11 @@ public:
       SourceLocation SLE = EXP->DEVI_GETLOCEND();
       SLE = Devi::SourceLocationHasMacro(SLE, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -4461,13 +4127,9 @@ public:
       SR.setEnd(SLE);
 
       std::string targetExpr = Rewrite.getRewrittenText(SR);
-
       ASTContext *const ASTC = MR.Context;
-
       QualType QT = EXP->getType();
-
       const clang::Type* TP = QT.getTypePtr();
-
       const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
 
       bool TypeIsUSignedInt = CanonTP->isSpecificBuiltinType(BuiltinType::Kind::ULong) || \
@@ -4478,16 +4140,6 @@ public:
                                   CanonTP->isSpecificBuiltinType(BuiltinType::Kind::ULongLong) || \
                                   CanonTP->isSpecificBuiltinType(BuiltinType::Kind::UInt128) || \
                                   CanonTP->isSpecificBuiltinType(BuiltinType::Kind::WChar_U);
-
-#if 0
-      bool TypeIsUSignedInt = false;
-      if (CanonTP) {
-        auto placeholderType = CanonTP->getAsPlaceholderType();
-        if (placeholderType) {
-          TypeIsUSignedInt = placeholderType->isUnsignedInteger();
-        }
-      }
-#endif
 
       if (TypeIsUSignedInt) {
         int64_t UnoFinal = 0;
@@ -4598,22 +4250,18 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCATC105 : public MatchFinder::MatchCallback
-{
+class MCATC105 : public MatchFinder::MatchCallback {
 public:
   MCATC105 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs") != nullptr) {
       bool ShouldBeTagged = false;
       SourceLocation SL;
       const Expr* IgnoreImplicitEXP;
       ast_type_traits::DynTypedNode DynOpNode;
 
-      if (MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105") != nullptr) {
         const BinaryOperator* BO = MR.Nodes.getNodeAs<clang::BinaryOperator>("mcatc105");
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::BinaryOperator>(*BO);
 
@@ -4622,8 +4270,7 @@ public:
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       }
 
-      if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno") != nullptr) {
         const UnaryOperator* UO = MR.Nodes.getNodeAs<clang::UnaryOperator>("mcatc105uno");
         DynOpNode = ast_type_traits::DynTypedNode::create<clang::UnaryOperator>(*UO);
 
@@ -4635,30 +4282,22 @@ public:
       const Expr* EXP = MR.Nodes.getNodeAs<clang::Expr>("mcatc105lhs");
       IgnoreImplicitEXP = EXP->IgnoreImpCasts();
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       ASTContext *const ASTC = MR.Context;
-
       const TargetInfo &TI = ASTC->getTargetInfo();
-
       unsigned int ShortSize = TI.getShortWidth();
-
       QualType QT = IgnoreImplicitEXP->getType();
       const clang::Type* TP = QT.getTypePtr();
-
       const clang::Type* CanonTP = ASTC->getCanonicalType(TP);
 
-      if (CanonTP->isUnsignedIntegerType() || CanonTP->isSignedIntegerType() || CanonTP->isAnyCharacterType())
-      {
-
+      if (CanonTP->isUnsignedIntegerType() || CanonTP->isSignedIntegerType() || CanonTP->isAnyCharacterType()) {
         /*@DEVI-assumptions:nothing has more than one parent in C.*/
         if (ShortSize == ASTC->getTypeSize(QT) || 8U == ASTC->getTypeSize(QT))
         {
@@ -4680,31 +4319,23 @@ public:
           std::string ParentStringKind = ParentNodeKind.asStringRef().str();
           std::string AncestorStringKind = AncestorNodeKind.asStringRef().str();
 
-          if (ParentStringKind == "CStyleCastExpr")
-          {
+          if (ParentStringKind == "CStyleCastExpr") {
             const CStyleCastExpr* CSCE = ParentNode.get<clang::CStyleCastExpr>();
 
-            if (CSCE->getType() != QT)
-            {
+            if (CSCE->getType() != QT) {
               ShouldBeTagged = true;
             }
-          }
-          else if (ParentStringKind == "ParenExpr" && AncestorStringKind == "CStyleCastExpr")
-          {
+          } else if (ParentStringKind == "ParenExpr" && AncestorStringKind == "CStyleCastExpr") {
             const CStyleCastExpr* CSCE = AncestorNode.get<clang::CStyleCastExpr>();
 
-            if (CSCE->getType() != QT)
-            {
+            if (CSCE->getType() != QT) {
               ShouldBeTagged = true;
             }
-          }
-          else
-          {
+          } else {
             ShouldBeTagged = true;
           }
 
-          if (ShouldBeTagged)
-          {
+          if (ShouldBeTagged) {
             std::cout << "10.5" << ":" << "Result of operands << or ~ must be explicitly cast to the type of the expression:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
             XMLDocOut.XMLAddNode(MR.Context, SL, "10.5", "Result of operands << or ~ must be explicitly cast to the type of the expression:");
@@ -4717,13 +4348,6 @@ public:
           }
         }
       }
-
-#if 0
-      const BuiltinType* BT = CanonTP->getAsPlaceholderType();
-      const LangOptions &LO = ASTC->getLangOpts();
-      std::string something = TypeName::getFullyQualifiedName(QT, *ASTC, true);
-      StringRef BTName = BT->getName(PrintingPolicy(LO));
-#endif
     }
   }
 
@@ -4731,28 +4355,23 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCCSE135 : public MatchFinder::MatchCallback
-{
+class MCCSE135 : public MatchFinder::MatchCallback {
 public:
   MCCSE135 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccse135") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::ForStmt>("mccse135") != nullptr) {
       const ForStmt* FS = MR.Nodes.getNodeAs<clang::ForStmt>("mccse135");
 
       SourceLocation SL = FS->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
@@ -4767,18 +4386,15 @@ public:
       bool InitPresent = (FSInit != nullptr);
 
       /*@DEVI-for the third one we are not checking to see whether the loop counter has been previously initialized.*/
-      if (!((CondPresent && DIncPresent && InitPresent) || (!CondPresent && !DIncPresent && !InitPresent) || (CondPresent && DIncPresent && !InitPresent)))
-      {
+      if (!((CondPresent && DIncPresent && InitPresent) || (!CondPresent && !DIncPresent && !InitPresent) || (CondPresent && DIncPresent && !InitPresent))) {
         std::cout << "13.5" << ":" << "The three expressions of a ForStmt shall either all exist or not exist at all or only the initialization can be missing:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
         XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The three expressions of a ForStmt shall either all exist or not exist at all or only the initialization can be missing:");
         JSONDocOUT.JSONAddElement(MR.Context, SL, "13.5", "The three expressions of a ForStmt shall either all exist or not exist at all or only the initialization can be missing:");
       }
 
-      if (FSInc != nullptr)
-      {
-        if (!FSInc->HasSideEffects(*ASTC, true))
-        {
+      if (FSInc != nullptr) {
+        if (!FSInc->HasSideEffects(*ASTC, true)) {
           std::cout << "13.5" << ":" << "The increment expression in the ForStmt has no side-effects:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The increment expression in the ForStmt has no side-effects:");
@@ -4786,18 +4402,15 @@ public:
         }
       }
 
-      if (FSCond != nullptr)
-      {
-        if (FSCond->HasSideEffects(*ASTC, true))
-        {
+      if (FSCond != nullptr) {
+        if (FSCond->HasSideEffects(*ASTC, true)) {
           std::cout << "13.5" << ":" << "The condition expression in the ForStmt has side-effect:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The condition expression in the ForStmt has side-effect:");
           JSONDocOUT.JSONAddElement(MR.Context, SL, "13.5", "The condition expression in the ForStmt has side-effect:");
         }
 
-        if (!FSCond->isKnownToHaveBooleanValue())
-        {
+        if (!FSCond->isKnownToHaveBooleanValue()) {
           std::cout << "13.5" << ":" << "The expression in the ForStmt condition does not return a boolean:" << SL.printToString(*MR.SourceManager) << ":" << "\n";
 
           XMLDocOut.XMLAddNode(MR.Context, SL, "13.5", "The expression in the ForStmt condition does not return a boolean:");
@@ -4811,18 +4424,15 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCConst71 : public MatchFinder::MatchCallback
-{
+class MCConst71 : public MatchFinder::MatchCallback {
 public:
   MCConst71 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
+  virtual void run(const MatchFinder::MatchResult &MR) {
     std::string TagCandidateString;
     SourceLocation SL;
 
-    if (MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcconst71int") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcconst71int") != nullptr) {
       const IntegerLiteral* IL = MR.Nodes.getNodeAs<clang::IntegerLiteral>("mcconst71int");
 
       SourceRange SR;
@@ -4837,8 +4447,7 @@ public:
       TagCandidateString = Rewrite.getRewrittenText(SR);
     }
 
-    if (MR.Nodes.getNodeAs<clang::StringLiteral>("mcconst71string") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::StringLiteral>("mcconst71string") != nullptr) {
       const clang::StringLiteral* StringLit = MR.Nodes.getNodeAs<clang::StringLiteral>("mcconst71string");
 
       SL = StringLit->DEVI_GETLOCSTART();
@@ -4848,8 +4457,7 @@ public:
       TagCandidateString = StringLit->getString().str();
     }
 
-    if (MR.Nodes.getNodeAs<clang::CharacterLiteral>("mcconst71char") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::CharacterLiteral>("mcconst71char") != nullptr) {
       const CharacterLiteral* CL = MR.Nodes.getNodeAs<clang::CharacterLiteral>("mcconst71char");
 
       SL = CL->DEVI_GETLOCSTART();
@@ -4865,13 +4473,11 @@ public:
       TagCandidateString = Rewrite.getRewrittenText(SR);
     }
 
-    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-    {
+    if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
       return void();
     }
 
-    if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-    {
+    if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
       return void();
     }
 
@@ -4882,28 +4488,21 @@ public:
 
     std::smatch result;
 
-#if 0
-    std::cout << "diagnostic2:" << TagCandidateString << ":" << SL.printToString(*MR.SourceManager) << ":" << std::regex_search(TagCandidateString, result, octalconstant) << "\n";
-#endif
-
-    if (std::regex_search(TagCandidateString, result, octalconstant) || std::regex_search(TagCandidateString, result, octalconstantint))
-    {
+    if (std::regex_search(TagCandidateString, result, octalconstant) || std::regex_search(TagCandidateString, result, octalconstantint)) {
       std::cout << "7.1" << ":" << "Octal escape sequence used:" << SL.printToString(*MR.SourceManager) << ":" << TagCandidateString << "\n";
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "7.1", "Octal escape sequence used:");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "7.1", "Octal escape sequence used:");
     }
 
-    if (std::regex_search(TagCandidateString, result, hexescapesequence))
-    {
+    if (std::regex_search(TagCandidateString, result, hexescapesequence)) {
       std::cout << "4.1" << ":" << "Hexadecimal escape sequence used:" << SL.printToString(*MR.SourceManager) << ":" << TagCandidateString << "\n";
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "4.1", "Hexadecimal escape sequence used:");
       JSONDocOUT.JSONAddElement(MR.Context, SL, "4.1", "Hexadecimal escape sequence used:");
     }
 
-    if (std::regex_search(TagCandidateString, result, otherescapesequence))
-    {
+    if (std::regex_search(TagCandidateString, result, otherescapesequence)) {
       std::cout << "4.1" << ":" << "Non-standard escape sequence used:" << SL.printToString(*MR.SourceManager) << ":" << TagCandidateString << "\n";
 
       XMLDocOut.XMLAddNode(MR.Context, SL, "4.1", "Non-standard escape sequence used:");
@@ -4915,35 +4514,28 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class MCIdent5x : public MatchFinder::MatchCallback
-{
+class MCIdent5x : public MatchFinder::MatchCallback {
 public:
   MCIdent5x (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR)
-  {
-    if (MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef") != nullptr)
-    {
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    if (MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef") != nullptr) {
       const TypedefDecl* BN = MR.Nodes.getNodeAs<clang::TypedefDecl>("ident5typedef");
 
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name = II->getName().str();
-
       SourceManager *const SM = MR.SourceManager;
 
       IdentInfo Temp = {SM->getSpellingLineNumber(SL), SM->getSpellingColumnNumber(SL), \
@@ -4954,48 +4546,39 @@ public:
       IdentInfoProto.push_back(Temp);
     }
 
-    if (MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record") != nullptr) {
       const RecordDecl* BN = MR.Nodes.getNodeAs<clang::RecordDecl>("ident5record");
 
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       std::string FunctionName;
 
-      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr) {
         const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
-
         FunctionName = FD->getNameAsString();
       }
 
       Devi::Scope tempscope = Devi::Scope::TU;
 
-      if (FunctionName != "")
-      {
+      if (FunctionName != "") {
         tempscope = Devi::Scope::Block;
       }
 
@@ -5007,48 +4590,39 @@ public:
       IdentInfoProto.push_back(Temp);
     }
 
-    if (MR.Nodes.getNodeAs<clang::FieldDecl>("ident5field") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::FieldDecl>("ident5field") != nullptr) {
       const FieldDecl* BN = MR.Nodes.getNodeAs<clang::FieldDecl>("ident5field");
 
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       std::string FunctionName;
 
-      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr) {
         const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
-
         FunctionName = FD->getNameAsString();
       }
 
       Devi::Scope tempscope = Devi::Scope::TU;
 
-      if (FunctionName != "")
-      {
+      if (FunctionName != "") {
         tempscope = Devi::Scope::Block;
       }
 
@@ -5061,48 +4635,38 @@ public:
     }
 
     /*@DEVI-dunno how it will handle incomplete records passed as parmvars.*/
-    if (MR.Nodes.getNodeAs<clang::ParmVarDecl>("ident5parmvar") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::ParmVarDecl>("ident5parmvar") != nullptr) {
       const ParmVarDecl* BN = MR.Nodes.getNodeAs<clang::ParmVarDecl>("ident5parmvar");
-
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       std::string FunctionName;
 
-      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr) {
         const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
-
         FunctionName = FD->getNameAsString();
       }
 
       Devi::Scope tempscope = Devi::Scope::TU;
 
-      if (FunctionName != "")
-      {
+      if (FunctionName != "") {
         tempscope = Devi::Scope::Block;
       }
 
@@ -5114,43 +4678,34 @@ public:
       IdentInfoProto.push_back(Temp);
     }
 
-    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("ident5func") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::FunctionDecl>("ident5func") != nullptr) {
       const FunctionDecl* BN = MR.Nodes.getNodeAs<clang::FunctionDecl>("ident5func");
 
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       Devi::FunctionDeclKind tempfkind;
 
-      if (BN->isThisDeclarationADefinition())
-      {
+      if (BN->isThisDeclarationADefinition()) {
         tempfkind = Devi::FunctionDeclKind::Definition;
-      }
-      else
-      {
+      } else {
         tempfkind = Devi::FunctionDeclKind::Declaration;
       }
 
@@ -5162,48 +4717,39 @@ public:
       IdentInfoProto.push_back(Temp);
     }
 
-    if (MR.Nodes.getNodeAs<clang::VarDecl>("ident5var") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::VarDecl>("ident5var") != nullptr) {
       const VarDecl* BN = MR.Nodes.getNodeAs<clang::VarDecl>("ident5var");
 
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       std::string FunctionName;
 
-      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr) {
         const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
-
         FunctionName = FD->getNameAsString();
       }
 
       Devi::Scope tempscope = Devi::Scope::TU;
 
-      if (FunctionName != "")
-      {
+      if (FunctionName != "") {
         tempscope = Devi::Scope::Block;
       }
 
@@ -5215,48 +4761,38 @@ public:
       IdentInfoProto.push_back(Temp);
     }
 
-    if (MR.Nodes.getNodeAs<clang::EnumDecl>("ident5enum") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::EnumDecl>("ident5enum") != nullptr) {
       const EnumDecl* BN = MR.Nodes.getNodeAs<clang::EnumDecl>("ident5enum");
-
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       std::string FunctionName;
 
-      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr) {
         const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
-
         FunctionName = FD->getNameAsString();
       }
 
       Devi::Scope tempscope = Devi::Scope::TU;
 
-      if (FunctionName != "")
-      {
+      if (FunctionName != "") {
         tempscope = Devi::Scope::Block;
       }
 
@@ -5268,48 +4804,38 @@ public:
       IdentInfoProto.push_back(Temp);
     }
 
-    if (MR.Nodes.getNodeAs<clang::LabelDecl>("ident5label") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::LabelDecl>("ident5label") != nullptr) {
       const LabelDecl* BN = MR.Nodes.getNodeAs<clang::LabelDecl>("ident5label");
-
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       std::string FunctionName;
 
-      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr) {
         const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
-
         FunctionName = FD->getNameAsString();
       }
 
       Devi::Scope tempscope = Devi::Scope::TU;
 
-      if (FunctionName != "")
-      {
+      if (FunctionName != "") {
         tempscope = Devi::Scope::Block;
       }
 
@@ -5321,48 +4847,38 @@ public:
       IdentInfoProto.push_back(Temp);
     }
 
-    if (MR.Nodes.getNodeAs<clang::EnumConstantDecl>("ident5enumconst") != nullptr)
-    {
+    if (MR.Nodes.getNodeAs<clang::EnumConstantDecl>("ident5enumconst") != nullptr) {
       const EnumConstantDecl* BN = MR.Nodes.getNodeAs<clang::EnumConstantDecl>("ident5enumconst");
-
       SourceLocation SL = BN->DEVI_GETLOCSTART();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
         return void();
       }
 
-      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-      {
+      if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
         return void();
       }
 
       const IdentifierInfo* II = BN->getIdentifier();
-
       std::string Name;
 
-      if (II != nullptr)
-      {
+      if (II != nullptr) {
         Name = II->getName().str();
       }
 
       SourceManager *const SM = MR.SourceManager;
-
       std::string FunctionName;
 
-      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope") != nullptr) {
         const FunctionDecl* FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("id5funcscope");
-
         FunctionName = FD->getNameAsString();
       }
 
       Devi::Scope tempscope = Devi::Scope::TU;
 
-      if (FunctionName != "")
-      {
+      if (FunctionName != "") {
         tempscope = Devi::Scope::Block;
       }
 
@@ -5379,8 +4895,7 @@ private:
   Rewriter &Rewrite;
 };
 /**********************************************************************************************************************/
-class SFCPPARR01 : public MatchFinder::MatchCallback
-{
+class SFCPPARR01 : public MatchFinder::MatchCallback {
   public:
     SFCPPARR01 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
@@ -5416,8 +4931,7 @@ class SFCPPARR01 : public MatchFinder::MatchCallback
         JSONDocOUT.JSONAddElement(MR.Context, SL, "SaferCPP01", "Native CPP arry=ay used");
       }
 
-      if (MR.Nodes.getNodeAs<clang::FieldDecl>("sfcpparrfield") != nullptr)
-      {
+      if (MR.Nodes.getNodeAs<clang::FieldDecl>("sfcpparrfield") != nullptr) {
         const FieldDecl* FD = MR.Nodes.getNodeAs<clang::FieldDecl>("sfcpparrfield");
 
         SourceLocation SL = FD->DEVI_GETLOCSTART();
@@ -5441,13 +4955,11 @@ class SFCPPARR01 : public MatchFinder::MatchCallback
 /**
  * @brief The matcher run by SFCPPARR02. This ones does all the real tagging.
  */
-class SFCPPARR02SUB : public MatchFinder::MatchCallback
-{
+class SFCPPARR02SUB : public MatchFinder::MatchCallback {
   public:
     SFCPPARR02SUB (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR)
-    {
+    virtual void run(const MatchFinder::MatchResult &MR) {
       if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpp02sub") != nullptr)
       {
         const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpp02sub");
@@ -5472,13 +4984,11 @@ class SFCPPARR02SUB : public MatchFinder::MatchCallback
       }
     }
 
-    void setOriginSourceLocation(SourceLocation inSL)
-    {
+    void setOriginSourceLocation(SourceLocation inSL) {
     ExtOriginSL = inSL;
     }
 
-    void setOriginFileName(StringRef inStrRef)
-    {
+    void setOriginFileName(StringRef inStrRef) {
       ExtOriginFileName = inStrRef;
     }
 
@@ -5491,13 +5001,11 @@ class SFCPPARR02SUB : public MatchFinder::MatchCallback
 /**
  * @brief MatchCallback for safercpp matching of pointers pointing to arrays.
  */
-class SFCPPARR02 : public MatchFinder::MatchCallback
-{
+class SFCPPARR02 : public MatchFinder::MatchCallback {
   public:
     SFCPPARR02 (Rewriter &Rewrite) : Rewrite(Rewrite), SubHandler(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR)
-    {
+    virtual void run(const MatchFinder::MatchResult &MR) {
       if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpparrdeep") != nullptr)
       {
         const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpparrdeep");
@@ -5524,28 +5032,23 @@ class SFCPPARR02 : public MatchFinder::MatchCallback
 /**
  * @brief The callback for the Safercpp pointer matchers. Matches the dedlarations.
  */
-class SFCPPPNTR01 : public MatchFinder::MatchCallback
-{
+class SFCPPPNTR01 : public MatchFinder::MatchCallback {
   public:
     SFCPPPNTR01 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR)
-    {
-      if (MR.Nodes.getNodeAs<clang::VarDecl>("sfcpppntr01") != nullptr)
-      {
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      if (MR.Nodes.getNodeAs<clang::VarDecl>("sfcpppntr01") != nullptr) {
         const VarDecl* VD = MR.Nodes.getNodeAs<clang::VarDecl>("sfcpppntr01");
 
         SourceLocation SL = VD->clang::Decl::DEVI_GETLOCSTART();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           return void();
         }
 
-        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           return void();
         }
 
@@ -5563,28 +5066,23 @@ class SFCPPPNTR01 : public MatchFinder::MatchCallback
 /**
  * @brief The callback for the Safercpp pointer matchers. Matches the DeclRefExprs.
  */
-class SFCPPPNTR02 : public MatchFinder::MatchCallback
-{
+class SFCPPPNTR02 : public MatchFinder::MatchCallback {
   public:
     SFCPPPNTR02 (Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR)
-    {
-      if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpppntr02") != nullptr)
-      {
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      if (MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpppntr02") != nullptr) {
         const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("sfcpppntr02");
 
         SourceLocation SL = DRE->DEVI_GETLOCSTART();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL))
-        {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) {
           return void();
         }
 
-        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL))
-        {
+        if (!Devi::IsTheMatchInMainFile(MainFileOnly, MR, SL)) {
           return void();
         }
 
@@ -5611,14 +5109,12 @@ class SFCPPPNTR02 : public MatchFinder::MatchCallback
 /**********************************************************************************************************************/
 /*the sourcelocation used in the overload of XMLAddNode that takes sourcemanager as input parameter uses
 the spelling location so the client does not need to check the sourcelocation for macros expansions.*/
-class PPInclusion : public PPCallbacks
-{
+class PPInclusion : public PPCallbacks {
 public:
   explicit PPInclusion (SourceManager *SM) : SM(*SM) {}
 
   /*@DEVI-if we dont throw an exception for a bad header inclusion, we wil crash later on since we have InclusionDirective PPCallback.*/
-  virtual bool FileNotFound(StringRef FileName, SmallVectorImpl<char> &RecoveryPath)
-  {
+  virtual bool FileNotFound(StringRef FileName, SmallVectorImpl<char> &RecoveryPath) {
     std::cerr << "\033[1;31mHeader Not Found: " << FileName.str() << "\033[0m" << "\n";
 #if 0
     std::abort();
@@ -5651,30 +5147,23 @@ public:
     std::ifstream HeaderRel(RelativePath.str() + "/" + FileName.str());
 #endif
 
-    if (File->isValid() && (HeaderABS.good() || HeaderRel.good()))
-    {
+    if (File->isValid() && (HeaderABS.good() || HeaderRel.good())) {
 #if 0
       assert(HashLoc.isValid() && "The SourceLocation for InclusionDirective is invalid.");
 #endif
 
 #if 1
-      if (IsAngled)
-      {
+      if (IsAngled) {
         size_t singleQPos = FileName.find("\'", 0);
         size_t doubleQPos = FileName.find("\"", 0);
         size_t whateverSlashPos = FileName.find("\\", 0);
         size_t commentPos = FileName.find("\\*", 0);
 
-        if (singleQPos != std::string::npos || doubleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
-          {
+        if ((singleQPos != std::string::npos) || (doubleQPos != std::string::npos) || (whateverSlashPos != std::string::npos) || (commentPos != std::string::npos)) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc)) {
               std::cout << "19.2:" << "illegal characters in inclusion directive:";
               std::cout << HashLoc.printToString(SM) << ":" << "\n";
 
@@ -5684,16 +5173,11 @@ public:
           }
         }
 
-        if (FileName == "errno.h")
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
-          {
+        if (FileName == "errno.h") {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc)) {
               std::cout << "20.5:" << "errno shall not be used:";
               std::cout << HashLoc.printToString(SM) << ":" << "\n";
 
@@ -5703,16 +5187,11 @@ public:
           }
         }
 
-        if (FileName == "time.h")
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
-          {
+        if (FileName == "time.h") {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc)) {
               std::cout << "20.12:" << "stdlib time.h is included in the project. use is forbidden:";
               std::cout << HashLoc.printToString(SM) << ":" << "\n";
 
@@ -5722,16 +5201,11 @@ public:
           }
         }
 
-        if (FileName == "stdio.h")
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
-          {
+        if (FileName == "stdio.h") {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc)) {
               std::cout << "20.9:" << "stdlib stdio.h is included in the project. use is forbidden:";
               std::cout << HashLoc.printToString(SM) << ":" << "\n";
 
@@ -5741,16 +5215,11 @@ public:
           }
         }
 
-        if (FileName == "signal.h")
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
-          {
+        if (FileName == "signal.h") {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc)) {
               std::cout << "20.8:" << "stdlib signal.h is included in the project. use is forbidden:";
               std::cout << HashLoc.printToString(SM) << ":" << "\n";
 
@@ -5759,23 +5228,16 @@ public:
             }
           }
         }
-      }
-      else
-      {
+      } else {
         size_t singleQPos = FileName.find("\'", 0);
         size_t whateverSlashPos = FileName.find("\\", 0);
         size_t commentPos = FileName.find("\\*", 0);
 
-        if (singleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos)
-        {
-          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
-          {
+        if (singleQPos != std::string::npos || whateverSlashPos != std::string::npos || commentPos != std::string::npos) {
+          if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc)) {
             /*intentionally left blank*/
-          }
-          else
-          {
-            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc))
-            {
+          } else {
+            if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc)) {
               std::cout << "19.2:" << "illegal characters in inclusion directive:";
               std::cout << HashLoc.printToString(SM) << "\n" << "\n";
 
@@ -5787,18 +5249,15 @@ public:
 
         bool IsNewIncludeFile = true;
 
-        for (unsigned x = 0; x < IncludeFileArr.size(); ++x)
-        {
-          if (SearchPath.str() + "/" + FileName.str() == IncludeFileArr[x])
-          {
+        for (unsigned x = 0; x < IncludeFileArr.size(); ++x) {
+          if (SearchPath.str() + "/" + FileName.str() == IncludeFileArr[x]) {
             IsNewIncludeFile = false;
             break;
           }
         }
 
         /*its supposed to supprt linux and cygwin,mingw and mac builds.*/
-        if (IsNewIncludeFile)
-        {
+        if (IsNewIncludeFile) {
 #if defined(__linux__)
           IncludeFileArr.push_back(SearchPath.str() + "/" + FileName.str());
 #elif defined(__MACH__) && defined(__APPLE__)
@@ -5814,16 +5273,11 @@ public:
       size_t whateverSlashPos = FileName.find("\\", 0);
       size_t theotherSlashPos = FileName.find(" / ", 0);
 
-      if (whateverSlashPos != std::string::npos || theotherSlashPos != std::string::npos)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc))
-        {
+      if (whateverSlashPos != std::string::npos || theotherSlashPos != std::string::npos) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, HashLoc)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, HashLoc)) {
             std::cout << "19.3:" << "Include directive contains file address, not just name:";
             std::cout << HashLoc.printToString(SM) << ":" << "\n";
 
@@ -5839,59 +5293,38 @@ public:
   /*@DEVI-if the macro is not checked for being defined before almost any kind of use, the code will break in seemingly random ways.*/
   /*@DEVI-FIXME-the macro definition is the definition of the macro passed to defined. not sure what happens if there are more than two.
   basically i dont know how to just get the tokens after defined.*/
-  virtual void Defined(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range)
-  {
+  virtual void Defined(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range) {
 #if 1
     SourceLocation SL [[maybe_unused]] = Range.getBegin();
     CheckSLValidity(SL);
 
-#if 0
-    assert(SL.isValid(), "the SourceLocation for macro Defined is not valid.");
-#endif
-
     const MacroInfo* MI = MD.getMacroInfo();
-
     DefMacroDirective* DMD = MD.getLocalDirective();
-
     bool ShouldBeTagged194 = false;
 
 #if 1
-    if (DMD)
-    {
-      if (DMD->isDefined())
-      {
-        if (!MI->tokens_empty())
-        {
+    if (DMD) {
+      if (DMD->isDefined()) {
+        if (!MI->tokens_empty()) {
           ArrayRef<Token> TokenArrayRef = MI->tokens();
-
           unsigned NumOfTokens = MI->getNumTokens();
 
-          if (NumOfTokens == 1U)
-          {
-            if (!(TokenArrayRef[0].getKind() == tok::identifier))
-            {
+          if (NumOfTokens == 1U) {
+            if (!(TokenArrayRef[0].getKind() == tok::identifier)) {
               ShouldBeTagged194 = true;
             }
-          }
-          else if (NumOfTokens == 3U)
-          {
-            if (!(TokenArrayRef[0].getKind() == tok::l_paren && TokenArrayRef[1].getKind() == tok::identifier && TokenArrayRef[2].getKind() == tok::r_paren))
-            {
+          } else if (NumOfTokens == 3U) {
+            if (!(TokenArrayRef[0].getKind() == tok::l_paren && TokenArrayRef[1].getKind() == tok::identifier && TokenArrayRef[2].getKind() == tok::r_paren)) {
               ShouldBeTagged194 = true;
             }
-          }
-          else
-          {
+          } else {
             ShouldBeTagged194 = true;
           }
-        }
-        else
-        {
+        } else {
           ShouldBeTagged194 = true;
         }
 
-        if (ShouldBeTagged194)
-        {
+        if (ShouldBeTagged194) {
 #if 0
           std::cout << "19.14 : " << "Illegal \"defined\" form : " << "\n";
           std::cout << SL.printToString(SM) << "\n" << "\n";
@@ -5905,15 +5338,13 @@ public:
 #endif
   }
 
-  virtual void MacroUndefined(const Token &MacroNameTok, const MacroDefinition &MD, const MacroDirective *Undef)
-  {
+  virtual void MacroUndefined(const Token &MacroNameTok, const MacroDefinition &MD, const MacroDirective *Undef) {
 #if 1
     const MacroInfo* MI = MD.getMacroInfo();
 
     DefMacroDirective* DMD = MD.getLocalDirective();
 
-    if (MI != nullptr && DMD != nullptr)
-    {
+    if (MI != nullptr && DMD != nullptr) {
       SourceLocation SL = MacroNameTok.getLocation();
       CheckSLValidity(SL);
 
@@ -5928,16 +5359,11 @@ public:
                                tok::kw_float, tok::kw_for, tok::kw_goto, tok::kw_if, tok::kw_inline, tok::kw_int, tok::kw_long, \
                                tok::kw_register, tok::kw_restrict, tok::kw_return, tok::kw_short, tok::kw_signed, tok::kw_sizeof, \
                                tok::kw_static, tok::kw_struct, tok::kw_switch, \
-                               tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-        {
+                               tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while)) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
             std::cout << "20.1:" << "C keyword undefined:";
             std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -5947,25 +5373,18 @@ public:
         }
       }
 
-      if (DMD->getPrevious() != nullptr)
-      {
+      if (DMD->getPrevious() != nullptr) {
         const MacroDirective* PMD = DMD->getPrevious();
 
-        if (PMD != nullptr)
-        {
+        if (PMD != nullptr) {
           SourceLocation PSL = PMD->getLocation();
           CheckSLValidity(PSL);
 
-          if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-            {
+          if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro()) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
                 std::cout << "20.1:" << "C standard library macro undefined:";
                 std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -5979,20 +5398,15 @@ public:
       /*end of 20.1*/
 
       /*start of 19.5*/
-      if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL))
-      {
+      if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL)) {
         MacroUndefSourceLocation.push_back(SL);
       }
       /*end of 19.5*/
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
           std::cout << "19.6:" << "Use of #undef is illegal:";
           std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6004,17 +5418,11 @@ public:
 #endif
   }
 
-  virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD)
-  {
+  virtual void MacroDefined(const Token &MacroNameTok, const MacroDirective *MD) {
 #if 1
     const MacroInfo* MI = MD->getMacroInfo();
-
     SourceLocation SL = MacroNameTok.getLocation();
     CheckSLValidity(SL);
-
-#if 0
-    assert(SL->isValid(), "the SourceLocation for MacroDefined is not valid.");
-#endif
 
 #if __clang_major__ < 5
     unsigned MacroNumArgs = MI->getNumArgs();
@@ -6023,8 +5431,7 @@ public:
 #endif
 
     /*start of 19.5*/
-    if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL))
-    {
+    if (!MI->isBuiltinMacro() && SM.isInMainFile(SL) && !SM.isInSystemHeader(SL)) {
       MacroDefSourceLocation.push_back(SM.getExpansionLoc(SL));
       MacroNameString.push_back(MacroNameTok.getIdentifierInfo()->getName().str());
     }
@@ -6037,16 +5444,11 @@ public:
                              tok::kw_float, tok::kw_for, tok::kw_goto, tok::kw_if, tok::kw_inline, tok::kw_int, tok::kw_long, \
                              tok::kw_register, tok::kw_restrict, tok::kw_return, tok::kw_short, tok::kw_signed, tok::kw_sizeof, \
                              tok::kw_static, tok::kw_struct, tok::kw_switch, \
-                             tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while))
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-      {
+                             tok::kw_typedef, tok::kw_union, tok::kw_unsigned, tok::kw_void, tok::kw_volatile, tok::kw_while)) {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
           std::cout << "20.1:" << "C keyword defined:";
           std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6056,23 +5458,17 @@ public:
       }
     }
 
-    if (MD->getPrevious() != nullptr)
-    {
+    if (MD->getPrevious() != nullptr) {
       const MacroDirective* PMD = MD->getPrevious();
       SourceLocation PSL = PMD->getLocation();
       /*@DEVI-A quick fix.Fixme.*/
       CheckSLValidity(PSL);
 
-      if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro())
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-        {
+      if (SM.isInSystemHeader(PSL) || MI->isBuiltinMacro()) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
             std::cout << "20.1:" << "C standard library macro redefined:";
             std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6096,21 +5492,15 @@ public:
     bool hasSingleHash = false;
     bool hasDoubleHash = false;
 
-    for (unsigned x = 0; x < NumOfTokens; ++x)
-    {
+    for (unsigned x = 0; x < NumOfTokens; ++x) {
 #if 1
-      if (TokenArrayRef[x].getKind() == tok::hash)
-      {
+      if (TokenArrayRef[x].getKind() == tok::hash) {
         hasSingleHash = true;
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-        {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
             std::cout << "19.13:" << "Macro has # token:";
             std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6120,18 +5510,13 @@ public:
         }
       }
 
-      if (TokenArrayRef[x].getKind() == tok::hashhash)
-      {
+      if (TokenArrayRef[x].getKind() == tok::hashhash) {
         hasDoubleHash = true;
 
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-        {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
             std::cout << "19.13:" << "Macro has ## token:";
             std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6143,16 +5528,11 @@ public:
 #endif
     }
 
-    if (hasSingleHash && hasDoubleHash)
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-      {
+    if (hasSingleHash && hasDoubleHash) {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
           std::cout << "19.12:" << "Macro has # and ## tokens:";
           std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6162,58 +5542,44 @@ public:
       }
     }
 
-    if (MI->isFunctionLike())
-    {
+    if (MI->isFunctionLike()) {
       bool ShouldBeTagged = false;
       bool IsIdentifierMacroArg = false;
       bool HasHash = false;
 
-      for (unsigned x = 0U; x < NumOfTokens; ++x)
-      {
+      for (unsigned x = 0U; x < NumOfTokens; ++x) {
 #if 1
         /*@DEVI-for macro defs that dont have more than two token NumOfTokens will wrap around since its
         unsigned if subtracted by two,hence the check. it does not hurt the logic since if there are less
         than two token in a macro definition, then it cannot possibly have a hash or a double hash.*/
-        if (NumOfTokens >= 2U)
-        {
-          if (TokenArrayRef[x].getKind() == tok::identifier)
-          {
-            for (unsigned  xx = 0; xx < MacroNumArgs; ++xx)
-            {
-              if (TokenArrayRef[x].getIdentifierInfo()->getName().str() == MacroArgsArrRef[xx]->getName().str())
-              {
+        if (NumOfTokens >= 2U) {
+          if (TokenArrayRef[x].getKind() == tok::identifier) {
+            for (unsigned  xx = 0; xx < MacroNumArgs; ++xx) {
+              if (TokenArrayRef[x].getIdentifierInfo()->getName().str() == MacroArgsArrRef[xx]->getName().str()) {
                 IsIdentifierMacroArg = true;
               }
             }
 
-            if (IsIdentifierMacroArg)
-            {
-              if (x <= NumOfTokens - 2U)
-              {
-                if (TokenArrayRef[x + 1U].getKind() == tok::hashhash)
-                {
+            if (IsIdentifierMacroArg) {
+              if (x <= NumOfTokens - 2U) {
+                if (TokenArrayRef[x + 1U].getKind() == tok::hashhash) {
                   HasHash = true;
                 }
               }
 
-              if (x >= 1U)
-              {
-                if (TokenArrayRef[x - 1U].getKind() == tok::hash || TokenArrayRef[x - 1U].getKind() == tok::hashhash)
-                {
+              if (x >= 1U) {
+                if (TokenArrayRef[x - 1U].getKind() == tok::hash || TokenArrayRef[x - 1U].getKind() == tok::hashhash) {
                   HasHash = true;
                 }
               }
 
-              if (x <= NumOfTokens - 2U)
-              {
-                if (!(TokenArrayRef[x + 1U].getKind() == tok::r_paren) && !HasHash)
-                {
+              if (x <= NumOfTokens - 2U) {
+                if (!(TokenArrayRef[x + 1U].getKind() == tok::r_paren) && !HasHash) {
                   ShouldBeTagged = true;
                 }
               }
 
-              if (x >= 1U)
-              {
+              if (x >= 1U) {
                 if (!(TokenArrayRef[x - 1U].getKind() == tok::l_paren) && !HasHash)
                 {
                   ShouldBeTagged = true;
@@ -6228,16 +5594,11 @@ public:
 #endif
       }
 
-      if (ShouldBeTagged)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-        {
+      if (ShouldBeTagged) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
             std::cout << "19.10:" << "Funciton-like macro's parameters are not enclosed in parantheses or dont have hash:";
             std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6247,16 +5608,11 @@ public:
         }
       }
 
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-      {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-          {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
             std::cout << "19.7:" << "Function-like macro used:";
             std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6266,20 +5622,13 @@ public:
         }
       }
 
-      if (MacroNumArgs != 0)
-      {
-        for (unsigned x = 0; x < MacroNumArgs; ++x)
-        {
-          if (MacroArgsArrRef[0]->hasMacroDefinition())
-          {
-            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL))
-            {
+      if (MacroNumArgs != 0) {
+        for (unsigned x = 0; x < MacroNumArgs; ++x) {
+          if (MacroArgsArrRef[0]->hasMacroDefinition()) {
+            if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, SL)) {
               /*intentionally left blank*/
-            }
-            else
-            {
-              if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL))
-              {
+            } else {
+              if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, SL)) {
                 std::cout << "19.9:" << "Function-like macro's argument contains macros:";
                 std::cout << SL.printToString(SM) << ":" << "\n";
 
@@ -6296,8 +5645,7 @@ public:
 #endif
   }
 
-  virtual void MacroExpands(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range, const MacroArgs *Args)
-  {
+  virtual void MacroExpands(const Token &MacroNameTok, const MacroDefinition &MD, SourceRange Range, const MacroArgs *Args) {
 #if 1
     SourceLocation SL = MacroNameTok.getLocation();
     CheckSLValidity(SL);
@@ -6307,21 +5655,16 @@ public:
 #endif
 
     IdentifierInfo* II = MacroNameTok.getIdentifierInfo();
-
     std::string MacroNameString = II->getName().str();
-
     DefMacroDirective* DMD = MD.getLocalDirective();
-
     SourceLocation MDSL = DMD->getLocation();
-
     MacroInfo* MI = MD.getMacroInfo();
 
     /*start of 19.4*/
     ArrayRef<Token> TokenArrayRef = MI->tokens();
 
     /*@DEVI-guard against macro defs that just define the macro without a value.*/
-    if (TokenArrayRef.size() != 0U)
-    {
+    if (TokenArrayRef.size() != 0U) {
       bool MacroExpansionIsTypeQualifier = true;
       bool MacroExpansionIsStorageSpecifier = true;
       bool MacroExpansionStringLiteral = false;
@@ -6330,21 +5673,15 @@ public:
       bool MacroExpansionParenExpr = true;
       bool MacroExpansionDoWhileZero = true;
 
-      if (TokenArrayRef.front().getKind() == tok::l_paren && TokenArrayRef.back().getKind() == tok::r_paren)
-      {
+      if (TokenArrayRef.front().getKind() == tok::l_paren && TokenArrayRef.back().getKind() == tok::r_paren) {
         /*currently we do not care what's inside the parens.*/
-      }
-      else
-      {
+      } else {
         MacroExpansionParenExpr = false;
       }
 
-      if (TokenArrayRef.front().getKind() == tok::l_brace && TokenArrayRef.back().getKind() == tok::r_brace)
-      {
+      if (TokenArrayRef.front().getKind() == tok::l_brace && TokenArrayRef.back().getKind() == tok::r_brace) {
         /*currently we don't care what's inside the curly braces.*/
-      }
-      else
-      {
+      } else {
         MacroExpansionBracedInitializer = false;
       }
 
@@ -6355,109 +5692,77 @@ public:
       TokenPattern.push_back(tok::numeric_constant);
       TokenPattern.push_back(tok::r_paren);
 
-      if (TokenArrayRef.front().getKind() == tok::kw_do)
-      {
+      if (TokenArrayRef.front().getKind() == tok::kw_do) {
         unsigned marker = 0U;
 
-        for (ArrayRef<Token>::iterator iter = TokenArrayRef.begin(), iterE = TokenArrayRef.end(); iter != iterE; ++iter)
-        {
-          if (iter->getKind() == tok::kw_while)
-          {
+        for (ArrayRef<Token>::iterator iter = TokenArrayRef.begin(), iterE = TokenArrayRef.end(); iter != iterE; ++iter) {
+          if (iter->getKind() == tok::kw_while) {
             marker = 0U;
           }
 
-          if (marker == 3U && iter->getKind() == TokenPattern[3])
-          {
+          if (marker == 3U && iter->getKind() == TokenPattern[3]) {
             marker = 4U;
-          }
-          else if (marker == 3U && iter->getKind() != TokenPattern[3])
-          {
+          } else if (marker == 3U && iter->getKind() != TokenPattern[3]) {
             marker = 0U;
-          }
-          else
-          {
+          } else {
             /*empty*/
           }
 
-          if (marker == 2U && iter->getKind() == TokenPattern[2])
-          {
+          if (marker == 2U && iter->getKind() == TokenPattern[2]) {
             marker = 3U;
-          }
-          else if (marker == 2U && iter->getKind() != TokenPattern[2])
-          {
+          } else if (marker == 2U && iter->getKind() != TokenPattern[2]) {
             marker = 0U;
-          }
-          else
-          {
+          } else {
             /*empty*/
           }
 
-          if (marker == 1U && iter->getKind() == TokenPattern[1])
-          {
+          if (marker == 1U && iter->getKind() == TokenPattern[1]) {
             marker = 2U;
-          }
-          else if (marker == 1U && iter->getKind() != TokenPattern[1])
-          {
+          } else if (marker == 1U && iter->getKind() != TokenPattern[1]) {
 
-          }
-          else
-          {
+          } else {
             /*empty*/
           }
 
-          if (marker == 0U && iter->getKind() == TokenPattern[0])
-          {
+          if (marker == 0U && iter->getKind() == TokenPattern[0]) {
             marker = 1U;
           }
         }
 
-        if (marker != 4U)
-        {
+        if (marker != 4U) {
           MacroExpansionDoWhileZero = false;
         }
-      }
-      else
-      {
+      } else {
         MacroExpansionDoWhileZero = false;
       }
 
-      if (TokenArrayRef.size() == 1U)
-      {
+      if (TokenArrayRef.size() == 1U) {
         if (TokenArrayRef[0].getKind() == tok::string_literal || TokenArrayRef[0].getKind() == tok::wide_string_literal \
             || TokenArrayRef[0].getKind() == tok::utf8_string_literal || TokenArrayRef[0].getKind() == tok::utf16_string_literal \
-            || TokenArrayRef[0].getKind() == tok::utf32_string_literal)
-        {
+            || TokenArrayRef[0].getKind() == tok::utf32_string_literal) {
           MacroExpansionStringLiteral = true;
         }
 
         if (TokenArrayRef[0].getKind() == tok::numeric_constant || TokenArrayRef[0].getKind() == tok::char_constant \
             || TokenArrayRef[0].getKind() == tok::wide_char_constant || TokenArrayRef[0].getKind() == tok::utf8_char_constant \
-            || TokenArrayRef[0].getKind() == tok::utf16_char_constant || TokenArrayRef[0].getKind() == tok::utf32_char_constant)
-        {
+            || TokenArrayRef[0].getKind() == tok::utf16_char_constant || TokenArrayRef[0].getKind() == tok::utf32_char_constant) {
           MacroExpansionConstant = true;
         }
       }
 
-      for (auto &iter : TokenArrayRef)
-      {
+      for (auto &iter : TokenArrayRef) {
         if (iter.getKind() == tok::kw_const || iter.getKind() == tok::kw_restrict || iter.getKind() == tok::kw_volatile \
-            || iter.getKind() == tok::l_paren || iter.getKind() == tok::r_paren)
-        {
+            || iter.getKind() == tok::l_paren || iter.getKind() == tok::r_paren) {
           /*has no significance*/
-        }
-        else
-        {
+        } else {
           MacroExpansionIsTypeQualifier = false;
         }
 
         if (iter.getKind() == tok::kw_auto || iter.getKind() == tok::kw_extern || iter.getKind() == tok::kw_register \
             || iter.getKind() == tok::kw_static || iter.getKind() == tok::kw_typedef \
-            || iter.getKind() == tok::l_paren || iter.getKind() == tok::r_paren)
-        {
+            || iter.getKind() == tok::l_paren || iter.getKind() == tok::r_paren) {
           /*has no significance*/
-        }
-        else
-        {
+        } else {
           MacroExpansionIsStorageSpecifier = false;
         }
       }
@@ -6465,16 +5770,11 @@ public:
       if (!MacroExpansionIsTypeQualifier && !MacroExpansionIsStorageSpecifier \
           && !MacroExpansionStringLiteral && !MacroExpansionConstant \
           && !MacroExpansionBracedInitializer && !MacroExpansionParenExpr \
-          && !MacroExpansionDoWhileZero)
-      {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
-        {
+          && !MacroExpansionDoWhileZero) {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL)) {
             std::cout << "19.4:" << "Macro does not expand to braced initializer,panthesizes expression,string literal,constant,do-while-zero,storage class specifier or type qualifier:";
             std::cout << Range.getBegin().printToString(SM) << ":" << "\n";
 
@@ -6487,8 +5787,7 @@ public:
     /*end of 19.4*/
 
 #if 1
-    if (Args != nullptr)
-    {
+    if (Args != nullptr) {
       /*@DEVI-Macro args are passed twice. first they are expanded and then the whole macro,
       including the args is checked again for expansion, so args are passed twice.*/
 #if __clang_major__ == 4
@@ -6499,14 +5798,10 @@ public:
       if (MI->getNumParams() != Args->getNumMacroArguments() - MI->getNumParams())
 #endif
       {
-        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
-        {
+        if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL)) {
           /*intentionally left blank*/
-        }
-        else
-        {
-          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
-          {
+        } else {
+          if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))   {
             std::cout << "19.8:" << "Funciton-like macro invoked with wrong number of arguments:";
 #if __clang_major__ == 4
             std::cout << Range.getBegin().printToString(SM) << ":" << Args->getNumArguments() << " " << MI->getNumArgs() << ":" << "\n";
@@ -6524,16 +5819,11 @@ public:
     }
 #endif
 
-    if (MacroNameString == "offsetof")
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
-      {
+    if (MacroNameString == "offsetof") {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL)) {
           std::cout << "20.6:" << "use of offsetof is illegal:";
           std::cout << Range.getBegin().printToString(SM) << ":" << "\n";
 
@@ -6543,14 +5833,10 @@ public:
       }
     }
 
-    if (MacroNameString == "setjmp")
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
-      {
+    if (MacroNameString == "setjmp") {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
+      } else {
         if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
         {
           std::cout << "20.7:" << "use of setjmp is illegal:";
@@ -6562,17 +5848,12 @@ public:
       }
     }
 
-    if (!DMD->isDefined())
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL))
-      {
+    if (!DMD->isDefined()) {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, MDSL)) {
         /*intentionally left blank*/
-      }
-      else
-      {
+      } else {
         /*@DEVI-by the time we get a callback on our callback, the macri is assigned a default vlaue even if it is undefined in the TU.*/
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL))
-        {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, MDSL)) {
           std::cout << "19.11:" << "Use of undefined macro:";
           std::cout << Range.getBegin().printToString(SM) << ":" << "\n";
 
@@ -6584,24 +5865,18 @@ public:
 #endif
   }
 
-  virtual void Elif(SourceLocation Loc, SourceRange ConditionRange, ConditionValueKind ConditionValue, SourceLocation IfLoc)
-  {
+  virtual void Elif(SourceLocation Loc, SourceRange ConditionRange, ConditionValueKind ConditionValue, SourceLocation IfLoc) {
 #if 1
     SourceLocation SLoc = SM.getSpellingLoc(Loc);
     CheckSLValidity(SLoc);
     SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
     CheckSLValidity(SIfLoc);
 
-    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc))
-      {
+    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc)) {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, Loc))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, Loc)) {
           std::cout << "19.17:" << "elif directive is not in the same file as its if directive:";
           std::cout << SLoc.printToString(SM) << ":" << "\n";
 
@@ -6613,24 +5888,18 @@ public:
 #endif
   }
 
-  virtual void Else(SourceLocation Loc, SourceLocation IfLoc)
-  {
+  virtual void Else(SourceLocation Loc, SourceLocation IfLoc) {
 #if 1
     SourceLocation SLoc = SM.getSpellingLoc(Loc);
     CheckSLValidity(SLoc);
     SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
     CheckSLValidity(SIfLoc);
 
-    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc))
-      {
+    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc)) {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, Loc))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, Loc)) {
           std::cout << "19.17:" << "else directive is not in the same file as its if directive:";
           std::cout << SLoc.printToString(SM) << ":" << "\n";
 
@@ -6642,24 +5911,18 @@ public:
 #endif
   }
 
-  virtual void Endif (SourceLocation Loc, SourceLocation IfLoc)
-  {
+  virtual void Endif (SourceLocation Loc, SourceLocation IfLoc) {
 #if 1
     SourceLocation SLoc = SM.getSpellingLoc(Loc);
     CheckSLValidity(SLoc);
     SourceLocation SIfLoc = SM.getSpellingLoc(IfLoc);
     CheckSLValidity(SIfLoc);
 
-    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc))
-    {
-      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc))
-      {
+    if (SM.getFileID(SLoc) != SM.getFileID(SIfLoc)) {
+      if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, SM, Loc)) {
         /*intentionally left blank*/
-      }
-      else
-      {
-        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, Loc))
-        {
+      } else {
+        if (Devi::IsTheMatchInMainFile(MainFileOnly, SM, Loc)) {
           std::cout << "19.17:" << "endif directive is not in the same file as its if directive:";
           std::cout << SLoc.printToString(SM) << ":" << "\n";
 
@@ -6675,53 +5938,43 @@ private:
   const SourceManager &SM;
 };
 /**********************************************************************************************************************/
-class IsThereJunkPreInclusion
-{
+class IsThereJunkPreInclusion {
 public:
   IsThereJunkPreInclusion() {}
 
-  void Check(std::vector<std::string> SourcePathList)
-  {
+  void Check(std::vector<std::string> SourcePathList) {
     bool HaveWeMatchedInclusionDirYet = false;
     bool HaveWeMatchIllegal191Yet = false;
 
-    for (auto &iter : SourcePathList)
-    {
+    for (auto &iter : SourcePathList) {
       //std::cout << iter << "\n";
       std::ifstream InputFile(iter);
 
       HaveWeMatchIllegal191Yet = false;
       HaveWeMatchedInclusionDirYet = false;
 
-      for (std::string line; getline(InputFile, line);)
-      {
+      for (std::string line; getline(InputFile, line);) {
         //std::cout << iter << ":" << line << ":" << HaveWeMatchedInclusionDirYet << " " << HaveWeMatchIllegal191Yet << "\n";
 
-        if (line.empty())
-        {
+        if (line.empty()) {
           continue;
         }
 
-        if (line.front() == '#')
-        {
+        if (line.front() == '#') {
           size_t st = line.find("#include", 0U);
 
-          if (st == 0U)
-          {
+          if (st == 0U) {
             /*we've found a header include*/
             HaveWeMatchedInclusionDirYet = true;
 
-            if (HaveWeMatchIllegal191Yet)
-            {
+            if (HaveWeMatchIllegal191Yet) {
               /*print diag out*/
               std::cout << "19.1" << ":" << "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments" << ":" << iter << "\n";
 
               XMLDocOut.XMLAddNode(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
               JSONDocOUT.JSONAddElement(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
               break;
-            }
-            else
-            {
+            } else {
               break;
             }
           }
@@ -6729,48 +5982,38 @@ public:
           continue;
         }
 
-        if (line.front() == '/')
-        {
+        if (line.front() == '/') {
           /*has to be a comment*/
           continue;
         }
 
-        if (line.front() == '\n' || line.front() == '\t' || line.front() == ' ' || line.front() == '\r')
-        {
+        if (line.front() == '\n' || line.front() == '\t' || line.front() == ' ' || line.front() == '\r') {
           HaveWeMatchIllegal191Yet = false;
 
-          for (auto &iterchar : line)
-          {
-            if (iterchar == '\n' || iterchar == '\t' || iterchar == ' ' || line.front() == '\r')
-            {
+          for (auto &iterchar : line) {
+            if (iterchar == '\n' || iterchar == '\t' || iterchar == ' ' || line.front() == '\r') {
               continue;
             }
 
-            if (iterchar == '/')
-            {
+            if (iterchar == '/') {
               break;
             }
 
-            if (iterchar == '#')
-            {
+            if (iterchar == '#') {
               size_t st = line.find("#include", 0U);
 
-              if (st == 0U)
-              {
+              if (st == 0U) {
                 /*we've found a header include*/
                 HaveWeMatchedInclusionDirYet = true;
 
-                if (HaveWeMatchIllegal191Yet)
-                {
+                if (HaveWeMatchIllegal191Yet) {
                   /*print diag out*/
                   std::cout << "19.1" << ":" << "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments" << ":" << iter << "\n";
 
                   XMLDocOut.XMLAddNode(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
                   JSONDocOUT.JSONAddElement(iter, "19.1", "Inclusion directives should only be preceeded by other inclusion directives, pp directives or comments : ");
                   break;
-                }
-                else
-                {
+                } else {
                   break;
                 }
 
@@ -6794,13 +6037,11 @@ public:
 private:
 };
 /**********************************************************************************************************************/
-class CheckForNullStatements
-{
+class CheckForNullStatements {
 public:
   CheckForNullStatements() {}
 
-  void Check(void)
-  {
+  void Check(void) {
     bool HaveWeMatchedASemi = false;
     bool ShouldBeTagged = false;
     bool HaveWeSeenAComment = false;
@@ -6885,17 +6126,13 @@ public:
 private:
 };
 /**********************************************************************************************************************/
-class onEndOfAllTUs
-{
+class onEndOfAllTUs {
 public: onEndOfAllTUs() {}
 
-  static void run(void)
-  {
+  static void run(void) {
     /*@DEVI-start of 8.8*/
-    for (auto &iter : ExternObjInfoProto)
-    {
-      if (iter.HasMoreThanOneDefinition)
-      {
+    for (auto &iter : ExternObjInfoProto) {
+      if (iter.HasMoreThanOneDefinition) {
         std::cout << "8.8:" << "External function or object is defined in more than one file:";
         std::cout << iter.XObjSLStr << ":" << iter.XObjNameStr << "\n";
 
@@ -6907,62 +6144,46 @@ public: onEndOfAllTUs() {}
 
     /*@DEVI-start of 5.x*/
     /*@DEVI-first we need to do some cleanup and mark some entries as invalid.*/
-    for (auto &iter : IdentInfoProto)
-    {
+    for (auto &iter : IdentInfoProto) {
       if (iter.Name == "")
       {
         iter.IsValid = false;
       }
 
-      if (iter.NK == Devi::NodeKind::RecordDecl)
-      {
-        for (auto &yaiter : IdentInfoProto)
-        {
-          if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
-          {
-            if ((iter.IsIncomplete != yaiter.IsIncomplete) && iter.IsValid && yaiter.IsValid)
-            {
+      if (iter.NK == Devi::NodeKind::RecordDecl) {
+        for (auto &yaiter : IdentInfoProto) {
+          if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString) {
+            if ((iter.IsIncomplete != yaiter.IsIncomplete) && iter.IsValid && yaiter.IsValid) {
               iter.IsValid = false;
             }
           }
 
-          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl)
-          {
+          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl) {
             yaiter.IsValid = false;
           }
         }
       }
 
-      if (iter.NK == Devi::NodeKind::FieldDecl)
-      {
-        for (auto &yaiter : IdentInfoProto)
-        {
-          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl)
-          {
+      if (iter.NK == Devi::NodeKind::FieldDecl) {
+        for (auto &yaiter : IdentInfoProto) {
+          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl) {
             yaiter.IsValid = false;
           }
         }
       }
 
-      if (iter.NK == Devi::NodeKind::ParmVarDecl)
-      {
-        for (auto &yaiter : IdentInfoProto)
-        {
-          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl)
-          {
+      if (iter.NK == Devi::NodeKind::ParmVarDecl) {
+        for (auto &yaiter : IdentInfoProto) {
+          if (iter.Name == yaiter.Name && iter.SLString == yaiter.SLString && yaiter.NK == Devi::NodeKind::VarDecl) {
             yaiter.IsValid = false;
           }
         }
       }
 
-      if (iter.NK == Devi::NodeKind::FunctionDecl)
-      {
-        for (auto &yaiter : IdentInfoProto)
-        {
-          if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
-          {
-            if (iter.FDKind != yaiter.FDKind && iter.IsValid && yaiter.IsValid)
-            {
+      if (iter.NK == Devi::NodeKind::FunctionDecl) {
+        for (auto &yaiter : IdentInfoProto) {
+          if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString) {
+            if (iter.FDKind != yaiter.FDKind && iter.IsValid && yaiter.IsValid) {
               iter.IsValid = false;
             }
           }
@@ -6971,30 +6192,24 @@ public: onEndOfAllTUs() {}
     }
 
     /*@DEVI-now we can start looking for things to tag*/
-    for (auto &iter : IdentInfoProto)
-    {
-      if (iter.IsValid == false)
-      {
+    for (auto &iter : IdentInfoProto) {
+      if (iter.IsValid == false) {
         continue;
       }
 
-      for (auto &yaiter : IdentInfoProto)
-      {
-        if (yaiter.IsValid == false)
-        {
+      for (auto &yaiter : IdentInfoProto) {
+        if (yaiter.IsValid == false) {
           continue;
         }
 
-        if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString)
-        {
+        if (iter.Name == yaiter.Name && iter.SLString != yaiter.SLString) {
           /*tag 5.7*/
           std::cout << "5.7:" << "Identifier re-used:";
           std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
           XMLDocOut.XMLAddNode(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier re-used:");
           JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.7", "Identifier re-used:");
 
-          if (iter.NK == Devi::NodeKind::TypedefDecl)
-          {
+          if (iter.NK == Devi::NodeKind::TypedefDecl) {
             /*tag 5.3*/
             std::cout << "5.3:" << "Typedef identifier is not unique:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
@@ -7002,8 +6217,7 @@ public: onEndOfAllTUs() {}
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.3", "Typedef identifier is not unique:");
           }
 
-          if (iter.NK == Devi::NodeKind::RecordDecl)
-          {
+          if (iter.NK == Devi::NodeKind::RecordDecl) {
             /*tag 5.4*/
             std::cout << "5.4:" << "Tag identifier is not unique:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
@@ -7011,8 +6225,7 @@ public: onEndOfAllTUs() {}
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.4", "Tag identifier is not unique:");
           }
 
-          if (iter.NK == Devi::NodeKind::RecordDecl && yaiter.NK != Devi::NodeKind::RecordDecl)
-          {
+          if (iter.NK == Devi::NodeKind::RecordDecl && yaiter.NK != Devi::NodeKind::RecordDecl) {
             /*tag 5.6*/
             std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
@@ -7020,8 +6233,7 @@ public: onEndOfAllTUs() {}
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
           }
 
-          if (iter.NK == Devi::NodeKind::LabelDecl && yaiter.NK != Devi::NodeKind::LabelDecl)
-          {
+          if (iter.NK == Devi::NodeKind::LabelDecl && yaiter.NK != Devi::NodeKind::LabelDecl) {
             /*tag 5.6*/
             std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
@@ -7030,8 +6242,7 @@ public: onEndOfAllTUs() {}
           }
 
           if (((iter.NK != Devi::NodeKind::RecordDecl) && (iter.NK != Devi::NodeKind::LabelDecl)) && \
-              ((yaiter.NK == Devi::NodeKind::RecordDecl) || (yaiter.NK == Devi::NodeKind::LabelDecl)))
-          {
+              ((yaiter.NK == Devi::NodeKind::RecordDecl) || (yaiter.NK == Devi::NodeKind::LabelDecl))) {
             /*tag 5.6*/
             std::cout << "5.6:" << "The Identifier is re-used in another namespace:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
@@ -7039,8 +6250,7 @@ public: onEndOfAllTUs() {}
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.6", "The Identifier is re-used in another namespace:");
           }
 
-          if (iter.FileName == yaiter.FileName && iter.Scope == Devi::Scope::Block && yaiter.Scope == Devi::Scope::TU)
-          {
+          if (iter.FileName == yaiter.FileName && iter.Scope == Devi::Scope::Block && yaiter.Scope == Devi::Scope::TU) {
             /*tag 5.2*/
             std::cout << "5.2:" << "This identifier is being hidden by an identifier of the same name in file scope:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
@@ -7048,8 +6258,7 @@ public: onEndOfAllTUs() {}
             JSONDocOUT.JSONAddElement(iter.Line, iter.Column, iter.FileName, "5.2", "This identifier is being hidden by an identifier of the same name in file scope:");
           }
 
-          if (iter.IsStatic)
-          {
+          if (iter.IsStatic) {
             /*tag 5.5*/
             std::cout << "5.5:" << "Identifier with static storage duration is re-used:";
             std::cout << iter.SLString << ":" << iter.Name << ":" << yaiter.SLString << "\n";
@@ -7668,8 +6877,7 @@ private:
 };
 /**********************************************************************************************************************/
 /*Main*/
-int main(int argc, const char** argv)
-{
+int main(int argc, const char** argv) {
 #if 0
   std::string action_file_path;
   std::cout << "start\n";
