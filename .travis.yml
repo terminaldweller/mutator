@@ -85,10 +85,10 @@ matrix:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - sudo apt-get install libstdc++-7-dev -y
-      - wget https://apt.llvm.org/llvm.sh
-      - chmod +x llvm.sh
-      - sudo ./llvm.sh 8
-      - sudo apt-get install llvm-8-dev libclang-common-8-dev libclang-8-dev -y
+      - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-8  main"
+      - sudo apt-get update 
+      - sudo apt-get install clang-8 llvm-8-dev libclang-common-8-dev libclang-8-dev -y
       - sudo apt-get install libffi-dev -y
       - sudo apt-get install bear -y
       - sudo apt-get install luarocks -y
