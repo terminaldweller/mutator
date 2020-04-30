@@ -41,6 +41,7 @@
   - [mutator-lvl0](#mutator-lvl0)
 - [Directory Outline](#directory-outline)
 - [Acknowledgements](#acknowledgements)
+- [FAQ](#faq)
 - [Feedback](#feedback)
 - [Suggestions and Feature Requests](#suggestions-and-feature-requests)
 - [TODO List](#todo-list)
@@ -398,6 +399,13 @@ The project might, at a later point in time, start using **Cmake** for the build
 Misra 2012 support will be added in the future.<br/>
 Also a note regarding building the LLVM libraries. It is safer to build the libraries with clang++ if you're going to later use those libraries with clang++(you can get the distro version of clang from your distro's repo). The same applies to g++.<br/>
 The master branch is the dev version. Release versions will be forked.<br/>
+
+### FAQ
+
+#### tool complains that it can't find stddef.h
+Tool complains that it cannot find `stddef.h` or some other similar header. If that happens to you , it's because the tool can't find the clang built-in headers. run `llvm-config --libdir`, then head on to `clang`. Inside that directory you should see one(or maybe more) llvm/clang versions. Pick the one you used to build cgrep against. Inside that directory there will be a directory named `include`. Pass that to the tool any way you see fit.<br/>
+Alternatively, `$(llvm-config --libdir)/clang/$(llvm-config --version)/include` should give the path the tool needs to include. If you build your llvm/clang from upstream, this might not work. SVN bulds will have the svn string attached to the version number.<br/>
+You could,for example, use `--extra-arg=-I/usr/lib/llvm-9/lib/clang/9.0.0/include` to call cgrep or you could just alias `cgrep` to `cgrep --extra-arg=-I/usr/lib/llvm-9/lib/clang/9.0.0/include`.<br/>
 
 ### Acknowledgements
 Project mutator uses the following libraries:
