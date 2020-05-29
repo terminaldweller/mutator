@@ -468,7 +468,11 @@ class MutagenExtraction
 
     void ExtractAncestry(clang::ast_type_traits::DynTypedNode __dtn, clang::ASTContext &__astx)
     {
+#if __clang_major__ >= 11
+      clang::DynTypedNodeList DNL = __astx.getParents(__dtn);
+#else
       clang::ASTContext::DynTypedNodeList DNL = __astx.getParents(__dtn);
+#endif
       if (DNL.empty()) return void();
 
       /*FIXME-a LastStrain. obviously well end up losing some parents in cpp if we're just picking up the

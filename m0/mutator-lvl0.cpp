@@ -560,7 +560,11 @@ public:
       if (Devi::IsTheMatchInSysHeader(CheckSystemHeader, MR, SL)) return void();
 
       ASTContext *const ASTC = MR.Context;
+#if __clang_major__ >= 11
+      DynTypedNodeList NodeList = ASTC->getParents(*CS);
+#else
       ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*CS);
+#endif
       ast_type_traits::DynTypedNode ParentNode;
 
       /*@DEVI-assumptions:nothing has more than one parent in C.*/
@@ -2711,7 +2715,11 @@ public:
       const clang::Type* TP = QT.getTypePtr();
 
       if (TP->isIntegerType()) {
+#if __clang_major__ >= 11
+        DynTypedNodeList NodeList = ASTC->getParents(*EXP);
+#else 
         ASTContext::DynTypedNodeList NodeList = ASTC->getParents(*EXP);
+#endif
         ast_type_traits::DynTypedNode ParentNode;
         /*assumptions:nothing has more than one parent in C.*/
         if (!NodeList.empty()) ParentNode = NodeList[0];
@@ -3771,10 +3779,17 @@ public:
       if (IsNewEntry) {
         const SourceManager &SM = FSL.getManager();
 
+#if __clang_major__ >= 11
+        ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
+                              SM.getFilename(SL).str(), SL.printToString(*MR.SourceManager), NDNameString, \
+                              FSL.getFileID(), false, false, false
+                             };
+#else 
         ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
                               SM.getFilename(SL), SL.printToString(*MR.SourceManager), NDNameString, \
                               FSL.getFileID(), false, false, false
                              };
+#endif
         ExternObjInfoProto.push_back(Temp);
       }
     }
@@ -3817,10 +3832,17 @@ public:
       }
 
       if (IsNewEntry) {
+#if __clang_major__ >= 11
+        ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
+                              SM.getFilename(SL).str(), SL.printToString(*MR.SourceManager), NDNameString, \
+                              FSL.getFileID(), false, FD->isThisDeclarationADefinition(), !FD->isThisDeclarationADefinition()
+                             };
+#else 
         ExternObjInfo Temp = {FSL.getSpellingLineNumber(), FSL.getSpellingColumnNumber(), \
                               SM.getFilename(SL), SL.printToString(*MR.SourceManager), NDNameString, \
                               FSL.getFileID(), false, FD->isThisDeclarationADefinition(), !FD->isThisDeclarationADefinition()
                              };
+#endif
         ExternObjInfoProto.push_back(Temp);
       }
     }
@@ -4059,7 +4081,11 @@ public:
 
       StringRef FileNameString = SM.getFilename(SL);
 
+#if __clang_major__ >= 11
+      NullStmtInfo Temp = {FSL.getSpellingColumnNumber(), FSL.getSpellingLineNumber(), FileNameString.str(), SM.isInMainFile(SL), SM.isInSystemHeader(SL)};
+#else
       NullStmtInfo Temp = {FSL.getSpellingColumnNumber(), FSL.getSpellingLineNumber(), FileNameString, SM.isInMainFile(SL), SM.isInSystemHeader(SL)};
+#endif
 
       NullStmtProto.push_back(Temp);
     }
@@ -4302,12 +4328,20 @@ public:
         if (ShortSize == ASTC->getTypeSize(QT) || 8U == ASTC->getTypeSize(QT))
         {
           /*@DEVI-assumes there is only one parent for every node which is true only for C, not Cpp*/
+#if __clang_major__ >= 11
+          DynTypedNodeList NodeList = ASTC->getParents(DynOpNode);
+#else
           ASTContext::DynTypedNodeList NodeList = ASTC->getParents(DynOpNode);
+#endif
           ast_type_traits::DynTypedNode ParentNode;
           if (!NodeList.empty()) ParentNode = NodeList[0U];
           else return void();
 
+#if __clang_major__ >= 11
+          DynTypedNodeList AncestorNodeList = ASTC->getParents(ParentNode);
+#else 
           ASTContext::DynTypedNodeList AncestorNodeList = ASTC->getParents(ParentNode);
+#endif
 
           ast_type_traits::DynTypedNode AncestorNode;
           if (!AncestorNodeList.empty()) AncestorNode = AncestorNodeList[0U];
