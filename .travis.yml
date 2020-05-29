@@ -146,8 +146,26 @@ matrix:
       - git submodule update
       script: 
         - make CXX=clang-10 LLVM_CONF=llvm-config-10 obfuscator mutator-lvl0 bruiser
-
-          #before_install:
-          #- echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-          #- pip install --user cpp-coveralls
-
+    - dist: bionic
+      name: llvm11
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - sudo apt-get install libstdc++-7-dev -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x ./llvm.sh
+      - sudo ./llvm.sh 11
+      - sudo apt-get install clang-11 llvm-11-dev libclang-common-11-dev libclang-11-dev -y
+      - sudo apt-get install libffi-dev -y
+      - sudo apt-get install bear -y
+      - sudo apt-get install luarocks -y
+      - luarocks install ansicolors --local
+      - ./extra-tools/capstoneubuntu14.sh
+      - ./extra-tools/keystoneubuntu.sh
+      - sudo apt-get install python3.6-dev -y --allow-unauthenticated
+      - git submodule init
+      - git submodule update
+      script: 
+        - make CXX=clang-11 LLVM_CONF=llvm-config-11 obfuscator mutator-lvl1 bruiser
