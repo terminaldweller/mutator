@@ -168,4 +168,4 @@ matrix:
       - git submodule init
       - git submodule update
       script: 
-        - make CXX=clang-11 LLVM_CONF=llvm-config-11 obfuscator mutator-lvl1 bruiser
+        - make CXX=clang-11 LLVM_CONF=llvm-config-11 obfuscator mutator-lvl0 bruiser
