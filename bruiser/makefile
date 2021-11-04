@@ -87,7 +87,7 @@ endif
 SRCS:=$(wildcard *.cpp)
 C_SRCS:=$(wildcard *.c)
 CXX_FLAGS+=$(CXX_EXTRA)
-EXTRA_LD_FLAGS+=$(shell $(PY_CONF) --ldflags) -lffi -lcapstone -lkeystone -L./lua-5.3.4/src
+EXTRA_LD_FLAGS+=-lffi -lcapstone -lkeystone -L./lua-5.3.4/src $(shell $(PY_CONF) --embed --ldflags)
 LD_FLAGS+=$(EXTRA_LD_FLAGS)
 TBG_OBJLIST_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%.o, $(wildcard ./autogen/wasm/ltg/*.c))
 TBG_OBJLIST_DBG_INC_WASM=$(patsubst ./autogen/wasm/ltg/%.c, ./autogen/wasm/ltg/%.odbg, $(wildcard ./autogen/wasm/ltg/*.c))
